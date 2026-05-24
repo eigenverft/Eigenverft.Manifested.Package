@@ -105,7 +105,7 @@ $LocalNugetSourceName = Register-LocalNuGetDotNetPackageSource -SourceName "$Loc
 ##############################################################################
 # Main CICD Logic
 
-$manifestPath = Join-Path $gitTopLevelDirectory 'src\prj\Eigenverft.Manifested.Sandbox\Eigenverft.Manifested.Sandbox.psd1'
+$manifestPath = Join-Path $gitTopLevelDirectory 'src\prj\Eigenverft.Manifested.Package\Eigenverft.Manifested.Package.psd1'
 if (-not (Test-Path -LiteralPath $manifestPath))
 {
     throw "Expected module manifest was not found at '$manifestPath'."

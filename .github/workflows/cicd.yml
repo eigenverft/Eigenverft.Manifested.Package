@@ -7,7 +7,7 @@ name: cicd.yml
 on:
   push:
     paths:
-      - 'src/prj/Eigenverft.Manifested.Sandbox/**'
+      - 'src/prj/Eigenverft.Manifested.Package/**'
     branches:
       - 'master'
       - 'main'
