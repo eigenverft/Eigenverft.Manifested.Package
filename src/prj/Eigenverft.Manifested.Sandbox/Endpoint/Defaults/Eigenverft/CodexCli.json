@@ -1,0 +1,221 @@
+{
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.6.schema.json",
+  "schemaVersion": "1.6",
+  "definitionPublication": {
+    "publisherId": "Eigenverft",
+    "publisherName": "Eigenverft",
+    "definitionId": "CodexCli",
+    "definitionRevision": 2,
+    "publishedAtUtc": "2026-05-22T12:00:00Z"
+  },
+  "display": {
+    "default": {
+      "name": "Codex CLI",
+      "publisher": "OpenAI",
+      "corporation": "OpenAI",
+      "summary": "Pinned Codex CLI npm runtime"
+    }
+  },
+  "dependencies": [
+    {
+      "definitionId": "VisualCppRedistributable"
+    },
+    {
+      "definitionId": "NodeRuntime"
+    }
+  ],
+  "artifacts": {
+    "targets": [
+      {
+        "id": "CodexCli-win32-x64-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "win32-x64",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "x64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        }
+      },
+      {
+        "id": "CodexCli-win32-arm64-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "win32-arm64",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "arm64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        }
+      }
+    ],
+    "releases": [
+      {
+        "version": "0.133.0",
+        "releaseTracks": [
+          "stable"
+        ],
+        "targetArtifacts": {
+          "CodexCli-win32-x64-stable": {
+            "artifactId": "codex-runtime-win32-x64-stable"
+          },
+          "CodexCli-win32-arm64-stable": {
+            "artifactId": "codex-runtime-win32-arm64-stable"
+          }
+        }
+      },
+      {
+        "version": "0.130.0",
+        "releaseTracks": [
+          "stable"
+        ],
+        "targetArtifacts": {
+          "CodexCli-win32-x64-stable": {
+            "artifactId": "codex-runtime-win32-x64-stable"
+          },
+          "CodexCli-win32-arm64-stable": {
+            "artifactId": "codex-runtime-win32-arm64-stable"
+          }
+        }
+      }
+    ],
+    "sources": {}
+  },
+  "discovery": {
+    "presence": {
+      "files": [
+        "codex.cmd",
+        "node_modules/@openai/codex/package.json"
+      ],
+      "directories": [
+        "node_modules"
+      ],
+      "commands": [
+        {
+          "name": "codex",
+          "relativePath": "codex.cmd",
+          "requiredForState": true,
+          "exposeCommand": true,
+          "stateChecks": [
+            {
+              "arguments": [
+                "--version"
+              ],
+              "outputPattern": "(?m)^(?<value>.+\\S.*)$"
+            }
+          ]
+        }
+      ],
+      "apps": [],
+      "metadataFiles": [],
+      "signatures": [],
+      "fileDetails": [],
+      "registry": [],
+      "powerShellModules": []
+    },
+    "existingInstall": {
+      "enabled": false,
+      "searchLocations": [],
+      "installRootRules": []
+    }
+  },
+  "packageOperations": {
+    "policy": {
+      "ownershipPolicy": {
+        "allowAdoptExternal": false,
+        "upgradeAdoptedInstall": false,
+        "requirePackageOwnership": true
+      },
+      "compatibility": {
+        "checks": [
+          {
+            "kind": "osVersion",
+            "operator": ">=",
+            "value": "10.0"
+          }
+        ]
+      }
+    },
+    "assigned": {
+      "install": {
+        "kind": "npmMaterializedInstallGlobalPackage",
+        "installerCommand": "npm",
+        "packageSpec": "@openai/codex@{version}",
+        "installDirectory": "codex-runtime/{releaseTrack}/{version}/{artifactDistributionVariant}"
+      },
+      "readyStateCheck": {
+        "use": "discovery.presence",
+        "expectedVersion": "{version}",
+        "require": {
+          "files": true,
+          "directories": true,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "pathRegistration": {
+        "mode": "user",
+        "source": {
+          "kind": "shim",
+          "use": "discovery.presence.commands"
+        }
+      },
+      "versionUpdatePolicy": {
+        "whenAssigned": "trackSelectedVersion",
+        "onSameSelectedVersion": "reuseOrRepair",
+        "onNewSelectedVersion": "replacePackageOwnedInstall"
+      }
+    },
+    "removed": {
+      "policy": {
+        "whenNotInInventory": "succeed",
+        "allowedInventoryOwnershipKinds": [
+          "PackageInstalled"
+        ],
+        "allowUntrackedExternalRemoval": false,
+        "removeDependencies": false
+      },
+      "operation": {
+        "kind": "deleteInstallDirectory",
+        "pathSource": "inventory.installDirectory"
+      },
+      "absenceVerification": {
+        "use": "discovery.presence",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "postRemoveCleanup": {
+        "packageInventoryRecord": true,
+        "generatedShims": true,
+        "pathEntries": true,
+        "workDirectories": true
+      }
+    }
+  }
+}

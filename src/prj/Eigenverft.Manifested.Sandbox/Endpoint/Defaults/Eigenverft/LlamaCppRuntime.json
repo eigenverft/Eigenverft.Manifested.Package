@@ -1,0 +1,266 @@
+{
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.6.schema.json",
+  "schemaVersion": "1.6",
+  "definitionPublication": {
+    "publisherId": "Eigenverft",
+    "publisherName": "Eigenverft",
+    "definitionId": "LlamaCppRuntime",
+    "definitionRevision": 2,
+    "publishedAtUtc": "2026-05-22T12:00:00Z"
+  },
+  "display": {
+    "default": {
+      "name": "llama.cpp",
+      "publisher": "ggml-org",
+      "corporation": "ggml-org",
+      "summary": "Local LLM runtime and CLI tools"
+    }
+  },
+  "dependencies": [
+    {
+      "definitionId": "VisualCppRedistributable"
+    }
+  ],
+  "artifacts": {
+    "targets": [
+      {
+        "id": "LlamaCppRuntime-win-cpu-x64-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "win-cpu-x64",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "x64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        },
+        "fileNameTemplate": "llama-b{version}-bin-win-cpu-x64.zip",
+        "acquisitionCandidates": [
+          {
+            "kind": "packageDepot",
+            "searchOrder": 100,
+            "verification": {
+              "mode": "optional"
+            }
+          },
+          {
+            "kind": "download",
+            "sourceId": "llamaCppGitHub",
+            "searchOrder": 900,
+            "verification": {
+              "mode": "required"
+            }
+          }
+        ]
+      }
+    ],
+    "releases": [
+      {
+        "version": "9279",
+        "releaseTracks": [
+          "stable"
+        ],
+        "upstreamRelease": {
+          "sourceId": "llamaCppGitHub",
+          "releaseTag": "b9279"
+        },
+        "targetArtifacts": {
+          "LlamaCppRuntime-win-cpu-x64-stable": {
+            "artifactId": "llama-cpp-win-cpu-x64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "b778980729994caf9d286e7e8f8ac7835e9710d1edf369b31776cb6d6f70f04b"
+            }
+          }
+        }
+      },
+      {
+        "version": "9094",
+        "releaseTracks": [
+          "stable"
+        ],
+        "upstreamRelease": {
+          "sourceId": "llamaCppGitHub",
+          "releaseTag": "b9094"
+        },
+        "targetArtifacts": {
+          "LlamaCppRuntime-win-cpu-x64-stable": {
+            "artifactId": "llama-cpp-win-cpu-x64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "5c788e2c59bc64fae603c57e5f6d73be50600418763f11d5cdc7be175dc9075a"
+            }
+          }
+        }
+      }
+    ],
+    "sources": {
+      "llamaCppGitHub": {
+        "kind": "githubRelease",
+        "githubOwner": "ggml-org",
+        "githubRepository": "llama.cpp"
+      }
+    }
+  },
+  "discovery": {
+    "presence": {
+      "files": [
+        "llama-cli.exe",
+        "llama-server.exe",
+        "llama-quantize.exe",
+        "llama-bench.exe",
+        "llama.dll",
+        "llama-common.dll",
+        "ggml.dll",
+        "ggml-base.dll",
+        "ggml-cpu-x64.dll",
+        "libomp140.x86_64.dll"
+      ],
+      "directories": [],
+      "commands": [
+        {
+          "name": "llama-cli",
+          "relativePath": "llama-cli.exe",
+          "requiredForState": true,
+          "exposeCommand": true,
+          "stateChecks": [
+            {
+              "arguments": [
+                "--version"
+              ],
+              "outputPattern": "(?im)^version:\\s*(?<value>\\d+)\\b",
+              "expectedValue": "{version}"
+            }
+          ]
+        },
+        {
+          "name": "llama-server",
+          "relativePath": "llama-server.exe",
+          "requiredForState": false,
+          "exposeCommand": true
+        },
+        {
+          "name": "llama-quantize",
+          "relativePath": "llama-quantize.exe",
+          "requiredForState": false,
+          "exposeCommand": true
+        },
+        {
+          "name": "llama-bench",
+          "relativePath": "llama-bench.exe",
+          "requiredForState": false,
+          "exposeCommand": true
+        },
+        {
+          "name": "llama-tokenize",
+          "relativePath": "llama-tokenize.exe",
+          "requiredForState": false,
+          "exposeCommand": true
+        }
+      ],
+      "apps": [],
+      "metadataFiles": [],
+      "signatures": [],
+      "fileDetails": [],
+      "registry": [],
+      "powerShellModules": []
+    },
+    "existingInstall": {
+      "enabled": false,
+      "searchLocations": [],
+      "installRootRules": []
+    }
+  },
+  "packageOperations": {
+    "policy": {
+      "ownershipPolicy": {
+        "allowAdoptExternal": false,
+        "upgradeAdoptedInstall": false,
+        "requirePackageOwnership": false
+      },
+      "compatibility": {
+        "checks": [
+          {
+            "kind": "osVersion",
+            "operator": ">=",
+            "value": "10.0"
+          }
+        ]
+      }
+    },
+    "assigned": {
+      "install": {
+        "kind": "expandArchive",
+        "installDirectory": "llama-cpp-runtime/{releaseTrack}/{version}/{artifactDistributionVariant}",
+        "expandedRoot": "auto",
+        "createDirectories": []
+      },
+      "readyStateCheck": {
+        "use": "discovery.presence",
+        "expectedVersion": "{version}",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "pathRegistration": {
+        "mode": "user",
+        "source": {
+          "kind": "shim",
+          "use": "discovery.presence.commands"
+        }
+      },
+      "versionUpdatePolicy": {
+        "whenAssigned": "trackSelectedVersion",
+        "onSameSelectedVersion": "reuseOrRepair",
+        "onNewSelectedVersion": "replacePackageOwnedInstall"
+      }
+    },
+    "removed": {
+      "policy": {
+        "whenNotInInventory": "succeed",
+        "allowedInventoryOwnershipKinds": [
+          "PackageInstalled"
+        ],
+        "allowUntrackedExternalRemoval": false,
+        "removeDependencies": false
+      },
+      "operation": {
+        "kind": "deleteInstallDirectory",
+        "pathSource": "inventory.installDirectory"
+      },
+      "absenceVerification": {
+        "use": "discovery.presence",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "postRemoveCleanup": {
+        "packageInventoryRecord": true,
+        "generatedShims": true,
+        "pathEntries": true,
+        "workDirectories": true
+      }
+    }
+  }
+}

@@ -1,0 +1,253 @@
+{
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.6.schema.json",
+  "schemaVersion": "1.6",
+  "definitionPublication": {
+    "publisherId": "Eigenverft",
+    "publisherName": "Eigenverft",
+    "definitionId": "VSCodeUser",
+    "definitionRevision": 2,
+    "publishedAtUtc": "2026-05-22T12:00:00Z"
+  },
+  "$comment": "Schema-first draft for Visual Studio Code Windows user setup (x64). Acquisition URL and sha256 come from the VS Code update service; silent-install flags follow https://code.visualstudio.com/docs/setup/windows (Inno Setup + /mergetasks=!runcode).",
+  "display": {
+    "default": {
+      "name": "Visual Studio Code (User)",
+      "publisher": "Microsoft",
+      "corporation": "Microsoft Corporation",
+      "summary": "VS Code Windows user installer (per-user under LocalAppData, no admin elevation). Preferred Windows install path per Microsoft documentation."
+    }
+  },
+  "dependencies": [],
+  "artifacts": {
+    "targets": [
+      {
+        "id": "windows_user_x64",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "windows_user_amd64",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "x64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        },
+        "fileNameTemplate": "VSCodeUserSetup-x64-{version}.exe",
+        "acquisitionCandidates": [
+          {
+            "kind": "download",
+            "sourceId": "vscodeStableUserX64",
+            "sourcePath": "{version}/win32-x64-user/stable",
+            "searchOrder": 0,
+            "verification": {
+              "mode": "required"
+            }
+          }
+        ]
+      }
+    ],
+    "releases": [
+      {
+        "version": "1.121.0",
+        "releaseTracks": [
+          "stable"
+        ],
+        "targetArtifacts": {
+          "windows_user_x64": {
+            "artifactId": "vscode-user-x64-1.121.0",
+            "fileName": "VSCodeUserSetup-x64-1.121.0.exe",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "5751cbf2552c8dda452df5720e3228627b3234862d0eb7346f9e57f20386561f"
+            }
+          }
+        }
+      },
+      {
+        "version": "1.119.0",
+        "releaseTracks": [
+          "stable"
+        ],
+        "targetArtifacts": {
+          "windows_user_x64": {
+            "artifactId": "vscode-user-x64-1.119.0",
+            "fileName": "VSCodeUserSetup-x64-1.119.0.exe",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "8c3cf83d67f27a24ecb95812163f928f7404279a87681ec6fdb594095cc8271d"
+            }
+          }
+        }
+      }
+    ],
+    "sources": {
+      "vscodeStableUserX64": {
+        "kind": "download",
+        "baseUri": "https://update.code.visualstudio.com/"
+      }
+    }
+  },
+  "discovery": {
+    "presence": {
+      "files": [
+        "Code.exe"
+      ],
+      "directories": [
+        "bin",
+        "resources"
+      ],
+      "commands": [
+        {
+          "name": "code",
+          "relativePath": "bin\\code.cmd",
+          "requiredForState": true,
+          "exposeCommand": true
+        }
+      ],
+      "apps": [],
+      "metadataFiles": [],
+      "signatures": [
+        {
+          "relativePath": "Code.exe",
+          "requireValid": true,
+          "subjectContains": "Microsoft Corporation"
+        }
+      ],
+      "fileDetails": [],
+      "registry": [],
+      "powerShellModules": []
+    },
+    "existingInstall": {
+      "enabled": true,
+      "searchLocations": [
+        {
+          "id": "vscodeUserUninstallRegistry",
+          "kind": "windowsUninstallRegistryKey",
+          "searchOrder": 100,
+          "paths": [
+            "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{771FD6B0-FA20-440A-A002-3B3BAC16DC50}_is1"
+          ],
+          "installDirectorySource": "installLocation"
+        }
+      ],
+      "installRootRules": []
+    }
+  },
+  "packageOperations": {
+    "policy": {
+      "ownershipPolicy": {
+        "allowAdoptExternal": true,
+        "upgradeAdoptedInstall": false,
+        "requirePackageOwnership": false
+      },
+      "compatibility": {
+        "checks": []
+      }
+    },
+    "assigned": {
+      "install": {
+        "kind": "innoSetupInstaller",
+        "installDirectory": "%LOCALAPPDATA%\\Programs\\Microsoft VS Code",
+        "uiMode": "silent",
+        "elevation": "none",
+        "timeoutSec": 1200,
+        "commandArguments": [
+          "/VERYSILENT",
+          "/NORESTART",
+          "/SUPPRESSMSGBOXES",
+          "/MERGETASKS=!runcode"
+        ],
+        "targetDirectoryArgument": {
+          "enabled": true,
+          "prefix": "/DIR=",
+          "quoteValue": true
+        }
+      },
+      "readyStateCheck": {
+        "use": "discovery.presence",
+        "expectedVersion": "{version}",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "pathRegistration": {
+        "mode": "user",
+        "source": {
+          "kind": "shim",
+          "use": "discovery.presence.commands"
+        }
+      },
+      "versionUpdatePolicy": {
+        "whenAssigned": "trackSelectedVersion",
+        "onSameSelectedVersion": "reuseOrRepair",
+        "onNewSelectedVersion": "replacePackageOwnedInstall"
+      }
+    },
+    "removed": {
+      "policy": {
+        "whenNotInInventory": "succeed",
+        "allowedInventoryOwnershipKinds": [
+          "PackageInstalled",
+          "AdoptedExternal"
+        ],
+        "allowUntrackedExternalRemoval": false,
+        "removeDependencies": false
+      },
+      "operation": {
+        "kind": "innoSetupUninstaller",
+        "commandSource": {
+          "use": "discovery.existingInstall",
+          "searchLocationId": "vscodeUserUninstallRegistry",
+          "registryValueOrder": [
+            "QuietUninstallString",
+            "UninstallString"
+          ]
+        },
+        "commandArguments": [
+          "/VERYSILENT",
+          "/SUPPRESSMSGBOXES",
+          "/NORESTART"
+        ],
+        "elevation": "none",
+        "timeoutSec": 1200,
+        "successExitCodes": [
+          0
+        ],
+        "restartExitCodes": [],
+        "uiMode": "silent"
+      },
+      "absenceVerification": {
+        "use": "discovery.presence",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": false,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "postRemoveCleanup": {
+        "packageInventoryRecord": true,
+        "generatedShims": true,
+        "pathEntries": true,
+        "workDirectories": true
+      }
+    }
+  }
+}

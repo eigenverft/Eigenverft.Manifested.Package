@@ -1,0 +1,36 @@
+{
+  "package": {
+    "applicationRootDirectory": "%LOCALAPPDATA%/Programs/Evf.Sandbox",
+    "preferredTargetInstallDirectory": "{applicationRootDirectory}/Inst",
+    "localEndpointRoot": "{applicationRootDirectory}/PkgEndpoint",
+    "shimDirectory": "{applicationRootDirectory}/Shims",
+    "layout": {
+      "packageDepotRelativePath": "{definitionId}/{releaseTrack}/{version}/{artifactDistributionVariant}",
+      "packageWorkSlotDirectory": "{definitionId}-{slotHash}"
+    },
+    "acquisitionEnvironment": {
+      "stores": {
+        "packageFileStagingDirectory": "{applicationRootDirectory}/FileStage",
+        "packageInstallStageDirectory": "{applicationRootDirectory}/InstStage"
+      },
+      "defaults": {
+        "allowFallback": true,
+        "depotDistributionMode": "packageFocused"
+      }
+    },
+    "endpointEnvironment": {
+      "defaults": {
+        "endpointMaterializationMode": "packageFocused",
+        "definitionPublisherConflictMode": "fail"
+      }
+    },
+    "packageState": {
+      "inventoryFilePath": "{applicationRootDirectory}/State/PackageAssignmentInventory.json",
+      "operationHistoryFilePath": "{applicationRootDirectory}/State/PackageOperationHistory.json"
+    },
+    "selectionDefaults": {
+      "releaseTrack": "stable",
+      "strategy": "latestByVersion"
+    }
+  }
+}

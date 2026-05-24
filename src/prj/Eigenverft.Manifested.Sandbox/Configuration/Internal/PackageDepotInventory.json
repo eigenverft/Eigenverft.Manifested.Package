@@ -1,0 +1,41 @@
+{
+  "inventoryVersion": 1,
+  "acquisitionEnvironment": {
+    "environmentSources": {
+      "defaultPackageDepot": {
+        "kind": "filesystem",
+        "enabled": true,
+        "searchOrder": 100,
+        "basePath": "{applicationRootDirectory}/PkgDepot",
+        "readable": true,
+        "writable": true,
+        "mirrorTarget": true,
+        "ensureExists": true
+      },
+      "sitePackageDepot": {
+        "kind": "filesystem",
+        "enabled": false,
+        "searchOrder": 200,
+        "siteCodes": [
+          "BER",
+          "PD"
+        ],
+        "basePath": "\\\\site-server\\share\\PackageDepot",
+        "readable": true,
+        "writable": false,
+        "mirrorTarget": false,
+        "ensureExists": false
+      },
+      "corpPackageDepot": {
+        "kind": "filesystem",
+        "enabled": false,
+        "searchOrder": 300,
+        "basePath": "\\\\corp-server\\share\\PackageDepot",
+        "readable": true,
+        "writable": false,
+        "mirrorTarget": false,
+        "ensureExists": false
+      }
+    }
+  }
+}

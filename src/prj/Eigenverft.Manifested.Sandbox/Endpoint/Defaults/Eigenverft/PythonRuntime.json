@@ -1,0 +1,289 @@
+{
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.6.schema.json",
+  "schemaVersion": "1.6",
+  "definitionPublication": {
+    "publisherId": "Eigenverft",
+    "publisherName": "Eigenverft",
+    "definitionId": "PythonRuntime",
+    "definitionRevision": 2,
+    "publishedAtUtc": "2026-05-22T12:00:00Z"
+  },
+  "display": {
+    "default": {
+      "name": "Python",
+      "publisher": "Python Software Foundation",
+      "corporation": "Python Software Foundation",
+      "summary": "Portable Python runtime from the official NuGet package"
+    }
+  },
+  "dependencies": [],
+  "artifacts": {
+    "targets": [
+      {
+        "id": "PythonRuntime-win-x64-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "win-x64",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "x64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        },
+        "fileNameTemplate": "python.{version}.nupkg",
+        "acquisitionCandidates": [
+          {
+            "kind": "packageDepot",
+            "searchOrder": 100,
+            "verification": {
+              "mode": "optional"
+            }
+          },
+          {
+            "kind": "download",
+            "sourceId": "pythonNuGetPackage",
+            "sourcePath": "python/{version}/python.{version}.nupkg",
+            "searchOrder": 900,
+            "verification": {
+              "mode": "required"
+            }
+          }
+        ]
+      },
+      {
+        "id": "PythonRuntime-win-arm64-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "win-arm64",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "arm64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        },
+        "fileNameTemplate": "pythonarm64.{version}.nupkg",
+        "acquisitionCandidates": [
+          {
+            "kind": "packageDepot",
+            "searchOrder": 100,
+            "verification": {
+              "mode": "optional"
+            }
+          },
+          {
+            "kind": "download",
+            "sourceId": "pythonNuGetPackage",
+            "sourcePath": "pythonarm64/{version}/pythonarm64.{version}.nupkg",
+            "searchOrder": 900,
+            "verification": {
+              "mode": "required"
+            }
+          }
+        ]
+      }
+    ],
+    "releases": [
+      {
+        "version": "3.14.5",
+        "releaseTracks": [
+          "stable"
+        ],
+        "upstreamRelease": {
+          "sourceId": "pythonNuGetPackage",
+          "releaseTag": "3.14.5"
+        },
+        "targetArtifacts": {
+          "PythonRuntime-win-x64-stable": {
+            "artifactId": "python-runtime-win-x64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "03ad5810986afd8273a34a28c15cb594300ba7f4749f24362d69206fa1b6ac15"
+            }
+          },
+          "PythonRuntime-win-arm64-stable": {
+            "artifactId": "python-runtime-win-arm64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "ff4558830622fb904923dd8b68132a1971b6cd688b04d28623c9f3953079409a"
+            }
+          }
+        }
+      },
+      {
+        "version": "3.13.13",
+        "releaseTracks": [
+          "stable"
+        ],
+        "upstreamRelease": {
+          "sourceId": "pythonNuGetPackage",
+          "releaseTag": "3.13.13"
+        },
+        "targetArtifacts": {
+          "PythonRuntime-win-x64-stable": {
+            "artifactId": "python-runtime-win-x64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "c2347c2975f661b2dafceacc94218dfe87781955a3cd309c633d343b8c8dac31"
+            }
+          },
+          "PythonRuntime-win-arm64-stable": {
+            "artifactId": "python-runtime-win-arm64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "2a0406b834d4ff33414f70597b67797466ba2344baa534ab8f62c4eae1c3e599"
+            }
+          }
+        }
+      }
+    ],
+    "sources": {
+      "pythonNuGetPackage": {
+        "kind": "download",
+        "baseUri": "https://api.nuget.org/v3-flatcontainer/"
+      }
+    }
+  },
+  "discovery": {
+    "presence": {
+      "files": [
+        "python.exe"
+      ],
+      "directories": [
+        "Lib/site-packages/pip"
+      ],
+      "commands": [
+        {
+          "name": "python",
+          "relativePath": "python.exe",
+          "requiredForState": true,
+          "exposeCommand": true,
+          "stateChecks": [
+            {
+              "arguments": [
+                "--version"
+              ],
+              "outputPattern": "(?m)^Python\\s+(?<value>\\d+\\.\\d+\\.\\d+)\\s*$",
+              "expectedValue": "{version}"
+            },
+            {
+              "arguments": [
+                "-m",
+                "pip",
+                "--version"
+              ],
+              "outputPattern": "(?m)^pip\\s+(?<value>\\d+\\.\\d+(?:\\.\\d+)?(?:[-+][0-9A-Za-z.\\-]+)?)\\s+from\\s+.+$"
+            }
+          ]
+        }
+      ],
+      "apps": [],
+      "metadataFiles": [],
+      "signatures": [],
+      "fileDetails": [],
+      "registry": [],
+      "powerShellModules": []
+    },
+    "existingInstall": {
+      "enabled": false,
+      "searchLocations": [],
+      "installRootRules": []
+    }
+  },
+  "packageOperations": {
+    "policy": {
+      "ownershipPolicy": {
+        "allowAdoptExternal": false,
+        "upgradeAdoptedInstall": false,
+        "requirePackageOwnership": true
+      },
+      "compatibility": {
+        "checks": [
+          {
+            "kind": "osVersion",
+            "operator": ">=",
+            "value": "10.0"
+          }
+        ]
+      }
+    },
+    "assigned": {
+      "install": {
+        "kind": "expandArchive",
+        "installDirectory": "python-runtime/{releaseTrack}/{version}/{artifactDistributionVariant}",
+        "expandedRoot": "tools",
+        "createDirectories": []
+      },
+      "readyStateCheck": {
+        "use": "discovery.presence",
+        "expectedVersion": "{version}",
+        "require": {
+          "files": true,
+          "directories": true,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "pathRegistration": {
+        "mode": "user",
+        "source": {
+          "kind": "shim",
+          "use": "discovery.presence.commands"
+        }
+      },
+      "versionUpdatePolicy": {
+        "whenAssigned": "trackSelectedVersion",
+        "onSameSelectedVersion": "reuseOrRepair",
+        "onNewSelectedVersion": "replacePackageOwnedInstall"
+      }
+    },
+    "removed": {
+      "policy": {
+        "whenNotInInventory": "succeed",
+        "allowedInventoryOwnershipKinds": [
+          "PackageInstalled"
+        ],
+        "allowUntrackedExternalRemoval": false,
+        "removeDependencies": false
+      },
+      "operation": {
+        "kind": "deleteInstallDirectory",
+        "pathSource": "inventory.installDirectory"
+      },
+      "absenceVerification": {
+        "use": "discovery.presence",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "postRemoveCleanup": {
+        "packageInventoryRecord": true,
+        "generatedShims": true,
+        "pathEntries": true,
+        "workDirectories": true
+      }
+    }
+  }
+}

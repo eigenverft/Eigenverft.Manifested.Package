@@ -1,0 +1,218 @@
+{
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.6.schema.json",
+  "schemaVersion": "1.6",
+  "definitionPublication": {
+    "publisherId": "Eigenverft",
+    "publisherName": "Eigenverft",
+    "definitionId": "OpenCodeCli",
+    "definitionRevision": 2,
+    "publishedAtUtc": "2026-05-21T12:00:00Z"
+  },
+  "display": {
+    "default": {
+      "name": "OpenCode CLI",
+      "publisher": "SST",
+      "corporation": "SST",
+      "summary": "Pinned OpenCode CLI npm runtime"
+    }
+  },
+  "dependencies": [
+    {
+      "definitionId": "NodeRuntime"
+    }
+  ],
+  "artifacts": {
+    "targets": [
+      {
+        "id": "OpenCodeCli-win32-x64-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "win32-x64",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "x64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        }
+      },
+      {
+        "id": "OpenCodeCli-win32-arm64-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "win32-arm64",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "arm64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        }
+      }
+    ],
+    "releases": [
+      {
+        "version": "1.15.7",
+        "releaseTracks": [
+          "stable"
+        ],
+        "targetArtifacts": {
+          "OpenCodeCli-win32-x64-stable": {
+            "artifactId": "opencode-runtime-win32-x64-stable"
+          },
+          "OpenCodeCli-win32-arm64-stable": {
+            "artifactId": "opencode-runtime-win32-arm64-stable"
+          }
+        }
+      },
+      {
+        "version": "1.14.46",
+        "releaseTracks": [
+          "stable"
+        ],
+        "targetArtifacts": {
+          "OpenCodeCli-win32-x64-stable": {
+            "artifactId": "opencode-runtime-win32-x64-stable"
+          },
+          "OpenCodeCli-win32-arm64-stable": {
+            "artifactId": "opencode-runtime-win32-arm64-stable"
+          }
+        }
+      }
+    ],
+    "sources": {}
+  },
+  "discovery": {
+    "presence": {
+      "files": [
+        "opencode.cmd",
+        "node_modules/opencode-ai/package.json"
+      ],
+      "directories": [
+        "node_modules"
+      ],
+      "commands": [
+        {
+          "name": "opencode",
+          "relativePath": "opencode.cmd",
+          "requiredForState": true,
+          "exposeCommand": true,
+          "stateChecks": [
+            {
+              "arguments": [
+                "--version"
+              ],
+              "outputPattern": "(?m)^(?<value>.+\\S.*)$"
+            }
+          ]
+        }
+      ],
+      "apps": [],
+      "metadataFiles": [],
+      "signatures": [],
+      "fileDetails": [],
+      "registry": [],
+      "powerShellModules": []
+    },
+    "existingInstall": {
+      "enabled": false,
+      "searchLocations": [],
+      "installRootRules": []
+    }
+  },
+  "packageOperations": {
+    "policy": {
+      "ownershipPolicy": {
+        "allowAdoptExternal": false,
+        "upgradeAdoptedInstall": false,
+        "requirePackageOwnership": true
+      },
+      "compatibility": {
+        "checks": [
+          {
+            "kind": "osVersion",
+            "operator": ">=",
+            "value": "10.0"
+          }
+        ]
+      }
+    },
+    "assigned": {
+      "install": {
+        "kind": "npmMaterializedInstallGlobalPackage",
+        "installerCommand": "npm",
+        "packageSpec": "opencode-ai@{version}",
+        "installDirectory": "opencode-runtime/{releaseTrack}/{version}/{artifactDistributionVariant}"
+      },
+      "readyStateCheck": {
+        "use": "discovery.presence",
+        "expectedVersion": "{version}",
+        "require": {
+          "files": true,
+          "directories": true,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "pathRegistration": {
+        "mode": "user",
+        "source": {
+          "kind": "shim",
+          "use": "discovery.presence.commands"
+        }
+      },
+      "versionUpdatePolicy": {
+        "whenAssigned": "trackSelectedVersion",
+        "onSameSelectedVersion": "reuseOrRepair",
+        "onNewSelectedVersion": "replacePackageOwnedInstall"
+      }
+    },
+    "removed": {
+      "policy": {
+        "whenNotInInventory": "succeed",
+        "allowedInventoryOwnershipKinds": [
+          "PackageInstalled"
+        ],
+        "allowUntrackedExternalRemoval": false,
+        "removeDependencies": false
+      },
+      "operation": {
+        "kind": "deleteInstallDirectory",
+        "pathSource": "inventory.installDirectory"
+      },
+      "absenceVerification": {
+        "use": "discovery.presence",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "postRemoveCleanup": {
+        "packageInventoryRecord": true,
+        "generatedShims": true,
+        "pathEntries": true,
+        "workDirectories": true
+      }
+    }
+  }
+}

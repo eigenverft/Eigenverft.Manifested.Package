@@ -1,0 +1,335 @@
+{
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.6.schema.json",
+  "schemaVersion": "1.6",
+  "definitionPublication": {
+    "publisherId": "Eigenverft",
+    "publisherName": "Eigenverft",
+    "definitionId": "VSCodeRuntime",
+    "definitionRevision": 2,
+    "publishedAtUtc": "2026-05-22T12:00:00Z"
+  },
+  "display": {
+    "default": {
+      "name": "Visual Studio Code",
+      "publisher": "Microsoft",
+      "corporation": "Microsoft Corporation",
+      "summary": "Code editor"
+    }
+  },
+  "dependencies": [],
+  "artifacts": {
+    "targets": [
+      {
+        "id": "VSCodeRuntime-win32-x64-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "win32-x64",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "x64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        },
+        "fileNameTemplate": "VSCode-win32-x64-{version}.zip",
+        "acquisitionCandidates": [
+          {
+            "kind": "packageDepot",
+            "searchOrder": 100,
+            "verification": {
+              "mode": "optional"
+            }
+          },
+          {
+            "kind": "download",
+            "sourceId": "vsCodeUpdateService",
+            "searchOrder": 900,
+            "sourcePath": "{version}/win32-x64-archive/stable",
+            "verification": {
+              "mode": "required"
+            }
+          }
+        ]
+      },
+      {
+        "id": "VSCodeRuntime-win32-arm64-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "win32-arm64",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "arm64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        },
+        "fileNameTemplate": "VSCode-win32-arm64-{version}.zip",
+        "acquisitionCandidates": [
+          {
+            "kind": "packageDepot",
+            "searchOrder": 100,
+            "verification": {
+              "mode": "optional"
+            }
+          },
+          {
+            "kind": "download",
+            "sourceId": "vsCodeUpdateService",
+            "searchOrder": 900,
+            "sourcePath": "{version}/win32-arm64-archive/stable",
+            "verification": {
+              "mode": "required"
+            }
+          }
+        ]
+      }
+    ],
+    "releases": [
+      {
+        "version": "1.121.0",
+        "releaseTracks": [
+          "stable"
+        ],
+        "targetArtifacts": {
+          "VSCodeRuntime-win32-x64-stable": {
+            "artifactId": "vsCode-win-x64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "519e145e572f8ad7a8146399354e7c57b42ad5d02d67d567092a51aac3fb927b"
+            }
+          },
+          "VSCodeRuntime-win32-arm64-stable": {
+            "artifactId": "vsCode-win-arm64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "d49aed455b3c62578874fe05648ca91ea047b7a8f6548951260a739461558b99"
+            }
+          }
+        }
+      },
+      {
+        "version": "1.119.0",
+        "releaseTracks": [
+          "stable"
+        ],
+        "targetArtifacts": {
+          "VSCodeRuntime-win32-x64-stable": {
+            "artifactId": "vsCode-win-x64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "fea13bf400c6770dd14eeabc0e47757ffe2703f1a3f2a258faa22bce3bdd21af"
+            }
+          },
+          "VSCodeRuntime-win32-arm64-stable": {
+            "artifactId": "vsCode-win-arm64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "7e40617507cb917fdaa7b7f6312c3202352e2f2db102e80d28b80d2fee99e2ed"
+            }
+          }
+        }
+      }
+    ],
+    "sources": {
+      "vsCodeUpdateService": {
+        "kind": "download",
+        "baseUri": "https://update.code.visualstudio.com"
+      }
+    }
+  },
+  "discovery": {
+    "presence": {
+      "files": [
+        "Code.exe",
+        "bin/code.cmd"
+      ],
+      "directories": [
+        "data"
+      ],
+      "commands": [
+        {
+          "name": "code",
+          "relativePath": "bin/code.cmd",
+          "requiredForState": true,
+          "exposeCommand": true,
+          "stateChecks": [
+            {
+              "arguments": [
+                "--version"
+              ],
+              "outputPattern": "(?m)^(?<value>\\d+\\.\\d+\\.\\d+)\\s*$",
+              "expectedValue": "{version}"
+            }
+          ]
+        }
+      ],
+      "apps": [
+        {
+          "name": "Code",
+          "relativePath": "Code.exe",
+          "requiredForState": true,
+          "exposeApp": true
+        }
+      ],
+      "metadataFiles": [],
+      "signatures": [
+        {
+          "relativePath": "Code.exe",
+          "requireValid": true,
+          "subjectContains": "Microsoft Corporation"
+        }
+      ],
+      "fileDetails": [
+        {
+          "relativePath": "Code.exe",
+          "productName": "Visual Studio Code",
+          "fileDescription": "Visual Studio Code"
+        }
+      ],
+      "registry": [],
+      "powerShellModules": []
+    },
+    "existingInstall": {
+      "enabled": true,
+      "searchLocations": [
+        {
+          "id": "vsCodeCommandCodeCmd",
+          "kind": "command",
+          "searchOrder": 100,
+          "name": "code.cmd"
+        },
+        {
+          "id": "vsCodeCommandCode",
+          "kind": "command",
+          "searchOrder": 110,
+          "name": "code"
+        },
+        {
+          "id": "vsCodeProgramFilesCodeCmd",
+          "kind": "path",
+          "searchOrder": 120,
+          "path": "%ProgramFiles%/Microsoft VS Code/bin/code.cmd"
+        },
+        {
+          "id": "vsCodeLocalAppDataCodeCmd",
+          "kind": "path",
+          "searchOrder": 130,
+          "path": "%LOCALAPPDATA%/Programs/Microsoft VS Code/bin/code.cmd"
+        }
+      ],
+      "installRootRules": [
+        {
+          "match": {
+            "kind": "fileName",
+            "value": "code.cmd"
+          },
+          "installRootRelativePath": ".."
+        },
+        {
+          "match": {
+            "kind": "fileName",
+            "value": "Code.exe"
+          },
+          "installRootRelativePath": "."
+        }
+      ]
+    }
+  },
+  "packageOperations": {
+    "policy": {
+      "ownershipPolicy": {
+        "allowAdoptExternal": true,
+        "upgradeAdoptedInstall": true,
+        "requirePackageOwnership": false
+      },
+      "compatibility": {
+        "checks": [
+          {
+            "kind": "osVersion",
+            "operator": ">=",
+            "value": "10.0"
+          }
+        ]
+      }
+    },
+    "assigned": {
+      "install": {
+        "kind": "expandArchive",
+        "installDirectory": "vsc-rt/{releaseTrack}/{version}/{artifactDistributionVariant}",
+        "expandedRoot": "auto",
+        "createDirectories": [
+          "data"
+        ]
+      },
+      "readyStateCheck": {
+        "use": "discovery.presence",
+        "expectedVersion": "{version}",
+        "require": {
+          "files": true,
+          "directories": true,
+          "commands": true,
+          "apps": true,
+          "metadataFiles": true,
+          "signatures": true,
+          "fileDetails": true,
+          "registry": true,
+          "powerShellModules": false
+        }
+      },
+      "pathRegistration": {
+        "mode": "user",
+        "source": {
+          "kind": "shim",
+          "use": "discovery.presence.commands"
+        }
+      },
+      "versionUpdatePolicy": {
+        "whenAssigned": "trackSelectedVersion",
+        "onSameSelectedVersion": "reuseOrRepair",
+        "onNewSelectedVersion": "replacePackageOwnedInstall"
+      }
+    },
+    "removed": {
+      "policy": {
+        "whenNotInInventory": "succeed",
+        "allowedInventoryOwnershipKinds": [
+          "PackageInstalled"
+        ],
+        "allowUntrackedExternalRemoval": false,
+        "removeDependencies": false
+      },
+      "operation": {
+        "kind": "deleteInstallDirectory",
+        "pathSource": "inventory.installDirectory"
+      },
+      "absenceVerification": {
+        "use": "discovery.presence",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "postRemoveCleanup": {
+        "packageInventoryRecord": true,
+        "generatedShims": true,
+        "pathEntries": true,
+        "workDirectories": true
+      }
+    }
+  }
+}

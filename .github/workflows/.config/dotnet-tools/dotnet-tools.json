@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "Eigenverft.Distributed.Drydock": {
+      "version": "0.1.20257.10053-dev",
+      "commands": [
+        "drydock"
+      ],
+      "rollForward": false
+    }
+  }
+}

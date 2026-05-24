@@ -1,0 +1,12 @@
+{
+  "inventoryVersion": 1,
+  "publishers": [
+    {
+      "publisherId": "Eigenverft",
+      "publisherName": "Eigenverft",
+      "enabled": true,
+      "trusted": true,
+      "trustMode": "moduleShipped"
+    }
+  ]
+}

@@ -1,0 +1,273 @@
+{
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.6.schema.json",
+  "schemaVersion": "1.6",
+  "definitionPublication": {
+    "publisherId": "Eigenverft",
+    "publisherName": "Eigenverft",
+    "definitionId": "SevenZip",
+    "definitionRevision": 1,
+    "publishedAtUtc": "2026-05-23T12:00:00Z"
+  },
+  "display": {
+    "default": {
+      "name": "7-Zip",
+      "publisher": "Igor Pavlov",
+      "corporation": "Igor Pavlov",
+      "summary": "Pinned 7-Zip MSI package"
+    }
+  },
+  "dependencies": [],
+  "artifacts": {
+    "targets": [
+      {
+        "id": "SevenZip-win-x64-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "win-x64",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "x64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        },
+        "fileNameTemplate": "7z{releaseTag}-x64.msi",
+        "acquisitionCandidates": [
+          {
+            "kind": "packageDepot",
+            "searchOrder": 100,
+            "verification": {
+              "mode": "required"
+            }
+          },
+          {
+            "kind": "download",
+            "sourceId": "sevenZipGitHubRelease",
+            "sourcePath": "{version}/7z{releaseTag}-x64.msi",
+            "searchOrder": 900,
+            "verification": {
+              "mode": "required"
+            }
+          }
+        ]
+      }
+    ],
+    "releases": [
+      {
+        "version": "26.01",
+        "releaseTracks": [
+          "stable"
+        ],
+        "upstreamRelease": {
+          "sourceId": "sevenZipGitHubRelease",
+          "releaseTag": "2601"
+        },
+        "targetArtifacts": {
+          "SevenZip-win-x64-stable": {
+            "artifactId": "sevenzip-msi-win-x64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "a47ea8dcf8bc08e6de474cae77c828e031fa22cb528f6095defffebf11cd02f2"
+            }
+          }
+        }
+      }
+    ],
+    "sources": {
+      "sevenZipGitHubRelease": {
+        "kind": "download",
+        "baseUri": "https://github.com/ip7z/7zip/releases/download/"
+      }
+    }
+  },
+  "discovery": {
+    "presence": {
+      "files": [
+        "7z.exe",
+        "7zFM.exe"
+      ],
+      "directories": [],
+      "commands": [
+        {
+          "name": "7z",
+          "relativePath": "7z.exe",
+          "requiredForState": true,
+          "exposeCommand": true,
+          "stateChecks": [
+            {
+              "arguments": [],
+              "outputPattern": "(?m)^7-Zip\\s+(?<value>\\d+\\.\\d+)\\s+",
+              "expectedValue": "{version}"
+            }
+          ]
+        }
+      ],
+      "apps": [
+        {
+          "name": "7-Zip File Manager",
+          "relativePath": "7zFM.exe",
+          "requiredForState": false,
+          "exposeApp": true
+        }
+      ],
+      "metadataFiles": [],
+      "signatures": [],
+      "fileDetails": [],
+      "registry": [],
+      "powerShellModules": []
+    },
+    "existingInstall": {
+      "enabled": true,
+      "searchLocations": [
+        {
+          "id": "sevenZipUninstallRegistry",
+          "kind": "windowsUninstallRegistrySearch",
+          "searchOrder": 100,
+          "rootPaths": [
+            "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
+            "HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
+            "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
+          ],
+          "displayNamePatterns": [
+            "7-Zip* (x64)*"
+          ],
+          "publisherPatterns": [
+            "Igor Pavlov"
+          ],
+          "installDirectorySource": "installLocation"
+        }
+      ],
+      "installRootRules": []
+    }
+  },
+  "packageOperations": {
+    "policy": {
+      "ownershipPolicy": {
+        "allowAdoptExternal": true,
+        "upgradeAdoptedInstall": true,
+        "requirePackageOwnership": false
+      },
+      "compatibility": {
+        "checks": [
+          {
+            "kind": "osVersion",
+            "operator": ">=",
+            "value": "10.0"
+          }
+        ]
+      }
+    },
+    "assigned": {
+      "install": {
+        "kind": "msiInstaller",
+        "installDirectory": "7zip/{releaseTrack}/{version}/{artifactDistributionVariant}",
+        "uiMode": "silent",
+        "elevation": "required",
+        "timeoutSec": 600,
+        "commandArguments": [
+          "/qn",
+          "/norestart"
+        ],
+        "targetDirectoryProperty": {
+          "enabled": true,
+          "name": "INSTALLDIR"
+        },
+        "successExitCodes": [
+          0,
+          3010
+        ],
+        "restartExitCodes": [
+          3010
+        ]
+      },
+      "readyStateCheck": {
+        "use": "discovery.presence",
+        "expectedVersion": "{version}",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "pathRegistration": {
+        "mode": "user",
+        "source": {
+          "kind": "shim",
+          "use": "discovery.presence.commands"
+        }
+      },
+      "versionUpdatePolicy": {
+        "whenAssigned": "trackSelectedVersion",
+        "onSameSelectedVersion": "reuseOrRepair",
+        "onNewSelectedVersion": "replacePackageOwnedInstall"
+      }
+    },
+    "removed": {
+      "policy": {
+        "whenNotInInventory": "succeed",
+        "allowedInventoryOwnershipKinds": [
+          "PackageInstalled",
+          "AdoptedExternal"
+        ],
+        "allowUntrackedExternalRemoval": false,
+        "removeDependencies": false
+      },
+      "operation": {
+        "kind": "msiUninstaller",
+        "commandSource": {
+          "use": "discovery.existingInstall",
+          "searchLocationId": "sevenZipUninstallRegistry",
+          "registryValueOrder": [
+            "QuietUninstallString",
+            "UninstallString"
+          ]
+        },
+        "commandArguments": [
+          "/qn",
+          "/norestart"
+        ],
+        "elevation": "required",
+        "timeoutSec": 600,
+        "successExitCodes": [
+          0,
+          1605,
+          3010
+        ],
+        "restartExitCodes": [
+          3010
+        ],
+        "uiMode": "silent"
+      },
+      "absenceVerification": {
+        "use": "discovery.presence",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "postRemoveCleanup": {
+        "packageInventoryRecord": true,
+        "generatedShims": true,
+        "pathEntries": true,
+        "workDirectories": true
+      }
+    }
+  }
+}

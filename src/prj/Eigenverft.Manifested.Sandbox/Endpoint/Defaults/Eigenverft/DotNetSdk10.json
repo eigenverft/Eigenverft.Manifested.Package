@@ -1,0 +1,257 @@
+{
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.6.schema.json",
+  "schemaVersion": "1.6",
+  "definitionPublication": {
+    "publisherId": "Eigenverft",
+    "publisherName": "Eigenverft",
+    "definitionId": "DotNetSdk10",
+    "definitionRevision": 1,
+    "publishedAtUtc": "2026-05-23T12:00:00Z"
+  },
+  "display": {
+    "default": {
+      "name": ".NET SDK 10",
+      "publisher": "Microsoft",
+      "corporation": "Microsoft Corporation",
+      "summary": "Portable .NET 10 SDK"
+    }
+  },
+  "dependencies": [],
+  "artifacts": {
+    "targets": [
+      {
+        "id": "DotNetSdk10-win-x64-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "win-x64",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "x64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        },
+        "fileNameTemplate": "dotnet-sdk-{version}-win-x64.zip",
+        "acquisitionCandidates": [
+          {
+            "kind": "packageDepot",
+            "searchOrder": 100,
+            "verification": {
+              "mode": "optional"
+            }
+          },
+          {
+            "kind": "download",
+            "sourceId": "dotNetBuilds",
+            "sourcePath": "Sdk/{version}/dotnet-sdk-{version}-win-x64.zip",
+            "searchOrder": 900,
+            "verification": {
+              "mode": "required"
+            }
+          }
+        ]
+      },
+      {
+        "id": "DotNetSdk10-win-arm64-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "win-arm64",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "arm64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        },
+        "fileNameTemplate": "dotnet-sdk-{version}-win-arm64.zip",
+        "acquisitionCandidates": [
+          {
+            "kind": "packageDepot",
+            "searchOrder": 100,
+            "verification": {
+              "mode": "optional"
+            }
+          },
+          {
+            "kind": "download",
+            "sourceId": "dotNetBuilds",
+            "sourcePath": "Sdk/{version}/dotnet-sdk-{version}-win-arm64.zip",
+            "searchOrder": 900,
+            "verification": {
+              "mode": "required"
+            }
+          }
+        ]
+      }
+    ],
+    "releases": [
+      {
+        "version": "10.0.300",
+        "releaseTracks": [
+          "stable"
+        ],
+        "upstreamRelease": {
+          "sourceId": "dotNetBuilds",
+          "releaseTag": "10.0.8"
+        },
+        "targetArtifacts": {
+          "DotNetSdk10-win-x64-stable": {
+            "artifactId": "dotnet-sdk10-win-x64-stable",
+            "contentHash": {
+              "algorithm": "sha512",
+              "value": "32446eddffc5a485f58f9d79cdab3a1a9adab4adc2ef0e4c787cfbb2465020d50beaadc54d40f0850e2e0089edd09864d12d6c19c526319819d57a4c00d38518"
+            }
+          },
+          "DotNetSdk10-win-arm64-stable": {
+            "artifactId": "dotnet-sdk10-win-arm64-stable",
+            "contentHash": {
+              "algorithm": "sha512",
+              "value": "86a6ab513ba16b6dfbe8497c5eb8ee9791819c6a0d8dfffc8eee6c7d6387718f9e486010da24c354e1f4be5f99286e78a799848ee806a67b8b9fec6e4bf773cd"
+            }
+          }
+        }
+      }
+    ],
+    "sources": {
+      "dotNetBuilds": {
+        "kind": "download",
+        "baseUri": "https://builds.dotnet.microsoft.com/dotnet/"
+      }
+    }
+  },
+  "discovery": {
+    "presence": {
+      "files": [
+        "dotnet.exe"
+      ],
+      "directories": [
+        "host",
+        "sdk",
+        "shared"
+      ],
+      "commands": [
+        {
+          "name": "dotnet",
+          "relativePath": "dotnet.exe",
+          "requiredForState": true,
+          "exposeCommand": true,
+          "stateChecks": [
+            {
+              "arguments": [
+                "--version"
+              ],
+              "outputPattern": "(?m)^(?<value>\\d+\\.\\d+\\.\\d+)\\s*$",
+              "expectedValue": "{version}"
+            }
+          ]
+        }
+      ],
+      "apps": [],
+      "metadataFiles": [],
+      "signatures": [],
+      "fileDetails": [],
+      "registry": [],
+      "powerShellModules": []
+    },
+    "existingInstall": {
+      "enabled": false,
+      "searchLocations": [],
+      "installRootRules": []
+    }
+  },
+  "packageOperations": {
+    "policy": {
+      "ownershipPolicy": {
+        "allowAdoptExternal": false,
+        "upgradeAdoptedInstall": false,
+        "requirePackageOwnership": true
+      },
+      "compatibility": {
+        "checks": [
+          {
+            "kind": "osVersion",
+            "operator": ">=",
+            "value": "10.0"
+          }
+        ]
+      }
+    },
+    "assigned": {
+      "install": {
+        "kind": "expandArchive",
+        "installDirectory": "dotnet-sdk10/{releaseTrack}/{version}/{artifactDistributionVariant}",
+        "expandedRoot": "auto",
+        "createDirectories": []
+      },
+      "readyStateCheck": {
+        "use": "discovery.presence",
+        "expectedVersion": "{version}",
+        "require": {
+          "files": true,
+          "directories": true,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "pathRegistration": {
+        "mode": "user",
+        "source": {
+          "kind": "shim",
+          "use": "discovery.presence.commands"
+        }
+      },
+      "versionUpdatePolicy": {
+        "whenAssigned": "trackSelectedVersion",
+        "onSameSelectedVersion": "reuseOrRepair",
+        "onNewSelectedVersion": "replacePackageOwnedInstall"
+      }
+    },
+    "removed": {
+      "policy": {
+        "whenNotInInventory": "succeed",
+        "allowedInventoryOwnershipKinds": [
+          "PackageInstalled"
+        ],
+        "allowUntrackedExternalRemoval": false,
+        "removeDependencies": false
+      },
+      "operation": {
+        "kind": "deleteInstallDirectory",
+        "pathSource": "inventory.installDirectory"
+      },
+      "absenceVerification": {
+        "use": "discovery.presence",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "postRemoveCleanup": {
+        "packageInventoryRecord": true,
+        "generatedShims": true,
+        "pathEntries": true,
+        "workDirectories": true
+      }
+    }
+  }
+}

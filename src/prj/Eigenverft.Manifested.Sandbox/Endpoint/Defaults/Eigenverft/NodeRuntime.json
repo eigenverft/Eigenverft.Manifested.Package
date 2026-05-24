@@ -1,0 +1,309 @@
+{
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.6.schema.json",
+  "schemaVersion": "1.6",
+  "definitionPublication": {
+    "publisherId": "Eigenverft",
+    "publisherName": "Eigenverft",
+    "definitionId": "NodeRuntime",
+    "definitionRevision": 2,
+    "publishedAtUtc": "2026-05-22T12:00:00Z"
+  },
+  "display": {
+    "default": {
+      "name": "Node.js",
+      "publisher": "OpenJS Foundation",
+      "corporation": "OpenJS Foundation",
+      "summary": "Portable Node.js runtime"
+    }
+  },
+  "dependencies": [],
+  "artifacts": {
+    "targets": [
+      {
+        "id": "NodeRuntime-win-x64-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "win-x64",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "x64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        },
+        "fileNameTemplate": "node-v{version}-win-x64.zip",
+        "acquisitionCandidates": [
+          {
+            "kind": "packageDepot",
+            "searchOrder": 100,
+            "verification": {
+              "mode": "optional"
+            }
+          },
+          {
+            "kind": "download",
+            "sourceId": "nodeJsRelease",
+            "sourcePath": "v{version}/node-v{version}-win-x64.zip",
+            "searchOrder": 900,
+            "verification": {
+              "mode": "required"
+            }
+          }
+        ]
+      },
+      {
+        "id": "NodeRuntime-win-arm64-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "win-arm64",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "arm64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        },
+        "fileNameTemplate": "node-v{version}-win-arm64.zip",
+        "acquisitionCandidates": [
+          {
+            "kind": "packageDepot",
+            "searchOrder": 100,
+            "verification": {
+              "mode": "optional"
+            }
+          },
+          {
+            "kind": "download",
+            "sourceId": "nodeJsRelease",
+            "sourcePath": "v{version}/node-v{version}-win-arm64.zip",
+            "searchOrder": 900,
+            "verification": {
+              "mode": "required"
+            }
+          }
+        ]
+      }
+    ],
+    "releases": [
+      {
+        "version": "26.2.0",
+        "releaseTracks": [
+          "stable"
+        ],
+        "upstreamRelease": {
+          "sourceId": "nodeJsRelease",
+          "releaseTag": "v26.2.0"
+        },
+        "targetArtifacts": {
+          "NodeRuntime-win-x64-stable": {
+            "artifactId": "node-runtime-win-x64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "371071a4f7e2c8a5dd280730049c685911feecc59f50ebc488d675dc1087c69c"
+            }
+          },
+          "NodeRuntime-win-arm64-stable": {
+            "artifactId": "node-runtime-win-arm64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "131efa8bd858f8ad000a1a0436d8bb1320c638291c779a921fb20e5702a1cc0a"
+            }
+          }
+        }
+      },
+      {
+        "version": "24.15.0",
+        "releaseTracks": [
+          "stable"
+        ],
+        "upstreamRelease": {
+          "sourceId": "nodeJsRelease",
+          "releaseTag": "v24.15.0"
+        },
+        "targetArtifacts": {
+          "NodeRuntime-win-x64-stable": {
+            "artifactId": "node-runtime-win-x64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "cc5149eabd53779ce1e7bdc5401643622d0c7e6800ade18928a767e940bb0e62"
+            }
+          },
+          "NodeRuntime-win-arm64-stable": {
+            "artifactId": "node-runtime-win-arm64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "c9eb7402eda26e2ba7e44b6727fc85a8de56c5095b1f71ebd3062892211aa116"
+            }
+          }
+        }
+      }
+    ],
+    "sources": {
+      "nodeJsRelease": {
+        "kind": "download",
+        "baseUri": "https://nodejs.org/dist/"
+      }
+    }
+  },
+  "discovery": {
+    "presence": {
+      "files": [
+        "node.exe",
+        "npm.cmd",
+        "npx.cmd"
+      ],
+      "directories": [],
+      "commands": [
+        {
+          "name": "node",
+          "relativePath": "node.exe",
+          "requiredForState": true,
+          "exposeCommand": true,
+          "stateChecks": [
+            {
+              "arguments": [
+                "--version"
+              ],
+              "outputPattern": "(?m)^(?<value>v\\d+\\.\\d+\\.\\d+)\\s*$",
+              "expectedValue": "v{version}"
+            }
+          ]
+        },
+        {
+          "name": "npm",
+          "relativePath": "npm.cmd",
+          "requiredForState": true,
+          "exposeCommand": true,
+          "stateChecks": [
+            {
+              "arguments": [
+                "--version"
+              ],
+              "outputPattern": "(?m)^(?<value>\\d+\\.\\d+\\.\\d+(?:[-+][0-9A-Za-z.\\-]+)?)\\s*$"
+            }
+          ]
+        },
+        {
+          "name": "npx",
+          "relativePath": "npx.cmd",
+          "requiredForState": true,
+          "exposeCommand": true,
+          "stateChecks": [
+            {
+              "arguments": [
+                "--version"
+              ],
+              "outputPattern": "(?m)^(?<value>\\d+\\.\\d+\\.\\d+(?:[-+][0-9A-Za-z.\\-]+)?)\\s*$"
+            }
+          ]
+        }
+      ],
+      "apps": [],
+      "metadataFiles": [],
+      "signatures": [],
+      "fileDetails": [],
+      "registry": [],
+      "powerShellModules": []
+    },
+    "existingInstall": {
+      "enabled": false,
+      "searchLocations": [],
+      "installRootRules": []
+    }
+  },
+  "packageOperations": {
+    "policy": {
+      "ownershipPolicy": {
+        "allowAdoptExternal": false,
+        "upgradeAdoptedInstall": false,
+        "requirePackageOwnership": true
+      },
+      "compatibility": {
+        "checks": [
+          {
+            "kind": "osVersion",
+            "operator": ">=",
+            "value": "10.0"
+          }
+        ]
+      }
+    },
+    "assigned": {
+      "install": {
+        "kind": "expandArchive",
+        "installDirectory": "node-runtime/{releaseTrack}/{version}/{artifactDistributionVariant}",
+        "expandedRoot": "auto",
+        "createDirectories": []
+      },
+      "readyStateCheck": {
+        "use": "discovery.presence",
+        "expectedVersion": "{version}",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "pathRegistration": {
+        "mode": "user",
+        "source": {
+          "kind": "shim",
+          "use": "discovery.presence.commands"
+        }
+      },
+      "versionUpdatePolicy": {
+        "whenAssigned": "trackSelectedVersion",
+        "onSameSelectedVersion": "reuseOrRepair",
+        "onNewSelectedVersion": "replacePackageOwnedInstall"
+      }
+    },
+    "removed": {
+      "policy": {
+        "whenNotInInventory": "succeed",
+        "allowedInventoryOwnershipKinds": [
+          "PackageInstalled"
+        ],
+        "allowUntrackedExternalRemoval": false,
+        "removeDependencies": false
+      },
+      "operation": {
+        "kind": "deleteInstallDirectory",
+        "pathSource": "inventory.installDirectory"
+      },
+      "absenceVerification": {
+        "use": "discovery.presence",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "postRemoveCleanup": {
+        "packageInventoryRecord": true,
+        "generatedShims": true,
+        "pathEntries": true,
+        "workDirectories": true
+      }
+    }
+  }
+}

@@ -1,0 +1,281 @@
+{
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.6.schema.json",
+  "schemaVersion": "1.6",
+  "definitionPublication": {
+    "publisherId": "Eigenverft",
+    "publisherName": "Eigenverft",
+    "definitionId": "PowerShell7",
+    "definitionRevision": 2,
+    "publishedAtUtc": "2026-05-22T12:00:00Z"
+  },
+  "display": {
+    "default": {
+      "name": "PowerShell 7",
+      "publisher": "Microsoft",
+      "corporation": "Microsoft Corporation",
+      "summary": "Portable PowerShell 7 runtime"
+    }
+  },
+  "dependencies": [],
+  "artifacts": {
+    "targets": [
+      {
+        "id": "PowerShell7-win-x64-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "win-x64",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "x64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        },
+        "fileNameTemplate": "PowerShell-{version}-win-x64.zip",
+        "acquisitionCandidates": [
+          {
+            "kind": "packageDepot",
+            "searchOrder": 100,
+            "verification": {
+              "mode": "optional"
+            }
+          },
+          {
+            "kind": "download",
+            "sourceId": "powerShellGitHub",
+            "searchOrder": 900,
+            "verification": {
+              "mode": "required"
+            }
+          }
+        ]
+      },
+      {
+        "id": "PowerShell7-win-arm64-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "win-arm64",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "arm64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        },
+        "fileNameTemplate": "PowerShell-{version}-win-arm64.zip",
+        "acquisitionCandidates": [
+          {
+            "kind": "packageDepot",
+            "searchOrder": 100,
+            "verification": {
+              "mode": "optional"
+            }
+          },
+          {
+            "kind": "download",
+            "sourceId": "powerShellGitHub",
+            "searchOrder": 900,
+            "verification": {
+              "mode": "required"
+            }
+          }
+        ]
+      }
+    ],
+    "releases": [
+      {
+        "version": "7.6.2",
+        "releaseTracks": [
+          "stable"
+        ],
+        "upstreamRelease": {
+          "sourceId": "powerShellGitHub",
+          "releaseTag": "v7.6.2"
+        },
+        "targetArtifacts": {
+          "PowerShell7-win-x64-stable": {
+            "artifactId": "ps7-runtime-win-x64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "32e0dd26752483ba3f0e40e9ae44150643cbff469c13210c93295d158bfd7b26"
+            }
+          },
+          "PowerShell7-win-arm64-stable": {
+            "artifactId": "ps7-runtime-win-arm64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "4dfc686a7aa872fe427d0508b89cef6069c01861c59d8844ae1ffb4d2d7ae017"
+            }
+          }
+        }
+      },
+      {
+        "version": "7.6.1",
+        "releaseTracks": [
+          "stable"
+        ],
+        "upstreamRelease": {
+          "sourceId": "powerShellGitHub",
+          "releaseTag": "v7.6.1"
+        },
+        "targetArtifacts": {
+          "PowerShell7-win-x64-stable": {
+            "artifactId": "ps7-runtime-win-x64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "b5c9e8457ca7df4998abe3cc2c58e6dd4005ad1b4c5320bbac86244a747db91d"
+            }
+          },
+          "PowerShell7-win-arm64-stable": {
+            "artifactId": "ps7-runtime-win-arm64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "f8976558a687dd610eec33a42868a090f611f3bfbc0ae69c2bc5d986e3b53847"
+            }
+          }
+        }
+      }
+    ],
+    "sources": {
+      "powerShellGitHub": {
+        "kind": "githubRelease",
+        "githubOwner": "PowerShell",
+        "githubRepository": "PowerShell"
+      }
+    }
+  },
+  "discovery": {
+    "presence": {
+      "files": [
+        "pwsh.exe"
+      ],
+      "directories": [],
+      "commands": [
+        {
+          "name": "pwsh",
+          "relativePath": "pwsh.exe",
+          "requiredForState": true,
+          "exposeCommand": true,
+          "stateChecks": [
+            {
+              "arguments": [
+                "-NoLogo",
+                "-NoProfile",
+                "-Command",
+                "$PSVersionTable.PSVersion.ToString()"
+              ],
+              "outputPattern": "(?m)^(?<value>\\d+\\.\\d+\\.\\d+)\\s*$",
+              "expectedValue": "{version}"
+            }
+          ]
+        }
+      ],
+      "apps": [],
+      "metadataFiles": [],
+      "signatures": [],
+      "fileDetails": [],
+      "registry": [],
+      "powerShellModules": []
+    },
+    "existingInstall": {
+      "enabled": false,
+      "searchLocations": [],
+      "installRootRules": []
+    }
+  },
+  "packageOperations": {
+    "policy": {
+      "ownershipPolicy": {
+        "allowAdoptExternal": false,
+        "upgradeAdoptedInstall": false,
+        "requirePackageOwnership": true
+      },
+      "compatibility": {
+        "checks": [
+          {
+            "kind": "osVersion",
+            "operator": ">=",
+            "value": "10.0"
+          }
+        ]
+      }
+    },
+    "assigned": {
+      "install": {
+        "kind": "expandArchive",
+        "installDirectory": "ps7-runtime/{releaseTrack}/{version}/{artifactDistributionVariant}",
+        "expandedRoot": "auto",
+        "createDirectories": []
+      },
+      "readyStateCheck": {
+        "use": "discovery.presence",
+        "expectedVersion": "{version}",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "pathRegistration": {
+        "mode": "user",
+        "source": {
+          "kind": "shim",
+          "use": "discovery.presence.commands"
+        }
+      },
+      "versionUpdatePolicy": {
+        "whenAssigned": "trackSelectedVersion",
+        "onSameSelectedVersion": "reuseOrRepair",
+        "onNewSelectedVersion": "replacePackageOwnedInstall"
+      }
+    },
+    "removed": {
+      "policy": {
+        "whenNotInInventory": "succeed",
+        "allowedInventoryOwnershipKinds": [
+          "PackageInstalled"
+        ],
+        "allowUntrackedExternalRemoval": false,
+        "removeDependencies": false
+      },
+      "operation": {
+        "kind": "deleteInstallDirectory",
+        "pathSource": "inventory.installDirectory"
+      },
+      "absenceVerification": {
+        "use": "discovery.presence",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "postRemoveCleanup": {
+        "packageInventoryRecord": true,
+        "generatedShims": true,
+        "pathEntries": true,
+        "workDirectories": true
+      }
+    }
+  }
+}

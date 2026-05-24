@@ -1,0 +1,250 @@
+{
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.6.schema.json",
+  "schemaVersion": "1.6",
+  "definitionPublication": {
+    "publisherId": "Eigenverft",
+    "publisherName": "Eigenverft",
+    "definitionId": "CursorCli",
+    "definitionRevision": 1,
+    "publishedAtUtc": "2026-05-13T12:00:00Z"
+  },
+  "display": {
+    "default": {
+      "name": "Cursor Agent CLI",
+      "publisher": "Anysphere",
+      "corporation": "Anysphere",
+      "summary": "Pinned Cursor Agent CLI (portable Windows bundle from Cursor lab CDN)"
+    }
+  },
+  "dependencies": [],
+  "artifacts": {
+    "targets": [
+      {
+        "id": "CursorCli-win32-x64-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "win32-x64",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "x64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        },
+        "fileNameTemplate": "agent-cli-package-{version}-{artifactDistributionVariant}.zip",
+        "acquisitionCandidates": [
+          {
+            "kind": "packageDepot",
+            "searchOrder": 100,
+            "verification": {
+              "mode": "optional"
+            }
+          },
+          {
+            "kind": "download",
+            "sourceId": "cursorAgentCliLab",
+            "sourcePath": "{version}/windows/x64/agent-cli-package.zip",
+            "searchOrder": 900,
+            "verification": {
+              "mode": "required"
+            }
+          }
+        ]
+      },
+      {
+        "id": "CursorCli-win32-arm64-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "win32-arm64",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "arm64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        },
+        "fileNameTemplate": "agent-cli-package-{version}-{artifactDistributionVariant}.zip",
+        "acquisitionCandidates": [
+          {
+            "kind": "packageDepot",
+            "searchOrder": 100,
+            "verification": {
+              "mode": "optional"
+            }
+          },
+          {
+            "kind": "download",
+            "sourceId": "cursorAgentCliLab",
+            "sourcePath": "{version}/windows/arm64/agent-cli-package.zip",
+            "searchOrder": 900,
+            "verification": {
+              "mode": "required"
+            }
+          }
+        ]
+      }
+    ],
+    "releases": [
+      {
+        "version": "2026.05.09-0afadcc",
+        "releaseTracks": [
+          "stable"
+        ],
+        "targetArtifacts": {
+          "CursorCli-win32-x64-stable": {
+            "artifactId": "cursor-cli-runtime-win32-x64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "9acfc6043f021508bb91badc8b8d6c34ef00bd3389907d8930514f1c8b52f03c"
+            }
+          },
+          "CursorCli-win32-arm64-stable": {
+            "artifactId": "cursor-cli-runtime-win32-arm64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "9b622fb0d7f51f8e1bfa5dcb840a5c5eaaf4829fda588e653fc04e3c83dbd1ac"
+            }
+          }
+        }
+      }
+    ],
+    "sources": {
+      "cursorAgentCliLab": {
+        "kind": "download",
+        "baseUri": "https://downloads.cursor.com/lab/"
+      }
+    }
+  },
+  "discovery": {
+    "presence": {
+      "files": [
+        "cursor-agent.cmd",
+        "node.exe"
+      ],
+      "directories": [],
+      "commands": [
+        {
+          "name": "agent",
+          "relativePath": "cursor-agent.cmd",
+          "requiredForState": true,
+          "exposeCommand": true,
+          "stateChecks": [
+            {
+              "arguments": [
+                "--version"
+              ],
+              "outputPattern": "(?m)^(?<value>\\S+)\\s*$",
+              "expectedValue": "{version}"
+            }
+          ]
+        }
+      ],
+      "apps": [],
+      "metadataFiles": [],
+      "signatures": [],
+      "fileDetails": [],
+      "registry": [],
+      "powerShellModules": []
+    },
+    "existingInstall": {
+      "enabled": false,
+      "searchLocations": [],
+      "installRootRules": []
+    }
+  },
+  "packageOperations": {
+    "policy": {
+      "ownershipPolicy": {
+        "allowAdoptExternal": false,
+        "upgradeAdoptedInstall": false,
+        "requirePackageOwnership": true
+      },
+      "compatibility": {
+        "checks": [
+          {
+            "kind": "osVersion",
+            "operator": ">=",
+            "value": "10.0"
+          }
+        ]
+      }
+    },
+    "assigned": {
+      "install": {
+        "kind": "expandArchive",
+        "installDirectory": "cursor-cli-runtime/{releaseTrack}/{version}/{artifactDistributionVariant}",
+        "expandedRoot": "dist-package",
+        "createDirectories": []
+      },
+      "readyStateCheck": {
+        "use": "discovery.presence",
+        "expectedVersion": "{version}",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "pathRegistration": {
+        "mode": "user",
+        "source": {
+          "kind": "shim",
+          "use": "discovery.presence.commands"
+        }
+      },
+      "versionUpdatePolicy": {
+        "whenAssigned": "trackSelectedVersion",
+        "onSameSelectedVersion": "reuseOrRepair",
+        "onNewSelectedVersion": "replacePackageOwnedInstall"
+      }
+    },
+    "removed": {
+      "policy": {
+        "whenNotInInventory": "succeed",
+        "allowedInventoryOwnershipKinds": [
+          "PackageInstalled"
+        ],
+        "allowUntrackedExternalRemoval": false,
+        "removeDependencies": false
+      },
+      "operation": {
+        "kind": "deleteInstallDirectory",
+        "pathSource": "inventory.installDirectory"
+      },
+      "absenceVerification": {
+        "use": "discovery.presence",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "postRemoveCleanup": {
+        "packageInventoryRecord": true,
+        "generatedShims": true,
+        "pathEntries": true,
+        "workDirectories": true
+      }
+    }
+  }
+}

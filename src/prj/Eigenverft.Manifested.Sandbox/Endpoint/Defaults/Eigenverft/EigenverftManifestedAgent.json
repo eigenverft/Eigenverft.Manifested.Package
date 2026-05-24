@@ -1,0 +1,206 @@
+{
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.6.schema.json",
+  "schemaVersion": "1.6",
+  "definitionPublication": {
+    "publisherId": "Eigenverft",
+    "publisherName": "Eigenverft",
+    "definitionId": "EigenverftManifestedAgent",
+    "definitionRevision": 1,
+    "publishedAtUtc": "2026-05-17T12:00:00Z"
+  },
+  "display": {
+    "default": {
+      "name": "Eigenverft Manifested Agent",
+      "publisher": "Eigenverft",
+      "corporation": "Eigenverft",
+      "summary": "Pinned Eigenverft.Manifested.Agent PowerShell module installed from a depot-backed Gallery nupkg"
+    }
+  },
+  "dependencies": [
+    {
+      "publisherId": "Eigenverft",
+      "definitionId": "PowerShellGet"
+    }
+  ],
+  "artifacts": {
+    "targets": [
+      {
+        "id": "EigenverftManifestedAgent-psmodule-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "psmodule-any",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "x64",
+            "arm64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        },
+        "fileNameTemplate": "Eigenverft.Manifested.Agent.{version}.nupkg",
+        "acquisitionCandidates": [
+          {
+            "kind": "packageDepot",
+            "searchOrder": 100,
+            "verification": {
+              "mode": "optional"
+            }
+          },
+          {
+            "kind": "download",
+            "sourceId": "powerShellGalleryPackageApi",
+            "sourcePath": "Eigenverft.Manifested.Agent/{version}",
+            "searchOrder": 900,
+            "verification": {
+              "mode": "required"
+            }
+          }
+        ]
+      }
+    ],
+    "releases": [
+      {
+        "version": "1.20261.39327",
+        "releaseTracks": [
+          "stable"
+        ],
+        "targetArtifacts": {
+          "EigenverftManifestedAgent-psmodule-stable": {
+            "artifactId": "eigenverft-manifested-agent-psmodule-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "dd4eacf33d5eb8e6fc0a706fb2e18941b07d9466ae9532e7f94f2c5bcfe1727f"
+            }
+          }
+        }
+      }
+    ],
+    "sources": {
+      "powerShellGalleryPackageApi": {
+        "kind": "download",
+        "baseUri": "https://www.powershellgallery.com/api/v2/package/"
+      }
+    }
+  },
+  "discovery": {
+    "presence": {
+      "files": [],
+      "directories": [],
+      "commands": [],
+      "apps": [],
+      "metadataFiles": [],
+      "signatures": [],
+      "fileDetails": [],
+      "registry": [],
+      "powerShellModules": [
+        {
+          "name": "Eigenverft.Manifested.Agent",
+          "requiredVersion": "1.20261.39327",
+          "scope": "CurrentUser",
+          "requiredForState": true
+        }
+      ]
+    },
+    "existingInstall": {
+      "enabled": true,
+      "searchLocations": [
+        {
+          "id": "currentUserPowerShellModule",
+          "kind": "powershellModule",
+          "searchOrder": 100,
+          "name": "Eigenverft.Manifested.Agent",
+          "requiredVersion": "1.20261.39327",
+          "scope": "CurrentUser"
+        }
+      ],
+      "installRootRules": []
+    }
+  },
+  "packageOperations": {
+    "policy": {
+      "ownershipPolicy": {
+        "allowAdoptExternal": true,
+        "upgradeAdoptedInstall": false,
+        "requirePackageOwnership": false
+      },
+      "compatibility": {
+        "checks": [
+          {
+            "kind": "osVersion",
+            "operator": ">=",
+            "value": "10.0"
+          }
+        ]
+      }
+    },
+    "assigned": {
+      "install": {
+        "kind": "powershellModuleInstaller",
+        "moduleName": "Eigenverft.Manifested.Agent",
+        "requiredVersion": "1.20261.39327",
+        "scope": "CurrentUser",
+        "allowClobber": true,
+        "skipPublisherCheck": false,
+        "timeoutSec": 600
+      },
+      "readyStateCheck": {
+        "use": "discovery.presence",
+        "expectedVersion": "{version}",
+        "require": {
+          "files": false,
+          "directories": false,
+          "commands": false,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": true
+        }
+      },
+      "pathRegistration": {
+        "mode": "none"
+      },
+      "versionUpdatePolicy": {
+        "whenAssigned": "trackSelectedVersion",
+        "onSameSelectedVersion": "reuseOrRepair",
+        "onNewSelectedVersion": "replacePackageOwnedInstall"
+      }
+    },
+    "removed": {
+      "policy": {
+        "whenNotInInventory": "succeed",
+        "allowedInventoryOwnershipKinds": [],
+        "allowUntrackedExternalRemoval": false,
+        "removeDependencies": false
+      },
+      "operation": {
+        "kind": "none"
+      },
+      "absenceVerification": {
+        "use": "discovery.presence",
+        "require": {
+          "files": false,
+          "directories": false,
+          "commands": false,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "postRemoveCleanup": {
+        "packageInventoryRecord": true,
+        "generatedShims": true,
+        "pathEntries": true,
+        "workDirectories": true
+      }
+    }
+  }
+}

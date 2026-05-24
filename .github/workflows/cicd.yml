@@ -1,0 +1,61 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+# https://github.com/actions
+
+name: cicd.yml
+
+on:
+  push:
+    paths:
+      - 'src/prj/Eigenverft.Manifested.Sandbox/**'
+    branches:
+      - 'master'
+      - 'main'
+      - 'hotfix'
+      - 'release'
+      - 'develop'
+      - 'bugfix'
+      - 'feature'
+      - 'master/**'
+      - 'main/**'
+      - 'hotfix/**'
+      - 'release/**'
+      - 'develop/**'
+      - 'bugfix/**'
+      - 'feature/**'
+  repository_dispatch:
+    types: 
+      - builddispatch
+  workflow_dispatch:
+
+jobs:
+
+  builddeploy:
+    
+    if: (github.event_name == 'workflow_dispatch') || (github.event_name == 'repository_dispatch') || (github.event_name == 'push')
+ 
+    runs-on: windows-latest
+
+    permissions:
+      contents: write
+      packages: write
+    
+    env:
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Diagnostic print enviroment vars
+      run: printenv
+
+    - name: Display powershell core version
+      run: pwsh --version
+
+    - name: Workflow Build/Deploy
+      run: .github/workflows/cicd.ps1 -PsGalleryApiKey "${{ secrets.PsGalleryApiKey }}" -NuGetGitHubPush "${{ github.token }}"
+      shell: pwsh
+      
