@@ -39,7 +39,7 @@ This project packages that workflow as a local PowerShell engine. A human or age
 Install once, then run exported commands directly (no `Import-Module` needed):
 
 ```powershell
-Install-Module Eigenverft.Manifested.Package -Scope CurrentUser -Repository PSGallery -AllowClobber
+Install-Module Eigenverft.Manifested.Package -Scope CurrentUser -Repository PSGallery -Force -AllowClobber
 
 Invoke-Package -DefinitionId SevenZip,DotNetSdk10,NodeRuntime,CodexCli
 Get-PackageState
