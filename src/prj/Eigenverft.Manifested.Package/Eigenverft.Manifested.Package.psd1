@@ -72,7 +72,6 @@ PowerShellVersion = '5.1'
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
     'Get-PackageVersion',
-    'Package',
     'Add-PackageDepot',
     'Add-TeamPackageDepot',
     'Add-PackageEndpoint',
@@ -90,7 +89,8 @@ FunctionsToExport = @(
     'Remove-PackagePublisher',
     'Set-PackageDepot',
     'Set-PackageEndpoint',
-    'Set-PackagePublisher'
+    'Set-PackagePublisher',
+    'Update-PackageVersion'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

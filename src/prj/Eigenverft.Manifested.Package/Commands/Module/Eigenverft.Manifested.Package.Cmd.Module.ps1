@@ -1,5 +1,5 @@
 <#
-    Root entry helpers: Get-PackageVersion and Package (-Update / -Version bootstrap).
+    Root entry helpers: Get-PackageVersion and Update-PackageVersion.
     Imported by Eigenverft.Manifested.Package.psm1.
 #>
 
@@ -140,108 +140,64 @@ Displays module information, per-definition Invoke-Package examples, and other e
     return ($outputLines -join [Environment]::NewLine)
 }
 
-function Package {
+function Update-PackageVersion {
 <#
 .SYNOPSIS
-Install or update Eigenverft.Manifested.Package from the PowerShell Gallery, or print module version information.
+Install or update Eigenverft.Manifested.Package from the PowerShell Gallery.
 
 .DESCRIPTION
-Thin bootstrap surface (similar intent to Eigenverft.Manifested.Drydock). Main switches are mutually exclusive:
-- -Update : Install/update from PSGallery (stable; -Scope). On Windows, the internal proxy bootstrap prepares session + Install-Module proxy parameters; manual proxy UI is allowed when automatic resolution cannot reach the gallery. Non-Windows: minimal TLS/proxy only. Requires network.
-- -Version : Print the same summary as Get-PackageVersion (module version, shipped package examples, and exported commands).
-
-Without a main switch, prints a short usage note.
-
-.PARAMETER Update
-Install or update the module from PSGallery.
-
-.PARAMETER Version
-Show module version, shipped Invoke-Package examples, and exported command names (delegates to Get-PackageVersion).
+Installs or updates this module from PSGallery (stable; -Scope). On Windows, the internal proxy
+bootstrap prepares session + Install-Module proxy parameters; manual proxy UI is allowed when
+automatic resolution cannot reach the gallery. Non-Windows: minimal TLS/proxy only. Requires network.
 
 .PARAMETER Scope
-With -Update, CurrentUser (default) or AllUsers (elevation required).
+CurrentUser (default) or AllUsers (elevation required).
 
 .EXAMPLE
-Package -Update -Scope CurrentUser
-
-.EXAMPLE
-Package -Version
+Update-PackageVersion -Scope CurrentUser
 #>
-    [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = 'Manual')]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param(
-        [Parameter(ParameterSetName = 'UpdateSet', Mandatory = $true)]
-        [switch]$Update,
-
-        [Parameter(ParameterSetName = 'VersionSet', Mandatory = $true)]
-        [Alias('v')]
-        [switch]$Version,
-
-        [Parameter(ParameterSetName = 'UpdateSet')]
         [ValidateSet('CurrentUser', 'AllUsers')]
         [string]$Scope = 'CurrentUser'
     )
 
-    $ModuleName = 'Eigenverft.Manifested.Package'
-    $Repository = 'PSGallery'
-
-    function Show-PackageManual {
-        @(
-            "-Update   : Install/update module from $Repository (stable; supports -Scope)."
-            "  Example : Package -Update -Scope CurrentUser"
-            "  -Scope  : CurrentUser (default) or AllUsers (elevation)."
-            ""
-            "-Version  : Show module version, shipped package Invoke-Package examples, and exported commands (same as Get-PackageVersion)."
-            "  Example : Package -Version"
-        ) | ForEach-Object { Write-Output $_ }
+    $moduleName = 'Eigenverft.Manifested.Package'
+    $repository = 'PSGallery'
+    $params = @{
+        Name         = $moduleName
+        Repository   = $repository
+        Scope        = $Scope
+        Force        = $true
+        AllowClobber = $true
+        ErrorAction  = 'Stop'
     }
 
-    switch ($PSCmdlet.ParameterSetName) {
-        'Manual' {
-            Show-PackageManual
-            return
+    $proxyModuleParams = @{}
+    $packageIsWindows = [System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT
+
+    if ($packageIsWindows) {
+        # Manual proxy UI and non-interactive failure are handled by the private proxy bootstrap.
+        Initialize-ProxyAccessProfile -TestUri ([uri]'https://www.powershellgallery.com/api/v2/')
+
+        if ($null -ne $Global:ProxyParamsPrepareSession) {
+            $null = $Global:ProxyParamsPrepareSession.Invoke()
         }
-        'VersionSet' {
-            Get-PackageVersion
-            return
+        $installGv = Get-Variable -Scope Global -Name ProxyParamsInstallModule -ErrorAction SilentlyContinue
+        if ($installGv -and $installGv.Value -is [hashtable] -and $installGv.Value.Count -gt 0) {
+            $proxyModuleParams = $installGv.Value
         }
-        'UpdateSet' {
-            $params = @{
-                Name         = $ModuleName
-                Repository   = $Repository
-                Scope        = $Scope
-                Force        = $true
-                AllowClobber = $true
-                ErrorAction  = 'Stop'
-            }
+    }
+    else {
+        try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch { }
+        try {
+            $wp = [System.Net.WebRequest]::GetSystemWebProxy()
+            [System.Net.WebRequest]::DefaultWebProxy = $wp
+            if ($wp) { $wp.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials }
+        } catch { }
+    }
 
-            $proxyModuleParams = @{}
-            $packageIsWindows = [System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT
-
-            if ($packageIsWindows) {
-                # Manual proxy UI and non-interactive failure are handled by the private proxy bootstrap.
-                Initialize-ProxyAccessProfile -TestUri ([uri]'https://www.powershellgallery.com/api/v2/')
-
-                if ($null -ne $Global:ProxyParamsPrepareSession) {
-                    $null = $Global:ProxyParamsPrepareSession.Invoke()
-                }
-                $installGv = Get-Variable -Scope Global -Name ProxyParamsInstallModule -ErrorAction SilentlyContinue
-                if ($installGv -and $installGv.Value -is [hashtable] -and $installGv.Value.Count -gt 0) {
-                    $proxyModuleParams = $installGv.Value
-                }
-            }
-            else {
-                try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch { }
-                try {
-                    $wp = [System.Net.WebRequest]::GetSystemWebProxy()
-                    [System.Net.WebRequest]::DefaultWebProxy = $wp
-                    if ($wp) { $wp.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials }
-                } catch { }
-            }
-
-            if ($PSCmdlet.ShouldProcess($params.Name, "Install ($Scope) from $Repository")) {
-                Install-Module @proxyModuleParams @params
-            }
-            return
-        }
+    if ($PSCmdlet.ShouldProcess($params.Name, "Install ($Scope) from $repository")) {
+        Install-Module @proxyModuleParams @params
     }
 }

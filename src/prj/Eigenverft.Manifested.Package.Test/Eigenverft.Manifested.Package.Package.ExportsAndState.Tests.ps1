@@ -61,13 +61,13 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'Get-PackageVersion',
             'Invoke-Package',
             'Invoke-WebRequestEx',
-            'Package',
             'Remove-PackageDepot',
             'Remove-PackageEndpoint',
             'Remove-PackagePublisher',
             'Set-PackageDepot',
             'Set-PackageEndpoint',
-            'Set-PackagePublisher'
+            'Set-PackagePublisher',
+            'Update-PackageVersion'
         )
         Get-Command -Name 'Initialize-ProxyAccessProfile' -Module $module -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
     }

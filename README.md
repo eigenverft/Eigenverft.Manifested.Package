@@ -36,27 +36,26 @@ This project packages that workflow as a local PowerShell engine. A human or age
 
 ## 🚀 Quick Start
 
-Install or import the module, then assign one or more package definitions:
+Install once, then run exported commands directly (no `Import-Module` needed):
 
 ```powershell
-Install-Module Eigenverft.Manifested.Package -Scope CurrentUser -Repository PSGallery
-Import-Module Eigenverft.Manifested.Package
+Install-Module Eigenverft.Manifested.Package -Scope CurrentUser -Repository PSGallery -AllowClobber
 
 Invoke-Package -DefinitionId SevenZip,DotNetSdk10,NodeRuntime,CodexCli
 Get-PackageState
 ```
 
-`Invoke-Package` resolves the selected package definitions from enabled endpoints, checks publisher trust, prepares or reuses package payloads, applies dependency ordering, and records the resulting package state.
+`Invoke-Package` resolves definitions from enabled endpoints, checks publisher trust, prepares or reuses payloads, applies dependency order, and records state.
 
 ## 🏢 Corporate First Install
 
-On a locked-down Windows PowerShell 5.1 machine where TLS interception or missing trust roots break the first Gallery install, use the skip-certificate bootstrapper only long enough to install the package module and open a fresh console that runs `Package -Update`:
+When TLS interception or missing trust roots break a normal Gallery install on Windows PowerShell 5.1, use `iwr/bootstrapper.ps1` once, then run commands as usual:
 
 ```powershell
-$c='Package -Update -Scope CurrentUser';$u='https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/refs/heads/main/iwr/bootstrapper.package.generic.skipcert.ps1';try{[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12}catch{};try{[Net.ServicePointManager]::ServerCertificateValidationCallback={$true}}catch{};$p=[Net.WebRequest]::GetSystemWebProxy();if(-not $p.IsBypassed($u)){iwr $u -Proxy ($p.GetProxy($u).AbsoluteUri) -ProxyUseDefaultCredentials -UseBasicParsing|iex}else{iwr $u -UseBasicParsing|iex}
+$c='Update-PackageVersion -Scope CurrentUser';$u='https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/refs/heads/main/iwr/bootstrapper.ps1';try{[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12}catch{};try{[Net.ServicePointManager]::ServerCertificateValidationCallback={$true}}catch{};$p=[Net.WebRequest]::GetSystemWebProxy();if(-not $p.IsBypassed($u)){iwr $u -Proxy ($p.GetProxy($u).AbsoluteUri) -ProxyUseDefaultCredentials -UseBasicParsing|iex}else{iwr $u -UseBasicParsing|iex}
 ```
 
-⚠ **Important:** This path intentionally bypasses TLS certificate validation for the bootstrap download and initial PSGallery install. Prefer normal `Install-Module` when the machine trust chain works.
+⚠ Bypasses TLS certificate validation for the bootstrap download and initial PSGallery install only. Prefer normal `Install-Module` when trust works.
 
 ## 🖼️ Windows Sandbox
 
@@ -93,11 +92,8 @@ The same depot model works outside a corporate share. Point `Add-TeamPackageDepo
 One-time setup on a Windows PC that can reach the share:
 
 ```powershell
-Import-Module Eigenverft.Manifested.Package
-
 Add-TeamPackageDepot -BasePath '\\homeserver\artifacts\PackageDepot'
 Invoke-Package -DefinitionId SevenZip,DotNetSdk10,PythonRuntime,NodeRuntime
-
 Get-PackageState
 ```
 

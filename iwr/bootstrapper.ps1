@@ -1,30 +1,19 @@
 <#
-Generic Package PSGallery bootstrapper variant for installing/importing configurable modules,
-then opening a new Windows PowerShell console and invoking a configurable command.
+PSGallery bootstrapper for Windows PowerShell 5.1 when TLS interception or missing trust
+roots block a normal Gallery install. Skips certificate validation for the bootstrap download
+and install path only. Prefer Install-Module when trust works.
 
-Configure:
+Optional before iex:
+  $i = module names to install (default: PackageManagement, PowerShellGet, Eigenverft.Manifested.Package)
+  $c = command to run in a new console after bootstrap (default: none)
 
-$i = modules to install and import
-$c = command to invoke in the new console after bootstrap
+Proxy-aware one-liner:
 
-Current defaults:
+$u='https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/refs/heads/<branch>/iwr/bootstrapper.ps1';try{[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12}catch{};try{[Net.ServicePointManager]::ServerCertificateValidationCallback={$true}}catch{};$p=[Net.WebRequest]::GetSystemWebProxy();if(-not $p.IsBypassed($u)){iwr $u -Proxy ($p.GetProxy($u).AbsoluteUri) -ProxyUseDefaultCredentials -UseBasicParsing|iex}else{iwr $u -UseBasicParsing|iex}
 
-$i='PowerShellGet','PackageManagement','Eigenverft.Manifested.Package'
-$c=''
+Install, open a fresh console, and update the module:
 
-If $i or $c are already set before invocation, this script keeps those values.
-
-Use via (proxy-aware for corporate environments, skips TLS certificate validation):
-
-$u='https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/refs/heads/<branch>/iwr/bootstrapper.package.generic.skipcert.ps1';try{[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12}catch{};try{[Net.ServicePointManager]::ServerCertificateValidationCallback={$true}}catch{};$p=[Net.WebRequest]::GetSystemWebProxy();if(-not $p.IsBypassed($u)){iwr $u -Proxy ($p.GetProxy($u).AbsoluteUri) -ProxyUseDefaultCredentials -UseBasicParsing|iex}else{iwr $u -UseBasicParsing|iex}
-
-Use this variant only in Windows PowerShell 5.1 environments where TLS interception or
-broken enterprise trust chains require bypassing certificate validation for the bootstrap
-download and PSGallery install path. This is intentionally insecure.
-
-First-install example that opens a new console and runs the module updater afterward:
-
-$c='Package -Update -Scope CurrentUser';$u='https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/refs/heads/main/iwr/bootstrapper.package.generic.skipcert.ps1';try{[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12}catch{};try{[Net.ServicePointManager]::ServerCertificateValidationCallback={$true}}catch{};$p=[Net.WebRequest]::GetSystemWebProxy();if(-not $p.IsBypassed($u)){iwr $u -Proxy ($p.GetProxy($u).AbsoluteUri) -ProxyUseDefaultCredentials -UseBasicParsing|iex}else{iwr $u -UseBasicParsing|iex}
+$c='Update-PackageVersion -Scope CurrentUser';$u='https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/refs/heads/main/iwr/bootstrapper.ps1';try{[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12}catch{};try{[Net.ServicePointManager]::ServerCertificateValidationCallback={$true}}catch{};$p=[Net.WebRequest]::GetSystemWebProxy();if(-not $p.IsBypassed($u)){iwr $u -Proxy ($p.GetProxy($u).AbsoluteUri) -ProxyUseDefaultCredentials -UseBasicParsing|iex}else{iwr $u -UseBasicParsing|iex}
 
 #>
 
