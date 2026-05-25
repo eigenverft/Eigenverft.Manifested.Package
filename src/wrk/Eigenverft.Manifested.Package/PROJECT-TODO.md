@@ -18,17 +18,11 @@
 
 #### Team catalog trust
 
-- **Feature issue: sign package definitions from team endpoints.** As a team endpoint owner, I want package JSON to be signed by a trusted publisher key, so a writable share or compromised endpoint cannot silently change install URLs, versions, or package behavior.
-  Requester perspective: team catalog maintainer, security reviewer, industrial network operator.
-  Outcome: clients can reject unsigned or wrongly signed definitions before any package planning, download, or install happens.
+Design and open decisions: [TEAM-CATALOG-TRUST.md](TEAM-CATALOG-TRUST.md) (current state, first-run Eigenverft trust, phased plan).
 
-- **Feature issue: strict mode for team catalogs.** As an operator using a shared endpoint, I want a strict trust mode that requires signed definitions and rejects casual unsigned publisher trust, so team use does not depend on every admin remembering the safe flags.
-  Requester perspective: IT-friendly team owner, security-conscious developer group, plant-floor operations maintainer.
-  Outcome: a team can turn on a clear policy such as "only signed definitions from trusted publishers" and get an understandable failure when a definition does not meet it.
-
-- **Feature issue: require hashes for external downloads in trusted catalogs.** As a catalog reviewer, I want external downloads to carry pinned file hashes when used in a trusted endpoint, so a signed JSON definition cannot still point at mutable unverified binaries.
-  Requester perspective: package catalog maintainer, compliance reviewer, offline depot seeder.
-  Outcome: validation can warn or fail when a trusted/team package downloads a file without a strong hash policy.
+- **[P1] Phase B — Signed definitions:** Verify publisher signatures on definition JSON in one schema-bound pipeline before plan/install; do not rely on `publisherId` text alone.
+- **[P1] Phase C — Trust UX:** Seed shipped verification keys on first local init; always show sign/trust status on `Invoke-Package`; lightweight SSL/RDP-style prompt for unknown team keys.
+- **[P1] Phase D — Strict catalogs:** Optional policy requiring valid signatures plus pinned download hashes for team/trusted publishers.
 
 #### Supply chain / release age
 
@@ -175,8 +169,7 @@ The package engine already covers per-machine **Assigned** state, endpoint-drive
 - Should the Eigenverft online endpoint have an index or manifest so clients can discover packages without scanning every JSON file?
 - Should the next breaking schema revisit `artifacts` naming now, or wait until more package kinds prove where the wording hurts?
 - Which package type should be the next confidence test for fully offline depot reuse after npm, MSI, archive, PowerShell module, and portable SDK packages?
-- Which signature format should package definitions use: embedded signature, sidecar file, signed catalog manifest, or a combination?
-- Should strict team mode require both signed definitions and hashes on all external downloads, or should those be separate policy switches?
+- See [TEAM-CATALOG-TRUST.md](TEAM-CATALOG-TRUST.md) for catalog signing, trusted store, strict mode, and invoke-time trust display decisions.
 - Should offline-only behavior be global, endpoint-specific, package-set-specific, or a command override?
 
 ## Closed
