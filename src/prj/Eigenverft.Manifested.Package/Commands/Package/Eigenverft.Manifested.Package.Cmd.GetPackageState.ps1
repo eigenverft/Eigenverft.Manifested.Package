@@ -13,6 +13,7 @@ function Get-PackageState {
     $operationHistory = Get-PackageOperationHistory -PackageConfig $config
     $endpointInventoryInfo = $config.EndpointInventoryInfo
     $depotInventoryInfo = $config.DepotInventoryInfo
+    $trustInventoryInfo = $config.TrustInventoryInfo
 
     $directories = [pscustomobject]@{
         Installed           = Get-PackageStateDirectorySummary -Path $config.PreferredTargetInstallRootDirectory
@@ -29,6 +30,7 @@ function Get-PackageState {
             PackageAssignmentInventory = $packageInventory
             PackageOperationHistory    = $operationHistory
             EndpointInventory = $endpointInventoryInfo
+            TrustInventory    = $trustInventoryInfo
             DepotInventory   = $depotInventoryInfo
             Directories      = $directories
         }
@@ -51,6 +53,10 @@ function Get-PackageState {
         LocalEndpointInventoryExists = Test-PackageStateLeafPath -Path $config.LocalEndpointInventoryPath
         EndpointInventoryPath    = $endpointInventoryInfo.Path
         EndpointInventoryExists  = [bool]$endpointInventoryInfo.Exists
+        LocalTrustInventoryPath   = $config.LocalTrustInventoryPath
+        LocalTrustInventoryExists = Test-PackageStateLeafPath -Path $config.LocalTrustInventoryPath
+        TrustInventoryPath        = $trustInventoryInfo.Path
+        TrustInventoryExists      = [bool]$trustInventoryInfo.Exists
         LocalDepotInventoryPath   = $config.LocalDepotInventoryPath
         LocalDepotInventoryExists = Test-PackageStateLeafPath -Path $config.LocalDepotInventoryPath
         DepotInventoryPath        = $depotInventoryInfo.Path

@@ -220,6 +220,37 @@ Assert-PackageConfigSchema -PackageConfigDocumentInfo $globalInfo
             throw "Package config '$($PackageConfigDocumentInfo.Path)' defines unsupported endpointEnvironment.defaults.definitionPublisherConflictMode '$definitionPublisherConflictMode'. Use 'fail', 'warnFirst', 'first', 'warnLast', or 'last'."
         }
     }
+    if ($package.PSObject.Properties['catalogTrust'] -and $package.catalogTrust) {
+        if ($package.catalogTrust.PSObject.Properties['policy']) {
+            $catalogTrustPolicy = [string]$package.catalogTrust.policy
+            if ($catalogTrustPolicy -notin @('strict', 'allowUnsigned')) {
+                throw "Package config '$($PackageConfigDocumentInfo.Path)' defines unsupported catalogTrust.policy '$catalogTrustPolicy'. Use 'strict' or 'allowUnsigned'."
+            }
+        }
+        if ($package.catalogTrust.PSObject.Properties['payloadVerification']) {
+            $payloadVerification = [string]$package.catalogTrust.payloadVerification
+            if ($payloadVerification -notin @('off', 'warnWhenPackageFileExists', 'enforceWhenPackageFileExists', 'enforceAllAcquisition')) {
+                throw "Package config '$($PackageConfigDocumentInfo.Path)' defines unsupported catalogTrust.payloadVerification '$payloadVerification'."
+            }
+        }
+        foreach ($publisherListProperty in @('allowUnsignedPublisherIds', 'blockedPublisherIds')) {
+            if (-not $package.catalogTrust.PSObject.Properties[$publisherListProperty]) {
+                continue
+            }
+            if ($null -eq $package.catalogTrust.$publisherListProperty) {
+                throw "Package config '$($PackageConfigDocumentInfo.Path)' defines catalogTrust.$publisherListProperty as null. Use an array."
+            }
+            if ($package.catalogTrust.$publisherListProperty -isnot [System.Array]) {
+                throw "Package config '$($PackageConfigDocumentInfo.Path)' defines catalogTrust.$publisherListProperty as a non-array value. Use an array of publisher ids."
+            }
+            foreach ($publisherId in @($package.catalogTrust.$publisherListProperty)) {
+                if ([string]::IsNullOrWhiteSpace([string]$publisherId)) {
+                    throw "Package config '$($PackageConfigDocumentInfo.Path)' defines an empty catalogTrust.$publisherListProperty entry."
+                }
+                Assert-PackagePublisherId -PublisherId ([string]$publisherId)
+            }
+        }
+    }
 
     if ($package.selectionDefaults.PSObject.Properties['channel']) {
         throw "Package config '$($PackageConfigDocumentInfo.Path)' still uses retired property 'selectionDefaults.channel'."

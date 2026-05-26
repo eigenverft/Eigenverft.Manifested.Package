@@ -160,6 +160,11 @@ function global:New-TestPackageGlobalDocument {
         [string]$DepotDistributionMode = 'packageFocused',
         [string]$EndpointMaterializationMode = 'packageFocused',
         [string]$DefinitionPublisherConflictMode = 'fail',
+        [ValidateSet('strict', 'allowUnsigned')]
+        [string]$CatalogTrustPolicy = 'allowUnsigned',
+        [string[]]$CatalogTrustAllowUnsignedPublisherIds = @('Eigenverft'),
+        [string[]]$CatalogTrustBlockedPublisherIds = @(),
+        [string]$CatalogTrustPayloadVerification = 'off',
         [string]$ReleaseTrack = 'stable',
         [string]$Strategy = 'latestByVersion',
         [hashtable]$EnvironmentSources = $null
@@ -197,6 +202,12 @@ function global:New-TestPackageGlobalDocument {
                     endpointMaterializationMode = $EndpointMaterializationMode
                     definitionPublisherConflictMode = $DefinitionPublisherConflictMode
                 }
+            }
+            catalogTrust = @{
+                policy = $CatalogTrustPolicy
+                allowUnsignedPublisherIds = @($CatalogTrustAllowUnsignedPublisherIds)
+                blockedPublisherIds = @($CatalogTrustBlockedPublisherIds)
+                payloadVerification = $CatalogTrustPayloadVerification
             }
             packageState = @{
                 inventoryFilePath = if ($PSBoundParameters.ContainsKey('PackageAssignmentInventoryFilePath')) { $PackageAssignmentInventoryFilePath } else { '{applicationRootDirectory}/State/PackageAssignmentInventory.json' }
@@ -847,7 +858,6 @@ function global:Write-TestPackageDocuments {
     $globalConfigPath = Join-Path $RootPath 'Configuration\Internal\PackageConfig.json'
     $depotInventoryPath = Join-Path $RootPath 'Configuration\Internal\PackageDepotInventory.json'
     $endpointInventoryPath = Join-Path $RootPath 'Configuration\Internal\PackageEndpointInventory.json'
-    $publisherInventoryPath = Join-Path $RootPath 'Configuration\Internal\PackagePublisherInventory.json'
     $endpointDefinitionsRoot = Join-Path $RootPath 'EndpointDefinitions'
     $definitionPublisherId = if ($DefinitionDocument.PSObject.Properties['definitionPublication'] -and
         $DefinitionDocument.definitionPublication.PSObject.Properties['publisherId'] -and
@@ -905,36 +915,19 @@ function global:Write-TestPackageDocuments {
             )
         }
     }
-    if (-not $PSBoundParameters.ContainsKey('PublisherInventoryDocument') -or $null -eq $PublisherInventoryDocument) {
-        $PublisherInventoryDocument = @{
-            inventoryVersion = 1
-            publishers = @(
-                @{
-                    publisherId = $definitionPublisherId
-                    publisherName = $definitionPublisherId
-                    enabled = $true
-                    trusted = $true
-                    trustMode = 'unsignedExplicit'
-                }
-            )
-        }
-    }
     Write-TestJsonDocument -Path $depotInventoryPath -Document $DepotInventoryDocument
     Write-TestJsonDocument -Path $endpointInventoryPath -Document $EndpointInventoryDocument
-    Write-TestJsonDocument -Path $publisherInventoryPath -Document $PublisherInventoryDocument
     Write-TestJsonDocument -Path $definitionPath -Document $DefinitionDocument
 
     # Definition resolution no longer uses filename-based Get-PackageDefinitionPath.
     # Keep the bootstrap-local PackageEndpointInventory.json aligned for tests that mock
     # PackageConfig.json only.
     Write-TestJsonDocument -Path (Get-PackageLocalEndpointInventoryPath) -Document $EndpointInventoryDocument
-    Write-TestJsonDocument -Path (Get-PackageLocalPublisherInventoryPath) -Document $PublisherInventoryDocument
 
     return [pscustomobject]@{
         GlobalConfigPath        = $globalConfigPath
         DepotInventoryPath      = $depotInventoryPath
         EndpointInventoryPath   = $endpointInventoryPath
-        PublisherInventoryPath  = $publisherInventoryPath
         DefinitionPath          = $definitionPath
     }
 }

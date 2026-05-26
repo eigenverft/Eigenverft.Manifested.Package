@@ -1,7 +1,7 @@
 <#
     Public package command surface.
 
-    Optional -PublisherId narrows definition resolution to one trusted publisher.
+    Optional -PublisherId narrows definition resolution to one signed definitionPublication.publisherId label.
 #>
 
 function Invoke-Package {

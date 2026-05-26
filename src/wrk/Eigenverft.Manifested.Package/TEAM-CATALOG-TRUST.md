@@ -2,7 +2,7 @@
 
 Notes on how team package JSON should be trusted, signed, and shown to the user. This backs up the **Team catalog trust** items in [PROJECT-TODO.md](PROJECT-TODO.md).
 
-**This document is design only - no code changes here.**
+**This document is the design record.** The v1 implementation now exists in the module; notes below call out what is implemented and what remains future work.
 
 ## Requirements now chosen
 
@@ -18,18 +18,18 @@ The target trust design is now:
 - **Compatibility-first crypto.** Use RSA with SHA-256 and an X.509 certificate/public key record for v1. This works with Windows PowerShell 5.1/.NET Framework better than newer key types such as Ed25519.
 - **No certificate chains in v1.** The first version trusts pinned keys/thumbprints, like SSH/RDP trust-on-first-use. Chain/PKI support can be added later behind the same verification boundary.
 - **Trust is by key thumbprint.** The prompt and status display show publisher id/name and certificate/key display fields, but the durable trust decision is the key thumbprint.
-- **Separate local trust inventory.** Add `PackageTrustInventory.json` beside the other local internal inventories. Keep `PackagePublisherInventory.json` for publisher enable/disable and unsigned escape policy.
+- **Trust inventory is the authority.** `PackageTrustInventory.json` is the catalog authority for trusted keys, scoped by `publisherId`; endpoint rows only discover definitions and publisher ids are labels inside signed JSON.
 - **Global catalog trust policy.** Add a `PackageConfig.json` policy such as `strict` or `allowUnsigned`. This is not endpoint trust and should not live on endpoint rows.
 - **Invalid signature always fails.** A bad signature is not a warning state. It means the definition was tampered with or signed incorrectly.
-- **Unknown signed key can be accepted interactively.** In interactive runs, a correctly signed but unknown key may show a concise trust prompt. In noninteractive runs, it fails and tells the operator how to preseed trust.
-- **Unsigned definitions are explicit migration/dev behavior.** `allowUnsigned` only permits unsigned definitions when publisher policy also explicitly allows unsigned definitions. `strict` rejects unsigned definitions.
+- **Unknown signed key is not trusted automatically in v1.** Because the embedded signature does not carry `certificatePem`, runtime cannot verify an unknown key from the definition alone. Unknown keys fail and tell the operator to preseed trust with `Trust-PackageSigningCertificate` or `Import-PackageTrust`. An interactive trust prompt can be added later if we add a certificate-distribution path.
+- **Unsigned definitions are explicit migration/dev behavior.** `allowUnsigned` only permits unsigned definitions when `publisherId` is listed in `catalogTrust.allowUnsignedPublisherIds`. `strict` rejects all unsigned definitions.
 - **Shipped Eigenverft definitions are signed.** The module ships signed definitions and verification keys, then seeds those keys into local trust on first use.
 - **Changed key means changed trust.** If a publisher changes key/thumbprint, the local store does not trust the new key until it is shipped by the module or explicitly trusted by the user.
 - **Revocation is exact-thumbprint and local first.** v1 should be able to revoke or block a signing key by exact thumbprint before any wildcard, online revocation list, or certificate-chain validation work.
 - **Payload strictness is separate.** Catalog signing trusts the definition author. Payload hashes/signatures protect downloaded or depot files. The selected default is `enforceWhenPackageFileExists`, implemented behind a policy helper so it can be changed later without rewriting signature verification.
 - **Always print trust status before planning.** `Invoke-Package` should show publisher, endpoint, revision, signature state, key/thumbprint, and trust source before package selection or install work continues.
 - **Authoring stays tool-driven.** A human/agent can generate JSON, then a maintainer runs a signing command. CI may validate signatures and schema, but it is not required to be the signer.
-- **Use a new breaking schema.** Catalog signing belongs in schema 1.7. After the breaking change, current definitions move to 1.7; do not keep 1.6 as a parallel runtime path.
+- **Use a new breaking schema for shipped/current definitions.** Catalog signing belongs in schema 1.7. Current shipped definitions move to 1.7; runtime keeps limited 1.6 compatibility for old local/test definitions, but 1.6 is not the catalog trust target.
 
 ## Source-checked fit
 
@@ -39,14 +39,14 @@ These are the codebase constraints that shaped the decisions above:
 | --- | --- |
 | `PackageEndpointInventory.json` and `Assert-PackageEndpointSource` | Endpoint rows reject retired trust fields (`trusted`, `trustMode`, `trustedAtUtc`, `trustReason`). Adding endpoint trust back would conflict with the current model. |
 | `definitionPublication` in schema 1.6 | The current durable identity is already `publisherId` + `definitionId` + `definitionRevision`, so catalog signature metadata should sit with publication metadata. |
-| `DefinitionSchema.ps1` | Runtime supports only schema `1.6` today. A signed-catalog schema means adding `1.7` and a new validator branch. |
+| `DefinitionSchema.ps1` | Runtime supports schema `1.6` and `1.7`. Schema `1.7` adds `definitionPublication.definitionSignature`; shipped definitions now use it. |
 | `eigenverft-module-package-definition-1.6.schema.json` | The schema uses `additionalProperties: false`; adding signature fields to 1.6 would be a real schema change anyway. |
-| `PackagePublisherInventory.json` | Current trust is name/policy based (`moduleShipped`, `unsigned`, `unsignedExplicit`), not cryptographic. Keep it as publisher policy, then add key trust beside it. |
-| `Resolve-PackageDefinitionReference` | Candidate selection filters to enabled/trusted publishers before install. Signature verification must move into or before candidate selection so signed unknown keys can be assessed instead of silently filtered out. |
+| `PackageTrustInventory.json` | Catalog authority is cryptographic and key-based: trusted key rows are scoped to `publisherId`, and revoked/blocked key rows fail before package planning. |
+| `Resolve-PackageDefinitionReference` | Candidate selection now assesses signature/trust before winner selection. Signed trusted definitions do not require a publisher inventory row. Unsigned definitions require `allowUnsigned` plus `catalogTrust.allowUnsignedPublisherIds`. |
 | `Copy-PackageDefinitionToLocalDefinitionStore` | Local candidate and assigned snapshots already store the selected definition hash. Trust status can be recorded near this path without changing depot behavior. |
-| `CommandFlow.ps1` | The start log already has publisher/endpoint/definition. Add trust status before the existing assignment steps begin. |
-| `LocalEnvironment.ps1` and `Bootstrap.ps1` | First-use local inventory copying already exists for config, endpoint, publisher, and depot inventories. A trust inventory can follow the same pattern. |
-| Artifact `contentHash` / `publisherSignature` | Payload trust already belongs to artifacts. Catalog signing proves who authored the definition; existing artifact hashes/signatures prove downloaded payloads. Do not mix those concepts. |
+| Definition resolution logging | Resolution prints a `[TRUST]` line with signature status, catalog trust status, key/thumbprint, signer, and policy before package selection/install work continues. |
+| `LocalEnvironment.ps1` and `Bootstrap.ps1` | First-use local inventory copying exists for config, endpoint, depot, and trust inventories. Publisher inventory is no longer copied or shipped. |
+| Artifact `contentHash` / `publisherSignature` | Payload trust belongs to artifacts. Catalog signing proves who authored the definition; artifact hashes/signatures prove downloaded payloads. `catalogTrust.payloadVerification` can require that boundary when a package file exists. |
 
 ## What the product does today
 
@@ -54,21 +54,18 @@ These are the codebase constraints that shaped the decisions above:
 
 ```text
 PackageEndpointInventory.json   ->  where to look for JSON (module folder, team share, ...)
-PackagePublisherInventory.json  ->  which publisher names may run packages
-Package definition JSON (1.6)   ->  what to install (tools, URLs, versions, hashes, ...)
+PackageTrustInventory.json      ->  which signing keys/thumbprints are trusted or blocked
+PackageConfig.catalogTrust      ->  strict vs unsigned migration policy
+Package definition JSON (1.7)   ->  what to install, plus embedded definition signature
 ```
 
-You **cannot** put trust on an endpoint row anymore. Trust is only on **publishers**, and cryptographic trust is not implemented yet.
+You **cannot** put trust on an endpoint row. Endpoints discover JSON only. `PackageTrustInventory.json` decides cryptographic trust by exact key thumbprint scoped to `publisherId`; `PackageConfig.catalogTrust` decides whether unsigned migration is allowed for specific publisher ids.
 
-### Publisher trust modes
+Before install/planning, the engine assesses the definition signature and then picks a winner:
 
-| Mode | Trusted? | What it means |
-| --- | --- | --- |
-| `moduleShipped` | Yes | Came with the module. Only **Eigenverft** in the default file. It cannot be untrusted through normal publisher commands. |
-| `unsigned` | No | Publisher is listed but definitions from them will not run. |
-| `unsignedExplicit` | Yes | The user explicitly allowed unsigned JSON for this publisher, for example through `Add-TeamPackagePublisher` or `-AllowUnsignedDefinitions`. |
-
-Before install/planning, the engine only picks definitions whose `publisherId` is **enabled and trusted** in `PackagePublisherInventory.json`. It does **not** yet verify a cryptographic signature on the JSON file.
+- `strict` accepts only signed definitions whose key is trusted for the publisher.
+- `allowUnsigned` accepts trusted signatures, or unsigned definitions only when `publisherId` is listed in `catalogTrust.allowUnsignedPublisherIds`.
+- A signed definition with an invalid, revoked, unknown, or untrusted key fails instead of falling back to unsigned trust.
 
 ### First run on a PC
 
@@ -78,10 +75,10 @@ The first time you run `Invoke-Package` on a profile:
 2. Local copies are made from the module if missing:
    - `PackageConfig.json`
    - `PackageEndpointInventory.json`
-   - `PackagePublisherInventory.json`
    - `PackageDepotInventory.json`
+   - `PackageTrustInventory.json`
 
-For shipped packages you do not need manual publisher setup: Eigenverft is already `moduleShipped`. Team publishers are not auto-trusted; today `Add-TeamPackagePublisher` turns on explicit unsigned trust.
+For shipped packages you do not need manual setup: the shipped Eigenverft signing certificate is seeded into local trust. Team publishers are not auto-trusted; use trust/import commands for signing certificates, or `catalogTrust.allowUnsignedPublisherIds` only for explicit unsigned migration.
 
 ### Existing `signatures` fields are not catalog signing
 
@@ -93,7 +90,7 @@ Catalog signing needs a new publication-level field, not reuse of those payload/
 
 - Same `definitionRevision` with different file content across endpoints fails.
 - Many packages already pin payload hashes, but hash presence is not globally required.
-- Strict catalog mode does not exist yet.
+- Strict catalog mode is the shipped default in `PackageConfig.json`.
 
 ### Payload verification today
 
@@ -105,7 +102,7 @@ The package-file path already has usable trust hooks:
 - Runtime combines acquisition-candidate verification with the selected package file's `contentHash` / `publisherSignature`.
 - A staged/depot file is accepted only when its effective verification accepts it.
 
-Important limitation: a depot file is only protected from tampering when the signed definition contains a payload hash/signature and the selected acquisition path requires verification. Current depot copy/reuse code can compare file hashes to see if two depot files match, but that is not the same thing as proving the file matches a publisher-approved hash.
+With `catalogTrust.payloadVerification = enforceWhenPackageFileExists`, package-file acquisition requires `packageFile.contentHash` or `packageFile.publisherSignature` and forces effective verification mode to `required`. Configs without `catalogTrust` now default to `strict`; old unsigned configs must opt into `allowUnsigned`.
 
 ## Target schema shape
 
@@ -230,24 +227,18 @@ Recommended default path:
 
 If the first implementation wants to reduce bootstrap risk, it can hard-code the same default helper first and add the `PackageConfig.json` override in the next step. The important requirement is to isolate the path behind helper functions so the storage can move later without touching verification logic.
 
-Keep `PackagePublisherInventory.json` for:
-
-- publisher enabled/disabled
-- publisher display name
-- whether unsigned definitions are explicitly allowed for that publisher
-
-Do not store full key material directly in publisher rows unless a later refactor proves the separate trust inventory is too heavy.
+Do not keep a separate publisher inventory in the runtime trust path. Publisher display data belongs in signed `definitionPublication` and trust summaries; coarse policy belongs in `PackageConfig.catalogTrust`; key material belongs in `PackageTrustInventory.json`.
 
 Storage options considered:
 
 | Option | Fit | Tradeoff |
 | --- | --- | --- |
-| **New `PackageTrustInventory.json`** | Best fit for v1. Mirrors endpoint/publisher/depot inventory style, easy to seed, easy to inspect, easy to back up. | Adds one more inventory file and helper set. |
-| **Extend `PackagePublisherInventory.json`** | Simple lookup because publisher policy is already there. | Mixes name policy, unsigned escape policy, and key material in one file; gets awkward for key rotation and multiple keys per publisher. |
+| **New `PackageTrustInventory.json`** | Implemented v1 path. Easy to seed, inspect, back up, and scope by publisher id. | Adds one dedicated inventory file and helper set. |
+| **Extend `PackagePublisherInventory.json`** | Rejected for the runtime path. | Mixes name policy, unsigned escape policy, and key material in one file; gets awkward for key rotation and multiple keys per publisher. |
 | **Directory of one trust file per key** | Friendly for manual copy/sync and easier conflict handling if teams distribute individual trust records. | Requires scanning and merge logic; more filesystem edge cases; more files to explain. |
 | **Windows certificate store** | Natural for enterprise PKI and cert UI. | Harder for local/portable/team-share workflows, harder to test, and less transparent for this package engine's own inventory story. |
 
-Recommended path: ship `PackageTrustInventory.json` first, but write the helpers so a later directory-backed store could be added without changing verification.
+Recommended path: ship `PackageTrustInventory.json` and keep publisher inventory out of normal runtime resolution. Helpers should still allow a later directory-backed trust store without changing verification.
 
 ## Verification flow
 
@@ -260,16 +251,16 @@ Target flow before any package planning/install work:
 5. Match `keyThumbprint` against enabled, non-revoked records in `PackageTrustInventory.json`.
 6. Apply global `PackageConfig.json` catalog trust policy:
    - `strict`: signed, valid, and trusted key required.
-   - `allowUnsigned`: signed trusted definitions pass; unsigned definitions pass only with explicit publisher unsigned policy.
-7. Apply `PackagePublisherInventory.json` enabled/disabled publisher policy.
+   - `allowUnsigned`: signed trusted definitions pass; unsigned definitions pass only when `publisherId` is listed in `catalogTrust.allowUnsignedPublisherIds`.
+7. Apply coarse publisher blocks from `catalogTrust.blockedPublisherIds`.
 8. Apply existing publisher conflict and revision selection rules.
 9. Print trust status before package resolution continues.
 
-Important implementation consequence: current candidate selection filters out untrusted publishers before loading a full verified trust result. That must change. Candidate rows need a trust assessment before the winner is chosen, otherwise the desired "unknown signed key -> prompt/trust" path cannot work.
+Important implementation consequence: candidate rows need a trust assessment before the winner is chosen, otherwise signature status, unknown-key errors, and unsigned migration policy cannot be explained clearly.
 
 ## Payload strictness direction
 
-Keep payload strictness out of catalog-publisher trust. The selected default is:
+Keep payload strictness out of catalog trust. The selected default is:
 
 - Catalog trust answers: "was this definition written by a trusted key?"
 - Payload trust answers: "does this downloaded/depot file match the signed definition's expected hash/signature?"
@@ -301,7 +292,7 @@ This means a manipulated depot is caught when:
 1. the signed definition contains the expected payload hash/signature, and
 2. the acquisition path verifies the depot file before reuse.
 
-If either is missing, publisher trust still proves who authored the JSON, but it does not prove the depot file was not replaced.
+If either is missing, catalog signing still proves who authored the JSON, but it does not prove the depot file was not replaced.
 
 ## Revocation direction
 
@@ -331,12 +322,12 @@ Options:
 | --- | --- | --- |
 | Exact key disable | Set `enabled = false` or `revokedAtUtc` on a trusted key record. | Simple and safe; requires the key to be known locally. |
 | Exact revoked key list | Keep `revokedKeys[]` even if the full key record is missing. | Good for module-shipped emergency blocks and imported block records. |
-| Publisher disable | Use `PackagePublisherInventory.json` to disable the whole publisher. | Coarse but already matches current policy. |
-| Wildcard publisher block | Block all keys for `publisherId` or a pattern. | Useful for emergency local policy, but easy to overreach. Should not be the default first path. |
+| Publisher block | Use `catalogTrust.blockedPublisherIds[]` to block a whole exact publisher id locally. | Coarse but useful for emergency policy; no wildcard support in this pass. |
+| Wildcard publisher block | Block all keys for `publisherId` or a pattern. | Later only. Exact ids are safer and clearer for v1. |
 | Wildcard thumbprint block | Pattern-match thumbprints. | Avoid for v1; exact thumbprints are safer and clearer. |
 | Certificate expiry / chain / CRL / OCSP | Treat X.509 like enterprise PKI. | Later only. Adds network and chain semantics that are not needed for lightweight self-signed trust. |
 
-Default behavior: exact thumbprint trust and exact thumbprint revocation first. Allow publisher-level disable through existing publisher policy. Keep `revokedKeys[]` in `PackageTrustInventory.json` for v1; a separate revocation inventory is a later option only.
+Default behavior: exact thumbprint trust and exact thumbprint revocation first. Allow publisher-level blocking through `catalogTrust.blockedPublisherIds[]`. Keep `revokedKeys[]` in `PackageTrustInventory.json` for v1; a separate revocation inventory is a later option only.
 
 ## User experience
 
@@ -352,7 +343,7 @@ Status names should be small and stable:
 | --- | --- | --- |
 | `validTrusted` | Signature verifies and key is trusted | Continue |
 | `validUnknownKey` | Signature verifies but key is not trusted | Prompt if interactive; fail if noninteractive |
-| `unsignedAllowed` | No signature, but global and publisher policy allow unsigned | Warn and continue |
+| `unsignedAllowed` | No signature, but `allowUnsignedPublisherIds` allows this publisher id | Warn and continue |
 | `unsignedBlocked` | No signature and policy does not allow it | Fail |
 | `invalidSignature` | Signature exists but does not verify | Fail |
 | `revokedKey` | Key exists but is disabled/revoked locally | Fail |
@@ -367,7 +358,7 @@ Noninteractive behavior:
 
 - Never prompt.
 - Unknown signed key fails with a command hint to import/preseed trust.
-- Unsigned definitions only run when `catalogTrust.policy = allowUnsigned` and publisher policy is already `unsignedExplicit`.
+- Unsigned definitions only run when `catalogTrust.policy = allowUnsigned` and `publisherId` is listed in `catalogTrust.allowUnsignedPublisherIds`.
 
 ## Team and AI workflow
 
@@ -436,10 +427,10 @@ Rejected for now: approved-verb-only names such as `Set-PackageDefinitionSignatu
 | 6. First-use keys and rotation | Seed Eigenverft keys from the module; new thumbprint means new trust unless imported/shipped. |
 | 7. Old module + new key | Old module only trusts keys it already knows; new key requires module update or local import. |
 | 8. Strict scope | Global package config policy, not endpoint or depot policy. |
-| 9. `unsignedExplicit` | Keep it as an explicit dev/migration escape hatch. |
+| 9. Unsigned migration | Keep it explicit with `catalogTrust.allowUnsignedPublisherIds`; no wildcard support in this pass. |
 | 10. Download hashes | Separate later policy. Enforce where the engine has a real package-file verification boundary. |
-| 11. Shipped unsigned migration | Breaking change: migrate shipped definitions to schema 1.7 and sign them. Do not keep 1.6 as the runtime target after this change. |
-| 12. Trust prompt scope | Once per key thumbprint, with publisher/name details displayed. |
+| 11. Shipped unsigned migration | Breaking change for shipped/current definitions: migrate to schema 1.7 and sign them. Runtime keeps limited 1.6 compatibility for old local definitions only. |
+| 12. Trust prompt scope | v1 stores trust once per key thumbprint and displays publisher/name details. Runtime prompt is future work because unknown keys need certificate distribution first. |
 | 13. CI/automation | Noninteractive fails on unknown keys; preseed/import trust first. |
 | 14. What to print | Always print concise trust status before planning/install work. |
 | 15. Bad signature | Always fail. |
@@ -447,7 +438,7 @@ Rejected for now: approved-verb-only names such as `Set-PackageDefinitionSignatu
 | 17. CI signing | Optional. Eigenverft can sign before packaging; CI primarily validates. |
 | 18. Validate without installing | Keep as a validation command/work item; it is not a blocking design decision. |
 | 19. Schema version | New breaking schema 1.7. |
-| 20. Old unsigned files | Schema 1.6 files are not a runtime target after the breaking change. Schema 1.7 can still express `kind = unsigned`, but it only runs under explicit `allowUnsigned` plus publisher policy. |
+| 20. Old unsigned files | Schema 1.7 can express `kind = unsigned`, but it only runs under explicit `allowUnsigned` plus `catalogTrust.allowUnsignedPublisherIds`. Schema 1.6 remains a compatibility path, not a trust target. |
 
 ## Locked implementation requirements
 
@@ -532,6 +523,7 @@ Required command set:
 | `Sign-PackageDefinition` | Sign a package-definition JSON and inject/update `signatureValue`. |
 | `Verify-PackageDefinitionSignature` | Verify one package-definition JSON without installing. |
 | `Verify-PackageDefinitionCatalog` | Verify a folder of definitions without installing. |
+| `Get-PackageSigningProfile` | Show local non-secret signing profile metadata. |
 | `Get-PackageTrust` | Show trusted/revoked key/cert records. |
 | `Trust-PackageSigningCertificate` | Trust a public signing certificate/key thumbprint for a publisher. |
 | `Untrust-PackageSigningCertificate` | Remove or disable local trust for a signing certificate/key thumbprint. |
@@ -543,24 +535,24 @@ Required command set:
 
 ### 4. Private-key and signing UX
 
-**Requirement: use a password-protected PFX file and prompt/supplied `SecureString` password.**
+**Requirement: use a password-protected PFX file with a local DPAPI-protected signing profile for the friendly path.**
 
-Users should not manually type signature fields. The module should provide tooling for self-signed/local signing and verification. The Windows certificate store, DPAPI cache, Windows Credential Manager, and CI secret signing are later options, not v1 requirements.
+Users should not manually type signature fields. The module should provide tooling for self-signed/local signing and verification. The Windows certificate store, Windows Credential Manager, and CI secret signing are later options, not v1 requirements.
 
 Base workflow:
 
-1. `New-PackageSigningCertificate` creates a self-signed signing certificate and writes a password-protected PFX.
+1. `New-PackageSigningCertificate -Name <publisher> -Password <securestring>` creates a self-signed signing certificate, writes a password-protected PFX, writes a public `.cer`, writes a public trust export JSON, and saves a local DPAPI-protected signing profile.
 2. The maintainer keeps the PFX private.
-3. `Export-PackageTrust` exports only the public certificate/trust record.
-4. `Sign-PackageDefinition` reads the PFX, prompts for the password or accepts `-Password` as a `SecureString`, signs the canonical definition bytes, and injects `signatureValue`.
+3. Clients import the public `.cer` with `Import-PackageTrust`; the trust export JSON remains supported for richer metadata or preseed scenarios.
+4. `Sign-PackageDefinition -Path <definition.json>` reads the profile for `definitionPublication.publisherId`, decrypts the password for the current Windows user, signs the canonical definition bytes, and injects `signatureValue`.
 5. `Verify-PackageDefinitionSignature` verifies the signed file before it replaces a shipped/team definition.
 
 Required UX:
 
 - how a user creates the first self-signed signing cert
 - how the private key is protected in the PFX
-- how the PFX password is entered without persisting it
-- how the public certificate/trust record is exported
+- how the PFX password is stored locally with DPAPI and never shipped
+- how the public `.cer` or trust record is exported
 - how a definition is signed without hand-editing JSON
 - how a signed backup/copy is verified before replacing shipped definitions
 - private-key material and PFX passwords must never be stored in `PackageTrustInventory.json`
@@ -569,7 +561,7 @@ Required UX:
 
 **Requirement: use `enforceWhenPackageFileExists`, designed as a switchable policy.**
 
-Payload strictness is separate from publisher trust. Catalog signing proves who authored the JSON; payload hashes/signatures prove downloaded or depot files match what the trusted author intended.
+Payload strictness is separate from catalog trust. Catalog signing proves who authored the JSON; payload hashes/signatures prove downloaded or depot files match what the trusted author intended.
 
 Current source reality:
 
@@ -632,17 +624,17 @@ PackageTrustInventory.json
 
 Key-row revocation handles the normal case: "I trusted this key, then revoked it." `revokedKeys[]` handles the block-list case: "never accept this exact thumbprint, even if there is no local trust row." A separate `PackageTrustRevocationInventory.json`, wildcard thumbprint blocks, remote revocation, CRL, OCSP, and chain validation are later options.
 
-## Planned phases
+## Implementation phases
 
-| Phase | Deliverable |
-| --- | --- |
-| **A - Schema 1.7** | Add the breaking schema with required `definitionPublication.definitionSignature`; move supported runtime schema from 1.6 to 1.7. |
-| **B - Signing helpers** | Add canonical signable-content helpers, PFX-based self-signed signing certificate creation, sign a backup/copy of one definition, and verify the round trip. |
-| **C - Shipped definitions** | Sign current Eigenverft definitions, migrate them to 1.7, and make verification pass locally. |
-| **D - Trust inventory** | Add `PackageTrustInventory.json`, seed Eigenverft public trust, and add trust commands such as `Trust-PackageSigningCertificate` and `Revoke-PackageSigningCertificate`. |
-| **E - Selection + UX** | Move signature/trust assessment before candidate filtering; print trust status; handle interactive unknown-key trust and noninteractive failure. |
-| **F - Payload strictness** | Add the `enforceWhenPackageFileExists` policy behind one install-kind-aware resolver so it can be changed later. |
-| **G - Revocation** | Add exact-thumbprint revoke/block behavior inside `PackageTrustInventory.json`. |
+| Phase | Status | Deliverable |
+| --- | --- | --- |
+| **A - Schema 1.7** | Done | Added the breaking schema with required `definitionPublication.definitionSignature`; runtime accepts `1.6` for compatibility and validates `1.7` signatures. |
+| **B - Signing helpers** | Done | Added canonical signable-content helpers, PFX-based self-signed signing certificate creation, signing, verification, and signature removal. |
+| **C - Shipped definitions** | Done | Signed current Eigenverft definitions, migrated them to 1.7, and verified the shipped catalog as trusted. |
+| **D - Trust inventory** | Done | Added `PackageTrustInventory.json`, seeded Eigenverft public trust, and added trust/revoke/block/import/export commands. |
+| **E - Selection + UX** | Mostly done | Signature/trust assessment runs before candidate filtering, and trust status is printed. Unknown keys fail with preseed guidance; interactive unknown-key trust remains future work because v1 signatures do not embed certificates. |
+| **F - Payload strictness** | Done | Added `enforceWhenPackageFileExists` behind the acquisition verification resolver. |
+| **G - Revocation** | Done | Added exact-thumbprint revoke/block behavior inside `PackageTrustInventory.json`. |
 
 Release-age and supply-chain items in PROJECT-TODO stay separate - related topics, not the same as signing catalog JSON.
 
@@ -650,8 +642,8 @@ Release-age and supply-chain items in PROJECT-TODO stay separate - related topic
 
 | Topic | Where |
 | --- | --- |
-| Publisher policy | `Configuration/Internal/PackagePublisherInventory.json`, `Support/Package/Schema/...PublisherInventory.Management.ps1` |
-| Publisher commands | `Commands/Publisher/...Cmd.PackagePublisher.ps1` |
+| Trust authority | `Configuration/Internal/PackageTrustInventory.json`, `Support/Package/Schema/...Package.Trust.ps1` |
+| Deprecated publisher commands | `Commands/Publisher/...Cmd.PackagePublisher.ps1` |
 | Endpoint trust rejection | `Support/Package/Schema/...EndpointInventory.Management.ps1` |
 | Picking a definition | `Support/Package/Schema/...DefinitionReference.ps1` |
 | Config and policy validation | `Support/Package/Schema/...Config.InventoryAndSchema.ps1`, `...Config.Aggregation.ps1` |
@@ -660,18 +652,21 @@ Release-age and supply-chain items in PROJECT-TODO stay separate - related topic
 | Schema gate | `Support/Package/Schema/...DefinitionSchema.ps1` |
 | Schema 1.6 | `Schema/PackageDefinition/eigenverft-module-package-definition-1.6.schema.json` |
 | Payload signatures, not catalog signatures | `discovery.presence.signatures`, `packageFile.publisherSignature` |
+| Post-implementation findings (LLM authoring, README gaps) | [TEAM-CATALOG-TRUST-POST-IMPLEMENTATION-FINDINGS.md](TEAM-CATALOG-TRUST-POST-IMPLEMENTATION-FINDINGS.md) |
+| Schema 1.7 agent/author text | `Schema/PackageDefinition/eigenverft-module-package-definition-1.7.schema.json` (`description`, `x-eigenverftAgentHint`, `$defs/definitionSignature`) |
 
-## Checklist before implementation
+## Implementation checklist
 
-- [ ] Canonical JSON signing rules are written down with examples.
-- [ ] `definitionPublication.definitionSignature` schema 1.7 fields are final.
-- [ ] Signing helper round trip works on a backup/copy of one current definition.
-- [ ] PFX-based self-signed signing certificate creation/import and prompt/`SecureString` password handling works locally.
-- [ ] `PackageTrustInventory.json` schema and bootstrap path are final.
-- [ ] `PackageConfig.json` catalog trust policy shape is final.
-- [ ] Candidate selection has a trust-assessment step before filtering/winner selection.
-- [ ] Interactive and noninteractive behavior is specified.
-- [ ] Signing/verification/preseed command names are locked.
-- [ ] Eigenverft shipped key seeding and key-rotation behavior are specified.
-- [ ] Payload strictness uses `enforceWhenPackageFileExists` through one install-kind-aware policy helper.
-- [ ] Revocation uses key-row metadata plus `revokedKeys[]` inside `PackageTrustInventory.json`.
+- [x] Canonical JSON signing rules are written down with examples.
+- [x] `definitionPublication.definitionSignature` schema 1.7 fields are final for v1.
+- [x] Signing helper round trip works on package definitions.
+- [x] PFX-based self-signed signing certificate creation/import and `SecureString` password handling works locally.
+- [x] `PackageTrustInventory.json` schema and bootstrap path are implemented.
+- [x] `PackageConfig.json` catalog trust policy shape is implemented.
+- [x] Candidate selection has a trust-assessment step before filtering/winner selection.
+- [x] Noninteractive unknown-key behavior is implemented.
+- [ ] Interactive unknown-key trust prompt is future work and needs a certificate-distribution decision.
+- [x] Signing/verification/preseed command names are implemented.
+- [x] Eigenverft shipped key seeding and basic changed-key behavior are implemented.
+- [x] Payload strictness uses `enforceWhenPackageFileExists` through one acquisition policy helper.
+- [x] Revocation uses key-row metadata plus `revokedKeys[]` inside `PackageTrustInventory.json`.

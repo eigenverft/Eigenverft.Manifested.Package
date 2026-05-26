@@ -187,7 +187,7 @@ Resolve-PackageDependencies -PackageResult $result
             throw ("Package dependency cycle detected: {0} -> {1}." -f (($currentStack -join ' -> ')), $dependencyKey)
         }
 
-        $dependencyPublisherText = if ([string]::IsNullOrWhiteSpace($dependencyPublisherId)) { '<trusted publishers>' } else { $dependencyPublisherId }
+        $dependencyPublisherText = if ([string]::IsNullOrWhiteSpace($dependencyPublisherId)) { '<eligible publishers>' } else { $dependencyPublisherId }
         Write-PackageExecutionMessage -Message ("[STEP] Ensuring package dependency '{0}' from publisher '{1}'." -f $dependencyDefinitionId, $dependencyPublisherText)
         $dependencyResult = Resolve-PackageDependencyDefinition -PackageResult $PackageResult -PublisherId $dependencyPublisherId -DefinitionId $dependencyDefinitionId -DependencyStack (@($currentStack) + $dependencyKey)
         $resolvedDependencyPublisherId = if ($dependencyResult) { Get-PackageResultPublisherId -PackageResult $dependencyResult } else { $dependencyPublisherId }

@@ -1,12 +1,22 @@
 {
-  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.6.schema.json",
-  "schemaVersion": "1.6",
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.7.schema.json",
+  "schemaVersion": "1.7",
   "definitionPublication": {
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "NodeRuntime",
     "definitionRevision": 2,
-    "publishedAtUtc": "2026-05-22T12:00:00Z"
+    "publishedAtUtc": "2026-05-22T12:00:00Z",
+    "definitionSignature": {
+      "kind": "signed",
+      "format": "embedded-json-rsa-sha256-v1",
+      "signedContent": "canonicalDefinitionExcludingSignatureValue",
+      "keyThumbprint": "DD1E9435FB3AE68ABF2DB99E5638502E00D2FD90",
+      "signerDisplayName": "Eigenverft Package Catalog Signing",
+      "certificateSubject": "CN=Eigenverft Package Catalog Signing",
+      "signedAtUtc": "2026-05-25T07:36:42.0337448Z",
+      "signatureValue": "ep0SRwqWpy/Pz1DVtUT+Hd+6hBY3GqcKigO5b4A0Xq8bJH94zOFNGN+JQdRCXyeFk5iFxQ2ROyygRWAhVcexSRMO7cPQKounOvy3UimIxP6qKaFagcVcDPMVNPvOKdQcR/ozk3TQg1rhPcVEXZJowIEiGF5Lt7Pv0WhPdTZ73C6ldC0DREaVomvPrBxJBr9zbWAvTBYxCp3O7a5YWpWl/bXEgt0S+B6Q7/2HE/1FqAKm7xNLOpoyhgSlzd0kFytBmk9z/JBGX96kVlDZbEPTtv8PyweXe95AMZX4FOMH7f/SmMziTKa90CdnkeZNN99N4hzYzvc2tumh5Qd1vbR+YVdEa8++gb0aLcJNGeORTwT9dkq0h6iXeW2HRchsZKUgOT0IomTA/saOlThdbecGvoRPdPTS/1HSqpaSWM31Cc3F/dJQrQPBQQPl6glKDbWeHU1DA3ZHHf4SGUHFVFRvn6rt3deSkMZH4D2kO45VAnmEIFZrQx6+RZRuY6FDqinF"
+    }
   },
   "display": {
     "default": {

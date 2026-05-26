@@ -60,7 +60,7 @@ function Assert-PackageEndpointSource {
     }
     foreach ($retiredTrustProperty in @('trusted', 'trustMode', 'trustedAtUtc', 'trustReason')) {
         if ($SourceValue.PSObject.Properties[$retiredTrustProperty]) {
-            throw "Package endpoint '$EndpointName' in '$DocumentPath' still uses retired property '$retiredTrustProperty'. Endpoint inventory defines scan locations only; use PackagePublisherInventory.json for publisher trust."
+            throw "Package endpoint '$EndpointName' in '$DocumentPath' still uses retired property '$retiredTrustProperty'. Endpoint inventory defines scan locations only; use signed definitions, PackageTrustInventory.json, and PackageConfig.catalogTrust for catalog authority."
         }
     }
 
@@ -349,7 +349,7 @@ function Select-PackageEndpointSummary {
     if ($kind -eq 'httpsCatalog') {
         $notes.Add('HTTPS catalog endpoints are reserved for future support and are not executable in v1.') | Out-Null
     }
-    $notes.Add('Definition execution is controlled by PackagePublisherInventory.json publisher trust.') | Out-Null
+    $notes.Add('Definition execution is controlled by signed definitions, PackageTrustInventory.json, and PackageConfig.catalogTrust.') | Out-Null
 
     return [pscustomobject]@{
         SourceId         = $EndpointName

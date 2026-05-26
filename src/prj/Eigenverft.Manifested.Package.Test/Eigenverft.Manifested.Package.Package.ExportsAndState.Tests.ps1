@@ -27,7 +27,10 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
         $text | Should -Match 'Invoke-Package -DefinitionId ''GitRuntime'''
         $text | Should -Match 'Invoke-Package -DefinitionId CodexCli,'
         $text | Should -Not -Match 'VSCodeUser,'
-        $text | Should -Match "Add-TeamPackagePublisher -PublisherId 'My Team'"
+        $text | Should -Not -Match "Add-TeamPackagePublisher -PublisherId 'My Team'"
+        $text | Should -Match "Import-PackageTrust -Path '<public-signing-cert.cer>'"
+        $text | Should -Match 'New-PackageSigningCertificate -Name'
+        $text | Should -Match 'Sign-PackageDefinition -Path'
         $text | Should -Match 'definitionPublication.publisherId'
         $text | Should -Match 'Other exported commands:'
     }
@@ -54,20 +57,34 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'Add-TeamPackageDepot',
             'Add-TeamPackageEndpoint',
             'Add-TeamPackagePublisher',
+            'Block-PackageSigningCertificate',
+            'Export-PackageTrust',
             'Get-PackageDepot',
             'Get-PackageEndpoint',
             'Get-PackagePublisher',
+            'Get-PackageSigningProfile',
             'Get-PackageState',
+            'Get-PackageTrust',
             'Get-PackageVersion',
+            'Import-PackageTrust',
             'Invoke-Package',
             'Invoke-WebRequestEx',
+            'New-PackageSigningCertificate',
+            'Remove-PackageDefinitionSignature',
             'Remove-PackageDepot',
             'Remove-PackageEndpoint',
             'Remove-PackagePublisher',
+            'Remove-PackageTrust',
+            'Revoke-PackageSigningCertificate',
             'Set-PackageDepot',
             'Set-PackageEndpoint',
             'Set-PackagePublisher',
-            'Update-PackageVersion'
+            'Sign-PackageDefinition',
+            'Trust-PackageSigningCertificate',
+            'Untrust-PackageSigningCertificate',
+            'Update-PackageVersion',
+            'Verify-PackageDefinitionCatalog',
+            'Verify-PackageDefinitionSignature'
         )
         Get-Command -Name 'Initialize-ProxyAccessProfile' -Module $module -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
     }
@@ -80,6 +97,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Depot\Eigenverft.Manifested.Package.Cmd.PackageDepot.ps1') -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Endpoint\Eigenverft.Manifested.Package.Cmd.PackageEndpoint.ps1') -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Publisher\Eigenverft.Manifested.Package.Cmd.PackagePublisher.ps1') -PathType Leaf | Should -BeTrue
+        Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Trust\Eigenverft.Manifested.Package.Cmd.PackageTrust.ps1') -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Module\Eigenverft.Manifested.Package.Cmd.Module.ps1') -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Web\Eigenverft.Manifested.Package.Cmd.InvokeWebRequestEx.ps1') -PathType Leaf | Should -BeTrue
     }
@@ -97,9 +115,11 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             PackageAssignmentInventoryFilePath            = Join-Path (Join-Path $root 'State') 'PackageAssignmentInventory.json'
             PackageOperationHistoryFilePath     = Join-Path (Join-Path $root 'State') 'PackageOperationHistory.json'
             LocalEndpointInventoryPath          = Join-Path (Join-Path $root 'Configuration\Internal') 'PackageEndpointInventory.json'
+            LocalTrustInventoryPath             = Join-Path (Join-Path $root 'Configuration\Internal') 'PackageTrustInventory.json'
             LocalDepotInventoryPath             = Join-Path (Join-Path $root 'Configuration\Internal') 'PackageDepotInventory.json'
             ApplicationRootDirectory            = $root
             EndpointInventoryInfo               = [pscustomobject]@{ Path = (Join-Path (Join-Path $root 'Configuration\Internal') 'PackageEndpointInventory.json'); Exists = $false; Document = $null }
+            TrustInventoryInfo                  = [pscustomobject]@{ Path = (Join-Path (Join-Path $root 'Configuration\Internal') 'PackageTrustInventory.json'); Exists = $false; Document = $null }
             DepotInventoryInfo                  = [pscustomobject]@{ Path = (Join-Path (Join-Path $root 'Configuration\Internal') 'PackageDepotInventory.json'); Exists = $false; Document = $null }
         }
 
@@ -112,6 +132,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
 
         $state.LocalRoot | Should -Be $root
         $state.PackageConfigExists | Should -BeFalse
+        $state.LocalTrustInventoryExists | Should -BeFalse
+        $state.TrustInventoryExists | Should -BeFalse
         $state.PackageAssignmentInventoryExists | Should -BeFalse
         $state.PackageOperationHistoryExists | Should -BeFalse
         $state.PackageRecordCount | Should -Be 0
@@ -185,9 +207,11 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             PackageAssignmentInventoryFilePath            = Join-Path (Join-Path $root 'State') 'PackageAssignmentInventory.json'
             PackageOperationHistoryFilePath     = Join-Path (Join-Path $root 'State') 'PackageOperationHistory.json'
             LocalEndpointInventoryPath          = Join-Path (Join-Path $root 'Configuration\Internal') 'PackageEndpointInventory.json'
+            LocalTrustInventoryPath             = Join-Path (Join-Path $root 'Configuration\Internal') 'PackageTrustInventory.json'
             LocalDepotInventoryPath             = Join-Path (Join-Path $root 'Configuration\Internal') 'PackageDepotInventory.json'
             ApplicationRootDirectory            = $root
             EndpointInventoryInfo               = [pscustomobject]@{ Path = (Join-Path (Join-Path $root 'Configuration\Internal') 'PackageEndpointInventory.json'); Exists = $false; Document = $null }
+            TrustInventoryInfo                  = [pscustomobject]@{ Path = (Join-Path (Join-Path $root 'Configuration\Internal') 'PackageTrustInventory.json'); Exists = $false; Document = $null }
             DepotInventoryInfo                  = [pscustomobject]@{ Path = (Join-Path (Join-Path $root 'Configuration\Internal') 'PackageDepotInventory.json'); Exists = $false; Document = $null }
         }
         Write-TestJsonDocument -Path $config.PackageAssignmentInventoryFilePath -Document @{ records = @() }
@@ -276,9 +300,11 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             PackageAssignmentInventoryFilePath            = Join-Path (Join-Path $root 'State') 'PackageAssignmentInventory.json'
             PackageOperationHistoryFilePath     = Join-Path (Join-Path $root 'State') 'PackageOperationHistory.json'
             LocalEndpointInventoryPath          = Join-Path (Join-Path $root 'Configuration\Internal') 'PackageEndpointInventory.json'
+            LocalTrustInventoryPath             = Join-Path (Join-Path $root 'Configuration\Internal') 'PackageTrustInventory.json'
             LocalDepotInventoryPath             = Join-Path (Join-Path $root 'Configuration\Internal') 'PackageDepotInventory.json'
             ApplicationRootDirectory            = $root
             EndpointInventoryInfo               = [pscustomobject]@{ Path = (Join-Path (Join-Path $root 'Configuration\Internal') 'PackageEndpointInventory.json'); Exists = $false; Document = $null }
+            TrustInventoryInfo                  = [pscustomobject]@{ Path = (Join-Path (Join-Path $root 'Configuration\Internal') 'PackageTrustInventory.json'); Exists = $false; Document = $null }
             DepotInventoryInfo                  = [pscustomobject]@{ Path = (Join-Path (Join-Path $root 'Configuration\Internal') 'PackageDepotInventory.json'); Exists = $false; Document = $null }
         }
         $packageInventory = [pscustomobject]@{ Path = $config.PackageAssignmentInventoryFilePath; Records = @([pscustomobject]@{ definitionId = 'VSCodeRuntime' }) }

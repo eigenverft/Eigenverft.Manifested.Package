@@ -1,10 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://eigenverft.local/schemas/eigenverft-module-package-definition-1.6.schema.json",
-  "title": "Eigenverft module package definition document (wire format 1.6)",
-  "$comment": "META: This file is the JSON Schema for INSTANCE documents (one package definition per file). It is not itself a package definition. Runtime validates instances with PowerShell (DefinitionSchema.ps1 + DefinitionSchema.Wire1_6.ps1). In 1.6 definitionPublication.publisherId + definitionPublication.definitionId is the durable package-definition identity. Endpoints are discovery locations only. Filenames are storage detail, though the recommended on-disk layout under an endpoint root is <publisherId>/<definitionId>.json.",
-  "description": "AUTHOR TASK - Produce or edit one complete package-definition JSON object for Eigenverft.Manifested.Package. Required logical order: schemaVersion, definitionPublication, display, dependencies, artifacts, discovery, packageOperations. Use schemaVersion exactly 1.6.\n\nPUBLICATION: definitionPublication.publisherId is the signed maintainer namespace for this definition (for shipped definitions: Eigenverft). definitionPublication.definitionId is the machine package definition id used by Invoke-Package. Increment definitionPublication.definitionRevision for every meaningful JSON change, including same-day quick fixes. publishedAtUtc is audit metadata only; revision is the update key within one publisher/definition.\n\nDEPENDENCIES: dependencies is required but may be []. dependency.publisherId is optional; omit it to let Invoke-Package resolve by catalog-trust conflict policy, or include it to pin one publisher.\n\nCOMMON TRAPS: root repositoryId and root definitionId are retired; download candidates need sourceId+sourcePath (or artifact sourcePath) OR direct url/urlTemplate; GitHub release sources require real release assets and releaseTag; NSIS and Inno Setup are different install kinds; package-managed shims and installer-managed PATH should be chosen deliberately.",
-  "x-eigenverftAgentHint": "LLM/agent: prefer schema 1.7 for new or maintained catalog JSON (embedded catalog signatures). This 1.6 schema remains compatibility-only. For new work read eigenverft-module-package-definition-1.7.schema.json: author drafts with definitionSignature.kind=unsigned, then Sign-PackageDefinition after content is final. Layout: <publisherId>/<definitionId>.json under endpoint roots. Bump definitionRevision on changes.",
+  "$id": "https://eigenverft.local/schemas/eigenverft-module-package-definition-1.7.schema.json",
+  "title": "Eigenverft module package definition document (wire format 1.7)",
+  "$comment": "META: JSON Schema for INSTANCE package-definition documents (one file per definition). Runtime validates with DefinitionSchema.ps1 + DefinitionSchema.Wire1_6.ps1 and 1.7 signature assertions. definitionPublication.definitionSignature is required; kind=unsigned is valid for draft authoring, kind=signed after Sign-PackageDefinition. Endpoints are discovery-only. Recommended layout under an endpoint root: <publisherId>/<definitionId>.json.",
+  "description": "AUTHOR TASK - Produce or edit one complete package-definition JSON object for Eigenverft.Manifested.Package. Required top-level order: schemaVersion, definitionPublication, display, dependencies, artifacts, discovery, packageOperations. Use schemaVersion exactly 1.7.\n\nAUTHORING VS SIGNING: Design semantic package content first (dependencies, artifacts, discovery, packageOperations). A valid embedded signature is not required while drafting. Always include definitionPublication.definitionSignature: for drafts use kind=unsigned with format and signedContent only; do not invent keyThumbprint, signedAtUtc, or signatureValue. Never hand-edit signatureValue base64. After the JSON content is final, signing is a separate maintainer step.\n\nSIGNING WORKFLOW: If no catalog-signing certificate exists, run New-PackageSigningCertificate (creates a password-protected PFX; keep the private key off endpoints). Inject or refresh the embedded signature with Sign-PackageDefinition -Path <file> -CertificatePath <pfx> -Password <secure>. Verify with Verify-PackageDefinitionSignature or Verify-PackageDefinitionCatalog before replacing published copies. Distribute trust to clients with Export-PackageTrust / Import-PackageTrust or Trust-PackageSigningCertificate. Re-run Sign-PackageDefinition after any meaningful definition change and bump definitionRevision.\n\nDEPLOYMENT (neutral): Whether an embedded signature is required depends on client catalogTrust.policy and how trust is delivered—not on this schema alone. Synced file-share or NAS endpoint roots used with strict policy need kind=signed definitions and preseeded keys in PackageTrustInventory.json. HTTP or other web endpoints may combine definitions with separate trust distribution (preseeded keys, CI gates, or future endpoint-mediated trust); unsigned catalogs may run only where catalogTrust.policy=allowUnsigned and publisher policy explicitly allows unsigned definitions. Do not assume every endpoint model requires an embedded signature without checking the target environment.\n\nPUBLICATION: definitionPublication.publisherId is the maintainer namespace (shipped: Eigenverft; teams: e.g. My Team). definitionPublication.definitionId is the id used by Invoke-Package. Increment definitionPublication.definitionRevision for every meaningful JSON change. publishedAtUtc is audit metadata only.\n\nCATALOG TRUST: Production strict clients expect kind=signed with RSA/SHA-256 signatureValue over canonical JSON excluding signatureValue. kind=unsigned is explicit draft/migration shape and does not prove authorship under strict policy.\n\nDEPENDENCIES: dependencies is required but may be []. dependency.publisherId is optional.\n\nCOMMON TRAPS: root repositoryId and root definitionId are retired; download candidates need sourceId+sourcePath or direct url/urlTemplate; GitHub release sources need real assets and releaseTag; NSIS and Inno Setup differ; choose package-managed shims vs installer PATH deliberately.",
+  "x-eigenverftAgentHint": "LLM/agent: edit INSTANCE JSON conforming to this schema and DefinitionSchema.Wire1_6.ps1 plus 1.7 signature rules. Author drafts with definitionPublication.definitionSignature.kind=unsigned (no signatureValue). Do not fabricate signatures. After content is stable, a human or automation runs Sign-PackageDefinition; use New-PackageSigningCertificate when no key exists yet. Shipped examples: Endpoint/Defaults/Eigenverft (signed). Layout: <publisherId>/<definitionId>.json under endpoint roots. Bump definitionRevision on every definition change. Embedded signatures are required for strict file-based catalogs; web or centrally trusted endpoints may use other trust delivery—check deployment policy before assuming unsigned JSON is runnable.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -23,12 +23,12 @@
     },
     "$schema": {
       "type": "string",
-      "description": "Optional. In instance documents set to ../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.6.schema.json (relative to Endpoint/Defaults/Eigenverft) so editors attach validation; runtime ignores."
+      "description": "Optional. In instance documents set to ../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.7.schema.json (relative to Endpoint/Defaults/Eigenverft) so editors attach validation; runtime ignores."
     },
     "schemaVersion": {
       "type": "string",
-      "const": "1.6",
-      "description": "Must be the literal string 1.6. This is the only supported package-definition wire version for new documents."
+      "const": "1.7",
+      "description": "Must be the literal string 1.7. This wire version adds embedded catalog signatures."
     },
     "definitionPublication": {
       "$ref": "#/$defs/definitionPublication",
@@ -40,7 +40,7 @@
     },
     "dependencies": {
       "type": "array",
-      "description": "Required array (may be empty []). Lists other package definitions that must reach Assigned before this one. publisherId is optional; omit it for catalog-trust conflict policy, include it to pin one publisher. Do not use retired repositoryId or repositorySourceId on dependency objects.",
+      "description": "Required array (may be empty []). Lists other package definitions that must reach Assigned before this one. publisherId is optional; omit it for catalog-trust conflict policy, include it to pin one definitionPublication.publisherId. Do not use retired repositoryId or repositorySourceId on dependency objects.",
       "items": {
         "$ref": "#/$defs/dependency"
       }
@@ -91,7 +91,8 @@
         "publisherName",
         "definitionId",
         "definitionRevision",
-        "publishedAtUtc"
+        "publishedAtUtc",
+        "definitionSignature"
       ],
       "properties": {
         "publisherId": {
@@ -115,8 +116,107 @@
           "type": "string",
           "format": "date-time",
           "description": "UTC timestamp when this definition revision was published. Audit metadata only; revision is the update key."
+        },
+        "definitionSignature": {
+          "$ref": "#/$defs/definitionSignature",
+          "description": "Catalog trust metadata for this file. Required on every 1.7 definition. Draft authoring: kind=unsigned (no signatureValue). Published strict catalogs: kind=signed after Sign-PackageDefinition. Do not hand-edit signatureValue."
         }
       }
+    },
+    "definitionSignature": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Embedded catalog signature block. Agents author unsigned drafts; maintainers sign with Sign-PackageDefinition. signatureValue is excluded from canonical bytes when kind=signed.",
+      "required": [
+        "kind",
+        "format",
+        "signedContent"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "signed",
+            "unsigned"
+          ],
+          "description": "unsigned = draft or migration placeholder while editing JSON (no signatureValue). signed = production catalog after Sign-PackageDefinition injected signatureValue and key metadata."
+        },
+        "format": {
+          "type": "string",
+          "const": "embedded-json-rsa-sha256-v1",
+          "description": "Fixed catalog signature format for 1.7. Required for both unsigned and signed kinds."
+        },
+        "signedContent": {
+          "type": "string",
+          "const": "canonicalDefinitionExcludingSignatureValue",
+          "description": "Declares that verification signs canonical JSON with signatureValue removed. Do not change."
+        },
+        "keyThumbprint": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{40,128}$",
+          "description": "Hex thumbprint of the signing certificate. Present when kind=signed; set by Sign-PackageDefinition, not by draft authoring."
+        },
+        "signerDisplayName": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Short display label for the signer. Present when kind=signed; set by signing tooling."
+        },
+        "certificateSubject": {
+          "type": "string",
+          "description": "Optional X.509 subject for audit/UI when kind=signed."
+        },
+        "signedAtUtc": {
+          "type": "string",
+          "format": "date-time",
+          "description": "UTC time when kind=signed was applied. Set by Sign-PackageDefinition."
+        },
+        "signatureValue": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "description": "RSA-SHA256 signature over canonical definition bytes. Required when kind=signed. Never author or paste manually; use Sign-PackageDefinition."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "signed"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "keyThumbprint",
+              "signerDisplayName",
+              "signedAtUtc",
+              "signatureValue"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "unsigned"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "signatureValue"
+              ]
+            }
+          }
+        }
+      ]
     },
     "displayEntry": {
       "type": "object",

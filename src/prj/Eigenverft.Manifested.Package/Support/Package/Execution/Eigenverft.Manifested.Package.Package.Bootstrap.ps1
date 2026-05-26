@@ -48,7 +48,7 @@ Get-PackageShippedEndpointRoot
 function Get-PackageDefaultPublisherId {
 <#
 .SYNOPSIS
-Returns the default trusted publisher id used on shipped package definitions.
+Returns the default signed publisher id used on shipped package definitions.
 
 .DESCRIPTION
 This is the publisher namespace carried in definitionPublication.publisherId
@@ -133,15 +133,15 @@ Get-PackageShippedEndpointInventoryPath
     return (Join-Path (Join-Path (Get-PackageConfigurationRoot) 'Internal') 'PackageEndpointInventory.json')
 }
 
-function Get-PackageShippedPublisherInventoryPath {
+function Get-PackageShippedTrustInventoryPath {
 <#
 .SYNOPSIS
-Returns the shipped PackagePublisherInventory.json path.
+Returns the shipped PackageTrustInventory.json path.
 #>
     [CmdletBinding()]
     param()
 
-    return (Join-Path (Join-Path (Get-PackageConfigurationRoot) 'Internal') 'PackagePublisherInventory.json')
+    return (Join-Path (Join-Path (Get-PackageConfigurationRoot) 'Internal') 'PackageTrustInventory.json')
 }
 
 function Get-PackageLocalRoot {
@@ -242,15 +242,15 @@ Get-PackageLocalEndpointInventoryPath
     return [System.IO.Path]::GetFullPath((Join-Path (Join-Path (Get-PackageLocalRoot) 'Configuration\Internal') 'PackageEndpointInventory.json'))
 }
 
-function Get-PackageLocalPublisherInventoryPath {
+function Get-PackageLocalTrustInventoryPath {
 <#
 .SYNOPSIS
-Returns the local PackagePublisherInventory.json path.
+Returns the local PackageTrustInventory.json path.
 #>
     [CmdletBinding()]
     param()
 
-    return [System.IO.Path]::GetFullPath((Join-Path (Join-Path (Get-PackageLocalRoot) 'Configuration\Internal') 'PackagePublisherInventory.json'))
+    return [System.IO.Path]::GetFullPath((Join-Path (Join-Path (Get-PackageLocalRoot) 'Configuration\Internal') 'PackageTrustInventory.json'))
 }
 
 function Get-PackageConfigPath {
@@ -337,22 +337,22 @@ Get-PackageEndpointInventoryPath
     return $localInventoryPath
 }
 
-function Get-PackagePublisherInventoryPath {
+function Get-PackageTrustInventoryPath {
 <#
 .SYNOPSIS
-Returns the active PackagePublisherInventory.json path.
+Returns the active PackageTrustInventory.json path.
 #>
     [CmdletBinding()]
     param()
 
-    $localInventoryPath = Get-PackageLocalPublisherInventoryPath
+    $localInventoryPath = Get-PackageLocalTrustInventoryPath
     if (-not (Test-Path -LiteralPath $localInventoryPath -PathType Leaf)) {
         $localInventoryDirectory = Split-Path -Parent $localInventoryPath
         if (-not [string]::IsNullOrWhiteSpace($localInventoryDirectory)) {
             $null = New-Item -ItemType Directory -Path $localInventoryDirectory -Force
         }
 
-        Copy-FileToPath -SourcePath (Get-PackageShippedPublisherInventoryPath) -TargetPath $localInventoryPath -Overwrite | Out-Null
+        Copy-FileToPath -SourcePath (Get-PackageShippedTrustInventoryPath) -TargetPath $localInventoryPath -Overwrite | Out-Null
     }
 
     return $localInventoryPath

@@ -30,6 +30,7 @@ $moduleProjectRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'Eigenverft.Ma
 . "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DepotInventory.Management.ps1"
 . "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.EndpointInventory.Management.ps1"
 . "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.PublisherInventory.Management.ps1"
+. "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.Trust.ps1"
 . "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DefinitionReference.ps1"
 . "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DefinitionSchema.Wire1_6.ps1"
 . "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DefinitionSchema.ps1"
@@ -61,6 +62,7 @@ $moduleProjectRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'Eigenverft.Ma
 . "$moduleProjectRoot\Commands\Depot\Eigenverft.Manifested.Package.Cmd.PackageDepot.ps1"
 . "$moduleProjectRoot\Commands\Endpoint\Eigenverft.Manifested.Package.Cmd.PackageEndpoint.ps1"
 . "$moduleProjectRoot\Commands\Publisher\Eigenverft.Manifested.Package.Cmd.PackagePublisher.ps1"
+. "$moduleProjectRoot\Commands\Trust\Eigenverft.Manifested.Package.Cmd.PackageTrust.ps1"
 . "$moduleProjectRoot\Commands\Web\Eigenverft.Manifested.Package.Cmd.InvokeWebRequestEx.ps1"
 . "$moduleProjectRoot\Commands\Module\Eigenverft.Manifested.Package.Cmd.Module.ps1"
 

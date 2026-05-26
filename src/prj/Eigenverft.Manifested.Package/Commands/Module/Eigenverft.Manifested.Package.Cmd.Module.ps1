@@ -102,7 +102,7 @@ Displays module information, per-definition Invoke-Package examples, and other e
 
     if ($definitionIds.Count -gt 0) {
         $outputLines += @(
-            ('Shipped package definitions (trusted publisher ''{0}''; optional ''Invoke-Package -PublisherId'' pins a publisher; endpoints live in PackageEndpointInventory.json):' -f $defaultDefinitionPublisherId)
+            ('Shipped package definitions (signed publisherId ''{0}''; optional ''Invoke-Package -PublisherId'' pins a definition publisher label; endpoints live in PackageEndpointInventory.json):' -f $defaultDefinitionPublisherId)
             ($definitionIds | ForEach-Object { "- Invoke-Package -DefinitionId '{0}'" -f $_ })
             'Use -DesiredState Removed to uninstall a package-owned install when the definition supports it.'
         )
@@ -115,8 +115,10 @@ Displays module information, per-definition Invoke-Package examples, and other e
         $outputLines += 'Team setup example:'
         $outputLines += "- Add-TeamPackageDepot -BasePath '\\team-share\PackageDepot'"
         $outputLines += "- Add-TeamPackageEndpoint -BasePath '\\team-share\PackageEndpoint'"
-        $outputLines += "- Add-TeamPackagePublisher -PublisherId 'My Team'"
-        $outputLines += "Team package JSON files must set definitionPublication.publisherId to 'My Team'."
+        $outputLines += "- Import-PackageTrust -Path '<public-signing-cert.cer>'"
+        $outputLines += "Maintainers can create a local signing profile with: New-PackageSigningCertificate -Name 'My Team' -Password <securestring>"
+        $outputLines += "Then sign definitions with: Sign-PackageDefinition -Path '\\team-share\PackageEndpoint\MyPackage.json'"
+        $outputLines += "Team package JSON files should be signed and set definitionPublication.publisherId to the matching trust entry."
         $outputLines += "- Invoke-Package -DefinitionId 'OtherTextEditorFromTeamRepos'"
         $outputLines += ''
     }

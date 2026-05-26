@@ -77,7 +77,7 @@ the existing lazy creation paths elsewhere in the Package flow.
     Add-PackageLocalEnvironmentDirectoryCandidate -Candidates $directoryCandidates -Path (Split-Path -Parent (Get-PackageLocalConfigPath))
     Add-PackageLocalEnvironmentDirectoryCandidate -Candidates $directoryCandidates -Path (Split-Path -Parent (Get-PackageLocalDepotInventoryPath))
     Add-PackageLocalEnvironmentDirectoryCandidate -Candidates $directoryCandidates -Path (Split-Path -Parent (Get-PackageLocalEndpointInventoryPath))
-    Add-PackageLocalEnvironmentDirectoryCandidate -Candidates $directoryCandidates -Path (Split-Path -Parent (Get-PackageLocalPublisherInventoryPath))
+    Add-PackageLocalEnvironmentDirectoryCandidate -Candidates $directoryCandidates -Path (Split-Path -Parent (Get-PackageLocalTrustInventoryPath))
     Add-PackageLocalEnvironmentDirectoryCandidate -Candidates $directoryCandidates -Path (Join-Path (Join-Path $applicationRootDirectory 'Configuration') 'External')
     Add-PackageLocalEnvironmentDirectoryCandidate -Candidates $directoryCandidates -Path (Split-Path -Parent ([string]$PackageConfig.PackageAssignmentInventoryFilePath))
     Add-PackageLocalEnvironmentDirectoryCandidate -Candidates $directoryCandidates -Path (Split-Path -Parent ([string]$PackageConfig.PackageOperationHistoryFilePath))

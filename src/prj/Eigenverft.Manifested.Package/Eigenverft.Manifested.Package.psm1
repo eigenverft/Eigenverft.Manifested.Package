@@ -27,6 +27,7 @@
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DepotInventory.Management.ps1"
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.EndpointInventory.Management.ps1"
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.PublisherInventory.Management.ps1"
+. "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.Trust.ps1"
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DefinitionReference.ps1"
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DefinitionSchema.Wire1_6.ps1"
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DefinitionSchema.ps1"
@@ -58,6 +59,7 @@
 . "$PSScriptRoot\Commands\Depot\Eigenverft.Manifested.Package.Cmd.PackageDepot.ps1"
 . "$PSScriptRoot\Commands\Endpoint\Eigenverft.Manifested.Package.Cmd.PackageEndpoint.ps1"
 . "$PSScriptRoot\Commands\Publisher\Eigenverft.Manifested.Package.Cmd.PackagePublisher.ps1"
+. "$PSScriptRoot\Commands\Trust\Eigenverft.Manifested.Package.Cmd.PackageTrust.ps1"
 . "$PSScriptRoot\Commands\Web\Eigenverft.Manifested.Package.Cmd.InvokeWebRequestEx.ps1"
 . "$PSScriptRoot\Commands\Module\Eigenverft.Manifested.Package.Cmd.Module.ps1"
 

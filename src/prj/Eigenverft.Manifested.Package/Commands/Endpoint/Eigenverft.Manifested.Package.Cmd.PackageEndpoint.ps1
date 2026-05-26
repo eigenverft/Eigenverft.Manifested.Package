@@ -1,8 +1,8 @@
 <#
     Public package definition endpoint (scan root) management surface.
 
-    Endpoints are discovery locations. Publisher trust is managed separately
-    through PackagePublisherInventory.json and the PackagePublisher commands.
+    Endpoints are discovery locations. Catalog authority is managed separately
+    through signed definitions, PackageTrustInventory.json, and catalogTrust policy.
 #>
 
 function Get-PackageEndpoint {
@@ -102,12 +102,12 @@ function Add-PackageEndpoint {
         $notes.Add("Endpoint '$EndpointName' was added disabled; package commands will not scan it until enabled.") | Out-Null
     }
     else {
-        $notes.Add("Endpoint '$EndpointName' was added as a scan location. Package execution still requires a trusted publisher in PackagePublisherInventory.json.") | Out-Null
+        $notes.Add("Endpoint '$EndpointName' was added as a scan location. Package execution still requires a trusted signing key in PackageTrustInventory.json unless catalogTrust explicitly allows this publisher unsigned.") | Out-Null
     }
 
     $publisherIds = @(Get-PackageEndpointDiscoveredPublisherIds -ResolvedRootPath $afterSummary.ResolvedRootPath)
     if ($publisherIds.Count -gt 0) {
-        $notes.Add("Discovered publisher id(s): $($publisherIds -join ', '). Use Add-TeamPackagePublisher -PublisherId '<publisherId>' for a trusted team publisher, or Add/Set-PackagePublisher for custom policy.") | Out-Null
+        $notes.Add("Discovered publisher id(s): $($publisherIds -join ', '). Use Import-PackageTrust or Trust-PackageSigningCertificate for signed definitions, or catalogTrust.allowUnsignedPublisherIds for temporary unsigned migration.") | Out-Null
     }
     else {
         $notes.Add("No package definition publishers were discovered at '$($afterSummary.ResolvedRootPath)' yet.") | Out-Null
@@ -208,7 +208,7 @@ function Set-PackageEndpoint {
     if ($PSBoundParameters.ContainsKey('BasePath')) {
         $notes.Add("Endpoint '$EndpointName' base path is now '$($after.BasePath)' and resolves to '$($after.ResolvedRootPath)'.") | Out-Null
     }
-    $notes.Add("Publisher trust is managed separately with Add-PackagePublisher and Set-PackagePublisher.") | Out-Null
+    $notes.Add("Catalog trust is managed separately with PackageTrustInventory.json, Import-PackageTrust, Trust-PackageSigningCertificate, and PackageConfig.catalogTrust.") | Out-Null
 
     return New-PackageEndpointCommandResult -Action 'Set' -EndpointName $EndpointName -InventoryPath $documentInfo.Path -Before $before -After $after -Status 'Updated' -Notes @($notes.ToArray())
 }
@@ -243,6 +243,6 @@ function Remove-PackageEndpoint {
     }
 
     return New-PackageEndpointCommandResult -Action 'Remove' -EndpointName $EndpointName -InventoryPath $documentInfo.Path -Before $before -After $null -Status 'Removed' -Notes @(
-        "Endpoint '$EndpointName' was removed from configuration only. Endpoint files, installed packages, publisher policy, and local definition snapshots were not deleted."
+        "Endpoint '$EndpointName' was removed from configuration only. Endpoint files, installed packages, trust inventory, and local definition snapshots were not deleted."
     )
 }

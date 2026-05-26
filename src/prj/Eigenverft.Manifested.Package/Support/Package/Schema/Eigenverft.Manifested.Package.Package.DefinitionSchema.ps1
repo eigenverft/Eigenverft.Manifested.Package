@@ -1,14 +1,16 @@
 <#
     Eigenverft.Manifested.Package.Package.DefinitionSchema
-    Package definition JSON validation for the mandatory schemaVersion 1.6 wire model.
+    Package definition JSON validation for package definition wire models.
 
     Runtime validation is PowerShell-only (this module + DefinitionSchema.Wire1_6.ps1). The JSON schema file
-    is the editor/human contract (canonical conforming examples live as *.json next to the schema); keep schema and asserts aligned. Schema root may include x-eigenverftAgentHint for LLM task disambiguation - runtime ignores it.
+    is the editor/agent contract (canonical examples under Endpoint/Defaults); keep schema and asserts aligned.
+    Schema 1.7 root description and x-eigenverftAgentHint tell LLMs to author kind=unsigned drafts first and run
+    Sign-PackageDefinition after content is final; runtime ignores those hints. See wrk/TEAM-CATALOG-TRUST-POST-IMPLEMENTATION-FINDINGS.md.
 #>
 
-# Mandatory schemaVersion for package definitions.
 $script:PackageDefinitionSupportedSchemaVersions = @(
-    '1.6'
+    '1.6',
+    '1.7'
 )
 
 function Assert-PackageDefinitionSchemaVersionSupported {
@@ -28,7 +30,64 @@ function Assert-PackageDefinitionSchemaVersionSupported {
     }
 
     $supportedList = ($script:PackageDefinitionSupportedSchemaVersions | ForEach-Object { "'$_'" }) -join ', '
-    throw "Package definition '$DefinitionDocumentPath' uses unsupported schemaVersion '$SchemaVersionText'. The mandatory package definition schemaVersion is '1.6'. Supported schemaVersion values are $supportedList."
+    throw "Package definition '$DefinitionDocumentPath' uses unsupported schemaVersion '$SchemaVersionText'. Supported schemaVersion values are $supportedList."
+}
+
+function Assert-PackageDefinitionSignatureSchema_1_7 {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$DefinitionDocumentInfo,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DefinitionId
+    )
+
+    $definition = $DefinitionDocumentInfo.Document
+    $publication = $definition.definitionPublication
+    if (-not $publication.PSObject.Properties['definitionSignature'] -or -not $publication.definitionSignature) {
+        throw "Package definition '$DefinitionId' schemaVersion 1.7 is missing definitionPublication.definitionSignature."
+    }
+
+    $signature = $publication.definitionSignature
+    foreach ($requiredProperty in @('kind', 'format', 'signedContent')) {
+        if (-not $signature.PSObject.Properties[$requiredProperty] -or [string]::IsNullOrWhiteSpace([string]$signature.$requiredProperty)) {
+            throw "Package definition '$DefinitionId' definitionSignature is missing '$requiredProperty'."
+        }
+    }
+
+    $kind = [string]$signature.kind
+    if ($kind -notin @('signed', 'unsigned')) {
+        throw "Package definition '$DefinitionId' definitionSignature.kind must be signed or unsigned."
+    }
+    if (-not [string]::Equals([string]$signature.format, $script:PackageDefinitionSignatureFormat, [System.StringComparison]::Ordinal)) {
+        throw "Package definition '$DefinitionId' definitionSignature.format must be '$script:PackageDefinitionSignatureFormat'."
+    }
+    if (-not [string]::Equals([string]$signature.signedContent, $script:PackageDefinitionSignedContentKind, [System.StringComparison]::Ordinal)) {
+        throw "Package definition '$DefinitionId' definitionSignature.signedContent must be '$script:PackageDefinitionSignedContentKind'."
+    }
+
+    if ([string]::Equals($kind, 'unsigned', [System.StringComparison]::OrdinalIgnoreCase)) {
+        if ($signature.PSObject.Properties['signatureValue'] -and -not [string]::IsNullOrWhiteSpace([string]$signature.signatureValue)) {
+            throw "Package definition '$DefinitionId' unsigned definitionSignature must not define signatureValue."
+        }
+        return
+    }
+
+    foreach ($requiredSignedProperty in @('keyThumbprint', 'signerDisplayName', 'signedAtUtc', 'signatureValue')) {
+        if (-not $signature.PSObject.Properties[$requiredSignedProperty] -or [string]::IsNullOrWhiteSpace([string]$signature.$requiredSignedProperty)) {
+            throw "Package definition '$DefinitionId' signed definitionSignature is missing '$requiredSignedProperty'."
+        }
+    }
+    if (([string]$signature.keyThumbprint) -notmatch '^[A-Fa-f0-9]{40,128}$') {
+        throw "Package definition '$DefinitionId' signed definitionSignature.keyThumbprint is not a hex thumbprint."
+    }
+    try {
+        [Convert]::FromBase64String([string]$signature.signatureValue) | Out-Null
+    }
+    catch {
+        throw "Package definition '$DefinitionId' signed definitionSignature.signatureValue must be base64."
+    }
 }
 
 function Assert-PackageDefinitionSchema {
@@ -124,6 +183,11 @@ Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -Definiti
     switch -Exact ($schemaVersionText) {
         '1.6' {
             Assert-PackageDefinitionSchema_1_6 -DefinitionDocumentInfo $DefinitionDocumentInfo -DefinitionId $DefinitionId -PublisherId $PublisherId
+            return
+        }
+        '1.7' {
+            Assert-PackageDefinitionSchema_1_6 -DefinitionDocumentInfo $DefinitionDocumentInfo -DefinitionId $DefinitionId -PublisherId $PublisherId
+            Assert-PackageDefinitionSignatureSchema_1_7 -DefinitionDocumentInfo $DefinitionDocumentInfo -DefinitionId $DefinitionId
             return
         }
         default {

@@ -24,6 +24,12 @@
         "definitionPublisherConflictMode": "fail"
       }
     },
+    "catalogTrust": {
+      "policy": "strict",
+      "allowUnsignedPublisherIds": [],
+      "blockedPublisherIds": [],
+      "payloadVerification": "enforceWhenPackageFileExists"
+    },
     "packageState": {
       "inventoryFilePath": "{applicationRootDirectory}/State/PackageAssignmentInventory.json",
       "operationHistoryFilePath": "{applicationRootDirectory}/State/PackageOperationHistory.json"

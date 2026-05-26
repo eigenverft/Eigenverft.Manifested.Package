@@ -1,14 +1,23 @@
 {
-  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.6.schema.json",
-  "schemaVersion": "1.6",
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.7.schema.json",
+  "schemaVersion": "1.7",
   "definitionPublication": {
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "VSCodeUser",
     "definitionRevision": 2,
-    "publishedAtUtc": "2026-05-22T12:00:00Z"
+    "publishedAtUtc": "2026-05-22T12:00:00Z",
+    "definitionSignature": {
+      "kind": "signed",
+      "format": "embedded-json-rsa-sha256-v1",
+      "signedContent": "canonicalDefinitionExcludingSignatureValue",
+      "keyThumbprint": "DD1E9435FB3AE68ABF2DB99E5638502E00D2FD90",
+      "signerDisplayName": "Eigenverft Package Catalog Signing",
+      "certificateSubject": "CN=Eigenverft Package Catalog Signing",
+      "signedAtUtc": "2026-05-25T07:36:43.3357033Z",
+      "signatureValue": "ykuAurR5iot3Moul6Kkwg/nsgy39qQ7MoVqPi3UWNzpgt7T5E73B4cDrnc7oGs/cvVvaOfPj0/HiKarbqBQ5txGyacSha7k+mWsxhEP41J9Bp7AKcIm+Okqm4CMzD+TdWn9TL5aosEUIrSvSvMc6tc3ueYzvSRuCrc5NVcW9usJa6d0Py6iWNWecuRg51GbK3gJ+QKn1BnNr0X4ORNFbCJ9iYkzF12WD/Tnh6RhMmAhGzzACy42nukRPqFFhcoNpBq5GBfzLVbg7nWFE6UfzV4PmK5RqriX1ShNsLAWl4K7wfIt1gZZBxgThmnOAhlSMPg0m0aoKwWKTUhsu9i2fT535/37cABGmL0pTvr/eR+xn/GRNSdAi0VjVamITcMtERnosphISNxbxIXGhgrzesv1l8HOIboVStPq69UcqeWklQDW+l5wDP9K2INqVI3OTQUhkiqdJGc/MOqynS23/1JyQPlxCUpM10By5FsxXGyhSVZsXqt2OPKrEaftxkpA+"
+    }
   },
-  "$comment": "Schema-first draft for Visual Studio Code Windows user setup (x64). Acquisition URL and sha256 come from the VS Code update service; silent-install flags follow https://code.visualstudio.com/docs/setup/windows (Inno Setup + /mergetasks=!runcode).",
   "display": {
     "default": {
       "name": "Visual Studio Code (User)",
@@ -249,5 +258,6 @@
         "workDirectories": true
       }
     }
-  }
+  },
+  "$comment": "Schema-first draft for Visual Studio Code Windows user setup (x64). Acquisition URL and sha256 come from the VS Code update service; silent-install flags follow https://code.visualstudio.com/docs/setup/windows (Inno Setup + /mergetasks=!runcode)."
 }

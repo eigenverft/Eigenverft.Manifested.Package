@@ -466,7 +466,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $results[0].Status | Should -Be 'Failed'
     }
 
-    It 'resolves shipped package definitions through trusted publisher and endpoint seams' {
+    It 'resolves shipped package definitions through signed trust and endpoint seams' {
         $reference = Resolve-PackageDefinitionReference -DefinitionId 'VSCodeRuntime'
 
         $reference.EndpointName | Should -Be 'moduleDefaults'
@@ -476,11 +476,11 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         Split-Path -Leaf $reference.DefinitionPath | Should -Be 'VSCodeRuntime.json'
     }
 
-    It 'fails clearly for untrusted or unknown package publishers' {
+    It 'fails clearly when a publisher id selector does not match a discovered definition' {
         { Resolve-PackageDefinitionReference -PublisherId 'OtherPublisher' -DefinitionId 'VSCodeRuntime' } | Should -Throw "*publisher 'OtherPublisher'*"
     }
 
-    It 'applies definition publisher conflict policy across trusted publishers' {
+    It 'applies definition publisher conflict policy across eligible publishers' {
         $rootPath = Join-Path $TestDrive 'publisher-conflict-policy'
         $endpointA = Join-Path $rootPath 'EndpointA'
         $endpointB = Join-Path $rootPath 'EndpointB'
@@ -494,7 +494,6 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
             ))
 
         $endpointInventoryPath = Join-Path $rootPath 'PackageEndpointInventory.json'
-        $publisherInventoryPath = Join-Path $rootPath 'PackagePublisherInventory.json'
         Write-TestJsonDocument -Path $endpointInventoryPath -Document @{
             inventoryVersion = 2
             endpoints = @(
@@ -502,21 +501,13 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
                 @{ endpointName = 'betaEndpoint'; kind = 'filesystem'; enabled = $true; searchOrder = 200; basePath = $endpointB }
             )
         }
-        Write-TestJsonDocument -Path $publisherInventoryPath -Document @{
-            inventoryVersion = 1
-            publishers = @(
-                @{ publisherId = 'Alpha'; publisherName = 'Alpha'; enabled = $true; trusted = $true; trustMode = 'unsignedExplicit' },
-                @{ publisherId = 'Beta'; publisherName = 'Beta'; enabled = $true; trusted = $true; trustMode = 'unsignedExplicit' }
-            )
-        }
 
         Mock Get-PackageEndpointInventoryPath { $endpointInventoryPath }
-        Mock Get-PackagePublisherInventoryPath { $publisherInventoryPath }
 
-        { Resolve-PackageDefinitionReference -DefinitionId 'SharedTool' -LocalEndpointRoot $localEndpointRoot -DefinitionPublisherConflictMode 'fail' } | Should -Throw '*multiple trusted publishers*Use -PublisherId*'
+        { Resolve-PackageDefinitionReference -DefinitionId 'SharedTool' -LocalEndpointRoot $localEndpointRoot -CatalogTrustPolicy allowUnsigned -CatalogTrustAllowUnsignedPublisherIds @('Alpha', 'Beta') -DefinitionPublisherConflictMode 'fail' } | Should -Throw '*multiple eligible publisherIds*Use -PublisherId*'
 
-        $first = Resolve-PackageDefinitionReference -DefinitionId 'SharedTool' -LocalEndpointRoot $localEndpointRoot -DefinitionPublisherConflictMode 'warnFirst'
-        $last = Resolve-PackageDefinitionReference -DefinitionId 'SharedTool' -LocalEndpointRoot $localEndpointRoot -DefinitionPublisherConflictMode 'last'
+        $first = Resolve-PackageDefinitionReference -DefinitionId 'SharedTool' -LocalEndpointRoot $localEndpointRoot -CatalogTrustPolicy allowUnsigned -CatalogTrustAllowUnsignedPublisherIds @('Alpha', 'Beta') -DefinitionPublisherConflictMode 'warnFirst'
+        $last = Resolve-PackageDefinitionReference -DefinitionId 'SharedTool' -LocalEndpointRoot $localEndpointRoot -CatalogTrustPolicy allowUnsigned -CatalogTrustAllowUnsignedPublisherIds @('Alpha', 'Beta') -DefinitionPublisherConflictMode 'last'
 
         $first.PublisherId | Should -Be 'Alpha'
         $last.PublisherId | Should -Be 'Beta'
@@ -536,7 +527,6 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
             ))
 
         $endpointInventoryPath = Join-Path $rootPath 'PackageEndpointInventory.json'
-        $publisherInventoryPath = Join-Path $rootPath 'PackagePublisherInventory.json'
         Write-TestJsonDocument -Path $endpointInventoryPath -Document @{
             inventoryVersion = 2
             endpoints = @(
@@ -544,17 +534,10 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
                 @{ endpointName = 'alphaMirror'; kind = 'filesystem'; enabled = $true; searchOrder = 200; basePath = $endpointB }
             )
         }
-        Write-TestJsonDocument -Path $publisherInventoryPath -Document @{
-            inventoryVersion = 1
-            publishers = @(
-                @{ publisherId = 'Alpha'; publisherName = 'Alpha'; enabled = $true; trusted = $true; trustMode = 'unsignedExplicit' }
-            )
-        }
 
         Mock Get-PackageEndpointInventoryPath { $endpointInventoryPath }
-        Mock Get-PackagePublisherInventoryPath { $publisherInventoryPath }
 
-        { Resolve-PackageDefinitionReference -DefinitionId 'SharedTool' -LocalEndpointRoot $localEndpointRoot } | Should -Throw '*reused definitionRevision*different content across endpoints*'
+        { Resolve-PackageDefinitionReference -DefinitionId 'SharedTool' -LocalEndpointRoot $localEndpointRoot -CatalogTrustPolicy allowUnsigned -CatalogTrustAllowUnsignedPublisherIds @('Alpha') } | Should -Throw '*reused definitionRevision*different content across endpoints*'
     }
 
     It 'completes removed desired state when inventory is missing and whenNotInInventory is succeed' {

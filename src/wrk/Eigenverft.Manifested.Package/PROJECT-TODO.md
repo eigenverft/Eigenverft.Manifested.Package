@@ -62,7 +62,7 @@ Design and open decisions: [TEAM-CATALOG-TRUST.md](TEAM-CATALOG-TRUST.md) (curre
 
 - **Feature issue: check package JSON without installing anything.** As a team endpoint maintainer, I want to validate package JSON before any download, install, PATH change, or inventory write, so agent-generated definitions can be reviewed safely.
   Requester perspective: catalog maintainer, PR reviewer, autonomous package-authoring agent.
-  Outcome: validation reports broken fields, old schema names, publisher trust, signature status, platform selection, dependencies, and download/depot plan shape without changing the machine.
+  Outcome: validation reports broken fields, old schema names, catalog trust, signature status, platform selection, dependencies, and download/depot plan shape without changing the machine.
 
 - **Feature issue: check a whole package folder at once.** As a maintainer of a growing endpoint folder, I want one report for all package definitions, so broken JSON, unsupported schema versions, duplicate ids, and missing platform targets are found before users hit them.
   Requester perspective: team endpoint owner, release engineer, repo maintainer preparing a shipped module release.

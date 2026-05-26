@@ -228,7 +228,7 @@ The Package definition id. Definition resolution matches the JSON definitionId, 
 file name.
 
 .PARAMETER PublisherId
-Optional. When set, only definitions from this trusted publisher are considered.
+Optional. When set, only definitions whose definitionPublication.publisherId matches this label are considered.
 
 .EXAMPLE
 Get-PackageConfig -DefinitionId VSCodeRuntime
@@ -278,6 +278,43 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
         throw "Package config '$($globalDocumentInfo.Path)' defines unsupported definitionPublisherConflictMode '$definitionPublisherConflictMode'. Use 'fail', 'warnFirst', 'first', 'warnLast', or 'last'."
     }
 
+    $catalogTrustPolicy = 'strict'
+    $catalogTrustPayloadVerification = 'off'
+    $catalogTrustAllowUnsignedPublisherIds = @()
+    $catalogTrustBlockedPublisherIds = @()
+    if ($packageGlobalConfig.PSObject.Properties['catalogTrust'] -and $packageGlobalConfig.catalogTrust) {
+        if ($packageGlobalConfig.catalogTrust.PSObject.Properties['policy'] -and
+            -not [string]::IsNullOrWhiteSpace([string]$packageGlobalConfig.catalogTrust.policy)) {
+            $catalogTrustPolicy = [string]$packageGlobalConfig.catalogTrust.policy
+        }
+        if ($packageGlobalConfig.catalogTrust.PSObject.Properties['payloadVerification'] -and
+            -not [string]::IsNullOrWhiteSpace([string]$packageGlobalConfig.catalogTrust.payloadVerification)) {
+            $catalogTrustPayloadVerification = [string]$packageGlobalConfig.catalogTrust.payloadVerification
+        }
+        if ($packageGlobalConfig.catalogTrust.PSObject.Properties['allowUnsignedPublisherIds'] -and
+            $null -ne $packageGlobalConfig.catalogTrust.allowUnsignedPublisherIds) {
+            $catalogTrustAllowUnsignedPublisherIds = @(
+                foreach ($publisherId in @($packageGlobalConfig.catalogTrust.allowUnsignedPublisherIds)) {
+                    $normalizedPublisherId = ([string]$publisherId).Trim()
+                    if (-not [string]::IsNullOrWhiteSpace($normalizedPublisherId)) {
+                        $normalizedPublisherId
+                    }
+                }
+            )
+        }
+        if ($packageGlobalConfig.catalogTrust.PSObject.Properties['blockedPublisherIds'] -and
+            $null -ne $packageGlobalConfig.catalogTrust.blockedPublisherIds) {
+            $catalogTrustBlockedPublisherIds = @(
+                foreach ($publisherId in @($packageGlobalConfig.catalogTrust.blockedPublisherIds)) {
+                    $normalizedPublisherId = ([string]$publisherId).Trim()
+                    if (-not [string]::IsNullOrWhiteSpace($normalizedPublisherId)) {
+                        $normalizedPublisherId
+                    }
+                }
+            )
+        }
+    }
+
     $packageInventoryFilePath = if ($packageGlobalConfig.packageState.PSObject.Properties['inventoryFilePath'] -and
         -not [string]::IsNullOrWhiteSpace([string]$packageGlobalConfig.packageState.inventoryFilePath)) {
         Resolve-PackageConfiguredPath -PathValue ([string]$packageGlobalConfig.packageState.inventoryFilePath) -ApplicationRootDirectory $applicationRootDirectory
@@ -294,7 +331,7 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
         }
         catch {
             try {
-                $definitionReference = Resolve-PackageDefinitionReference -PublisherId $PublisherId -DefinitionId $DefinitionId -ApplicationRootDirectory $applicationRootDirectory -LocalEndpointRoot $localEndpointRoot -EndpointMaterializationMode $endpointMaterializationMode -DefinitionPublisherConflictMode $definitionPublisherConflictMode
+                $definitionReference = Resolve-PackageDefinitionReference -PublisherId $PublisherId -DefinitionId $DefinitionId -ApplicationRootDirectory $applicationRootDirectory -LocalEndpointRoot $localEndpointRoot -EndpointMaterializationMode $endpointMaterializationMode -CatalogTrustPolicy $catalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $catalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $catalogTrustBlockedPublisherIds -DefinitionPublisherConflictMode $definitionPublisherConflictMode
             }
             catch {
                 $definitionReference = Resolve-PackageDefinitionSnapshotReference -PublisherId $PublisherId -DefinitionId $DefinitionId -PackageAssignmentInventoryFilePath $packageInventoryFilePath -LiveResolutionError $_.Exception.Message
@@ -303,14 +340,13 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
         }
     }
     else {
-        $definitionReference = Resolve-PackageDefinitionReference -PublisherId $PublisherId -DefinitionId $DefinitionId -ApplicationRootDirectory $applicationRootDirectory -LocalEndpointRoot $localEndpointRoot -EndpointMaterializationMode $endpointMaterializationMode -DefinitionPublisherConflictMode $definitionPublisherConflictMode
+        $definitionReference = Resolve-PackageDefinitionReference -PublisherId $PublisherId -DefinitionId $DefinitionId -ApplicationRootDirectory $applicationRootDirectory -LocalEndpointRoot $localEndpointRoot -EndpointMaterializationMode $endpointMaterializationMode -CatalogTrustPolicy $catalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $catalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $catalogTrustBlockedPublisherIds -DefinitionPublisherConflictMode $definitionPublisherConflictMode
     }
 
     $definitionDocumentInfo = Read-PackageJsonDocument -Path $definitionReference.DefinitionPath
     Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionDocumentInfo -DefinitionId $DefinitionId -PublisherId $PublisherId
 
     $endpointInventoryInfo = Get-PackageEndpointInventoryInfo
-    $publisherInventoryInfo = Get-PackagePublisherInventoryInfo
     $depotInventoryInfo = Get-PackageDepotInventoryInfo
 
     $runtimeContext = Get-PackageRuntimeContext
@@ -388,8 +424,7 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
         ApplicationRootDirectory           = $applicationRootDirectory
         EndpointInventoryPath              = $endpointInventoryInfo.Path
         EndpointInventory                  = $endpointInventoryInfo.Document
-        PublisherInventoryPath             = $publisherInventoryInfo.Path
-        PublisherInventory                 = $publisherInventoryInfo.Document
+        TrustInventoryPath                 = if ($definitionReference.PSObject.Properties['TrustInventoryPath']) { [string]$definitionReference.TrustInventoryPath } else { $null }
         DepotInventoryPath                 = $effectiveAcquisitionEnvironment.DepotInventoryPath
         DepotInventory                     = $depotInventoryInfo.Document
         EffectiveAcquisitionEnvironment    = $effectiveAcquisitionEnvironment
@@ -411,6 +446,16 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
         DefinitionAssignedSnapshotHash     = [string]$definitionReference.SnapshotHash
         DefinitionResolvedAtUtc            = [string]$definitionReference.ResolvedAtUtc
         DefinitionSnapshotFallback         = [bool]$definitionReference.SnapshotFallback
+        DefinitionCatalogTrustPolicy       = if ($definitionReference.PSObject.Properties['CatalogTrustPolicy']) { [string]$definitionReference.CatalogTrustPolicy } else { $catalogTrustPolicy }
+        DefinitionCatalogTrustStatus       = if ($definitionReference.PSObject.Properties['CatalogTrustStatus']) { [string]$definitionReference.CatalogTrustStatus } else { $null }
+        DefinitionCatalogTrustReason       = if ($definitionReference.PSObject.Properties['CatalogTrustReason']) { [string]$definitionReference.CatalogTrustReason } else { $null }
+        DefinitionSignatureStatus          = if ($definitionReference.PSObject.Properties['SignatureStatus']) { [string]$definitionReference.SignatureStatus } else { $null }
+        DefinitionSignatureValid           = if ($definitionReference.PSObject.Properties['SignatureValid']) { [bool]$definitionReference.SignatureValid } else { $false }
+        DefinitionSignatureTrusted         = if ($definitionReference.PSObject.Properties['SignatureTrusted']) { [bool]$definitionReference.SignatureTrusted } else { $false }
+        DefinitionSignatureKeyThumbprint   = if ($definitionReference.PSObject.Properties['SignatureKeyThumbprint']) { [string]$definitionReference.SignatureKeyThumbprint } else { $null }
+        DefinitionSignatureSignerDisplayName = if ($definitionReference.PSObject.Properties['SignatureSignerDisplayName']) { [string]$definitionReference.SignatureSignerDisplayName } else { $null }
+        DefinitionSignatureCertificateSubject = if ($definitionReference.PSObject.Properties['SignatureCertificateSubject']) { [string]$definitionReference.SignatureCertificateSubject } else { $null }
+        DefinitionSignatureCanonicalContentHash = if ($definitionReference.PSObject.Properties['SignatureCanonicalContentHash']) { [string]$definitionReference.SignatureCanonicalContentHash } else { $null }
         DefinitionSources                  = $definition.artifacts.sources
         Display                            = $display
         SchemaVersion                      = [string]$definition.schemaVersion
@@ -426,6 +471,10 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
         LocalEndpointRoot                  = $localEndpointRoot
         EndpointMaterializationMode        = $endpointMaterializationMode
         DefinitionPublisherConflictMode    = $definitionPublisherConflictMode
+        CatalogTrustPolicy                 = $catalogTrustPolicy
+        CatalogTrustAllowUnsignedPublisherIds = @($catalogTrustAllowUnsignedPublisherIds)
+        CatalogTrustBlockedPublisherIds    = @($catalogTrustBlockedPublisherIds)
+        CatalogTrustPayloadVerification    = $catalogTrustPayloadVerification
         ShimDirectory                      = $shimDirectory
         PackageDepotRelativePathTemplate   = $packageDepotRelativePathTemplate
         PackageWorkSlotDirectoryTemplate   = $packageWorkSlotDirectoryTemplate
@@ -608,7 +657,7 @@ New-PackageResult -PackageConfig $config
         OSVersion                        = $PackageConfig.OSVersion
         ReleaseTrack                     = $PackageConfig.ReleaseTrack
         EndpointInventoryPath            = $PackageConfig.EndpointInventoryPath
-        PublisherInventoryPath           = $PackageConfig.PublisherInventoryPath
+        TrustInventoryPath               = $PackageConfig.TrustInventoryPath
         DepotInventoryPath               = $PackageConfig.DepotInventoryPath
         DefinitionSourceKind             = $PackageConfig.DefinitionSourceKind
         DefinitionSourcePath             = $PackageConfig.DefinitionSourcePath
@@ -619,6 +668,20 @@ New-PackageResult -PackageConfig $config
         DefinitionAssignedSnapshotHash   = $PackageConfig.DefinitionAssignedSnapshotHash
         DefinitionResolvedAtUtc          = $PackageConfig.DefinitionResolvedAtUtc
         DefinitionSnapshotFallback       = $PackageConfig.DefinitionSnapshotFallback
+        DefinitionCatalogTrustPolicy     = $PackageConfig.DefinitionCatalogTrustPolicy
+        DefinitionCatalogTrustStatus     = $PackageConfig.DefinitionCatalogTrustStatus
+        DefinitionCatalogTrustReason     = $PackageConfig.DefinitionCatalogTrustReason
+        DefinitionSignatureStatus        = $PackageConfig.DefinitionSignatureStatus
+        DefinitionSignatureValid         = $PackageConfig.DefinitionSignatureValid
+        DefinitionSignatureTrusted       = $PackageConfig.DefinitionSignatureTrusted
+        DefinitionSignatureKeyThumbprint = $PackageConfig.DefinitionSignatureKeyThumbprint
+        DefinitionSignatureSignerDisplayName = $PackageConfig.DefinitionSignatureSignerDisplayName
+        DefinitionSignatureCertificateSubject = $PackageConfig.DefinitionSignatureCertificateSubject
+        DefinitionSignatureCanonicalContentHash = $PackageConfig.DefinitionSignatureCanonicalContentHash
+        CatalogTrustPolicy               = $PackageConfig.CatalogTrustPolicy
+        CatalogTrustAllowUnsignedPublisherIds = @($PackageConfig.CatalogTrustAllowUnsignedPublisherIds)
+        CatalogTrustBlockedPublisherIds  = @($PackageConfig.CatalogTrustBlockedPublisherIds)
+        CatalogTrustPayloadVerification  = $PackageConfig.CatalogTrustPayloadVerification
         PackageFileStagingRootDirectory    = $PackageConfig.PackageFileStagingRootDirectory
         PackageInstallStageRootDirectory   = $PackageConfig.PackageInstallStageRootDirectory
         DefaultPackageDepotDirectory     = $PackageConfig.DefaultPackageDepotDirectory

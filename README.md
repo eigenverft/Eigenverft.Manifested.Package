@@ -2,7 +2,7 @@
 
 [![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/Eigenverft.Manifested.Package?label=PSGallery&logo=powershell)](https://www.powershellgallery.com/packages/Eigenverft.Manifested.Package) [![PowerShell Gallery Downloads](https://img.shields.io/powershellgallery/dt/Eigenverft.Manifested.Package?label=Downloads&logo=powershell)](https://www.powershellgallery.com/packages/Eigenverft.Manifested.Package) [![PowerShell Support](https://img.shields.io/badge/PowerShell-5.1%2B%20Desktop%2FCore-5391FE?logo=powershell&logoColor=white)](#requirements) [![Build Status](https://img.shields.io/github/actions/workflow/status/eigenverft/Eigenverft.Manifested.Package/cicd.yml?branch=main&label=build)](https://github.com/eigenverft/Eigenverft.Manifested.Package/actions/workflows/cicd.yml) [![License](https://img.shields.io/github/license/eigenverft/Eigenverft.Manifested.Package?logo=mit)](LICENSE) [![Windows Sandbox profile](https://img.shields.io/badge/Windows%20Sandbox-profile-0078D4?logo=windows)](https://github.com/eigenverft/Eigenverft.Manifested.Sandbox)
 
-Windows-focused PowerShell package engine for repeatable developer-machine setup. It uses explicit package-definition JSON, trusted publishers, configurable package endpoints, reusable depots, and local inventory so a toolchain can be assigned, rerun, audited, and removed with predictable behavior.
+Windows-focused PowerShell package engine for repeatable developer-machine setup. It uses explicit signed package-definition JSON, trusted signing keys, configurable package endpoints, reusable depots, and local inventory so a toolchain can be assigned, rerun, audited, and removed with predictable behavior.
 
 The product sits between public package managers and heavy endpoint-management systems: more governed than ad-hoc installer scripts, more local and team-owned than a public community bucket, and intentionally smaller than a fleet rollout controller.
 
@@ -11,7 +11,7 @@ The product sits between public package managers and heavy endpoint-management s
 - Local package assignment through `Invoke-Package`
 - Inventory-backed state and operation history through `Get-PackageState`
 - Versioned, reviewable package-definition JSON
-- Trusted publisher records for package-definition authority
+- Trusted signing-key records for package-definition authority
 - File-based depots for reusing installers, archives, npm tarballs, models, and runtime payloads
 - Team and web package endpoints as the extension model for larger catalogs
 - Offline and controlled-network workflows that can be backed by a prepared depot
@@ -21,7 +21,7 @@ The product sits between public package managers and heavy endpoint-management s
 
 ## 🧭 Motivation
 
-Preparing a Windows development environment should not depend on a long sequence of hand-maintained install notes. Teams need a way to say which tools are trusted, where package definitions come from, where package payloads are cached, and what happened during the last run.
+Preparing a Windows development environment should not depend on a long sequence of hand-maintained install notes. Teams need a way to say which signed catalogs are trusted, where package definitions come from, where package payloads are cached, and what happened during the last run.
 
 This project packages that workflow as a local PowerShell engine. A human or agent can maintain package JSON, CI can validate it, a team can publish it through an endpoint, and each machine can explicitly assign the packages it needs without turning the module into central fleet management.
 
@@ -45,7 +45,7 @@ Invoke-Package -DefinitionId SevenZip,DotNetSdk10,NodeRuntime,CodexCli
 Get-PackageState
 ```
 
-`Invoke-Package` resolves definitions from enabled endpoints, checks publisher trust, prepares or reuses payloads, applies dependency order, and records state.
+`Invoke-Package` resolves definitions from enabled endpoints, verifies catalog trust, prepares or reuses payloads, applies dependency order, and records state.
 
 ## 🏢 Corporate First Install
 
@@ -65,25 +65,41 @@ For disposable fresh-machine bring-up, use the [Eigenverft.Manifested.Sandbox](h
 
 ## 📌 Current State
 
-The module centers on **`Invoke-Package`** for assignment and removal, plus helpers for package state, team depots, team endpoints, and publisher trust.
+The module centers on **`Invoke-Package`** for assignment and removal, plus helpers for package state, team depots, team endpoints, and signing-key trust.
 
-`Invoke-Package` requires `-DefinitionId` and scans every enabled row in `Configuration/Internal/PackageEndpointInventory.json` in endpoint `searchOrder`. Discovery matches `definitionPublication.definitionId`, then filters to publishers trusted in `PackagePublisherInventory.json`. Optional `-PublisherId` pins one publisher. If multiple trusted publishers provide the same definition id, `PackageConfig.json` controls the conflict mode; the default is `fail`.
+`Invoke-Package` requires `-DefinitionId` and scans every enabled row in `Configuration/Internal/PackageEndpointInventory.json` in endpoint `searchOrder`. Discovery matches `definitionPublication.definitionId`, then catalog trust checks `definitionPublication.definitionSignature` against `PackageTrustInventory.json` and `PackageConfig.json` policy. Optional `-PublisherId` pins one signed `definitionPublication.publisherId` label. If multiple eligible publishers provide the same definition id, `PackageConfig.json` controls the conflict mode; the default is `fail`.
 
 Shipped definitions use publisher `Eigenverft` and live under the shipped `moduleDefaults` endpoint row. Pass `-DesiredState Assigned` or `Removed`, and optional `-FailFast`.
 
 ### 👥 Team Package Channels
 
-Team onboarding is intentionally small: add a depot for package payloads, add an endpoint for package-definition JSON, then trust the team publisher identity used inside those JSON files.
+Team onboarding is intentionally small: add a depot for package payloads, add an endpoint for package-definition JSON, then import the public `.cer` used by those JSON files.
+
+The maintainer creates one local signing profile, signs the JSON, and shares only the public `.cer`. The private `.pfx` stays on the maintainer machine:
+
+```powershell
+# Maintainer side
+$password = Read-Host -AsSecureString 'Catalog signing password'
+$signing = New-PackageSigningCertificate -Name 'My Team' -Password $password
+
+Sign-PackageDefinition -Path '\\team-share\PackageEndpoint\MyPackage.json'
+
+Copy-Item -LiteralPath $signing.CertificatePath -Destination '\\team-share\PackageTrust\MyTeam.cer'
+```
+
+Each client imports that public certificate:
 
 ```powershell
 Add-TeamPackageDepot -BasePath '\\team-share\PackageDepot'
 Add-TeamPackageEndpoint -BasePath '\\team-share\PackageEndpoint'
-Add-TeamPackagePublisher -PublisherId 'My Team'
+Import-PackageTrust -Path '\\team-share\PackageTrust\MyTeam.cer'
 
-Invoke-Package -DefinitionId 'OtherTextEditorFromTeamRepos'
+Invoke-Package -DefinitionId 'MyPackage'
 ```
 
-Team package JSON files must set `definitionPublication.publisherId` to the same value, for example `My Team`.
+The `.cer` file is public and has no password. The `.pfx` is private and password protected; the maintainer password is remembered only in a local DPAPI-protected signing profile. `New-PackageSigningCertificate` also writes a `.package-trust.json` export beside the `.cer`; that JSON remains supported for richer metadata and backups.
+
+Team package JSON files should be signed, and `definitionPublication.publisherId` must match the publisher id in the imported trust entry. Unsigned migration is intentionally explicit: set `package.catalogTrust.policy` to `allowUnsigned` and list the publisher id in `package.catalogTrust.allowUnsignedPublisherIds`.
 
 ### 🏠 Home or NAS-backed package depot
 
@@ -105,7 +121,8 @@ Later runs reuse files from the depot when the engine finds a matching artifact 
 | --- | --- |
 | **Package depot** | Durable artifact storage for downloaded or mirrored package files such as installers, archives, model files, and runtime payloads. |
 | **Endpoint** | A scan root for package-definition JSON files. Endpoints describe where to discover definitions; they do not imply trust. |
-| **Publisher** | Trusted package-definition authority from `PackagePublisherInventory.json`. The identity is `definitionPublication.publisherId`. |
+| **Publisher ID** | Signed maintainer label inside package-definition JSON. The identity is `definitionPublication.publisherId`; trust comes from `PackageTrustInventory.json`. |
+| **Trust inventory** | Trusted package-definition signing keys, scoped to publisher ids, with revocation/block metadata. |
 | **PkgEndpoint** | Default folder under the application root for local materialized package-definition copies, including candidate and assigned snapshots. |
 | **Assigned** | Desired state that makes a package definition ready on the machine by reusing, adopting, repairing, or assigning it as policy allows. |
 | **Removed** | Desired state that removes a tracked package when that package definition supports removal. |
@@ -119,7 +136,7 @@ Later runs reuse files from the depot when the engine finds a matching artifact 
 | `Configuration/Internal/PackageConfig.json` | Main package configuration: application paths, local definition materialization, selection defaults, acquisition policy, and endpoint environment defaults. |
 | `Configuration/Internal/PackageDepotInventory.json` | Depot roots, capabilities, search order, and mirror-target flags. |
 | `Configuration/Internal/PackageEndpointInventory.json` | Package-definition scan endpoints, paths, enablement, and order. |
-| `Configuration/Internal/PackagePublisherInventory.json` | Package-definition publisher trust policy. |
+| `Configuration/Internal/PackageTrustInventory.json` | Trusted signing keys for package-definition catalog authority. |
 | `State/PackageAssignmentInventory.json` | Current tracked assigned package facts. |
 | `State/PackageOperationHistory.json` | Append-only command history for assigned and removed runs. |
 

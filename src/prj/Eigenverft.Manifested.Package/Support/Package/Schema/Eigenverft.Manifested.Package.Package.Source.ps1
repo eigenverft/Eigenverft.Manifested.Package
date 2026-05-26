@@ -534,7 +534,12 @@ The raw acquisition candidate.
         [psobject]$Package,
 
         [AllowNull()]
-        [psobject]$AcquisitionCandidate
+        [psobject]$AcquisitionCandidate,
+
+        [ValidateSet('off', 'warnWhenPackageFileExists', 'enforceWhenPackageFileExists', 'enforceAllAcquisition')]
+        [string]$PayloadVerificationPolicy = 'off',
+
+        [bool]$PackageFileRequired = $false
     )
 
     $candidateVerification = if ($AcquisitionCandidate -and $AcquisitionCandidate.PSObject.Properties['verification']) {
@@ -573,11 +578,41 @@ The raw acquisition candidate.
         $packagePublisherSignature = [pscustomobject]$packagePublisherSignature
     }
 
+    $packageFilePresent = $Package -and
+        $Package.PSObject.Properties['packageFile'] -and
+        $Package.packageFile -and
+        $Package.packageFile.PSObject.Properties['fileName'] -and
+        -not [string]::IsNullOrWhiteSpace([string]$Package.packageFile.fileName)
+    $packageContentHashPresent = $packageContentHash -and
+        $packageContentHash.PSObject.Properties['value'] -and
+        -not [string]::IsNullOrWhiteSpace([string]$packageContentHash.value)
+    $packagePublisherSignaturePresent = $null -ne $packagePublisherSignature
+    $packageBoundaryPresent = $packageContentHashPresent -or $packagePublisherSignaturePresent
+    $payloadVerificationRequired = switch -Exact ($PayloadVerificationPolicy) {
+        'enforceWhenPackageFileExists' { [bool]($PackageFileRequired -and $packageFilePresent) }
+        'enforceAllAcquisition' { [bool]$PackageFileRequired }
+        default { $false }
+    }
+    $payloadVerificationWarnOnly = [string]::Equals($PayloadVerificationPolicy, 'warnWhenPackageFileExists', [System.StringComparison]::OrdinalIgnoreCase) -and
+        $PackageFileRequired -and
+        $packageFilePresent -and
+        -not $packageBoundaryPresent
+
+    if ($payloadVerificationRequired -and -not $packageBoundaryPresent) {
+        throw "Catalog payload policy '$PayloadVerificationPolicy' requires packageFile.contentHash or packageFile.publisherSignature for package '$([string]$Package.id)' because package-file acquisition is required."
+    }
+    if ($payloadVerificationWarnOnly) {
+        Write-PackageExecutionMessage -Level 'WRN' -Message ("[WARN] Catalog payload policy '{0}' found no packageFile.contentHash or packageFile.publisherSignature for package '{1}'." -f $PayloadVerificationPolicy, [string]$Package.id)
+    }
+
     $mode = if ($candidateVerification -and $candidateVerification.PSObject.Properties['mode'] -and -not [string]::IsNullOrWhiteSpace([string]$candidateVerification.mode)) {
         [string]$candidateVerification.mode
     }
     else {
         'none'
+    }
+    if ($payloadVerificationRequired) {
+        $mode = 'required'
     }
 
     $algorithm = if ($packageContentHash -and $packageContentHash.PSObject.Properties['algorithm'] -and -not [string]::IsNullOrWhiteSpace([string]$packageContentHash.algorithm)) {
@@ -1016,12 +1051,20 @@ Build-PackageAcquisitionPlan -PackageResult $result
     }
 
     $requiresPackageFile = Test-PackagePackageFileAcquisitionRequired -Package $package
+    $payloadVerificationPolicy = if ($PackageResult.PackageConfig -and
+        $PackageResult.PackageConfig.PSObject.Properties['CatalogTrustPayloadVerification'] -and
+        -not [string]::IsNullOrWhiteSpace([string]$PackageResult.PackageConfig.CatalogTrustPayloadVerification)) {
+        [string]$PackageResult.PackageConfig.CatalogTrustPayloadVerification
+    }
+    else {
+        'off'
+    }
     $orderedCandidates = New-Object System.Collections.Generic.List[object]
     if ($requiresPackageFile -and $package.PSObject.Properties['acquisitionCandidates']) {
         foreach ($candidate in @($package.acquisitionCandidates | Sort-Object -Property @{
                     Expression = { if ($_.PSObject.Properties['searchOrder']) { [int]$_.searchOrder } else { [int]::MaxValue } }
                 })) {
-            $resolvedVerification = Resolve-PackageAcquisitionCandidateVerification -Package $package -AcquisitionCandidate $candidate
+            $resolvedVerification = Resolve-PackageAcquisitionCandidateVerification -Package $package -AcquisitionCandidate $candidate -PayloadVerificationPolicy $payloadVerificationPolicy -PackageFileRequired $requiresPackageFile
             switch -Exact ([string]$candidate.kind) {
                 'packageDepot' {
                     $resolvedDepotSourcePath = Join-Path $PackageResult.PackageDepotRelativeDirectory ([string]$package.packageFile.fileName)

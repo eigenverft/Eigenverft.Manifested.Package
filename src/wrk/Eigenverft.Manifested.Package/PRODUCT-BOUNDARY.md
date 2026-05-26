@@ -17,7 +17,7 @@ AI-scalable catalog growth is a main product feature: package JSON should be mai
 - A developer who wants a fresh Windows user profile to become useful in minutes.
 - A maintainer who wants shipped package definitions for common development tools.
 - A team endpoint owner who wants to share package definitions and depots through a file share.
-- A security-conscious operator who wants explicit publisher trust, hashes, local inventory, and predictable package ownership.
+- A security-conscious operator who wants explicit signing-key trust, hashes, local inventory, and predictable package ownership.
 - An agent or human package author who wants a schema that is strict enough to avoid ambiguous live releases.
 - An Eigenverft catalog maintainer who wants an online endpoint to carry the growing package catalog outside the module.
 - An industrial or isolated-network operator who needs packages to come from a controlled internal endpoint and depot.

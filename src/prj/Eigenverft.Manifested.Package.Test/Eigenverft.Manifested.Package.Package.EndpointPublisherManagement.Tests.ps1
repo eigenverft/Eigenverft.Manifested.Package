@@ -22,7 +22,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - endpoi
         $source.basePath | Should -Be '\\team-share\PackageEndpoint'
         $source.PSObject.Properties['trusted'] | Should -BeNullOrEmpty
         $source.PSObject.Properties['trustMode'] | Should -BeNullOrEmpty
-        $result.Notes -join "`n" | Should -Match 'PackagePublisherInventory'
+        $result.Notes -join "`n" | Should -Match 'PackageTrustInventory'
     }
 
     It 'places a package endpoint after an existing endpoint when requested' {
@@ -61,76 +61,19 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - endpoi
         Write-TestJsonDocument -Path $inventoryPath -Document $inventory
         $documentInfo = Read-PackageJsonDocument -Path $inventoryPath
 
-        { Assert-PackageEndpointInventorySchema -EndpointInventoryDocumentInfo $documentInfo } | Should -Throw '*PackagePublisherInventory.json*'
+        { Assert-PackageEndpointInventorySchema -EndpointInventoryDocumentInfo $documentInfo } | Should -Throw '*PackageTrustInventory.json*catalogTrust*'
     }
 
-    It 'adds and trusts a publisher through publisher policy' {
-        $root = Join-Path $TestDrive 'publisher-add-trust'
-        $inventoryPath = Join-Path $root 'Configuration\Internal\PackagePublisherInventory.json'
-        Write-TestJsonDocument -Path $inventoryPath -Document @{ inventoryVersion = 1; publishers = @() }
+    It 'hard-deprecates publisher commands with trust-only guidance and no inventory mutation' {
+        $localPublisherInventoryPath = Join-Path (Join-Path (Get-PackageLocalRoot) 'Configuration\Internal') 'PackagePublisherInventory.json'
 
-        Mock Get-PackagePublisherInventoryPath { $inventoryPath }
+        { Add-PackagePublisher -PublisherId 'Team' -PublisherName 'Team Packages' -WarningAction SilentlyContinue } | Should -Throw '*Package publisher inventory commands are deprecated*Import-PackageTrust*allowUnsignedPublisherIds*'
+        { Add-TeamPackagePublisher -PublisherId 'My Team' -WarningAction SilentlyContinue } | Should -Throw '*Package publisher inventory commands are deprecated*Trust-PackageSigningCertificate*allowUnsignedPublisherIds*'
+        { Set-PackagePublisher -PublisherId 'Team' -AllowUnsignedDefinitions -WarningAction SilentlyContinue } | Should -Throw '*Package publisher inventory commands are deprecated*PackageTrustInventory.json*'
+        { Get-PackagePublisher -PublisherId 'Team' -WarningAction SilentlyContinue } | Should -Throw '*Package publisher inventory commands are deprecated*'
+        { Remove-PackagePublisher -PublisherId 'Team' -Confirm:$false -WarningAction SilentlyContinue } | Should -Throw '*Package publisher inventory commands are deprecated*'
 
-        $added = Add-PackagePublisher -PublisherId 'Team' -PublisherName 'Team Packages' -WarningAction SilentlyContinue
-        $trusted = Set-PackagePublisher -PublisherId 'Team' -AllowUnsignedDefinitions -WarningAction SilentlyContinue
-        $source = (Read-PackageJsonDocument -Path $inventoryPath).Document.publishers | Select-Object -First 1
-
-        $added.Status | Should -Be 'Added'
-        $trusted.Status | Should -Be 'Updated'
-        $source.publisherId | Should -Be 'Team'
-        $source.publisherName | Should -Be 'Team Packages'
-        $source.trusted | Should -BeTrue
-        $source.trustMode | Should -Be 'unsignedExplicit'
-        $source.PSObject.Properties['searchOrder'] | Should -BeNullOrEmpty
-    }
-
-    It 'adds a trusted team package publisher with the JSON publisher hint' {
-        $root = Join-Path $TestDrive 'publisher-add-team'
-        $inventoryPath = Join-Path $root 'Configuration\Internal\PackagePublisherInventory.json'
-        Write-TestJsonDocument -Path $inventoryPath -Document @{ inventoryVersion = 1; publishers = @() }
-
-        Mock Get-PackagePublisherInventoryPath { $inventoryPath }
-
-        $result = Add-TeamPackagePublisher -PublisherId 'My Team' -WarningAction SilentlyContinue
-        $source = (Read-PackageJsonDocument -Path $inventoryPath).Document.publishers | Select-Object -First 1
-
-        $result.Status | Should -Be 'Added'
-        $source.publisherId | Should -Be 'My Team'
-        $source.publisherName | Should -Be 'My Team'
-        $source.enabled | Should -BeTrue
-        $source.trusted | Should -BeTrue
-        $source.trustMode | Should -Be 'unsignedExplicit'
-        $result.Notes -join "`n" | Should -Match 'definitionPublication.publisherId'
-        $result.Notes -join "`n" | Should -Match 'My Team'
-    }
-
-    It 'removes publisher policy without touching endpoint files' {
-        $root = Join-Path $TestDrive 'publisher-remove'
-        $endpointRoot = Join-Path $root 'team-endpoint'
-        $markerPath = Join-Path $endpointRoot 'keep.json'
-        Write-TestJsonDocument -Path $markerPath -Document @{ keep = $true }
-        $inventoryPath = Join-Path $root 'Configuration\Internal\PackagePublisherInventory.json'
-        Write-TestJsonDocument -Path $inventoryPath -Document @{
-            inventoryVersion = 1
-            publishers = @(
-                @{
-                    publisherId = 'Team'
-                    publisherName = 'Team'
-                    enabled = $true
-                    trusted = $true
-                    trustMode = 'unsignedExplicit'
-                }
-            )
-        }
-
-        Mock Get-PackagePublisherInventoryPath { $inventoryPath }
-
-        $result = Remove-PackagePublisher -PublisherId 'Team' -Confirm:$false -WarningAction SilentlyContinue
-        $publishers = (Read-PackageJsonDocument -Path $inventoryPath).Document.publishers
-
-        $result.Status | Should -Be 'Removed'
-        @($publishers).Count | Should -Be 0
-        Test-Path -LiteralPath $markerPath -PathType Leaf | Should -BeTrue
+        Test-Path -LiteralPath $localPublisherInventoryPath -PathType Leaf | Should -BeFalse
     }
 }
 
