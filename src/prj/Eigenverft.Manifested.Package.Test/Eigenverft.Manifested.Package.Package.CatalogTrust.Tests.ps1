@@ -23,6 +23,17 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - catalo
         $trustRows[0].TrustSource | Should -Be 'moduleShipped'
     }
 
+    It 'canonicalizes ISO timestamp strings like parsed DateTime values across PowerShell runtimes' {
+        $stringDocument = [pscustomobject]@{ publishedAtUtc = '2026-05-23T12:00:00Z' }
+        $dateDocument = [pscustomobject]@{ publishedAtUtc = [datetime]'2026-05-23T12:00:00Z' }
+
+        $stringCanonical = ConvertTo-PackageCanonicalJson -Value $stringDocument
+        $dateCanonical = ConvertTo-PackageCanonicalJson -Value $dateDocument
+
+        $stringCanonical | Should -Be $dateCanonical
+        $stringCanonical | Should -Match '2026-05-23T12:00:00.0000000Z'
+    }
+
     It 'creates a PFX signing certificate, signs a definition, verifies it, and strips it back to unsigned' {
         $rootPath = Join-Path $TestDrive 'sign-verify-strip'
         $pfxPath = Join-Path $rootPath 'eigenverft-package-catalog-signing.pfx'

@@ -75,6 +75,14 @@ function ConvertTo-PackageCanonicalJson {
         }
         return 'false'
     }
+    if ($Value -is [string] -and $Value -match '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$') {
+        try {
+            $dateOffset = [DateTimeOffset]::Parse([string]$Value, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal)
+            return ConvertTo-PackageJsonEscapedString -Value ($dateOffset.UtcDateTime.ToString('o', [Globalization.CultureInfo]::InvariantCulture))
+        }
+        catch {
+        }
+    }
     if ($Value -is [string] -or $Value -is [char] -or $Value -is [guid]) {
         return ConvertTo-PackageJsonEscapedString -Value ([string]$Value)
     }
