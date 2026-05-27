@@ -233,6 +233,12 @@ Assert-PackageConfigSchema -PackageConfigDocumentInfo $globalInfo
                 throw "Package config '$($PackageConfigDocumentInfo.Path)' defines unsupported catalogTrust.payloadVerification '$payloadVerification'."
             }
         }
+        if ($package.catalogTrust.PSObject.Properties['unknownSignedKeyPolicy']) {
+            $unknownSignedKeyPolicy = [string]$package.catalogTrust.unknownSignedKeyPolicy
+            if ($unknownSignedKeyPolicy -notin @('fail', 'prompt', 'trust')) {
+                throw "Package config '$($PackageConfigDocumentInfo.Path)' defines unsupported catalogTrust.unknownSignedKeyPolicy '$unknownSignedKeyPolicy'. Use 'fail', 'prompt', or 'trust'."
+            }
+        }
         foreach ($publisherListProperty in @('allowUnsignedPublisherIds', 'blockedPublisherIds')) {
             if (-not $package.catalogTrust.PSObject.Properties[$publisherListProperty]) {
                 continue

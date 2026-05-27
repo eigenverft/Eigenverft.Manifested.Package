@@ -62,6 +62,24 @@ function New-PackageSigningCertificate {
         [string]$PublisherName = $null,
 
         [AllowNull()]
+        [string]$CommonName = $null,
+
+        [AllowNull()]
+        [string]$Organization = $null,
+
+        [AllowNull()]
+        [string]$OrganizationalUnit = $null,
+
+        [AllowNull()]
+        [string]$Country = $null,
+
+        [AllowNull()]
+        [string]$SignerDisplayName = $null,
+
+        [AllowNull()]
+        [string]$TrustReason = $null,
+
+        [AllowNull()]
         [string]$OutputDirectory = $null,
 
         [AllowNull()]
@@ -71,7 +89,7 @@ function New-PackageSigningCertificate {
         [string]$CertificatePath = $null,
 
         [AllowNull()]
-        [string]$TrustExportPath = $null,
+        [string]$SigningDescriptorPath = $null,
 
         [Parameter(Mandatory = $true)]
         [securestring]$Password,
@@ -105,7 +123,21 @@ function New-PackageSigningCertificate {
         $PublisherName = $PublisherId
     }
     if ([string]::IsNullOrWhiteSpace($Subject)) {
-        $Subject = if (-not [string]::IsNullOrWhiteSpace($PublisherId)) { "CN=$PublisherId" } else { 'CN=Eigenverft Package Catalog Signing' }
+        if ([string]::IsNullOrWhiteSpace($CommonName)) {
+            if (-not [string]::IsNullOrWhiteSpace($PublisherId)) {
+                $CommonName = "$PublisherId Package Catalog Signing"
+            }
+            elseif ($usesFriendlyProfile) {
+                $CommonName = "$Name Package Catalog Signing"
+            }
+            else {
+                $CommonName = 'Eigenverft Package Catalog Signing'
+            }
+        }
+        $Subject = New-PackageCertificateSubject -CommonName $CommonName -Organization $Organization -OrganizationalUnit $OrganizationalUnit -Country $Country
+    }
+    if ([string]::IsNullOrWhiteSpace($SignerDisplayName)) {
+        $SignerDisplayName = if (-not [string]::IsNullOrWhiteSpace($CommonName)) { $CommonName } else { $Subject }
     }
 
     $safeName = if ($usesFriendlyProfile) { ConvertTo-PackageSafeFileName -Value $Name } else { $null }
@@ -118,14 +150,14 @@ function New-PackageSigningCertificate {
         if ([string]::IsNullOrWhiteSpace($CertificatePath)) {
             $CertificatePath = Join-Path $profileDirectory ("{0}.catalog-signing.cer" -f $safeName)
         }
-        if ([string]::IsNullOrWhiteSpace($TrustExportPath)) {
-            $TrustExportPath = Join-Path $profileDirectory ("{0}.package-trust.json" -f $safeName)
+        if ([string]::IsNullOrWhiteSpace($SigningDescriptorPath)) {
+            $SigningDescriptorPath = Join-Path $profileDirectory ("{0}.catalog-signing.json" -f $safeName)
         }
     }
 
     $resolvedPfxPath = [System.IO.Path]::GetFullPath($PfxPath)
     $resolvedCertificatePath = if ([string]::IsNullOrWhiteSpace($CertificatePath)) { $null } else { [System.IO.Path]::GetFullPath($CertificatePath) }
-    $resolvedTrustExportPath = if ([string]::IsNullOrWhiteSpace($TrustExportPath)) { $null } else { [System.IO.Path]::GetFullPath($TrustExportPath) }
+    $resolvedSigningDescriptorPath = if ([string]::IsNullOrWhiteSpace($SigningDescriptorPath)) { $null } else { [System.IO.Path]::GetFullPath($SigningDescriptorPath) }
     $rsa = [System.Security.Cryptography.RSA]::Create($KeyLength)
     $certificate = $null
     try {
@@ -143,7 +175,7 @@ function New-PackageSigningCertificate {
         $notAfter = [DateTimeOffset]::UtcNow.AddYears($ValidYears)
         $certificate = $request.CreateSelfSigned($notBefore, $notAfter)
         try {
-            $certificate.FriendlyName = if ($usesFriendlyProfile) { "$PublisherId Package Catalog Signing" } else { 'Eigenverft Package Catalog Signing' }
+            $certificate.FriendlyName = $SignerDisplayName
         }
         catch {
             # FriendlyName is not writable on every platform/runtime.
@@ -181,25 +213,16 @@ function New-PackageSigningCertificate {
                 $messages.Add("Exported public signing certificate '$resolvedCertificatePath'.") | Out-Null
             }
 
-            if (-not [string]::IsNullOrWhiteSpace($resolvedTrustExportPath)) {
-                if ([string]::IsNullOrWhiteSpace($PublisherId)) {
-                    throw 'PublisherId is required when writing a package trust export.'
-                }
-                $entry = New-PackageTrustEntry -Certificate $certificate -PublisherId $PublisherId -PublisherName $PublisherName -SignerDisplayName $certificate.FriendlyName -TrustSource 'exported'
-                Save-PackageJsonDocument -Path $resolvedTrustExportPath -Document (New-PackageTrustExportDocument -Entry $entry)
-                $messages.Add("Wrote public package trust export '$resolvedTrustExportPath'.") | Out-Null
+            if (-not [string]::IsNullOrWhiteSpace($resolvedSigningDescriptorPath)) {
+                Save-PackageSigningPasswordDescriptor -Path $resolvedSigningDescriptorPath -Password $Password
+                $messages.Add("Saved local signing password descriptor '$resolvedSigningDescriptorPath'.") | Out-Null
             }
 
-            $profile = $null
             if ($usesFriendlyProfile) {
-                $profile = Set-PackageSigningProfile -Name $Name -PublisherId $PublisherId -PublisherName $PublisherName -PfxPath $resolvedPfxPath -CertificatePath $resolvedCertificatePath -TrustExportPath $resolvedTrustExportPath -KeyThumbprint $thumbprint -CertificateSubject ([string]$certificate.Subject) -Password $Password
-                $messages.Add("Saved local signing profile '$Name' for publisher '$PublisherId'.") | Out-Null
-                $nextSteps.Add("Sign a package definition with: Sign-PackageDefinition -Path '<definition-json>'.") | Out-Null
+                $nextSteps.Add("Sign a package definition with: Sign-PackageDefinition -Path '<definition-json>' -Cert '$safeName'.") | Out-Null
                 if (-not [string]::IsNullOrWhiteSpace($resolvedCertificatePath)) {
                     $nextSteps.Add("Share the public .cer file with clients: $resolvedCertificatePath.") | Out-Null
-                }
-                if (-not [string]::IsNullOrWhiteSpace($resolvedTrustExportPath)) {
-                    $nextSteps.Add("Clients can import the .cer or trust JSON with Import-PackageTrust -Path '<public-trust-file>'.") | Out-Null
+                    $nextSteps.Add("Clients can trust it with: Import-PackageTrust -Path '$resolvedCertificatePath'.") | Out-Null
                 }
             }
         }
@@ -210,13 +233,18 @@ function New-PackageSigningCertificate {
             PublisherName       = $PublisherName
             PfxPath             = $resolvedPfxPath
             CertificatePath     = $resolvedCertificatePath
-            TrustExportPath     = $resolvedTrustExportPath
+            SigningDescriptorPath = $resolvedSigningDescriptorPath
             Subject             = [string]$certificate.Subject
+            CommonName          = $CommonName
+            Organization        = $Organization
+            OrganizationalUnit  = $OrganizationalUnit
+            Country             = if ([string]::IsNullOrWhiteSpace($Country)) { $null } else { $Country.Trim().ToUpperInvariant() }
+            SignerDisplayName   = $SignerDisplayName
+            TrustReason         = $TrustReason
             Thumbprint          = $thumbprint
             NotBeforeUtc        = $certificate.NotBefore.ToUniversalTime().ToString('o')
             NotAfterUtc         = $certificate.NotAfter.ToUniversalTime().ToString('o')
             SignatureAlgorithm  = [string]$certificate.SignatureAlgorithm.FriendlyName
-            SigningProfilePath  = if ($usesFriendlyProfile) { Get-PackageSigningProfileInventoryPath } else { $null }
         }
         return Add-PackageTrustCommandMessages -InputObject $result -Messages @($messages.ToArray()) -NextSteps @($nextSteps.ToArray())
     }
@@ -235,7 +263,7 @@ function Sign-PackageDefinition {
         [string]$Path,
 
         [AllowNull()]
-        [string]$CertificatePath = $null,
+        [string]$Cert = $null,
 
         [AllowNull()]
         [securestring]$Password = $null,
@@ -246,33 +274,9 @@ function Sign-PackageDefinition {
     process {
         $definitionInfo = Read-PackageJsonDocument -Path $Path
         $publisherId = Get-PackageDefinitionPublisherIdForSigning -DefinitionInfo $definitionInfo
-        $profile = $null
-        $usesProfile = $false
-        if ([string]::IsNullOrWhiteSpace($CertificatePath)) {
-            $profile = Get-PackageSigningProfileByPublisherId -PublisherId $publisherId
-            if (-not $profile) {
-                $message = "No local package signing profile exists for publisher '$publisherId'."
-                $nextStep = "Run: New-PackageSigningCertificate -Name '$publisherId' -Password (Read-Host -AsSecureString 'Catalog signing password')"
-                Write-PackageExecutionMessage -Level 'ERR' -Message ("[FAIL] {0}" -f $message)
-                Write-PackageExecutionMessage -Level 'WRN' -Message ("[NEXT] {0}" -f $nextStep)
-                throw "$message $nextStep"
-            }
-            $CertificatePath = [string]$profile.pfxPath
-            $Password = Unprotect-PackageSigningProfilePassword -ProtectedPassword ([string]$profile.protectedPassword)
-            $usesProfile = $true
-        }
-        elseif (-not $Password) {
-            $profile = Get-PackageSigningProfileByPfxPath -PfxPath $CertificatePath
-            if ($profile) {
-                $Password = Unprotect-PackageSigningProfilePassword -ProtectedPassword ([string]$profile.protectedPassword)
-                $usesProfile = $true
-            }
-            else {
-                throw "Password is required when signing with explicit certificate path '$CertificatePath'. Use -Password or create a local signing profile with New-PackageSigningCertificate -Name '$publisherId' -Password ..."
-            }
-        }
+        $signingReference = Resolve-PackageSigningCertificateReference -Cert $Cert -Password $Password
 
-        $certificate = Import-PackageCertificate -Path $CertificatePath -Password $Password -WithPrivateKey
+        $certificate = Import-PackageCertificate -Path $signingReference.PfxPath -Password $signingReference.Password -WithPrivateKey
         try {
             if (-not $KeepSchemaVersion.IsPresent) {
                 Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name 'schemaVersion' -Value '1.7'
@@ -285,9 +289,6 @@ function Sign-PackageDefinition {
                 $signature = Invoke-PackageDefinitionDocumentSigning -Definition $definitionInfo.Document -Certificate $certificate
                 Save-PackageJsonDocument -Path $definitionInfo.Path -Document $definitionInfo.Document
                 $verification = Test-PackageDefinitionSignatureDocument -Definition $definitionInfo.Document -Certificate $certificate
-                if ($usesProfile) {
-                    Set-PackageSigningProfileLastUsed -PublisherId $publisherId -KeyThumbprint $signature.KeyThumbprint
-                }
             }
             else {
                 $signature = $null
@@ -298,8 +299,11 @@ function Sign-PackageDefinition {
                 if ($signature) {
                     "Signed package definition '$($definitionInfo.Path)' with key '$($signature.KeyThumbprint)'."
                     "Verified embedded signature status '$($verification.Status)'."
-                    if ($usesProfile) {
-                        "Updated local signing profile last-used metadata for publisher '$publisherId'."
+                    if ([string]::Equals([string]$signingReference.PasswordSource, 'descriptor', [System.StringComparison]::OrdinalIgnoreCase)) {
+                        "Used local signing password descriptor '$($signingReference.DescriptorPath)'."
+                    }
+                    elseif ([string]::Equals([string]$signingReference.PasswordSource, 'environment', [System.StringComparison]::OrdinalIgnoreCase)) {
+                        "Used signing password from environment variable '$(Get-PackageSigningPasswordEnvironmentVariableName)'."
                     }
                 }
                 else {
@@ -308,13 +312,15 @@ function Sign-PackageDefinition {
             )
             $nextSteps = @(
                 "Publish or keep the signed definition in the endpoint scanned by PackageEndpointInventory.json."
-                "Make sure clients have imported the public .cer or trust JSON for publisher '$publisherId'."
+                "Clients can trust the embedded certificate during Invoke-Package, or preseed trust with a public .cer using Import-PackageTrust -Path '<public-cert.cer>'."
             )
             $result = [pscustomobject]@{
                 Path                 = $definitionInfo.Path
                 PublisherId          = $publisherId
-                CertificatePath      = [System.IO.Path]::GetFullPath($CertificatePath)
-                UsedSigningProfile   = [bool]$usesProfile
+                Cert                 = $Cert
+                PfxPath              = [System.IO.Path]::GetFullPath($signingReference.PfxPath)
+                SigningDescriptorPath = $signingReference.DescriptorPath
+                PasswordSource       = [string]$signingReference.PasswordSource
                 KeyThumbprint        = if ($signature) { $signature.KeyThumbprint } else { (($certificate.Thumbprint -replace '\s', '').ToUpperInvariant()) }
                 CanonicalContentHash = if ($signature) { $signature.CanonicalContentHash } else { $null }
                 VerificationStatus   = if ($verification) { $verification.Status } else { 'WhatIf' }
@@ -452,7 +458,7 @@ function Remove-PackageDefinitionSignature {
             SchemaVersion = [string]$definitionInfo.Document.schemaVersion
             Status        = 'Unsigned'
         }
-        return Add-PackageTrustCommandMessages -InputObject $result -Messages @("Removed embedded package definition signature from '$($definitionInfo.Path)'.") -NextSteps @("Re-sign this definition with Sign-PackageDefinition -Path '$($definitionInfo.Path)' before using strict catalog trust.")
+        return Add-PackageTrustCommandMessages -InputObject $result -Messages @("Removed embedded package definition signature from '$($definitionInfo.Path)'.") -NextSteps @("Re-sign this definition with Sign-PackageDefinition -Path '$($definitionInfo.Path)' -Cert '<signing-name-or-pfx>' before using strict catalog trust.")
     }
 }
 
@@ -804,6 +810,9 @@ function Import-PackageTrust {
     }
     else {
         $importInfo = Read-PackageJsonDocument -Path $resolvedPath
+        if ($importInfo.Document.PSObject.Properties['definitionPublication']) {
+            throw "Import-PackageTrust imports public certificate files or package trust export JSON only. Package-definition JSON uses embedded certificate trust during Invoke-Package; run Invoke-Package -DefinitionId '<definitionId>' to review the trust prompt, or use Invoke-Package -DefinitionId '<definitionId>' -AcceptUnknownSigningKey for controlled auto-trust."
+        }
         $entries = if ($importInfo.Document.PSObject.Properties['keys']) { @($importInfo.Document.keys) } else { @($importInfo.Document) }
     }
 

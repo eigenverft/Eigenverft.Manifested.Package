@@ -5,7 +5,7 @@
     Runtime validation is PowerShell-only (this module + DefinitionSchema.Wire1_6.ps1). The JSON schema file
     is the editor/agent contract (canonical examples under Endpoint/Defaults); keep schema and asserts aligned.
     Schema 1.7 root description and x-eigenverftAgentHint tell LLMs to author kind=unsigned drafts first and run
-    Sign-PackageDefinition after content is final; runtime ignores those hints. See wrk/TEAM-CATALOG-TRUST-POST-IMPLEMENTATION-FINDINGS.md.
+    Sign-PackageDefinition after content is final; runtime ignores those hints.
 #>
 
 $script:PackageDefinitionSupportedSchemaVersions = @(
@@ -71,6 +71,9 @@ function Assert-PackageDefinitionSignatureSchema_1_7 {
         if ($signature.PSObject.Properties['signatureValue'] -and -not [string]::IsNullOrWhiteSpace([string]$signature.signatureValue)) {
             throw "Package definition '$DefinitionId' unsigned definitionSignature must not define signatureValue."
         }
+        if ($signature.PSObject.Properties['certificatePem'] -and -not [string]::IsNullOrWhiteSpace([string]$signature.certificatePem)) {
+            throw "Package definition '$DefinitionId' unsigned definitionSignature must not define certificatePem."
+        }
         return
     }
 
@@ -81,6 +84,9 @@ function Assert-PackageDefinitionSignatureSchema_1_7 {
     }
     if (([string]$signature.keyThumbprint) -notmatch '^[A-Fa-f0-9]{40,128}$') {
         throw "Package definition '$DefinitionId' signed definitionSignature.keyThumbprint is not a hex thumbprint."
+    }
+    if ($signature.PSObject.Properties['certificatePem'] -and [string]::IsNullOrWhiteSpace([string]$signature.certificatePem)) {
+        throw "Package definition '$DefinitionId' signed definitionSignature.certificatePem must not be empty."
     }
     try {
         [Convert]::FromBase64String([string]$signature.signatureValue) | Out-Null

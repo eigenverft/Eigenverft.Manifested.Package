@@ -47,12 +47,19 @@ Creates the local Package base directory layout once per user profile.
 If the local environment marker exists, this helper skips all directory checks
 and returns immediately. Missing feature-specific paths are still handled by
 the existing lazy creation paths elsewhere in the Package flow.
+
+When PackageConfig is omitted, the helper resolves the state/config-only view
+of the local environment without loading a package definition.
 #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true)]
-        [psobject]$PackageConfig
+        [AllowNull()]
+        [psobject]$PackageConfig = $null
     )
+
+    if ($null -eq $PackageConfig) {
+        $PackageConfig = Get-PackageStateConfig
+    }
 
     $markerPath = Get-PackageLocalEnvironmentMarkerPath -PackageConfig $PackageConfig
     if (Test-Path -LiteralPath $markerPath -PathType Leaf) {
@@ -134,12 +141,13 @@ the existing lazy creation paths elsewhere in the Package flow.
         $createdDirectories += $normalizedDirectoryPath
     }
 
-    [ordered]@{
+    $markerDocument = [ordered]@{
         schemaVersion = 1
         initializedAtUtc = [DateTime]::UtcNow.ToString('o')
         applicationRootDirectory = [System.IO.Path]::GetFullPath($applicationRootDirectory)
         directoryVersion = 1
-    } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $markerPath -Encoding UTF8
+    }
+    Save-PackageJsonDocument -Path $markerPath -Document $markerDocument
 
     return [pscustomobject]@{
         Status              = 'Initialized'

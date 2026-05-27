@@ -343,6 +343,29 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $result.ErrorMessage | Should -Be 'local environment boom'
     }
 
+    It 'initializes the local package environment before catalog trust resolution' {
+        $rootPath = Join-Path $TestDrive 'local-environment-before-trust'
+        $applicationRootPath = Join-Path $rootPath 'AppRoot'
+        $globalDocument = New-TestPackageGlobalDocument -ApplicationRootDirectory $applicationRootPath -CatalogTrustPolicy strict -CatalogTrustAllowUnsignedPublisherIds @()
+        $definitionDocument = New-TestVSCodeDefinitionDocument -Releases @(
+            New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64' -FileName 'VSCode-win32-x64-2.0.0.zip' -AcquisitionCandidates @(
+                @{
+                    kind        = 'packageDepot'
+                    searchOrder = 10
+                }
+            )
+        )
+        $documents = Write-TestPackageDocuments -RootPath $rootPath -GlobalDocument $globalDocument -DefinitionDocument $definitionDocument
+        $markerPath = Join-Path (Join-Path $applicationRootPath 'State') 'PackageLocalEnvironment.json'
+        Mock Get-PackageConfigPath { $documents.GlobalConfigPath }
+        Mock Get-PackageDepotInventoryPath { $documents.DepotInventoryPath }
+
+        { Invoke-PackageDefinitionCommandCore -DefinitionId 'VSCodeRuntime' } | Should -Throw "*catalog trust policy 'strict'*"
+
+        Test-Path -LiteralPath $markerPath -PathType Leaf | Should -BeTrue
+        Test-Path -LiteralPath (Join-Path $applicationRootPath 'PkgEndpoint') -PathType Container | Should -BeTrue
+    }
+
     It 'runs Invoke-Package with active repository search and assigned state' {
         Mock Invoke-PackageDefinitionCommandCore {
             [pscustomobject]@{
@@ -474,6 +497,29 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $reference.DefinitionId | Should -Be 'VSCodeRuntime'
         $reference.SourceKind | Should -Be 'moduleLocal'
         Split-Path -Leaf $reference.DefinitionPath | Should -Be 'VSCodeRuntime.json'
+    }
+
+    It 'ships Eigenverft defaults as trusted signed definitions with embedded public certificates' {
+        $definitionRoot = Join-Path (Get-PackageShippedEndpointRoot) 'Defaults\Eigenverft'
+        $catalog = Verify-PackageDefinitionCatalog -Path $definitionRoot -RequireTrusted
+        $trustRows = @(Get-PackageTrust -PublisherId 'Eigenverft')
+        $definitionFiles = @(Get-ChildItem -LiteralPath $definitionRoot -Filter '*.json' -File)
+        $signedDocuments = @(
+            foreach ($definitionFile in $definitionFiles) {
+                (Read-PackageJsonDocument -Path $definitionFile.FullName).Document
+            }
+        )
+
+        $catalog.CheckedCount | Should -Be $definitionFiles.Count
+        $catalog.FailedCount | Should -Be 0
+        $catalog.ValidCount | Should -Be $definitionFiles.Count
+        $catalog.TrustedCount | Should -Be $definitionFiles.Count
+        $trustRows.Count | Should -Be 1
+        $trustRows[0].TrustSource | Should -Be 'moduleShipped'
+        $trustRows[0].KeyThumbprint | Should -Not -Be 'DD1E9435FB3AE68ABF2DB99E5638502E00D2FD90'
+        @($catalog.Results | Where-Object { $_.KeyThumbprint -ne $trustRows[0].KeyThumbprint }).Count | Should -Be 0
+        @($signedDocuments | Where-Object { -not $_.definitionPublication.definitionSignature.PSObject.Properties['certificatePem'] }).Count | Should -Be 0
+        @($signedDocuments | Where-Object { [string]::IsNullOrWhiteSpace([string]$_.definitionPublication.definitionSignature.certificatePem) }).Count | Should -Be 0
     }
 
     It 'fails clearly when a publisher id selector does not match a discovered definition' {

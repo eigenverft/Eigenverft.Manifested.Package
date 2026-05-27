@@ -33,6 +33,8 @@ function Invoke-Package {
         [AllowNull()]
         [string]$PackageVersion = $null,
 
+        [switch]$AcceptUnknownSigningKey,
+
         [switch]$FailFast
     )
 
@@ -47,9 +49,10 @@ function Invoke-Package {
 
     foreach ($definition in $DefinitionId) {
         $invokeParams = @{
-            PublisherId   = $PublisherId
-            DefinitionId  = $definition
-            DesiredState  = $DesiredState
+            PublisherId              = $PublisherId
+            DefinitionId             = $definition
+            DesiredState             = $DesiredState
+            AcceptUnknownSigningKey  = $AcceptUnknownSigningKey
         }
         if ($packageVersionOverrideSpecified) {
             $invokeParams.PackageVersion = $normalizedPackageVersion

@@ -25,40 +25,6 @@ function ConvertFrom-PackageSecureString {
     }
 }
 
-function ConvertTo-PackageJsonEscapedString {
-    [CmdletBinding()]
-    param(
-        [AllowNull()]
-        [string]$Value
-    )
-
-    if ($null -eq $Value) {
-        return '""'
-    }
-
-    $builder = [System.Text.StringBuilder]::new()
-    $null = $builder.Append('"')
-    foreach ($ch in $Value.ToCharArray()) {
-        $code = [int][char]$ch
-        switch ($code) {
-            8 { $null = $builder.Append('\b'); continue }
-            9 { $null = $builder.Append('\t'); continue }
-            10 { $null = $builder.Append('\n'); continue }
-            12 { $null = $builder.Append('\f'); continue }
-            13 { $null = $builder.Append('\r'); continue }
-            34 { $null = $builder.Append('\"'); continue }
-            92 { $null = $builder.Append('\\'); continue }
-        }
-        if ($code -lt 32) {
-            $null = $builder.Append(('\u{0:x4}' -f $code))
-            continue
-        }
-        $null = $builder.Append($ch)
-    }
-    $null = $builder.Append('"')
-    return $builder.ToString()
-}
-
 function ConvertTo-PackageCanonicalJson {
     [CmdletBinding()]
     param(
@@ -247,34 +213,6 @@ function Set-PackageObjectProperty {
     $InputObject | Add-Member -MemberType NoteProperty -Name $Name -Value $Value
 }
 
-function Save-PackageJsonDocument {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Path,
-
-        [Parameter(Mandatory = $true)]
-        [psobject]$Document
-    )
-
-    $resolvedPath = [System.IO.Path]::GetFullPath($Path)
-    $directory = Split-Path -Parent $resolvedPath
-    if (-not [string]::IsNullOrWhiteSpace($directory)) {
-        $null = New-Item -ItemType Directory -Path $directory -Force
-    }
-
-    $temporaryPath = '{0}.{1}.tmp' -f $resolvedPath, ([guid]::NewGuid().ToString('N'))
-    try {
-        $Document | ConvertTo-Json -Depth 80 | Set-Content -LiteralPath $temporaryPath -Encoding UTF8
-        Move-Item -LiteralPath $temporaryPath -Destination $resolvedPath -Force
-    }
-    finally {
-        if (Test-Path -LiteralPath $temporaryPath -PathType Leaf) {
-            Remove-Item -LiteralPath $temporaryPath -Force -ErrorAction SilentlyContinue
-        }
-    }
-}
-
 function ConvertTo-PackageSafeFileName {
     [CmdletBinding()]
     param(
@@ -295,6 +233,59 @@ function ConvertTo-PackageSafeFileName {
     return $safe
 }
 
+function ConvertTo-PackageX500NameValue {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Value
+    )
+
+    $trimmed = $Value.Trim()
+    if ([string]::IsNullOrWhiteSpace($trimmed)) {
+        throw 'Certificate subject values must not be empty.'
+    }
+
+    return ($trimmed -replace '\\', '\\' -replace '([,+"<>;=])', '\$1')
+}
+
+function New-PackageCertificateSubject {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$CommonName,
+
+        [AllowNull()]
+        [string]$Organization = $null,
+
+        [AllowNull()]
+        [string]$OrganizationalUnit = $null,
+
+        [AllowNull()]
+        [string]$Country = $null
+    )
+
+    if ([string]::IsNullOrWhiteSpace($CommonName)) {
+        throw 'CommonName must not be empty.'
+    }
+    if (-not [string]::IsNullOrWhiteSpace($Country) -and $Country.Trim() -notmatch '^[A-Za-z]{2}$') {
+        throw "Country '$Country' is invalid. Use a two-letter ISO country code such as 'DE' or 'US'."
+    }
+
+    $parts = New-Object System.Collections.Generic.List[string]
+    $parts.Add(('CN={0}' -f (ConvertTo-PackageX500NameValue -Value $CommonName))) | Out-Null
+    if (-not [string]::IsNullOrWhiteSpace($Organization)) {
+        $parts.Add(('O={0}' -f (ConvertTo-PackageX500NameValue -Value $Organization))) | Out-Null
+    }
+    if (-not [string]::IsNullOrWhiteSpace($OrganizationalUnit)) {
+        $parts.Add(('OU={0}' -f (ConvertTo-PackageX500NameValue -Value $OrganizationalUnit))) | Out-Null
+    }
+    if (-not [string]::IsNullOrWhiteSpace($Country)) {
+        $parts.Add(('C={0}' -f $Country.Trim().ToUpperInvariant())) | Out-Null
+    }
+
+    return ($parts.ToArray() -join ', ')
+}
+
 function Get-PackageDefaultSigningDirectory {
     [CmdletBinding()]
     param()
@@ -307,93 +298,231 @@ function Get-PackageDefaultSigningDirectory {
     return [System.IO.Path]::GetFullPath((Join-Path $documentsPath 'Eigenverft.Package\Signing'))
 }
 
-function Get-PackageSigningProfileInventoryPath {
+function Get-PackageSigningPasswordEnvironmentVariableName {
     [CmdletBinding()]
     param()
 
-    return [System.IO.Path]::GetFullPath((Join-Path (Join-Path (Get-PackageLocalRoot) 'Configuration\Private') 'PackageSigningProfiles.json'))
+    return 'EVF_PACKAGE_SIGNING_PASSWORD'
 }
 
-function New-PackageSigningProfileInventoryDocument {
+function Get-PackageSigningPasswordDescriptorPath {
     [CmdletBinding()]
-    param()
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$PfxPath
+    )
 
+    return [System.IO.Path]::GetFullPath([System.IO.Path]::ChangeExtension($PfxPath, '.json'))
+}
+
+function New-PackageSigningPasswordDescriptorDocument {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [securestring]$Password
+    )
+
+    $now = [DateTime]::UtcNow.ToString('o')
     return [pscustomobject][ordered]@{
-        inventoryVersion = 1
-        profiles         = @()
+        schemaVersion         = 1
+        kind                  = 'catalogSigningPassword'
+        protectedPasswordKind = 'dpapi-current-user-securestring'
+        protectedPassword     = Protect-PackageSigningProfilePassword -Password $Password
+        createdAtUtc          = $now
+        updatedAtUtc          = $now
     }
 }
 
-function Get-PackageSigningProfileEntries {
+function Assert-PackageSigningPasswordDescriptorSchema {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
-        [psobject]$Document
+        [psobject]$DescriptorInfo
     )
 
-    if (-not $Document.PSObject.Properties['profiles'] -or $null -eq $Document.profiles) {
-        return @()
+    $document = $DescriptorInfo.Document
+    foreach ($requiredProperty in @('schemaVersion', 'kind', 'protectedPasswordKind', 'protectedPassword')) {
+        if (-not $document.PSObject.Properties[$requiredProperty] -or [string]::IsNullOrWhiteSpace([string]$document.$requiredProperty)) {
+            throw "Package signing password descriptor '$($DescriptorInfo.Path)' is missing '$requiredProperty'."
+        }
     }
-    if ($Document.profiles -isnot [System.Array]) {
-        throw 'Package signing profile inventory must define profiles as an array.'
+    if (-not [string]::Equals([string]$document.kind, 'catalogSigningPassword', [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Package signing password descriptor '$($DescriptorInfo.Path)' has unsupported kind '$($document.kind)'."
     }
-
-    return @($Document.profiles)
+    if (-not [string]::Equals([string]$document.protectedPasswordKind, 'dpapi-current-user-securestring', [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Package signing password descriptor '$($DescriptorInfo.Path)' has unsupported protectedPasswordKind '$($document.protectedPasswordKind)'."
+    }
+    foreach ($forbiddenProperty in @('pfxPath', 'certificatePath', 'trustExportPath')) {
+        if ($document.PSObject.Properties[$forbiddenProperty]) {
+            throw "Package signing password descriptor '$($DescriptorInfo.Path)' must not contain '$forbiddenProperty'. The PFX is resolved from the adjacent file name."
+        }
+    }
 }
 
-function Assert-PackageSigningProfileInventorySchema {
+function Save-PackageSigningPasswordDescriptor {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
-        [psobject]$ProfileInventoryDocumentInfo
+        [string]$Path,
+
+        [Parameter(Mandatory = $true)]
+        [securestring]$Password
     )
 
-    $document = $ProfileInventoryDocumentInfo.Document
-    if (-not $document.PSObject.Properties['inventoryVersion']) {
-        throw "Package signing profile inventory '$($ProfileInventoryDocumentInfo.Path)' is missing inventoryVersion."
-    }
-    if (-not $document.PSObject.Properties['profiles']) {
-        throw "Package signing profile inventory '$($ProfileInventoryDocumentInfo.Path)' is missing profiles."
+    Save-PackageJsonDocument -Path $Path -Document (New-PackageSigningPasswordDescriptorDocument -Password $Password)
+}
+
+function Get-PackageSigningPasswordFromDescriptor {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    $descriptorInfo = Read-PackageJsonDocument -Path $Path
+    Assert-PackageSigningPasswordDescriptorSchema -DescriptorInfo $descriptorInfo
+    return Unprotect-PackageSigningProfilePassword -ProtectedPassword ([string]$descriptorInfo.Document.protectedPassword)
+}
+
+function Get-PackageSigningPasswordFromEnvironment {
+    [CmdletBinding()]
+    param()
+
+    $variableName = Get-PackageSigningPasswordEnvironmentVariableName
+    $passwordText = [Environment]::GetEnvironmentVariable($variableName, 'Process')
+    if ([string]::IsNullOrEmpty($passwordText)) {
+        return $null
     }
 
-    foreach ($profile in @(Get-PackageSigningProfileEntries -Document $document)) {
-        foreach ($requiredProperty in @('name', 'publisherId', 'pfxPath', 'keyThumbprint', 'protectedPassword', 'protectedPasswordKind')) {
-            if (-not $profile.PSObject.Properties[$requiredProperty] -or [string]::IsNullOrWhiteSpace([string]$profile.$requiredProperty)) {
-                throw "Package signing profile inventory '$($ProfileInventoryDocumentInfo.Path)' has a profile entry missing '$requiredProperty'."
+    return ConvertTo-SecureString -String $passwordText -AsPlainText -Force
+}
+
+function ConvertTo-PackageSigningSelectorKey {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [string]$Value
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return ''
+    }
+
+    return (([string]$Value).ToLowerInvariant() -replace '[^a-z0-9]', '')
+}
+
+function Get-PackageSigningPfxPathByName {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name
+    )
+
+    $signingDirectory = Get-PackageDefaultSigningDirectory
+    if (-not (Test-Path -LiteralPath $signingDirectory -PathType Container)) {
+        throw "Package signing directory '$signingDirectory' does not exist. Create a signing certificate with New-PackageSigningCertificate -Name '$Name' first."
+    }
+
+    $selectorKey = ConvertTo-PackageSigningSelectorKey -Value $Name
+    $matchingPfxFiles = @(
+        Get-ChildItem -LiteralPath $signingDirectory -Filter '*.catalog-signing.pfx' -File -Recurse | Where-Object {
+            $baseName = [System.IO.Path]::GetFileNameWithoutExtension($_.Name)
+            $friendlyName = ($baseName -replace '\.catalog-signing$', '')
+            $folderName = Split-Path -Leaf $_.DirectoryName
+            $selectorKey -in @(
+                ConvertTo-PackageSigningSelectorKey -Value $baseName
+                ConvertTo-PackageSigningSelectorKey -Value $friendlyName
+                ConvertTo-PackageSigningSelectorKey -Value $folderName
+            )
+        }
+    )
+
+    if ($matchingPfxFiles.Count -eq 0) {
+        throw "No package signing certificate named '$Name' was found under '$signingDirectory'. Use -Cert with a PFX path or create one with New-PackageSigningCertificate -Name '$Name'."
+    }
+    if ($matchingPfxFiles.Count -gt 1) {
+        throw "Package signing certificate name '$Name' is ambiguous under '$signingDirectory'. Use -Cert with the full PFX path."
+    }
+
+    return [System.IO.Path]::GetFullPath($matchingPfxFiles[0].FullName)
+}
+
+function Resolve-PackageSigningCertificateReference {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [string]$Cert = $null,
+
+        [AllowNull()]
+        [securestring]$Password = $null
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Cert)) {
+        throw "Sign-PackageDefinition requires -Cert. Use a friendly name, a .pfx path, or an adjacent .catalog-signing.json descriptor."
+    }
+
+    $reference = $Cert.Trim()
+    $resolvedReference = $null
+    if (Test-Path -LiteralPath $reference -PathType Leaf) {
+        $resolvedReference = (Resolve-Path -LiteralPath $reference -ErrorAction Stop).Path
+    }
+    elseif ([System.IO.Path]::IsPathRooted($reference) -or $reference -match '[\\/]') {
+        throw "Package signing certificate reference '$reference' does not exist."
+    }
+    else {
+        $resolvedReference = Get-PackageSigningPfxPathByName -Name $reference
+    }
+
+    $extension = [System.IO.Path]::GetExtension($resolvedReference)
+    $pfxPath = $null
+    $descriptorPath = $null
+    if ([string]::Equals($extension, '.json', [System.StringComparison]::OrdinalIgnoreCase)) {
+        $descriptorPath = [System.IO.Path]::GetFullPath($resolvedReference)
+        $pfxPath = [System.IO.Path]::GetFullPath([System.IO.Path]::ChangeExtension($descriptorPath, '.pfx'))
+        if (-not (Test-Path -LiteralPath $pfxPath -PathType Leaf)) {
+            throw "Package signing descriptor '$descriptorPath' requires adjacent PFX '$pfxPath'."
+        }
+    }
+    elseif ([string]::Equals($extension, '.pfx', [System.StringComparison]::OrdinalIgnoreCase) -or
+        [string]::Equals($extension, '.p12', [System.StringComparison]::OrdinalIgnoreCase)) {
+        $pfxPath = [System.IO.Path]::GetFullPath($resolvedReference)
+        $candidateDescriptorPath = Get-PackageSigningPasswordDescriptorPath -PfxPath $pfxPath
+        if (Test-Path -LiteralPath $candidateDescriptorPath -PathType Leaf) {
+            $descriptorPath = $candidateDescriptorPath
+        }
+    }
+    elseif ($extension -in @('.cer', '.crt', '.pem')) {
+        throw "Package signing certificate reference '$resolvedReference' is public-only. Use the private .pfx or adjacent .catalog-signing.json descriptor for signing."
+    }
+    else {
+        throw "Package signing certificate reference '$resolvedReference' must be a .pfx, .p12, or .json file."
+    }
+
+    $passwordSource = 'parameter'
+    if ($null -eq $Password) {
+        if (-not [string]::IsNullOrWhiteSpace($descriptorPath)) {
+            $Password = Get-PackageSigningPasswordFromDescriptor -Path $descriptorPath
+            $passwordSource = 'descriptor'
+        }
+        else {
+            $Password = Get-PackageSigningPasswordFromEnvironment
+            if ($Password) {
+                $passwordSource = 'environment'
             }
         }
-        Assert-PackagePublisherId -PublisherId ([string]$profile.publisherId)
-    }
-}
-
-function Get-PackageSigningProfileInventoryInfo {
-    [CmdletBinding()]
-    param()
-
-    $profilePath = Get-PackageSigningProfileInventoryPath
-    if (-not (Test-Path -LiteralPath $profilePath -PathType Leaf)) {
-        return [pscustomobject]@{
-            Path     = $profilePath
-            Document = New-PackageSigningProfileInventoryDocument
-            Exists   = $false
-        }
     }
 
-    $documentInfo = Read-PackageJsonDocument -Path $profilePath
-    Assert-PackageSigningProfileInventorySchema -ProfileInventoryDocumentInfo $documentInfo
-    $documentInfo | Add-Member -MemberType NoteProperty -Name Exists -Value $true -Force
-    return $documentInfo
-}
+    if ($null -eq $Password) {
+        $environmentVariableName = Get-PackageSigningPasswordEnvironmentVariableName
+        throw "Password is required for signing certificate '$pfxPath'. Use -Password, create adjacent descriptor '$(Get-PackageSigningPasswordDescriptorPath -PfxPath $pfxPath)', or set environment variable '$environmentVariableName'."
+    }
 
-function Save-PackageSigningProfileInventoryDocument {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [psobject]$DocumentInfo
-    )
-
-    Assert-PackageSigningProfileInventorySchema -ProfileInventoryDocumentInfo $DocumentInfo
-    Save-PackageJsonDocument -Path $DocumentInfo.Path -Document $DocumentInfo.Document
+    return [pscustomobject]@{
+        PfxPath        = $pfxPath
+        DescriptorPath = $descriptorPath
+        Password       = $Password
+        PasswordSource = $passwordSource
+    }
 }
 
 function Protect-PackageSigningProfilePassword {
@@ -416,192 +545,69 @@ function Unprotect-PackageSigningProfilePassword {
     return ConvertTo-SecureString -String $ProtectedPassword -ErrorAction Stop
 }
 
-function Select-PackageSigningProfileSummary {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [psobject]$Profile,
-
-        [Parameter(Mandatory = $true)]
-        [string]$ProfileInventoryPath
-    )
-
-    return [pscustomobject]@{
-        Name                 = [string]$Profile.name
-        PublisherId          = [string]$Profile.publisherId
-        PublisherName        = if ($Profile.PSObject.Properties['publisherName']) { [string]$Profile.publisherName } else { $null }
-        PfxPath              = [string]$Profile.pfxPath
-        CertificatePath      = if ($Profile.PSObject.Properties['certificatePath']) { [string]$Profile.certificatePath } else { $null }
-        TrustExportPath      = if ($Profile.PSObject.Properties['trustExportPath']) { [string]$Profile.trustExportPath } else { $null }
-        KeyThumbprint        = [string]$Profile.keyThumbprint
-        CertificateSubject   = if ($Profile.PSObject.Properties['certificateSubject']) { [string]$Profile.certificateSubject } else { $null }
-        CreatedAtUtc         = if ($Profile.PSObject.Properties['createdAtUtc']) { [string]$Profile.createdAtUtc } else { $null }
-        UpdatedAtUtc         = if ($Profile.PSObject.Properties['updatedAtUtc']) { [string]$Profile.updatedAtUtc } else { $null }
-        LastUsedAtUtc        = if ($Profile.PSObject.Properties['lastUsedAtUtc']) { [string]$Profile.lastUsedAtUtc } else { $null }
-        IsDefault            = if ($Profile.PSObject.Properties['isDefault']) { [bool]$Profile.isDefault } else { $false }
-        PasswordStored       = -not [string]::IsNullOrWhiteSpace([string]$Profile.protectedPassword)
-        PasswordStorage      = if ($Profile.PSObject.Properties['protectedPasswordKind']) { [string]$Profile.protectedPasswordKind } else { $null }
-        ProfileInventoryPath = $ProfileInventoryPath
-    }
-}
-
 function Get-PackageSigningProfileSummaries {
     [CmdletBinding()]
     param()
 
-    $documentInfo = Get-PackageSigningProfileInventoryInfo
-    foreach ($profile in @(Get-PackageSigningProfileEntries -Document $documentInfo.Document)) {
-        Select-PackageSigningProfileSummary -Profile $profile -ProfileInventoryPath $documentInfo.Path
+    $signingDirectory = Get-PackageDefaultSigningDirectory
+    if (-not (Test-Path -LiteralPath $signingDirectory -PathType Container)) {
+        return
     }
-}
 
-function Get-PackageSigningProfileByPublisherId {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$PublisherId
-    )
-
-    $documentInfo = Get-PackageSigningProfileInventoryInfo
-    $matches = @(
-        Get-PackageSigningProfileEntries -Document $documentInfo.Document | Where-Object {
-            [string]::Equals([string]$_.publisherId, $PublisherId, [System.StringComparison]::OrdinalIgnoreCase)
+    foreach ($pfxFile in @(Get-ChildItem -LiteralPath $signingDirectory -Filter '*.catalog-signing.pfx' -File -Recurse)) {
+        $pfxPath = [System.IO.Path]::GetFullPath($pfxFile.FullName)
+        $descriptorPath = Get-PackageSigningPasswordDescriptorPath -PfxPath $pfxPath
+        $certificatePath = [System.IO.Path]::ChangeExtension($pfxPath, '.cer')
+        if (-not (Test-Path -LiteralPath $certificatePath -PathType Leaf)) {
+            $certificatePath = [System.IO.Path]::ChangeExtension($pfxPath, '.pem')
         }
-    )
-    if ($matches.Count -eq 0) {
-        return $null
-    }
 
-    $selected = @($matches | Sort-Object -Property `
-            @{ Expression = { if ($_.PSObject.Properties['isDefault'] -and [bool]$_.isDefault) { 1 } else { 0 } } }, `
-            @{ Expression = { if ($_.PSObject.Properties['lastUsedAtUtc']) { [string]$_.lastUsedAtUtc } else { '' } } }, `
-            @{ Expression = { if ($_.PSObject.Properties['updatedAtUtc']) { [string]$_.updatedAtUtc } else { '' } } } `
-            -Descending | Select-Object -First 1)
-    return $selected[0]
-}
-
-function Get-PackageSigningProfileByPfxPath {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$PfxPath
-    )
-
-    $resolvedPath = [System.IO.Path]::GetFullPath($PfxPath)
-    $documentInfo = Get-PackageSigningProfileInventoryInfo
-    foreach ($profile in @(Get-PackageSigningProfileEntries -Document $documentInfo.Document)) {
-        if ($profile.PSObject.Properties['pfxPath'] -and
-            [string]::Equals([System.IO.Path]::GetFullPath([string]$profile.pfxPath), $resolvedPath, [System.StringComparison]::OrdinalIgnoreCase)) {
-            return $profile
-        }
-    }
-
-    return $null
-}
-
-function Set-PackageSigningProfile {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Name,
-
-        [Parameter(Mandatory = $true)]
-        [string]$PublisherId,
-
-        [AllowNull()]
-        [string]$PublisherName = $null,
-
-        [Parameter(Mandatory = $true)]
-        [string]$PfxPath,
-
-        [AllowNull()]
-        [string]$CertificatePath = $null,
-
-        [AllowNull()]
-        [string]$TrustExportPath = $null,
-
-        [Parameter(Mandatory = $true)]
-        [string]$KeyThumbprint,
-
-        [AllowNull()]
-        [string]$CertificateSubject = $null,
-
-        [Parameter(Mandatory = $true)]
-        [securestring]$Password
-    )
-
-    Assert-PackagePublisherId -PublisherId $PublisherId
-    $documentInfo = Get-PackageSigningProfileInventoryInfo
-    $now = [DateTime]::UtcNow.ToString('o')
-    $protectedPassword = Protect-PackageSigningProfilePassword -Password $Password
-    $profiles = New-Object System.Collections.Generic.List[object]
-    $existingCreatedAtUtc = $null
-
-    foreach ($profile in @(Get-PackageSigningProfileEntries -Document $documentInfo.Document)) {
-        if ([string]::Equals([string]$profile.publisherId, $PublisherId, [System.StringComparison]::OrdinalIgnoreCase)) {
-            if ($profile.PSObject.Properties['createdAtUtc']) {
-                $existingCreatedAtUtc = [string]$profile.createdAtUtc
+        $baseName = [System.IO.Path]::GetFileNameWithoutExtension($pfxFile.Name)
+        $name = ($baseName -replace '\.catalog-signing$', '')
+        $publisherId = $name
+        $publisherName = $name
+        $keyThumbprint = $null
+        $certificateSubject = $null
+        if (Test-Path -LiteralPath $certificatePath -PathType Leaf) {
+            $certificate = Import-PackageCertificate -Path $certificatePath
+            try {
+                $resolvedPublisherId = Resolve-PackagePublisherIdFromCertificate -Certificate $certificate
+                if (-not [string]::IsNullOrWhiteSpace($resolvedPublisherId)) {
+                    $publisherId = $resolvedPublisherId
+                    $publisherName = $resolvedPublisherId
+                }
+                $keyThumbprint = (($certificate.Thumbprint -replace '\s', '').ToUpperInvariant())
+                $certificateSubject = [string]$certificate.Subject
             }
-            continue
-        }
-        $profiles.Add($profile) | Out-Null
-    }
-
-    $profile = [pscustomobject][ordered]@{
-        name                  = $Name
-        publisherId           = $PublisherId
-        publisherName         = if ([string]::IsNullOrWhiteSpace($PublisherName)) { $PublisherId } else { $PublisherName }
-        pfxPath               = [System.IO.Path]::GetFullPath($PfxPath)
-        certificatePath       = if ([string]::IsNullOrWhiteSpace($CertificatePath)) { $null } else { [System.IO.Path]::GetFullPath($CertificatePath) }
-        trustExportPath       = if ([string]::IsNullOrWhiteSpace($TrustExportPath)) { $null } else { [System.IO.Path]::GetFullPath($TrustExportPath) }
-        keyThumbprint         = (($KeyThumbprint -replace '\s', '').ToUpperInvariant())
-        certificateSubject    = $CertificateSubject
-        protectedPassword     = $protectedPassword
-        protectedPasswordKind = 'dpapi-current-user-securestring'
-        createdAtUtc          = if ([string]::IsNullOrWhiteSpace($existingCreatedAtUtc)) { $now } else { $existingCreatedAtUtc }
-        updatedAtUtc          = $now
-        lastUsedAtUtc         = $null
-        isDefault             = $true
-        userName              = [Environment]::UserName
-        machineName           = [Environment]::MachineName
-    }
-    $profiles.Add($profile) | Out-Null
-    Set-PackageObjectProperty -InputObject $documentInfo.Document -Name 'profiles' -Value @($profiles.ToArray())
-    Save-PackageSigningProfileInventoryDocument -DocumentInfo $documentInfo
-
-    return Select-PackageSigningProfileSummary -Profile $profile -ProfileInventoryPath $documentInfo.Path
-}
-
-function Set-PackageSigningProfileLastUsed {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$PublisherId,
-
-        [Parameter(Mandatory = $true)]
-        [string]$KeyThumbprint
-    )
-
-    $documentInfo = Get-PackageSigningProfileInventoryInfo
-    $normalizedThumbprint = (($KeyThumbprint -replace '\s', '').ToUpperInvariant())
-    $now = [DateTime]::UtcNow.ToString('o')
-    $changed = $false
-    foreach ($profile in @(Get-PackageSigningProfileEntries -Document $documentInfo.Document)) {
-        if (-not [string]::Equals([string]$profile.publisherId, $PublisherId, [System.StringComparison]::OrdinalIgnoreCase)) {
-            continue
+            finally {
+                $certificate.Dispose()
+            }
         }
 
-        $isSelected = [string]::Equals((([string]$profile.keyThumbprint -replace '\s', '').ToUpperInvariant()), $normalizedThumbprint, [System.StringComparison]::OrdinalIgnoreCase)
-        if ($isSelected) {
-            Set-PackageObjectProperty -InputObject $profile -Name 'lastUsedAtUtc' -Value $now
-            Set-PackageObjectProperty -InputObject $profile -Name 'updatedAtUtc' -Value $now
+        $passwordStorage = $null
+        if (Test-Path -LiteralPath $descriptorPath -PathType Leaf) {
+            try {
+                $descriptorInfo = Read-PackageJsonDocument -Path $descriptorPath
+                Assert-PackageSigningPasswordDescriptorSchema -DescriptorInfo $descriptorInfo
+                $passwordStorage = [string]$descriptorInfo.Document.protectedPasswordKind
+            }
+            catch {
+                $passwordStorage = 'invalid'
+            }
         }
-        Set-PackageObjectProperty -InputObject $profile -Name 'isDefault' -Value $isSelected
-        $changed = $true
-    }
 
-    if ($changed) {
-        Save-PackageSigningProfileInventoryDocument -DocumentInfo $documentInfo
+        [pscustomobject]@{
+            Name                  = $name
+            PublisherId           = $publisherId
+            PublisherName         = $publisherName
+            PfxPath               = $pfxPath
+            CertificatePath       = if (Test-Path -LiteralPath $certificatePath -PathType Leaf) { [System.IO.Path]::GetFullPath($certificatePath) } else { $null }
+            SigningDescriptorPath = if (Test-Path -LiteralPath $descriptorPath -PathType Leaf) { $descriptorPath } else { $null }
+            KeyThumbprint         = $keyThumbprint
+            CertificateSubject    = $certificateSubject
+            PasswordStored        = Test-Path -LiteralPath $descriptorPath -PathType Leaf
+            PasswordStorage       = $passwordStorage
+        }
     }
 }
 
@@ -625,6 +631,25 @@ function Get-PackageCertificateCommonName {
     return $null
 }
 
+function Get-PackageCertificateDisplayName {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Security.Cryptography.X509Certificates.X509Certificate2]$Certificate
+    )
+
+    if (-not [string]::IsNullOrWhiteSpace($Certificate.FriendlyName)) {
+        return [string]$Certificate.FriendlyName
+    }
+
+    $commonName = Get-PackageCertificateCommonName -Certificate $Certificate
+    if (-not [string]::IsNullOrWhiteSpace($commonName)) {
+        return $commonName
+    }
+
+    return [string]$Certificate.Subject
+}
+
 function Resolve-PackagePublisherIdFromCertificate {
     [CmdletBinding()]
     param(
@@ -632,18 +657,29 @@ function Resolve-PackagePublisherIdFromCertificate {
         [System.Security.Cryptography.X509Certificates.X509Certificate2]$Certificate
     )
 
-    $candidate = Get-PackageCertificateCommonName -Certificate $Certificate
-    if ([string]::IsNullOrWhiteSpace($candidate)) {
+    $commonName = Get-PackageCertificateCommonName -Certificate $Certificate
+    if ([string]::IsNullOrWhiteSpace($commonName)) {
         return $null
     }
 
-    try {
-        Assert-PackagePublisherId -PublisherId $candidate
-        return $candidate
+    $candidates = New-Object System.Collections.Generic.List[string]
+    $catalogSigningSuffix = ' Package Catalog Signing'
+    if ($commonName.EndsWith($catalogSigningSuffix, [System.StringComparison]::OrdinalIgnoreCase)) {
+        $candidates.Add($commonName.Substring(0, $commonName.Length - $catalogSigningSuffix.Length).Trim()) | Out-Null
     }
-    catch {
-        return $null
+    $candidates.Add($commonName.Trim()) | Out-Null
+
+    foreach ($candidate in @($candidates.ToArray())) {
+        try {
+            Assert-PackagePublisherId -PublisherId $candidate
+            return $candidate
+        }
+        catch {
+            continue
+        }
     }
+
+    return $null
 }
 
 function New-PackageTrustExportDocument {
@@ -839,7 +875,7 @@ function New-PackageTrustEntry {
         $PublisherName = $PublisherId
     }
     if ([string]::IsNullOrWhiteSpace($SignerDisplayName)) {
-        $SignerDisplayName = if ([string]::IsNullOrWhiteSpace($Certificate.FriendlyName)) { $Certificate.Subject } else { $Certificate.FriendlyName }
+        $SignerDisplayName = Get-PackageCertificateDisplayName -Certificate $Certificate
     }
 
     $entry = [ordered]@{
@@ -1046,6 +1082,7 @@ function Select-PackageTrustSummary {
         NotBeforeUtc       = if ($Entry.PSObject.Properties['notBeforeUtc']) { [string]$Entry.notBeforeUtc } else { $null }
         NotAfterUtc        = if ($Entry.PSObject.Properties['notAfterUtc']) { [string]$Entry.notAfterUtc } else { $null }
         TrustSource        = [string]$Entry.trustSource
+        TrustReason        = if ($Entry.PSObject.Properties['trustReason']) { [string]$Entry.trustReason } else { $null }
         TrustedAtUtc       = [string]$Entry.trustedAtUtc
         Enabled            = [bool]$Entry.enabled
         RevokedAtUtc       = if ($Entry.PSObject.Properties['revokedAtUtc']) { [string]$Entry.revokedAtUtc } else { $null }
@@ -1100,7 +1137,7 @@ function Set-PackageDefinitionSignature {
         throw 'Package definition is missing definitionPublication.'
     }
 
-    $signerDisplayName = if ([string]::IsNullOrWhiteSpace($Certificate.FriendlyName)) { $Certificate.Subject } else { $Certificate.FriendlyName }
+    $signerDisplayName = Get-PackageCertificateDisplayName -Certificate $Certificate
     $signature = [pscustomobject][ordered]@{
         kind               = 'signed'
         format             = $script:PackageDefinitionSignatureFormat
@@ -1108,6 +1145,7 @@ function Set-PackageDefinitionSignature {
         keyThumbprint      = (($Certificate.Thumbprint -replace '\s', '').ToUpperInvariant())
         signerDisplayName  = $signerDisplayName
         certificateSubject = [string]$Certificate.Subject
+        certificatePem     = ConvertTo-PackageCertificatePem -Certificate $Certificate
         signedAtUtc        = [DateTime]::UtcNow.ToString('o')
         signatureValue     = $SignatureValue
     }
@@ -1213,13 +1251,52 @@ function Test-PackageDefinitionSignatureDocument {
 
     $keyThumbprint = (([string]$signature.keyThumbprint -replace '\s', '').ToUpperInvariant())
     $publisherId = if ($publication -and $publication.PSObject.Properties['publisherId']) { [string]$publication.publisherId } else { $null }
+    $embeddedCertificatePem = if ($signature.PSObject.Properties['certificatePem']) { [string]$signature.certificatePem } else { $null }
+    $embeddedCertificate = $null
+    if (-not [string]::IsNullOrWhiteSpace($embeddedCertificatePem)) {
+        try {
+            $embeddedCertificate = ConvertFrom-PackageCertificatePem -CertificatePem $embeddedCertificatePem
+        }
+        catch {
+            return [pscustomobject]@{
+                Status               = 'invalidEmbeddedCertificate'
+                Valid                = $false
+                Trusted              = $false
+                KeyThumbprint        = $keyThumbprint
+                CanonicalContentHash = $null
+                CertificatePem       = $embeddedCertificatePem
+                ErrorMessage         = 'definitionSignature.certificatePem is not a valid certificate PEM.'
+            }
+        }
+
+        $embeddedThumbprint = (($embeddedCertificate.Thumbprint -replace '\s', '').ToUpperInvariant())
+        if (-not [string]::Equals($embeddedThumbprint, $keyThumbprint, [System.StringComparison]::OrdinalIgnoreCase)) {
+            return [pscustomobject]@{
+                Status               = 'certificateThumbprintMismatch'
+                Valid                = $false
+                Trusted              = $false
+                KeyThumbprint        = $keyThumbprint
+                CanonicalContentHash = $null
+                SignerDisplayName    = if ($signature.PSObject.Properties['signerDisplayName']) { [string]$signature.signerDisplayName } else { $null }
+                CertificateSubject   = [string]$embeddedCertificate.Subject
+                CertificatePem       = $embeddedCertificatePem
+                CertificateNotBeforeUtc = $embeddedCertificate.NotBefore.ToUniversalTime().ToString('o')
+                CertificateNotAfterUtc = $embeddedCertificate.NotAfter.ToUniversalTime().ToString('o')
+                ErrorMessage         = "definitionSignature.certificatePem thumbprint '$embeddedThumbprint' does not match keyThumbprint '$keyThumbprint'."
+            }
+        }
+    }
+
     $trustEntry = $null
     $trusted = $false
     $revoked = $false
+    $certificateSource = if ($Certificate) { 'parameter' } else { $null }
+    $trustEntryFound = $false
+    $trustEntryPublisherMatches = $false
     if ($TrustInventoryDocument) {
         $revoked = Test-PackageKeyThumbprintRevoked -TrustInventoryDocument $TrustInventoryDocument -KeyThumbprint $keyThumbprint -PublisherId $publisherId
         $trustEntry = Get-PackageTrustEntryByThumbprint -Document $TrustInventoryDocument -KeyThumbprint $keyThumbprint
-        $trustEntryPublisherMatches = $false
+        $trustEntryFound = $null -ne $trustEntry
         if ($trustEntry -and $trustEntry.PSObject.Properties['publisherId'] -and
             [string]::Equals([string]$trustEntry.publisherId, [string]$publisherId, [System.StringComparison]::OrdinalIgnoreCase)) {
             $trustEntryPublisherMatches = $true
@@ -1230,6 +1307,7 @@ function Test-PackageDefinitionSignatureDocument {
         }
         if ($trustEntry -and -not $Certificate) {
             $Certificate = ConvertFrom-PackageCertificatePem -CertificatePem ([string]$trustEntry.certificatePem)
+            $certificateSource = 'trustInventory'
         }
     }
 
@@ -1244,12 +1322,20 @@ function Test-PackageDefinitionSignatureDocument {
         }
     }
     if (-not $Certificate) {
+        if ($embeddedCertificate) {
+            $Certificate = $embeddedCertificate
+            $certificateSource = 'embedded'
+        }
+    }
+
+    if (-not $Certificate) {
         return [pscustomobject]@{
             Status               = 'unknownKey'
             Valid                = $false
             Trusted              = $false
             KeyThumbprint        = $keyThumbprint
             CanonicalContentHash = $null
+            CertificatePem       = $embeddedCertificatePem
             ErrorMessage         = "No certificate was provided or trusted for key '$keyThumbprint'."
         }
     }
@@ -1288,6 +1374,12 @@ function Test-PackageDefinitionSignatureDocument {
         CanonicalContentHash = $signable.Sha256
         SignerDisplayName    = if ($signature.PSObject.Properties['signerDisplayName']) { [string]$signature.signerDisplayName } else { $null }
         CertificateSubject   = [string]$Certificate.Subject
+        CertificatePem       = $embeddedCertificatePem
+        CertificateSource    = $certificateSource
+        CertificateNotBeforeUtc = $Certificate.NotBefore.ToUniversalTime().ToString('o')
+        CertificateNotAfterUtc = $Certificate.NotAfter.ToUniversalTime().ToString('o')
+        TrustEntryFound      = [bool]$trustEntryFound
+        TrustEntryPublisherMatches = [bool]$trustEntryPublisherMatches
         ErrorMessage         = if ($valid) { $null } else { 'Signature verification failed.' }
     }
 }

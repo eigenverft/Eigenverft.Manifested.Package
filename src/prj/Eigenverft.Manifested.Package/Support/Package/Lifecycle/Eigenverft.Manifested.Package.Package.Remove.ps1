@@ -724,14 +724,9 @@ function Invoke-PackageRemovedFlow {
     try {
         Write-PackageExecutionMessage -Message ("[START] Invoke-Package publisher='{0}' endpoint='{1}' definition='{2}' desiredState='{3}'." -f $PackageResult.DefinitionPublisherId, $PackageResult.DefinitionEndpointName, $PackageResult.DefinitionId, $PackageResult.DesiredState)
 
-        $PackageResult.CurrentStep = 'InitializeLocalEnvironment'
-        Write-PackageExecutionMessage -Message '[STEP] Initializing local package environment.'
-        $PackageResult.LocalEnvironment = Initialize-PackageLocalEnvironment -PackageConfig $PackageResult.PackageConfig
-        if ($PackageResult.LocalEnvironment.InitializedNow) {
-            Write-PackageExecutionMessage -Message ("[STATE] Local package environment initialized: created={0}, existing={1}, skippedSources={2}." -f @($PackageResult.LocalEnvironment.CreatedDirectories).Count, @($PackageResult.LocalEnvironment.ExistingDirectories).Count, @($PackageResult.LocalEnvironment.SkippedSources).Count)
-        }
-        else {
-            Write-PackageExecutionMessage -Message '[STATE] Local package environment already initialized.'
+        if (-not $PackageResult.LocalEnvironment) {
+            $PackageResult.CurrentStep = 'InitializeLocalEnvironment'
+            $PackageResult.LocalEnvironment = Initialize-PackageCommandLocalEnvironment -PackageConfig $PackageResult.PackageConfig
         }
 
         $PackageResult.CurrentStep = 'ResolvePackage'

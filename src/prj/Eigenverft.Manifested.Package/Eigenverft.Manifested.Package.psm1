@@ -5,6 +5,7 @@
 # Generic ExecutionCore support
 . "$PSScriptRoot\Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.StandardMessage.ps1"
 . "$PSScriptRoot\Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.Stream.ps1"
+. "$PSScriptRoot\Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.Json.ps1"
 . "$PSScriptRoot\Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.Tar.ps1"
 . "$PSScriptRoot\Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.GZip.ps1"
 . "$PSScriptRoot\Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.Archive.ps1"

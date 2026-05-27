@@ -3,46 +3,6 @@
     Loaded by Eigenverft.Manifested.Package.Package.Config.ps1 (do not dot-source directly from the module root).
 #>
 
-function Read-PackageJsonDocument {
-<#
-.SYNOPSIS
-Reads a Package JSON document from disk.
-
-.DESCRIPTION
-Resolves a JSON file path, validates that it contains content, parses it, and
-returns the resolved path together with the parsed document object.
-
-.PARAMETER Path
-Path to the JSON file that should be loaded.
-
-.EXAMPLE
-Read-PackageJsonDocument -Path .\Configuration\Internal\PackageConfig.json
-#>
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Path
-    )
-
-    $resolvedPath = (Resolve-Path -LiteralPath $Path -ErrorAction Stop).Path
-    $rawContent = Get-Content -LiteralPath $resolvedPath -Raw -ErrorAction Stop
-    if ([string]::IsNullOrWhiteSpace($rawContent)) {
-        throw "Package JSON file '$resolvedPath' is empty."
-    }
-
-    try {
-        $document = $rawContent | ConvertFrom-Json -ErrorAction Stop
-    }
-    catch {
-        throw "Package JSON file '$resolvedPath' could not be parsed. $($_.Exception.Message)"
-    }
-
-    return [pscustomobject]@{
-        Path     = $resolvedPath
-        Document = $document
-    }
-}
-
 function Resolve-PackagePathValue {
 <#
 .SYNOPSIS

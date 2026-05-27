@@ -179,6 +179,12 @@ function Select-PackageDefinitionCandidatesFromEndpointScanRoot {
                 SignatureKeyThumbprint     = if ($signatureInfo.PSObject.Properties['KeyThumbprint']) { [string]$signatureInfo.KeyThumbprint } else { $null }
                 SignatureSignerDisplayName = if ($signatureInfo.PSObject.Properties['SignerDisplayName']) { [string]$signatureInfo.SignerDisplayName } else { $null }
                 SignatureCertificateSubject = if ($signatureInfo.PSObject.Properties['CertificateSubject']) { [string]$signatureInfo.CertificateSubject } else { $null }
+                SignatureCertificatePem    = if ($signatureInfo.PSObject.Properties['CertificatePem']) { [string]$signatureInfo.CertificatePem } else { $null }
+                SignatureCertificateSource = if ($signatureInfo.PSObject.Properties['CertificateSource']) { [string]$signatureInfo.CertificateSource } else { $null }
+                SignatureCertificateNotBeforeUtc = if ($signatureInfo.PSObject.Properties['CertificateNotBeforeUtc']) { [string]$signatureInfo.CertificateNotBeforeUtc } else { $null }
+                SignatureCertificateNotAfterUtc = if ($signatureInfo.PSObject.Properties['CertificateNotAfterUtc']) { [string]$signatureInfo.CertificateNotAfterUtc } else { $null }
+                SignatureTrustEntryFound   = if ($signatureInfo.PSObject.Properties['TrustEntryFound']) { [bool]$signatureInfo.TrustEntryFound } else { $false }
+                SignatureTrustEntryPublisherMatches = if ($signatureInfo.PSObject.Properties['TrustEntryPublisherMatches']) { [bool]$signatureInfo.TrustEntryPublisherMatches } else { $false }
                 SignatureCanonicalContentHash = if ($signatureInfo.PSObject.Properties['CanonicalContentHash']) { [string]$signatureInfo.CanonicalContentHash } else { $null }
                 SignatureErrorMessage      = if ($signatureInfo.PSObject.Properties['ErrorMessage']) { [string]$signatureInfo.ErrorMessage } else { $null }
             }) | Out-Null
@@ -283,7 +289,10 @@ function Resolve-PackageDefinitionCandidateTrustEligibility {
         [string[]]$CatalogTrustAllowUnsignedPublisherIds = @(),
 
         [AllowNull()]
-        [string[]]$CatalogTrustBlockedPublisherIds = @()
+        [string[]]$CatalogTrustBlockedPublisherIds = @(),
+
+        [ValidateSet('fail', 'prompt', 'trust')]
+        [string]$UnknownSignedKeyPolicy = 'prompt'
     )
 
     $publisherId = if ($Candidate.PSObject.Properties['PublisherId']) { [string]$Candidate.PublisherId } else { $null }
@@ -308,6 +317,21 @@ function Resolve-PackageDefinitionCandidateTrustEligibility {
             Eligible    = $true
             TrustStatus = 'signedTrusted'
             TrustReason = 'Definition signature is valid and the signing key is trusted for this publisher.'
+        }
+    }
+
+    $hasEmbeddedCertificate = $Candidate.PSObject.Properties['SignatureCertificatePem'] -and
+        -not [string]::IsNullOrWhiteSpace([string]$Candidate.SignatureCertificatePem)
+    $hasExistingTrustEntry = $Candidate.PSObject.Properties['SignatureTrustEntryFound'] -and [bool]$Candidate.SignatureTrustEntryFound
+    if ($Candidate.PSObject.Properties['SignatureValid'] -and [bool]$Candidate.SignatureValid -and
+        [string]::Equals($signatureStatus, 'validUntrusted', [System.StringComparison]::OrdinalIgnoreCase) -and
+        $hasEmbeddedCertificate -and
+        -not $hasExistingTrustEntry -and
+        $UnknownSignedKeyPolicy -in @('prompt', 'trust')) {
+        return [pscustomobject]@{
+            Eligible    = $true
+            TrustStatus = if ([string]::Equals($UnknownSignedKeyPolicy, 'trust', [System.StringComparison]::OrdinalIgnoreCase)) { 'signedUnknownKeyAutoTrust' } else { 'signedUnknownKeyPrompt' }
+            TrustReason = "Definition signature is valid with an embedded certificate, but the signing key is not yet trusted for publisher '$publisherId'."
         }
     }
 
@@ -349,6 +373,8 @@ function Resolve-PackageDefinitionCandidateTrustEligibility {
         'unknownKey' { 'Definition signing key is not trusted or its certificate is unavailable.' }
         'validUntrusted' { 'Definition signature is valid, but the signing key is not trusted for this publisher.' }
         'revokedKey' { 'Definition signing key is revoked.' }
+        'invalidEmbeddedCertificate' { 'Definition embedded signing certificate is not valid PEM.' }
+        'certificateThumbprintMismatch' { 'Definition embedded signing certificate thumbprint does not match definitionSignature.keyThumbprint.' }
         'invalidSignature' { 'Definition signature verification failed.' }
         'invalidSignatureValue' { 'Definition signature value is not valid base64.' }
         'missingSignatureValue' { 'Signed definition is missing definitionSignature.signatureValue.' }
@@ -385,6 +411,9 @@ function Select-PackageDefinitionCandidateWinner {
         [AllowNull()]
         [string[]]$CatalogTrustBlockedPublisherIds = @(),
 
+        [ValidateSet('fail', 'prompt', 'trust')]
+        [string]$UnknownSignedKeyPolicy = 'prompt',
+
         [ValidateSet('fail', 'warnFirst', 'first', 'warnLast', 'last')]
         [string]$DefinitionPublisherConflictMode = 'fail'
     )
@@ -402,7 +431,7 @@ function Select-PackageDefinitionCandidateWinner {
     $ineligibleReasons = New-Object System.Collections.Generic.List[string]
     $trustedCandidates = @(
         foreach ($candidate in @($candidateSet)) {
-            $eligibility = Resolve-PackageDefinitionCandidateTrustEligibility -Candidate $candidate -CatalogTrustPolicy $CatalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $CatalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $CatalogTrustBlockedPublisherIds
+            $eligibility = Resolve-PackageDefinitionCandidateTrustEligibility -Candidate $candidate -CatalogTrustPolicy $CatalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $CatalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $CatalogTrustBlockedPublisherIds -UnknownSignedKeyPolicy $UnknownSignedKeyPolicy
             $candidate | Add-Member -MemberType NoteProperty -Name CatalogTrustPolicy -Value ([string]$CatalogTrustPolicy) -Force
             $candidate | Add-Member -MemberType NoteProperty -Name CatalogTrustStatus -Value ([string]$eligibility.TrustStatus) -Force
             $candidate | Add-Member -MemberType NoteProperty -Name CatalogTrustReason -Value ([string]$eligibility.TrustReason) -Force
@@ -480,6 +509,9 @@ function Sync-PackageEndpointCandidateDefinitions {
         [AllowNull()]
         [string[]]$CatalogTrustBlockedPublisherIds = @(),
 
+        [ValidateSet('fail', 'prompt', 'trust')]
+        [string]$UnknownSignedKeyPolicy = 'prompt',
+
         [ValidateSet('fail', 'warnFirst', 'first', 'warnLast', 'last')]
         [string]$DefinitionPublisherConflictMode = 'fail'
     )
@@ -489,7 +521,7 @@ function Sync-PackageEndpointCandidateDefinitions {
     $materializedCount = 0
     foreach ($definitionId in @($keys)) {
         try {
-            $winner = Select-PackageDefinitionCandidateWinner -Candidates @($allCandidates | Where-Object { [string]::Equals([string]$_.DefinitionId, [string]$definitionId, [System.StringComparison]::OrdinalIgnoreCase) }) -DefinitionId $definitionId -CatalogTrustPolicy $CatalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $CatalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $CatalogTrustBlockedPublisherIds -DefinitionPublisherConflictMode $DefinitionPublisherConflictMode
+            $winner = Select-PackageDefinitionCandidateWinner -Candidates @($allCandidates | Where-Object { [string]::Equals([string]$_.DefinitionId, [string]$definitionId, [System.StringComparison]::OrdinalIgnoreCase) }) -DefinitionId $definitionId -CatalogTrustPolicy $CatalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $CatalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $CatalogTrustBlockedPublisherIds -UnknownSignedKeyPolicy $UnknownSignedKeyPolicy -DefinitionPublisherConflictMode $DefinitionPublisherConflictMode
             Copy-PackageDefinitionToLocalDefinitionStore -Role 'Candidate' -SourcePath $winner.DefinitionPath -LocalEndpointRoot $LocalEndpointRoot -PublisherId ([string]$winner.PublisherId) -DefinitionId ([string]$winner.DefinitionId) -DefinitionRevision ([int]$winner.DefinitionRevision) | Out-Null
             $materializedCount++
         }
@@ -499,6 +531,125 @@ function Sync-PackageEndpointCandidateDefinitions {
     }
 
     return $materializedCount
+}
+
+function Confirm-PackageUnknownSigningKeyTrust {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$Candidate
+    )
+
+    $keyText = if ([string]::IsNullOrWhiteSpace([string]$Candidate.SignatureKeyThumbprint)) { '<none>' } else { [string]$Candidate.SignatureKeyThumbprint }
+    $signerText = if ([string]::IsNullOrWhiteSpace([string]$Candidate.SignatureSignerDisplayName)) { '<none>' } else { [string]$Candidate.SignatureSignerDisplayName }
+    $subjectText = if ([string]::IsNullOrWhiteSpace([string]$Candidate.SignatureCertificateSubject)) { '<none>' } else { [string]$Candidate.SignatureCertificateSubject }
+    $notBeforeText = if ([string]::IsNullOrWhiteSpace([string]$Candidate.SignatureCertificateNotBeforeUtc)) { '<unknown>' } else { [string]$Candidate.SignatureCertificateNotBeforeUtc }
+    $notAfterText = if ([string]::IsNullOrWhiteSpace([string]$Candidate.SignatureCertificateNotAfterUtc)) { '<unknown>' } else { [string]$Candidate.SignatureCertificateNotAfterUtc }
+    $hashText = if ([string]::IsNullOrWhiteSpace([string]$Candidate.SignatureCanonicalContentHash)) { '<none>' } else { [string]$Candidate.SignatureCanonicalContentHash }
+
+    $message = @(
+        "Package definition is signed by an unknown signing key. The signature is valid with the embedded public certificate."
+        "Trust is for this signing key and publisher id, and will apply to other package definitions signed by this key for the same publisher."
+        ''
+        "Publisher: $($Candidate.PublisherId) ($($Candidate.PublisherName))"
+        "Definition: $($Candidate.DefinitionId) revision $($Candidate.DefinitionRevision)"
+        "Endpoint: $($Candidate.EndpointName)"
+        "Path: $($Candidate.DefinitionPath)"
+        "Signer: $signerText"
+        "Certificate subject: $subjectText"
+        "Thumbprint: $keyText"
+        "Valid from: $notBeforeText"
+        "Valid until: $notAfterText"
+        "Canonical content hash: $hashText"
+        ''
+        "Trust this signing key for publisher '$($Candidate.PublisherId)'?"
+    ) -join [Environment]::NewLine
+
+    $choices = [System.Management.Automation.Host.ChoiceDescription[]]@(
+        [System.Management.Automation.Host.ChoiceDescription]::new('&Yes', 'Trust this signing key for this publisher and continue.')
+        [System.Management.Automation.Host.ChoiceDescription]::new('&No', 'Do not trust this signing key.')
+    )
+
+    try {
+        return ((Get-Host).UI.PromptForChoice('Trust package signing key', $message, $choices, 1) -eq 0)
+    }
+    catch {
+        Write-PackageExecutionMessage -Level 'WRN' -Message ("[WARN] Could not prompt for package signing-key trust: {0}" -f $_.Exception.Message)
+        return $false
+    }
+}
+
+function Add-PackageTrustForDefinitionCandidate {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$Candidate,
+
+        [Parameter(Mandatory = $true)]
+        [psobject]$TrustInventoryDocumentInfo,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TrustSource,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TrustReason
+    )
+
+    if (-not $Candidate.PSObject.Properties['SignatureCertificatePem'] -or [string]::IsNullOrWhiteSpace([string]$Candidate.SignatureCertificatePem)) {
+        throw "Package definition '$($Candidate.DefinitionId)' does not contain definitionSignature.certificatePem."
+    }
+
+    $certificate = ConvertFrom-PackageCertificatePem -CertificatePem ([string]$Candidate.SignatureCertificatePem)
+    try {
+        $entry = New-PackageTrustEntry -Certificate $certificate -PublisherId ([string]$Candidate.PublisherId) -PublisherName ([string]$Candidate.PublisherName) -SignerDisplayName ([string]$Candidate.SignatureSignerDisplayName) -TrustSource $TrustSource -TrustReason $TrustReason
+        $existing = Get-PackageTrustEntryByThumbprint -Document $TrustInventoryDocumentInfo.Document -KeyThumbprint ([string]$entry.keyThumbprint)
+        if ($existing) {
+            $existingPublisherId = if ($existing.PSObject.Properties['publisherId']) { [string]$existing.publisherId } else { '<unknown>' }
+            throw "Package signing certificate '$($entry.keyThumbprint)' already exists in '$($TrustInventoryDocumentInfo.Path)' for publisher '$existingPublisherId'. Use explicit trust management to change this key."
+        }
+
+        $TrustInventoryDocumentInfo.Document.keys = @($TrustInventoryDocumentInfo.Document.keys) + $entry
+        Save-PackageTrustInventoryDocument -DocumentInfo $TrustInventoryDocumentInfo
+        return Select-PackageTrustSummary -Entry $entry -InventoryPath $TrustInventoryDocumentInfo.Path
+    }
+    finally {
+        $certificate.Dispose()
+    }
+}
+
+function Resolve-PackageSelectedCandidateUnknownSigningKeyTrust {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$Candidate,
+
+        [Parameter(Mandatory = $true)]
+        [psobject]$TrustInventoryDocumentInfo,
+
+        [ValidateSet('fail', 'prompt', 'trust')]
+        [string]$UnknownSignedKeyPolicy = 'prompt'
+    )
+
+    if ([string]$Candidate.CatalogTrustStatus -notin @('signedUnknownKeyPrompt', 'signedUnknownKeyAutoTrust')) {
+        return $Candidate
+    }
+
+    if ([string]::Equals($UnknownSignedKeyPolicy, 'prompt', [System.StringComparison]::OrdinalIgnoreCase)) {
+        if (-not (Confirm-PackageUnknownSigningKeyTrust -Candidate $Candidate)) {
+            throw "Package definition '$($Candidate.DefinitionId)' is signed by unknown key '$($Candidate.SignatureKeyThumbprint)' for publisher '$($Candidate.PublisherId)', and the key was not trusted. Use Import-PackageTrust -Path '<public-cert.cer>' before Invoke-Package, or rerun Invoke-Package with -AcceptUnknownSigningKey."
+        }
+    }
+
+    $trustSource = if ([string]::Equals($UnknownSignedKeyPolicy, 'trust', [System.StringComparison]::OrdinalIgnoreCase)) { 'invokePackageAutoTrust' } else { 'invokePackagePrompt' }
+    $trustReason = "Trusted from embedded certificate while resolving package definition '$($Candidate.DefinitionId)' from endpoint '$($Candidate.EndpointName)'."
+    $summary = Add-PackageTrustForDefinitionCandidate -Candidate $Candidate -TrustInventoryDocumentInfo $TrustInventoryDocumentInfo -TrustSource $trustSource -TrustReason $trustReason
+    Write-PackageExecutionMessage -Message ("[TRUST] Trusted embedded signing key '{0}' for publisher '{1}'." -f [string]$summary.KeyThumbprint, [string]$summary.PublisherId)
+
+    Set-PackageObjectProperty -InputObject $Candidate -Name 'SignatureTrusted' -Value $true
+    Set-PackageObjectProperty -InputObject $Candidate -Name 'SignatureStatus' -Value 'validTrusted'
+    Set-PackageObjectProperty -InputObject $Candidate -Name 'CatalogTrustStatus' -Value 'signedTrusted'
+    Set-PackageObjectProperty -InputObject $Candidate -Name 'CatalogTrustReason' -Value 'Definition signature is valid and the signing key was trusted from the embedded certificate during this invocation.'
+    return $Candidate
 }
 
 function Resolve-PackageDefinitionReference {
@@ -539,6 +690,9 @@ catalog trust eligibility, conflict policy, and then definitionRevision.
         [AllowNull()]
         [string[]]$CatalogTrustBlockedPublisherIds = @(),
 
+        [ValidateSet('fail', 'prompt', 'trust')]
+        [string]$UnknownSignedKeyPolicy = 'prompt',
+
         [ValidateSet('fail', 'warnFirst', 'first', 'warnLast', 'last')]
         [string]$DefinitionPublisherConflictMode = 'fail'
     )
@@ -555,7 +709,7 @@ catalog trust eligibility, conflict policy, and then definitionRevision.
     }
 
     if ([string]::Equals($EndpointMaterializationMode, 'endpointFocused', [System.StringComparison]::OrdinalIgnoreCase)) {
-        $count = Sync-PackageEndpointCandidateDefinitions -SourceRows $sourceRows -TrustInventoryDocument $trustInventoryInfo.Document -ApplicationRootDirectory $ApplicationRootDirectory -LocalEndpointRoot $resolvedLocalEndpointRoot -CatalogTrustPolicy $CatalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $CatalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $CatalogTrustBlockedPublisherIds -DefinitionPublisherConflictMode $DefinitionPublisherConflictMode
+        $count = Sync-PackageEndpointCandidateDefinitions -SourceRows $sourceRows -TrustInventoryDocument $trustInventoryInfo.Document -ApplicationRootDirectory $ApplicationRootDirectory -LocalEndpointRoot $resolvedLocalEndpointRoot -CatalogTrustPolicy $CatalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $CatalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $CatalogTrustBlockedPublisherIds -UnknownSignedKeyPolicy $UnknownSignedKeyPolicy -DefinitionPublisherConflictMode $DefinitionPublisherConflictMode
         Write-PackageExecutionMessage -Message ("[STATE] Endpoint-wide definition materialization refreshed {0} Candidate definition file(s)." -f $count)
     }
 
@@ -565,7 +719,8 @@ catalog trust eligibility, conflict policy, and then definitionRevision.
         throw "Package definition '$DefinitionId' was not found in enabled endpoints$narrow."
     }
 
-    $selected = Select-PackageDefinitionCandidateWinner -Candidates $candidates -DefinitionId $DefinitionId -PublisherId $PublisherId -CatalogTrustPolicy $CatalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $CatalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $CatalogTrustBlockedPublisherIds -DefinitionPublisherConflictMode $DefinitionPublisherConflictMode
+    $selected = Select-PackageDefinitionCandidateWinner -Candidates $candidates -DefinitionId $DefinitionId -PublisherId $PublisherId -CatalogTrustPolicy $CatalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $CatalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $CatalogTrustBlockedPublisherIds -UnknownSignedKeyPolicy $UnknownSignedKeyPolicy -DefinitionPublisherConflictMode $DefinitionPublisherConflictMode
+    $selected = Resolve-PackageSelectedCandidateUnknownSigningKeyTrust -Candidate $selected -TrustInventoryDocumentInfo $trustInventoryInfo -UnknownSignedKeyPolicy $UnknownSignedKeyPolicy
     $candidateCopy = Copy-PackageDefinitionToLocalDefinitionStore -Role 'Candidate' -SourcePath $selected.DefinitionPath -LocalEndpointRoot $resolvedLocalEndpointRoot -PublisherId $selected.PublisherId -DefinitionId $selected.DefinitionId -DefinitionRevision $selected.DefinitionRevision
     $keyText = if ([string]::IsNullOrWhiteSpace([string]$selected.SignatureKeyThumbprint)) { '<none>' } else { [string]$selected.SignatureKeyThumbprint }
     $signerText = if ([string]::IsNullOrWhiteSpace([string]$selected.SignatureSignerDisplayName)) { '<none>' } else { [string]$selected.SignatureSignerDisplayName }
@@ -599,6 +754,10 @@ catalog trust eligibility, conflict policy, and then definitionRevision.
         SignatureKeyThumbprint        = if ([string]::IsNullOrWhiteSpace([string]$selected.SignatureKeyThumbprint)) { $null } else { [string]$selected.SignatureKeyThumbprint }
         SignatureSignerDisplayName    = if ([string]::IsNullOrWhiteSpace([string]$selected.SignatureSignerDisplayName)) { $null } else { [string]$selected.SignatureSignerDisplayName }
         SignatureCertificateSubject   = if ([string]::IsNullOrWhiteSpace([string]$selected.SignatureCertificateSubject)) { $null } else { [string]$selected.SignatureCertificateSubject }
+        SignatureCertificatePem       = if ([string]::IsNullOrWhiteSpace([string]$selected.SignatureCertificatePem)) { $null } else { [string]$selected.SignatureCertificatePem }
+        SignatureCertificateSource    = if ([string]::IsNullOrWhiteSpace([string]$selected.SignatureCertificateSource)) { $null } else { [string]$selected.SignatureCertificateSource }
+        SignatureCertificateNotBeforeUtc = if ([string]::IsNullOrWhiteSpace([string]$selected.SignatureCertificateNotBeforeUtc)) { $null } else { [string]$selected.SignatureCertificateNotBeforeUtc }
+        SignatureCertificateNotAfterUtc = if ([string]::IsNullOrWhiteSpace([string]$selected.SignatureCertificateNotAfterUtc)) { $null } else { [string]$selected.SignatureCertificateNotAfterUtc }
         SignatureCanonicalContentHash = if ([string]::IsNullOrWhiteSpace([string]$selected.SignatureCanonicalContentHash)) { $null } else { [string]$selected.SignatureCanonicalContentHash }
         PublisherId                   = [string]$selected.PublisherId
         PublisherName                 = [string]$selected.PublisherName

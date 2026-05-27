@@ -32,7 +32,7 @@ function Get-PackageEndpointDiscoveredPublisherIds {
     )
 
     if ([string]::IsNullOrWhiteSpace($ResolvedRootPath) -or
-        -not (Test-Path -LiteralPath $ResolvedRootPath -PathType Container)) {
+        -not [System.IO.Directory]::Exists($ResolvedRootPath)) {
         return @()
     }
 
@@ -102,12 +102,12 @@ function Add-PackageEndpoint {
         $notes.Add("Endpoint '$EndpointName' was added disabled; package commands will not scan it until enabled.") | Out-Null
     }
     else {
-        $notes.Add("Endpoint '$EndpointName' was added as a scan location. Package execution still requires a trusted signing key in PackageTrustInventory.json unless catalogTrust explicitly allows this publisher unsigned.") | Out-Null
+        $notes.Add("Endpoint '$EndpointName' was added as a scan location. Package execution still requires a trusted signing key in PackageTrustInventory.json, an accepted valid embedded signing certificate, or explicit unsigned migration policy.") | Out-Null
     }
 
     $publisherIds = @(Get-PackageEndpointDiscoveredPublisherIds -ResolvedRootPath $afterSummary.ResolvedRootPath)
     if ($publisherIds.Count -gt 0) {
-        $notes.Add("Discovered publisher id(s): $($publisherIds -join ', '). Use Import-PackageTrust or Trust-PackageSigningCertificate for signed definitions, or catalogTrust.allowUnsignedPublisherIds for temporary unsigned migration.") | Out-Null
+        $notes.Add("Discovered publisher id(s): $($publisherIds -join ', '). Signed definitions with embedded certificates can prompt during Invoke-Package; use Import-PackageTrust or Trust-PackageSigningCertificate for admin-preseeded trust.") | Out-Null
     }
     else {
         $notes.Add("No package definition publishers were discovered at '$($afterSummary.ResolvedRootPath)' yet.") | Out-Null

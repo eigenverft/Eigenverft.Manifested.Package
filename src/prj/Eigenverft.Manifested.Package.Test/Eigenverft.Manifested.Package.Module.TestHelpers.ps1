@@ -165,6 +165,8 @@ function global:New-TestPackageGlobalDocument {
         [string[]]$CatalogTrustAllowUnsignedPublisherIds = @('Eigenverft'),
         [string[]]$CatalogTrustBlockedPublisherIds = @(),
         [string]$CatalogTrustPayloadVerification = 'off',
+        [ValidateSet('fail', 'prompt', 'trust')]
+        [string]$CatalogTrustUnknownSignedKeyPolicy = 'prompt',
         [string]$ReleaseTrack = 'stable',
         [string]$Strategy = 'latestByVersion',
         [hashtable]$EnvironmentSources = $null
@@ -207,6 +209,7 @@ function global:New-TestPackageGlobalDocument {
                 policy = $CatalogTrustPolicy
                 allowUnsignedPublisherIds = @($CatalogTrustAllowUnsignedPublisherIds)
                 blockedPublisherIds = @($CatalogTrustBlockedPublisherIds)
+                unknownSignedKeyPolicy = $CatalogTrustUnknownSignedKeyPolicy
                 payloadVerification = $CatalogTrustPayloadVerification
             }
             packageState = @{

@@ -115,11 +115,11 @@ Displays module information, per-definition Invoke-Package examples, and other e
         $outputLines += 'Team setup example:'
         $outputLines += "- Add-TeamPackageDepot -BasePath '\\team-share\PackageDepot'"
         $outputLines += "- Add-TeamPackageEndpoint -BasePath '\\team-share\PackageEndpoint'"
-        $outputLines += "- Import-PackageTrust -Path '<public-signing-cert.cer>'"
-        $outputLines += "Maintainers can create a local signing profile with: New-PackageSigningCertificate -Name 'My Team' -Password <securestring>"
-        $outputLines += "Then sign definitions with: Sign-PackageDefinition -Path '\\team-share\PackageEndpoint\MyPackage.json'"
-        $outputLines += "Team package JSON files should be signed and set definitionPublication.publisherId to the matching trust entry."
         $outputLines += "- Invoke-Package -DefinitionId 'OtherTextEditorFromTeamRepos'"
+        $outputLines += "Valid unknown embedded signing certificates prompt for trust; admins can preseed trust with: Import-PackageTrust -Path '<public-signing-cert.cer>'"
+        $outputLines += "Maintainers can create a local signing certificate with: New-PackageSigningCertificate -Name 'My Team' -PublisherId 'My Team' -CommonName 'My Team Package Catalog Signing' -Password <securestring>"
+        $outputLines += "Then sign definitions with: Sign-PackageDefinition -Path '\\team-share\PackageEndpoint\MyPackage.json' -Cert 'MyTeam'"
+        $outputLines += "Team package JSON files should be signed and set definitionPublication.publisherId to the signing-key publisher."
         $outputLines += ''
     }
     else {

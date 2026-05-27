@@ -26,6 +26,7 @@
     },
     "catalogTrust": {
       "policy": "strict",
+      "unknownSignedKeyPolicy": "prompt",
       "allowUnsignedPublisherIds": [],
       "blockedPublisherIds": [],
       "payloadVerification": "enforceWhenPackageFileExists"

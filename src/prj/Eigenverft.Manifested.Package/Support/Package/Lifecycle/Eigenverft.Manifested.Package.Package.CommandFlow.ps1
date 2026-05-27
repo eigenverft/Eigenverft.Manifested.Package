@@ -96,6 +96,29 @@ function Get-PackageCommandFailureReason {
     }
 }
 
+function Initialize-PackageCommandLocalEnvironment {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [psobject]$PackageConfig = $null
+    )
+
+    Write-PackageExecutionMessage -Message '[STEP] Initializing local package environment.'
+    $initializeParams = @{}
+    if ($null -ne $PackageConfig) {
+        $initializeParams.PackageConfig = $PackageConfig
+    }
+    $localEnvironment = Initialize-PackageLocalEnvironment @initializeParams
+    if ($localEnvironment.InitializedNow) {
+        Write-PackageExecutionMessage -Message ("[STATE] Local package environment initialized: created={0}, existing={1}, skippedSources={2}." -f @($localEnvironment.CreatedDirectories).Count, @($localEnvironment.ExistingDirectories).Count, @($localEnvironment.SkippedSources).Count)
+    }
+    else {
+        Write-PackageExecutionMessage -Message '[STATE] Local package environment already initialized.'
+    }
+
+    return $localEnvironment
+}
+
 function Clear-PackageWorkDirectories {
     [CmdletBinding()]
     param(
@@ -164,14 +187,9 @@ function Invoke-PackageAssignedFlow {
 
     try {
         Write-PackageExecutionMessage -Message ("[START] Invoke-Package publisher='{0}' endpoint='{1}' definition='{2}' desiredState='{3}'." -f $PackageResult.DefinitionPublisherId, $PackageResult.DefinitionEndpointName, $PackageResult.DefinitionId, $PackageResult.DesiredState)
-        $PackageResult.CurrentStep = 'InitializeLocalEnvironment'
-        Write-PackageExecutionMessage -Message '[STEP] Initializing local package environment.'
-        $PackageResult.LocalEnvironment = Initialize-PackageLocalEnvironment -PackageConfig $PackageResult.PackageConfig
-        if ($PackageResult.LocalEnvironment.InitializedNow) {
-            Write-PackageExecutionMessage -Message ("[STATE] Local package environment initialized: created={0}, existing={1}, skippedSources={2}." -f @($PackageResult.LocalEnvironment.CreatedDirectories).Count, @($PackageResult.LocalEnvironment.ExistingDirectories).Count, @($PackageResult.LocalEnvironment.SkippedSources).Count)
-        }
-        else {
-            Write-PackageExecutionMessage -Message '[STATE] Local package environment already initialized.'
+        if (-not $PackageResult.LocalEnvironment) {
+            $PackageResult.CurrentStep = 'InitializeLocalEnvironment'
+            $PackageResult.LocalEnvironment = Initialize-PackageCommandLocalEnvironment -PackageConfig $PackageResult.PackageConfig
         }
 
         foreach ($step in $steps) {
@@ -213,6 +231,8 @@ function Invoke-PackageDefinitionCommandCore {
         [AllowNull()]
         [string]$PackageVersion = $null,
 
+        [switch]$AcceptUnknownSigningKey,
+
         [object[]]$DependencyStack = @()
     )
 
@@ -225,7 +245,30 @@ function Invoke-PackageDefinitionCommandCore {
         throw "Invoke-Package -PackageVersion can only override version selection for DesiredState Assigned. Omit -PackageVersion or use 'latestByVersion' with DesiredState Removed."
     }
 
-    $packageConfig = Get-PackageConfig -PublisherId $PublisherId -DefinitionId $DefinitionId -DesiredState $DesiredState
+    $localEnvironment = $null
+    try {
+        $localEnvironment = Initialize-PackageCommandLocalEnvironment
+    }
+    catch {
+        Write-PackageExecutionMessage -Level 'ERR' -Message ("[FAIL] Step 'InitializeLocalEnvironment' failed: {0}" -f $_.Exception.Message)
+        return [pscustomobject]@{
+            OperationId                      = [guid]::NewGuid().ToString('n')
+            OperationStartedAtUtc            = [DateTime]::UtcNow.ToString('o')
+            DesiredState                     = $DesiredState
+            PackageVersionOverrideSpecified  = $packageVersionOverrideSpecified
+            PackageVersionSelectionSource    = if ($packageVersionOverrideSpecified) { 'command' } else { 'definition' }
+            PackageVersionSelector           = $normalizedPackageVersion
+            PublisherId                      = $PublisherId
+            Status                           = 'Failed'
+            FailureReason                    = 'LocalEnvironmentInitializationFailed'
+            ErrorMessage                     = $_.Exception.Message
+            CurrentStep                      = 'InitializeLocalEnvironment'
+            DefinitionId                     = $DefinitionId
+            LocalEnvironment                 = $localEnvironment
+        }
+    }
+
+    $packageConfig = Get-PackageConfig -PublisherId $PublisherId -DefinitionId $DefinitionId -DesiredState $DesiredState -AcceptUnknownSigningKey:$AcceptUnknownSigningKey
     $newResultParams = @{
         DesiredState   = $DesiredState
         PackageConfig  = $packageConfig
@@ -234,6 +277,7 @@ function Invoke-PackageDefinitionCommandCore {
         $newResultParams.PackageVersionSelector = $normalizedPackageVersion
     }
     $result = New-PackageResult @newResultParams
+    $result.LocalEnvironment = $localEnvironment
 
     if ([string]::Equals($DesiredState, 'Removed', [System.StringComparison]::OrdinalIgnoreCase)) {
         $result = Invoke-PackageRemovedFlow -PackageResult $result

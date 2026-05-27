@@ -242,7 +242,9 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
         [string]$DefinitionId,
 
         [ValidateSet('Assigned', 'Removed')]
-        [string]$DesiredState = 'Assigned'
+        [string]$DesiredState = 'Assigned',
+
+        [switch]$AcceptUnknownSigningKey
     )
 
     $globalDocumentInfo = Read-PackageJsonDocument -Path (Get-PackageConfigPath)
@@ -280,6 +282,7 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
 
     $catalogTrustPolicy = 'strict'
     $catalogTrustPayloadVerification = 'off'
+    $catalogTrustUnknownSignedKeyPolicy = 'prompt'
     $catalogTrustAllowUnsignedPublisherIds = @()
     $catalogTrustBlockedPublisherIds = @()
     if ($packageGlobalConfig.PSObject.Properties['catalogTrust'] -and $packageGlobalConfig.catalogTrust) {
@@ -291,11 +294,15 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
             -not [string]::IsNullOrWhiteSpace([string]$packageGlobalConfig.catalogTrust.payloadVerification)) {
             $catalogTrustPayloadVerification = [string]$packageGlobalConfig.catalogTrust.payloadVerification
         }
+        if ($packageGlobalConfig.catalogTrust.PSObject.Properties['unknownSignedKeyPolicy'] -and
+            -not [string]::IsNullOrWhiteSpace([string]$packageGlobalConfig.catalogTrust.unknownSignedKeyPolicy)) {
+            $catalogTrustUnknownSignedKeyPolicy = [string]$packageGlobalConfig.catalogTrust.unknownSignedKeyPolicy
+        }
         if ($packageGlobalConfig.catalogTrust.PSObject.Properties['allowUnsignedPublisherIds'] -and
             $null -ne $packageGlobalConfig.catalogTrust.allowUnsignedPublisherIds) {
             $catalogTrustAllowUnsignedPublisherIds = @(
-                foreach ($publisherId in @($packageGlobalConfig.catalogTrust.allowUnsignedPublisherIds)) {
-                    $normalizedPublisherId = ([string]$publisherId).Trim()
+                foreach ($configuredPublisherId in @($packageGlobalConfig.catalogTrust.allowUnsignedPublisherIds)) {
+                    $normalizedPublisherId = ([string]$configuredPublisherId).Trim()
                     if (-not [string]::IsNullOrWhiteSpace($normalizedPublisherId)) {
                         $normalizedPublisherId
                     }
@@ -305,14 +312,17 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
         if ($packageGlobalConfig.catalogTrust.PSObject.Properties['blockedPublisherIds'] -and
             $null -ne $packageGlobalConfig.catalogTrust.blockedPublisherIds) {
             $catalogTrustBlockedPublisherIds = @(
-                foreach ($publisherId in @($packageGlobalConfig.catalogTrust.blockedPublisherIds)) {
-                    $normalizedPublisherId = ([string]$publisherId).Trim()
+                foreach ($configuredPublisherId in @($packageGlobalConfig.catalogTrust.blockedPublisherIds)) {
+                    $normalizedPublisherId = ([string]$configuredPublisherId).Trim()
                     if (-not [string]::IsNullOrWhiteSpace($normalizedPublisherId)) {
                         $normalizedPublisherId
                     }
                 }
             )
         }
+    }
+    if ($AcceptUnknownSigningKey.IsPresent) {
+        $catalogTrustUnknownSignedKeyPolicy = 'trust'
     }
 
     $packageInventoryFilePath = if ($packageGlobalConfig.packageState.PSObject.Properties['inventoryFilePath'] -and
@@ -331,7 +341,7 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
         }
         catch {
             try {
-                $definitionReference = Resolve-PackageDefinitionReference -PublisherId $PublisherId -DefinitionId $DefinitionId -ApplicationRootDirectory $applicationRootDirectory -LocalEndpointRoot $localEndpointRoot -EndpointMaterializationMode $endpointMaterializationMode -CatalogTrustPolicy $catalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $catalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $catalogTrustBlockedPublisherIds -DefinitionPublisherConflictMode $definitionPublisherConflictMode
+                $definitionReference = Resolve-PackageDefinitionReference -PublisherId $PublisherId -DefinitionId $DefinitionId -ApplicationRootDirectory $applicationRootDirectory -LocalEndpointRoot $localEndpointRoot -EndpointMaterializationMode $endpointMaterializationMode -CatalogTrustPolicy $catalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $catalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $catalogTrustBlockedPublisherIds -UnknownSignedKeyPolicy $catalogTrustUnknownSignedKeyPolicy -DefinitionPublisherConflictMode $definitionPublisherConflictMode
             }
             catch {
                 $definitionReference = Resolve-PackageDefinitionSnapshotReference -PublisherId $PublisherId -DefinitionId $DefinitionId -PackageAssignmentInventoryFilePath $packageInventoryFilePath -LiveResolutionError $_.Exception.Message
@@ -340,7 +350,7 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
         }
     }
     else {
-        $definitionReference = Resolve-PackageDefinitionReference -PublisherId $PublisherId -DefinitionId $DefinitionId -ApplicationRootDirectory $applicationRootDirectory -LocalEndpointRoot $localEndpointRoot -EndpointMaterializationMode $endpointMaterializationMode -CatalogTrustPolicy $catalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $catalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $catalogTrustBlockedPublisherIds -DefinitionPublisherConflictMode $definitionPublisherConflictMode
+        $definitionReference = Resolve-PackageDefinitionReference -PublisherId $PublisherId -DefinitionId $DefinitionId -ApplicationRootDirectory $applicationRootDirectory -LocalEndpointRoot $localEndpointRoot -EndpointMaterializationMode $endpointMaterializationMode -CatalogTrustPolicy $catalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $catalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $catalogTrustBlockedPublisherIds -UnknownSignedKeyPolicy $catalogTrustUnknownSignedKeyPolicy -DefinitionPublisherConflictMode $definitionPublisherConflictMode
     }
 
     $definitionDocumentInfo = Read-PackageJsonDocument -Path $definitionReference.DefinitionPath
@@ -472,6 +482,8 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
         EndpointMaterializationMode        = $endpointMaterializationMode
         DefinitionPublisherConflictMode    = $definitionPublisherConflictMode
         CatalogTrustPolicy                 = $catalogTrustPolicy
+        CatalogTrustUnknownSignedKeyPolicy = $catalogTrustUnknownSignedKeyPolicy
+        AcceptUnknownSigningKey            = [bool]$AcceptUnknownSigningKey.IsPresent
         CatalogTrustAllowUnsignedPublisherIds = @($catalogTrustAllowUnsignedPublisherIds)
         CatalogTrustBlockedPublisherIds    = @($catalogTrustBlockedPublisherIds)
         CatalogTrustPayloadVerification    = $catalogTrustPayloadVerification

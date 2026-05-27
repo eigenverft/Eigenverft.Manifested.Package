@@ -118,7 +118,12 @@ dependency logic can extend this function without changing the command flow.
         [object[]]$DependencyStack = @()
     )
 
-    return (Invoke-PackageDefinitionCommandCore -PublisherId $PublisherId -DefinitionId $DefinitionId -DesiredState Assigned -DependencyStack $DependencyStack)
+    $acceptUnknownSigningKey = $PackageResult.PSObject.Properties['PackageConfig'] -and
+        $PackageResult.PackageConfig -and
+        $PackageResult.PackageConfig.PSObject.Properties['AcceptUnknownSigningKey'] -and
+        [bool]$PackageResult.PackageConfig.AcceptUnknownSigningKey
+
+    return (Invoke-PackageDefinitionCommandCore -PublisherId $PublisherId -DefinitionId $DefinitionId -DesiredState Assigned -AcceptUnknownSigningKey:$acceptUnknownSigningKey -DependencyStack $DependencyStack)
 }
 
 function Resolve-PackageDependencies {
