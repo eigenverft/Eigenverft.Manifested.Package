@@ -16,14 +16,6 @@
 
 ### [P1] Critical
 
-#### Team catalog trust
-
-Design and open decisions: [TEAM-CATALOG-TRUST.md](TEAM-CATALOG-TRUST.md) (current state, first-run Eigenverft trust, phased plan).
-
-- **[P1] Phase B — Signed definitions:** Verify publisher signatures on definition JSON in one schema-bound pipeline before plan/install; do not rely on `publisherId` text alone.
-- **[P1] Phase C — Trust UX:** Seed shipped verification keys on first local init; always show sign/trust status on `Invoke-Package`; lightweight SSL/RDP-style prompt for unknown team keys.
-- **[P1] Phase D — Strict catalogs:** Optional policy requiring valid signatures plus pinned download hashes for team/trusted publishers.
-
 #### Supply chain / release age
 
 - **Feature issue: wait before auto-picking brand-new releases.** As a security-conscious package maintainer, I want automatic updates to wait a little before choosing a release that just appeared upstream, so a bad same-day release is less likely to enter the depot by accident.
@@ -169,12 +161,12 @@ The package engine already covers per-machine **Assigned** state, endpoint-drive
 - Should the Eigenverft online endpoint have an index or manifest so clients can discover packages without scanning every JSON file?
 - Should the next breaking schema revisit `artifacts` naming now, or wait until more package kinds prove where the wording hurts?
 - Which package type should be the next confidence test for fully offline depot reuse after npm, MSI, archive, PowerShell module, and portable SDK packages?
-- See [TEAM-CATALOG-TRUST.md](TEAM-CATALOG-TRUST.md) for catalog signing, trusted store, strict mode, and invoke-time trust display decisions.
 - Should offline-only behavior be global, endpoint-specific, package-set-specific, or a command override?
 
 ## Closed
 
 - [P3] Rename - 2026-05-24: Completed repository and module surface rename to **Eigenverft.Manifested.Package**, including public command names, module metadata, local root default `Evf.Package`, and removal of obsolete launch-profile artifacts.
+- [P1] Trust - 2026-05-27: Completed trust-only catalog model with signed definition JSON, embedded public certificate verification, `PackageTrustInventory.json` authority, `PackageConfig.catalogTrust` policy, default trust prompt for valid unknown embedded keys, `.cer` preseed import, and local `.catalog-signing.json` signing password descriptor.
 - [P3] Tooling - 2026-05-23: Bumped package-definition schema to 1.6 for shipped definitions including SevenZip and DotNetSdk10.
 - [P3] Tooling - 2026-05-23: Added managed **SevenZip** and **DotNetSdk10** package definitions.
 - [P2] Tooling - 2026-05-22: Added package version selection, refreshed shipped definition versions, and resolved npm installs from materialized local tarballs.

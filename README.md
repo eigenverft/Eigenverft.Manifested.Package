@@ -67,39 +67,53 @@ For disposable fresh-machine bring-up, use the [Eigenverft.Manifested.Sandbox](h
 
 The module centers on **`Invoke-Package`** for assignment and removal, plus helpers for package state, team depots, team endpoints, and signing-key trust.
 
-`Invoke-Package` requires `-DefinitionId` and scans every enabled row in `Configuration/Internal/PackageEndpointInventory.json` in endpoint `searchOrder`. Discovery matches `definitionPublication.definitionId`, then catalog trust checks `definitionPublication.definitionSignature` against `PackageTrustInventory.json` and `PackageConfig.json` policy. Optional `-PublisherId` pins one signed `definitionPublication.publisherId` label. If multiple eligible publishers provide the same definition id, `PackageConfig.json` controls the conflict mode; the default is `fail`.
+`Invoke-Package` requires `-DefinitionId` and scans every enabled row in `Configuration/Internal/PackageEndpointInventory.json` in endpoint `searchOrder`. Discovery matches `definitionPublication.definitionId`, then catalog trust checks `definitionPublication.definitionSignature` against `PackageTrustInventory.json` and `PackageConfig.json` policy. Optional `-PublisherId` pins one signed `definitionPublication.publisherId` label. If a signed team definition carries an embedded public certificate that is valid but unknown, the default `catalogTrust.unknownSignedKeyPolicy` prompts before adding local trust. Use `-AcceptUnknownSigningKey` only when you intentionally want to auto-trust that verified embedded key for the invocation. If multiple eligible publishers provide the same definition id, `PackageConfig.json` controls the conflict mode; the default is `fail`.
 
 Shipped definitions use publisher `Eigenverft` and live under the shipped `moduleDefaults` endpoint row. Pass `-DesiredState Assigned` or `Removed`, and optional `-FailFast`.
 
 ### 👥 Team Package Channels
 
-Team onboarding is intentionally small: add a depot for package payloads, add an endpoint for package-definition JSON, then import the public `.cer` used by those JSON files.
+Team onboarding is intentionally small: add a depot for package payloads, add an endpoint for signed package-definition JSON, then invoke the package. The first valid unknown signing key can be trusted from the prompt, while admins can still preseed trust with a public `.cer`.
 
-The maintainer creates one local signing profile, signs the JSON, and shares only the public `.cer`. The private `.pfx` stays on the maintainer machine:
+The maintainer creates one local signing certificate and signs the JSON. `Sign-PackageDefinition` embeds the public certificate in the JSON. The private `.pfx` and adjacent `.catalog-signing.json` stay on the maintainer machine:
 
 ```powershell
 # Maintainer side
 $password = Read-Host -AsSecureString 'Catalog signing password'
-$signing = New-PackageSigningCertificate -Name 'My Team' -Password $password
+$signing = New-PackageSigningCertificate `
+  -Name 'My Team' `
+  -PublisherId 'My Team' `
+  -PublisherName 'My Team Packages' `
+  -CommonName 'My Team Package Catalog Signing' `
+  -Organization 'My Team' `
+  -SignerDisplayName 'My Team Package Catalog Signing' `
+  -Password $password
 
-Sign-PackageDefinition -Path '\\team-share\PackageEndpoint\MyPackage.json'
-
-Copy-Item -LiteralPath $signing.CertificatePath -Destination '\\team-share\PackageTrust\MyTeam.cer'
+Sign-PackageDefinition -Path '\\team-share\PackageEndpoint\MyPackage.json' -Cert 'MyTeam'
 ```
 
-Each client imports that public certificate:
+Client happy path:
 
 ```powershell
 Add-TeamPackageDepot -BasePath '\\team-share\PackageDepot'
 Add-TeamPackageEndpoint -BasePath '\\team-share\PackageEndpoint'
-Import-PackageTrust -Path '\\team-share\PackageTrust\MyTeam.cer'
 
 Invoke-Package -DefinitionId 'MyPackage'
 ```
 
-The `.cer` file is public and has no password. The `.pfx` is private and password protected; the maintainer password is remembered only in a local DPAPI-protected signing profile. `New-PackageSigningCertificate` also writes a `.package-trust.json` export beside the `.cer`; that JSON remains supported for richer metadata and backups.
+Admin/preseed path:
 
-Team package JSON files should be signed, and `definitionPublication.publisherId` must match the publisher id in the imported trust entry. Unsigned migration is intentionally explicit: set `package.catalogTrust.policy` to `allowUnsigned` and list the publisher id in `package.catalogTrust.allowUnsignedPublisherIds`.
+```powershell
+Copy-Item -LiteralPath $signing.CertificatePath -Destination '\\team-share\PackageTrust\MyTeam.cer'
+Import-PackageTrust -Path '\\team-share\PackageTrust\MyTeam.cer'
+Invoke-Package -DefinitionId 'MyPackage'
+```
+
+The `.cer` file is public and has no password. The `.pfx` is private and password protected. The adjacent `.catalog-signing.json` stores only the DPAPI-protected password for that PFX; it does not store paths and is not shared. `certificatePem` inside signed package JSON is also public verification material. CI can pass `-Password` directly or set `EVF_PACKAGE_SIGNING_PASSWORD`.
+
+Use `New-PackageSigningCertificate` friendly fields such as `-CommonName`, `-Organization`, `-OrganizationalUnit`, `-Country`, `-PublisherName`, and `-SignerDisplayName` for display metadata. `-Subject` remains available for advanced raw X.509 subject strings, but is not needed for normal team catalogs.
+
+Team package JSON files should be signed, and `definitionPublication.publisherId` must match the publisher id stored in local trust after prompt acceptance or `Import-PackageTrust`. Unsigned migration is intentionally explicit: set `package.catalogTrust.policy` to `allowUnsigned` and list the publisher id in `package.catalogTrust.allowUnsignedPublisherIds`.
 
 ### 🏠 Home or NAS-backed package depot
 
@@ -133,10 +147,10 @@ Later runs reuse files from the depot when the engine finds a matching artifact 
 
 | File | Role |
 | --- | --- |
-| `Configuration/Internal/PackageConfig.json` | Main package configuration: application paths, local definition materialization, selection defaults, acquisition policy, and endpoint environment defaults. |
+| `Configuration/Internal/PackageConfig.json` | Main package configuration: application paths, local definition materialization, catalog trust policy such as `unknownSignedKeyPolicy`, selection defaults, acquisition policy, and endpoint environment defaults. |
 | `Configuration/Internal/PackageDepotInventory.json` | Depot roots, capabilities, search order, and mirror-target flags. |
 | `Configuration/Internal/PackageEndpointInventory.json` | Package-definition scan endpoints, paths, enablement, and order. |
-| `Configuration/Internal/PackageTrustInventory.json` | Trusted signing keys for package-definition catalog authority. |
+| `Configuration/Internal/PackageTrustInventory.json` | Trusted signing keys for package-definition catalog authority. Shipped Eigenverft definitions are pretrusted here and also carry embedded public certificates. |
 | `State/PackageAssignmentInventory.json` | Current tracked assigned package facts. |
 | `State/PackageOperationHistory.json` | Append-only command history for assigned and removed runs. |
 
@@ -172,7 +186,7 @@ Get-PackageState
 
 This package engine is intentionally local. It is not a central enterprise package manager, a fleet-wide rollout controller, a replacement for WinGet or Intune, a public community app store, or a background auto-update service.
 
-Good changes make one user profile easier to prepare, make package definitions safer and clearer, improve depot reuse, strengthen endpoint trust, or make generated package JSON easier to validate and review. Fleet orchestration belongs in a separate manager product that can build on this engine's state and endpoint primitives.
+Good changes make one user profile easier to prepare, make package definitions safer and clearer, improve depot reuse, strengthen catalog trust, or make generated package JSON easier to validate and review. Fleet orchestration belongs in a separate manager product that can build on this engine's state and endpoint primitives.
 
 ## 📄 License
 
