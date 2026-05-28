@@ -35,6 +35,10 @@ function Invoke-Package {
 
         [switch]$AcceptUnknownSigningKey,
 
+        [switch]$Offline,
+
+        [switch]$MaterializeOnly,
+
         [switch]$FailFast
     )
 
@@ -46,6 +50,9 @@ function Invoke-Package {
         -not [string]::Equals($normalizedPackageVersion, 'latestByVersion', [System.StringComparison]::OrdinalIgnoreCase)) {
         throw "Invoke-Package -PackageVersion can only override version selection for DesiredState Assigned. Omit -PackageVersion or use 'latestByVersion' with DesiredState Removed."
     }
+    if ($MaterializeOnly.IsPresent -and $PSBoundParameters.ContainsKey('DesiredState')) {
+        throw "Invoke-Package -MaterializeOnly is its own command mode. Do not combine it with -DesiredState Assigned or -DesiredState Removed."
+    }
 
     foreach ($definition in $DefinitionId) {
         $invokeParams = @{
@@ -53,13 +60,17 @@ function Invoke-Package {
             DefinitionId             = $definition
             DesiredState             = $DesiredState
             AcceptUnknownSigningKey  = $AcceptUnknownSigningKey
+            Offline                  = $Offline
+            MaterializeOnly          = $MaterializeOnly
         }
         if ($packageVersionOverrideSpecified) {
             $invokeParams.PackageVersion = $normalizedPackageVersion
         }
         $result = Invoke-PackageDefinitionCommandCore @invokeParams
         $result
-        if ($FailFast -and $result -and -not [string]::Equals([string]$result.Status, 'Ready', [System.StringComparison]::OrdinalIgnoreCase)) {
+        $resultSucceeded = [string]::Equals([string]$result.Status, 'Ready', [System.StringComparison]::OrdinalIgnoreCase) -or
+            [string]::Equals([string]$result.Status, 'Materialized', [System.StringComparison]::OrdinalIgnoreCase)
+        if ($FailFast -and $result -and (-not $resultSucceeded)) {
             break
         }
     }

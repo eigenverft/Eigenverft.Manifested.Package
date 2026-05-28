@@ -409,6 +409,49 @@ exit 0
         Test-Path -LiteralPath (Join-Path $stageDirectory 'opencode-windows-x64-1.14.46.tgz') -PathType Leaf | Should -BeTrue
     }
 
+    It 'fails npm materialization offline when depots miss and does not use the registry' {
+        $rootPath = Join-Path $TestDrive 'npm-materialized-offline-miss'
+        $packageResult = [pscustomobject]@{
+            PackageId = 'opencode-runtime-win32-x64-stable'
+            DefinitionId = 'OpenCodeCli'
+            Offline = $true
+            PackageFileStagingDirectory = (Join-Path $rootPath 'FileStage\OpenCodeCli')
+            PackageDepotRelativeDirectory = 'OpenCodeCli\stable\1.14.46\win32-x64'
+            PackageConfig = [pscustomobject]@{
+                DefinitionId = 'OpenCodeCli'
+                Platform = 'windows'
+                Architecture = 'x64'
+                EnvironmentSources = [pscustomobject]@{
+                    defaultPackageDepot = [pscustomobject]@{
+                        kind = 'filesystem'
+                        basePath = (Join-Path $rootPath 'PkgDepot')
+                        readable = $true
+                        writable = $false
+                        mirrorTarget = $false
+                        searchOrder = 100
+                    }
+                }
+            }
+            Package = [pscustomobject]@{
+                id = 'opencode-runtime-win32-x64-stable'
+                version = '1.14.46'
+                releaseTrack = 'stable'
+                artifactDistributionVariant = 'win32-x64'
+                assigned = [pscustomobject]@{
+                    install = [pscustomobject]@{
+                        kind = 'npmMaterializedInstallGlobalPackage'
+                        installerCommand = 'npm'
+                        packageSpec = 'opencode-ai@{version}'
+                    }
+                }
+            }
+        }
+        Mock New-PackageNpmMaterializationFromRegistry { throw 'registry should not run in Offline mode' }
+
+        { Invoke-PackageNpmMaterialization -PackageResult $packageResult } | Should -Throw '*Offline*npm materialization*depot*'
+        Assert-MockCalled New-PackageNpmMaterializationFromRegistry -Times 0
+    }
+
     It 'installs npmMaterializedInstallGlobalPackage from local materialized tarballs through a ready dependency command' {
         $rootPath = Join-Path $TestDrive 'npm-materialized-package-install'
         $fakeNpmPath = Join-Path $rootPath 'node\npm.cmd'

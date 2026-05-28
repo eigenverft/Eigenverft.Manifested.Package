@@ -782,8 +782,10 @@ function Resolve-PackageDepotDistributionSourceArtifact {
 
     $orderedCandidates = if ($PackageResult.AcquisitionPlan) { @($PackageResult.AcquisitionPlan.Candidates) } else { @() }
     $preferredVerification = Get-PackagePreferredVerification -AcquisitionCandidates $orderedCandidates
+    $offline = $PackageResult.PSObject.Properties['Offline'] -and [bool]$PackageResult.Offline
 
-    if (-not [string]::IsNullOrWhiteSpace([string]$PackageResult.PackageFilePath) -and
+    if ((-not $offline) -and
+        -not [string]::IsNullOrWhiteSpace([string]$PackageResult.PackageFilePath) -and
         (Test-Path -LiteralPath $PackageResult.PackageFilePath -PathType Leaf)) {
         $verification = Test-PackageSavedFile -Path $PackageResult.PackageFilePath -Verification $preferredVerification
         if ($verification.Accepted) {
@@ -1044,6 +1046,9 @@ Build-PackageAcquisitionPlan -PackageResult $result
         $PackageResult.AcquisitionPlan = [pscustomobject]@{
             PackageFileRequired      = $false
             PackageFileStagingFilePath = $PackageResult.PackageFilePath
+            Offline                  = if ($PackageResult.PSObject.Properties['Offline']) { [bool]$PackageResult.Offline } else { $false }
+            SkippedOfflineCandidateCount = 0
+            SkippedOfflineVendorCandidateCount = 0
             Candidates               = @()
         }
         Write-PackageExecutionMessage -Message '[STATE] Acquisition skipped because package target is already satisfied.'
@@ -1059,13 +1064,24 @@ Build-PackageAcquisitionPlan -PackageResult $result
     else {
         'off'
     }
+    $offline = $PackageResult.PSObject.Properties['Offline'] -and [bool]$PackageResult.Offline
+    $skippedOfflineCandidateCount = 0
+    $skippedOfflineVendorCandidateCount = 0
     $orderedCandidates = New-Object System.Collections.Generic.List[object]
     if ($requiresPackageFile -and $package.PSObject.Properties['acquisitionCandidates']) {
         foreach ($candidate in @($package.acquisitionCandidates | Sort-Object -Property @{
                     Expression = { if ($_.PSObject.Properties['searchOrder']) { [int]$_.searchOrder } else { [int]::MaxValue } }
                 })) {
+            $candidateKind = [string]$candidate.kind
+            if ($offline -and -not [string]::Equals($candidateKind, 'packageDepot', [System.StringComparison]::OrdinalIgnoreCase)) {
+                $skippedOfflineCandidateCount++
+                if ($candidateKind -in @('download', 'vendorDownload')) {
+                    $skippedOfflineVendorCandidateCount++
+                }
+                continue
+            }
             $resolvedVerification = Resolve-PackageAcquisitionCandidateVerification -Package $package -AcquisitionCandidate $candidate -PayloadVerificationPolicy $payloadVerificationPolicy -PackageFileRequired $requiresPackageFile
-            switch -Exact ([string]$candidate.kind) {
+            switch -Exact ($candidateKind) {
                 'packageDepot' {
                     $resolvedDepotSourcePath = Join-Path $PackageResult.PackageDepotRelativeDirectory ([string]$package.packageFile.fileName)
                     foreach ($depotSource in @(Get-PackagePackageDepotSources -PackageConfig $PackageResult.PackageConfig)) {
@@ -1082,10 +1098,10 @@ Build-PackageAcquisitionPlan -PackageResult $result
                         }) | Out-Null
                     }
                 }
-                'download' {
+                { $_ -in @('download', 'vendorDownload') } {
                     $directUrl = if ($candidate.PSObject.Properties['url']) { [string]$candidate.url } else { $null }
                     $orderedCandidates.Add([pscustomobject]@{
-                        kind         = 'download'
+                        kind         = $candidateKind
                         searchOrder     = if ($candidate.PSObject.Properties['searchOrder']) { [int]$candidate.searchOrder } else { [int]::MaxValue }
                         sourceSearchOrder = 1000
                         sourceRef    = if ($candidate.PSObject.Properties['sourceId'] -and -not [string]::IsNullOrWhiteSpace([string]$candidate.sourceId)) {
@@ -1128,6 +1144,9 @@ Build-PackageAcquisitionPlan -PackageResult $result
         PackageFileRequired    = $requiresPackageFile
         PackageFileStagingFilePath = $PackageResult.PackageFilePath
         DefaultPackageDepotFilePath = $PackageResult.DefaultPackageDepotFilePath
+        Offline                = $offline
+        SkippedOfflineCandidateCount = $skippedOfflineCandidateCount
+        SkippedOfflineVendorCandidateCount = $skippedOfflineVendorCandidateCount
         Candidates             = @(
             $orderedCandidates.ToArray() |
                 Sort-Object -Property searchOrder, sourceSearchOrder, @{
@@ -1152,7 +1171,8 @@ Build-PackageAcquisitionPlan -PackageResult $result
     if ([string]::IsNullOrWhiteSpace($candidateSummary)) {
         $candidateSummary = '<none>'
     }
-    Write-PackageExecutionMessage -Message ("[STATE] Acquisition plan packageFileRequired='{0}' with {1} candidate(s): {2}." -f $requiresPackageFile, @($PackageResult.AcquisitionPlan.Candidates).Count, $candidateSummary)
+    $offlineSuffix = if ($offline) { " offline='true', skippedByPolicy=$skippedOfflineCandidateCount" } else { " offline='false'" }
+    Write-PackageExecutionMessage -Message ("[STATE] Acquisition plan packageFileRequired='{0}'{1} with {2} candidate(s): {3}." -f $requiresPackageFile, $offlineSuffix, @($PackageResult.AcquisitionPlan.Candidates).Count, $candidateSummary)
 
     return $PackageResult
 }
@@ -1232,15 +1252,20 @@ Resolve-PackageInstallFile -PackageResult $result
         throw "Package release '$($package.id)' does not define packageFile.fileName."
     }
 
+    $offline = $PackageResult.PSObject.Properties['Offline'] -and [bool]$PackageResult.Offline
     $orderedCandidates = @($PackageResult.AcquisitionPlan.Candidates)
     if (-not $orderedCandidates) {
+        if ($offline) {
+            $skippedByPolicy = if ($PackageResult.AcquisitionPlan.PSObject.Properties['SkippedOfflineCandidateCount']) { [int]$PackageResult.AcquisitionPlan.SkippedOfflineCandidateCount } else { 0 }
+            throw "Package release '$($package.id)' has no usable packageDepot acquisition candidates for Offline mode. Skipped $skippedByPolicy vendor or package-definition non-depot candidate(s)."
+        }
         throw "Package release '$($package.id)' does not define any acquisition candidates."
     }
 
     $attempts = New-Object System.Collections.Generic.List[object]
     $preferredVerification = Get-PackagePreferredVerification -AcquisitionCandidates $orderedCandidates
 
-    if (Test-Path -LiteralPath $PackageResult.PackageFilePath) {
+    if ((-not $offline) -and (Test-Path -LiteralPath $PackageResult.PackageFilePath)) {
         $verification = Test-PackageSavedFile -Path $PackageResult.PackageFilePath -Verification $preferredVerification
         $attempts.Add([pscustomobject]@{
             AttemptType        = 'ReuseCheck'
@@ -1286,7 +1311,8 @@ Resolve-PackageInstallFile -PackageResult $result
             if ($candidate.sourceRef) {
                 $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $packageConfig -SourceRef $candidate.sourceRef
             }
-            elseif ([string]::Equals([string]$candidate.kind, 'download', [System.StringComparison]::OrdinalIgnoreCase) -and
+            elseif (([string]::Equals([string]$candidate.kind, 'download', [System.StringComparison]::OrdinalIgnoreCase) -or
+                    [string]::Equals([string]$candidate.kind, 'vendorDownload', [System.StringComparison]::OrdinalIgnoreCase)) -and
                 $candidate.PSObject.Properties['url'] -and
                 -not [string]::IsNullOrWhiteSpace([string]$candidate.url)) {
                 $sourceDefinition = [pscustomobject]@{
@@ -1413,6 +1439,14 @@ Resolve-PackageInstallFile -PackageResult $result
         }
     }
 
+    $failureReason = if ($offline) { 'DepotMiss' } else { 'AllSourcesFailed' }
+    $errorMessage = if ($offline) {
+        "Offline acquisition failed for Package release '$($package.id)': no packageDepot candidate provided a verified depot artifact. Vendor download and package-definition filesystem candidates were skipped by policy."
+    }
+    else {
+        "All acquisition candidates failed for Package release '$($package.id)'."
+    }
+
     $PackageResult.PackageFilePreparation = [pscustomobject]@{
         Success         = $false
         Status          = 'Failed'
@@ -1420,11 +1454,16 @@ Resolve-PackageInstallFile -PackageResult $result
         SelectedSource  = $null
         Verification    = $null
         Attempts        = @($attempts.ToArray())
-        FailureReason   = 'AllSourcesFailed'
-        ErrorMessage    = "All acquisition candidates failed for Package release '$($package.id)'."
+        FailureReason   = $failureReason
+        ErrorMessage    = $errorMessage
     }
 
-    Write-PackageExecutionMessage -Level 'ERR' -Message ("[ACTION] All acquisition candidates failed for release '{0}'." -f $package.id)
+    if ($offline) {
+        Write-PackageExecutionMessage -Level 'ERR' -Message ("[ACTION] Offline depot acquisition failed for release '{0}'." -f $package.id)
+    }
+    else {
+        Write-PackageExecutionMessage -Level 'ERR' -Message ("[ACTION] All acquisition candidates failed for release '{0}'." -f $package.id)
+    }
 
     return $PackageResult
 }

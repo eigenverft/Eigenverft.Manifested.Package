@@ -123,7 +123,21 @@ dependency logic can extend this function without changing the command flow.
         $PackageResult.PackageConfig.PSObject.Properties['AcceptUnknownSigningKey'] -and
         [bool]$PackageResult.PackageConfig.AcceptUnknownSigningKey
 
-    return (Invoke-PackageDefinitionCommandCore -PublisherId $PublisherId -DefinitionId $DefinitionId -DesiredState Assigned -AcceptUnknownSigningKey:$acceptUnknownSigningKey -DependencyStack $DependencyStack)
+    $invokeParams = @{
+        PublisherId             = $PublisherId
+        DefinitionId            = $DefinitionId
+        DesiredState            = 'Assigned'
+        AcceptUnknownSigningKey = $acceptUnknownSigningKey
+        DependencyStack         = $DependencyStack
+    }
+    if ($PackageResult.PSObject.Properties['Offline'] -and [bool]$PackageResult.Offline) {
+        $invokeParams.Offline = $true
+    }
+    if ($PackageResult.PSObject.Properties['MaterializeOnly'] -and [bool]$PackageResult.MaterializeOnly) {
+        $invokeParams.MaterializeOnly = $true
+    }
+
+    return (Invoke-PackageDefinitionCommandCore @invokeParams)
 }
 
 function Resolve-PackageDependencies {
@@ -197,14 +211,25 @@ Resolve-PackageDependencies -PackageResult $result
         $dependencyResult = Resolve-PackageDependencyDefinition -PackageResult $PackageResult -PublisherId $dependencyPublisherId -DefinitionId $dependencyDefinitionId -DependencyStack (@($currentStack) + $dependencyKey)
         $resolvedDependencyPublisherId = if ($dependencyResult) { Get-PackageResultPublisherId -PackageResult $dependencyResult } else { $dependencyPublisherId }
         $dependencyStatus = if ($dependencyResult) { [string]$dependencyResult.Status } else { '<none>' }
-        if (-not $dependencyResult -or -not [string]::Equals($dependencyStatus, 'Ready', [System.StringComparison]::OrdinalIgnoreCase)) {
-            throw "Package dependency '$dependencyPublisherText/$dependencyDefinitionId' did not become ready. Status='$dependencyStatus'."
+        $materializeOnly = $PackageResult.PSObject.Properties['MaterializeOnly'] -and [bool]$PackageResult.MaterializeOnly
+        $dependencyAccepted = if ($materializeOnly) {
+            [string]::Equals($dependencyStatus, 'Materialized', [System.StringComparison]::OrdinalIgnoreCase) -or
+                [string]::Equals($dependencyStatus, 'Ready', [System.StringComparison]::OrdinalIgnoreCase)
+        }
+        else {
+            [string]::Equals($dependencyStatus, 'Ready', [System.StringComparison]::OrdinalIgnoreCase)
+        }
+        if (-not $dependencyResult -or -not $dependencyAccepted) {
+            $expectedStatus = if ($materializeOnly) { 'materialized' } else { 'ready' }
+            throw "Package dependency '$dependencyPublisherText/$dependencyDefinitionId' did not become $expectedStatus. Status='$dependencyStatus'."
         }
 
         $dependencyRecords.Add([pscustomobject]@{
             PublisherId    = $resolvedDependencyPublisherId
             DefinitionId   = $dependencyDefinitionId
             Status         = $dependencyStatus
+            CommandMode    = if ($dependencyResult.PSObject.Properties['CommandMode']) { [string]$dependencyResult.CommandMode } else { $null }
+            Offline        = if ($dependencyResult.PSObject.Properties['Offline']) { [bool]$dependencyResult.Offline } else { $false }
             InstallOrigin  = [string]$dependencyResult.InstallOrigin
             InstallStatus  = if ($dependencyResult.Assigned -and $dependencyResult.Assigned.PSObject.Properties['Status']) { [string]$dependencyResult.Assigned.Status } else { $null }
             EntryPoints    = if ($dependencyResult.PSObject.Properties['EntryPoints']) { $dependencyResult.EntryPoints } else { $null }
@@ -242,6 +267,19 @@ function Resolve-PackageDependencyCommandPath {
                 }
             }
         }
+    }
+
+    if ($PackageResult.PSObject.Properties['MaterializeOnly'] -and [bool]$PackageResult.MaterializeOnly) {
+        $readyCommandPath = Get-ResolvedApplicationPath -CommandName $CommandName
+        if (-not [string]::IsNullOrWhiteSpace($readyCommandPath) -and (Test-Path -LiteralPath $readyCommandPath -PathType Leaf)) {
+            return [pscustomobject]@{
+                DefinitionId = 'existingCommand'
+                Command      = $CommandName
+                CommandPath  = [System.IO.Path]::GetFullPath($readyCommandPath)
+            }
+        }
+
+        throw "Package materialization for '$($PackageResult.PackageId)' requires command '$CommandName' to already be ready on PATH. MaterializeOnly does not install dependency tools."
     }
 
     throw "Package install for '$($PackageResult.PackageId)' requires installer command '$CommandName', but no ready dependency exposes that command."

@@ -71,6 +71,8 @@ function Select-PackageOperationDependencySummary {
         endpointName  = if ($dependencyResult -and $dependencyResult.PSObject.Properties['DefinitionEndpointName']) { [string]$dependencyResult.DefinitionEndpointName } else { $null }
         definitionId  = if ($Dependency.PSObject.Properties['DefinitionId']) { [string]$Dependency.DefinitionId } elseif ($dependencyResult -and $dependencyResult.PSObject.Properties['DefinitionId']) { [string]$dependencyResult.DefinitionId } else { $null }
         desiredState  = if ($dependencyResult -and $dependencyResult.PSObject.Properties['DesiredState']) { [string]$dependencyResult.DesiredState } else { 'Assigned' }
+        commandMode   = if ($Dependency.PSObject.Properties['CommandMode']) { [string]$Dependency.CommandMode } elseif ($dependencyResult -and $dependencyResult.PSObject.Properties['CommandMode']) { [string]$dependencyResult.CommandMode } else { $null }
+        offline       = if ($Dependency.PSObject.Properties['Offline']) { [bool]$Dependency.Offline } elseif ($dependencyResult -and $dependencyResult.PSObject.Properties['Offline']) { [bool]$dependencyResult.Offline } else { $false }
         status        = if ($Dependency.PSObject.Properties['Status']) { [string]$Dependency.Status } elseif ($dependencyResult -and $dependencyResult.PSObject.Properties['Status']) { [string]$dependencyResult.Status } else { $null }
         failureReason = if ($dependencyResult -and $dependencyResult.PSObject.Properties['FailureReason']) { [string]$dependencyResult.FailureReason } else { $null }
         installOrigin = if ($Dependency.PSObject.Properties['InstallOrigin']) { [string]$Dependency.InstallOrigin } elseif ($dependencyResult -and $dependencyResult.PSObject.Properties['InstallOrigin']) { [string]$dependencyResult.InstallOrigin } else { $null }
@@ -123,6 +125,9 @@ Creates one operation-history record from a finalized Package result.
         definitionCandidatePath       = if ($PackageResult.PSObject.Properties['DefinitionCandidatePath']) { [string]$PackageResult.DefinitionCandidatePath } else { $null }
         definitionAssignedSnapshotPath = if ($PackageResult.PSObject.Properties['DefinitionAssignedSnapshotPath']) { [string]$PackageResult.DefinitionAssignedSnapshotPath } else { $null }
         desiredState                  = [string]$PackageResult.DesiredState
+        commandMode                   = if ($PackageResult.PSObject.Properties['CommandMode']) { [string]$PackageResult.CommandMode } else { [string]$PackageResult.DesiredState }
+        offline                       = if ($PackageResult.PSObject.Properties['Offline']) { [bool]$PackageResult.Offline } else { $false }
+        materializeOnly               = if ($PackageResult.PSObject.Properties['MaterializeOnly']) { [bool]$PackageResult.MaterializeOnly } else { $false }
         status                        = [string]$PackageResult.Status
         failureReason                 = [string]$PackageResult.FailureReason
         errorMessage                  = [string]$PackageResult.ErrorMessage

@@ -633,6 +633,13 @@ New-PackageResult -PackageConfig $config
         [ValidateSet('Assigned', 'Removed')]
         [string]$DesiredState = 'Assigned',
 
+        [ValidateSet('Assigned', 'Removed', 'MaterializeOnly')]
+        [string]$CommandMode = $DesiredState,
+
+        [switch]$Offline,
+
+        [switch]$MaterializeOnly,
+
         [Parameter(Mandatory = $true)]
         [psobject]$PackageConfig,
 
@@ -647,6 +654,9 @@ New-PackageResult -PackageConfig $config
         OperationId                      = [guid]::NewGuid().ToString('n')
         OperationStartedAtUtc            = [DateTime]::UtcNow.ToString('o')
         DesiredState                     = $DesiredState
+        CommandMode                      = $CommandMode
+        Offline                          = [bool]$Offline
+        MaterializeOnly                  = [bool]$MaterializeOnly
         PackageVersionOverrideSpecified  = $packageVersionOverrideSpecified
         PackageVersionSelectionSource    = if ($packageVersionOverrideSpecified) { 'command' } else { 'definition' }
         PackageVersionSelector           = $normalizedPackageVersionSelector

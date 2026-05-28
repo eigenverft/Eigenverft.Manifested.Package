@@ -97,6 +97,14 @@ Complete-PackageResult -PackageResult $result
     if (-not [string]::IsNullOrWhiteSpace($PackageResult.ErrorMessage)) {
         $PackageResult.Status = 'Failed'
     }
+    elseif ($PackageResult.PSObject.Properties['CommandMode'] -and
+        [string]::Equals([string]$PackageResult.CommandMode, 'MaterializeOnly', [System.StringComparison]::OrdinalIgnoreCase) -and
+        $PackageResult.PSObject.Properties['Materialization'] -and
+        $PackageResult.Materialization -and
+        $PackageResult.Materialization.PSObject.Properties['Success'] -and
+        [bool]$PackageResult.Materialization.Success) {
+        $PackageResult.Status = 'Materialized'
+    }
     elseif ([string]::Equals([string]$PackageResult.DesiredState, 'Removed', [System.StringComparison]::OrdinalIgnoreCase) -and
         $PackageResult.Removed -and $PackageResult.Removed.PSObject.Properties['Accepted'] -and [bool]$PackageResult.Removed.Accepted) {
         $PackageResult.Status = 'Ready'

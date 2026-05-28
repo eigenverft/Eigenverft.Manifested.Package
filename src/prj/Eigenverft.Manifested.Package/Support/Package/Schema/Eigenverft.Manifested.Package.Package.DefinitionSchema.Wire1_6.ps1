@@ -1084,7 +1084,8 @@ function Resolve-PackageEffectivePackage_1_6 {
     $acquisitionCandidates = @(
         foreach ($source in @($artifactAcquisitionCandidates)) {
             $candidate = ConvertTo-PackageObject -InputObject $source
-            if ([string]::Equals([string]$candidate.kind, 'download', [System.StringComparison]::OrdinalIgnoreCase)) {
+            if ([string]::Equals([string]$candidate.kind, 'download', [System.StringComparison]::OrdinalIgnoreCase) -or
+                [string]::Equals([string]$candidate.kind, 'vendorDownload', [System.StringComparison]::OrdinalIgnoreCase)) {
                 if ($candidate.PSObject.Properties['urlTemplate'] -and -not [string]::IsNullOrWhiteSpace([string]$candidate.urlTemplate)) {
                     $candidate | Add-Member -MemberType NoteProperty -Name 'url' -Value (Resolve-PackageTargetArtifactText -Text ([string]$candidate.urlTemplate) -ArtifactTarget $target -VersionEntry $versionEntry -UpstreamRelease $upstreamRelease) -Force
                 }

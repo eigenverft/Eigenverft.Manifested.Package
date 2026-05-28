@@ -80,6 +80,9 @@ function Get-PackageCommandFailureReason {
         'ClassifyExistingPackage' { return 'ExistingPackageOwnershipClassificationFailed' }
         'ResolveExistingPackageDecision' { return 'ExistingPackageDecisionFailed' }
         'PreparePackageAssignedFile' { return 'PackageFilePreparationFailed' }
+        'DistributePackageFileToDepots' { return 'DepotDistributionFailed' }
+        'MaterializeNpmPackage' { return 'NpmMaterializationFailed' }
+        'AssertDurableMaterialization' { return 'PackageMaterializationNotDurable' }
         'AssignPackage' { return 'PackageAssignFailed' }
         'CheckAssignedReadiness' { return 'AssignedPackageReadinessFailed' }
         'RegisterPath' { return 'PathRegistrationFailed' }
@@ -215,6 +218,139 @@ function Invoke-PackageAssignedFlow {
     return $PackageResult
 }
 
+function Find-PackageDurablePackageFileInDepot {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$PackageResult
+    )
+
+    if (-not $PackageResult.Package -or
+        -not $PackageResult.Package.PSObject.Properties['packageFile'] -or
+        -not $PackageResult.Package.packageFile -or
+        -not $PackageResult.Package.packageFile.PSObject.Properties['fileName'] -or
+        [string]::IsNullOrWhiteSpace([string]$PackageResult.Package.packageFile.fileName)) {
+        return $null
+    }
+
+    $preferredVerification = Get-PackagePreferredVerification -AcquisitionCandidates @($PackageResult.AcquisitionPlan.Candidates)
+    $packageFileName = [string]$PackageResult.Package.packageFile.fileName
+    foreach ($depotSource in @(Get-PackagePackageDepotSources -PackageConfig $PackageResult.PackageConfig)) {
+        if ([string]::IsNullOrWhiteSpace([string]$depotSource.basePath)) {
+            continue
+        }
+
+        $candidateDirectory = [System.IO.Path]::GetFullPath((Join-Path ([string]$depotSource.basePath) $PackageResult.PackageDepotRelativeDirectory))
+        $candidatePath = Join-Path $candidateDirectory $packageFileName
+        if (-not (Test-Path -LiteralPath $candidatePath -PathType Leaf)) {
+            continue
+        }
+
+        $verification = Test-PackageSavedFile -Path $candidatePath -Verification $preferredVerification
+        if ($verification.Accepted) {
+            return [pscustomobject]@{
+                SourceId       = [string]$depotSource.id
+                Path           = $candidatePath
+                Verification   = $verification
+            }
+        }
+    }
+
+    return $null
+}
+
+function Assert-PackageMaterializationDurable {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$PackageResult
+    )
+
+    $requiresPackageFile = Test-PackagePackageFileAcquisitionRequired -Package $PackageResult.Package
+    $npmMaterialized = Test-PackageNpmMaterializedInstallKind -Package $PackageResult.Package
+    $durablePackageFile = $null
+    $durableNpmMaterialization = $null
+
+    if ($requiresPackageFile) {
+        $durablePackageFile = Find-PackageDurablePackageFileInDepot -PackageResult $PackageResult
+        if (-not $durablePackageFile) {
+            throw "MaterializeOnly for '$($PackageResult.PackageId)' did not produce a verified package file in depot layout. Staging files alone are not durable materialization."
+        }
+    }
+
+    if ($npmMaterialized) {
+        $durableNpmMaterialization = Find-PackageNpmMaterializationInDepots -PackageResult $PackageResult
+        if (-not $durableNpmMaterialization) {
+            throw "MaterializeOnly for '$($PackageResult.PackageId)' did not produce npm materialized tarballs in depot layout. Staging files alone are not durable materialization."
+        }
+    }
+
+    $PackageResult.InstallOrigin = 'MaterializedOnly'
+    $PackageResult | Add-Member -MemberType NoteProperty -Name Materialization -Value ([pscustomobject]@{
+        Success                = $true
+        Status                 = if ($requiresPackageFile -or $npmMaterialized) { 'Durable' } else { 'NoDurableArtifactsRequired' }
+        PackageFile            = $durablePackageFile
+        NpmMaterialization     = $durableNpmMaterialization
+        PackageFileRequired    = $requiresPackageFile
+        NpmMaterializedPackage = $npmMaterialized
+    }) -Force
+
+    Write-PackageExecutionMessage -Message ("[STATE] Materialization durability accepted for package '{0}' with status '{1}'." -f $PackageResult.PackageId, [string]$PackageResult.Materialization.Status)
+    return $PackageResult
+}
+
+function Invoke-PackageMaterializeOnlyFlow {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$PackageResult,
+
+        [object[]]$DependencyStack = @()
+    )
+
+    $steps = @(
+        [pscustomobject]@{ Name = 'ResolvePackage'; Message = '[STEP] Resolving package selection.'; Action = { param($r) Resolve-PackagePackage -PackageResult $r } },
+        [pscustomobject]@{ Name = 'ResolveDependencies'; Message = '[STEP] Materializing package dependencies.'; Action = { param($r) Resolve-PackageDependencies -PackageResult $r -DependencyStack $DependencyStack } },
+        [pscustomobject]@{ Name = 'ResolvePaths'; Message = '[STEP] Resolving package paths.'; Action = { param($r) Resolve-PackagePaths -PackageResult $r } },
+        [pscustomobject]@{ Name = 'BuildAcquisitionPlan'; Message = '[STEP] Building acquisition plan.'; Action = { param($r) Build-PackageAcquisitionPlan -PackageResult $r } },
+        [pscustomobject]@{ Name = 'PreparePackageAssignedFile'; Message = '[STEP] Materializing package file into staging.'; Action = { param($r) Resolve-PackageInstallFile -PackageResult $r } },
+        [pscustomobject]@{ Name = 'DistributePackageFileToDepots'; Message = '[STEP] Reconciling package file depot mirrors.'; Action = { param($r) Invoke-PackageDepotDistribution -PackageResult $r } },
+        [pscustomobject]@{ Name = 'MaterializeNpmPackage'; Message = '[STEP] Materializing npm package metadata and tarballs.'; Action = { param($r) Invoke-PackageNpmMaterialization -PackageResult $r } },
+        [pscustomobject]@{ Name = 'AssertDurableMaterialization'; Message = '[STEP] Verifying durable depot materialization.'; Action = { param($r) Assert-PackageMaterializationDurable -PackageResult $r } },
+        [pscustomobject]@{ Name = 'ClearPackageWorkDirectories'; Message = '[STEP] Cleaning package staging directories.'; Action = { param($r) Clear-PackageWorkDirectories -PackageResult $r } }
+    )
+
+    try {
+        Write-PackageExecutionMessage -Message ("[START] Invoke-Package publisher='{0}' endpoint='{1}' definition='{2}' commandMode='MaterializeOnly' offline='{3}'." -f $PackageResult.DefinitionPublisherId, $PackageResult.DefinitionEndpointName, $PackageResult.DefinitionId, [bool]$PackageResult.Offline)
+        if (-not $PackageResult.LocalEnvironment) {
+            $PackageResult.CurrentStep = 'InitializeLocalEnvironment'
+            $PackageResult.LocalEnvironment = Initialize-PackageCommandLocalEnvironment -PackageConfig $PackageResult.PackageConfig
+        }
+
+        foreach ($step in $steps) {
+            $PackageResult.CurrentStep = $step.Name
+            Write-PackageExecutionMessage -Message $step.Message
+            $PackageResult = & $step.Action $PackageResult
+            if ($step.Name -eq 'PreparePackageAssignedFile' -and
+                $PackageResult.PackageFilePreparation -and
+                $PackageResult.PackageFilePreparation.PSObject.Properties['Success'] -and
+                -not [bool]$PackageResult.PackageFilePreparation.Success) {
+                throw ([string]$PackageResult.PackageFilePreparation.ErrorMessage)
+            }
+        }
+
+        Write-PackageExecutionMessage -Message ("[OK] Package materialized with status='{0}'." -f [string]$PackageResult.Materialization.Status)
+    }
+    catch {
+        $PackageResult.Status = 'Failed'
+        $PackageResult.ErrorMessage = $_.Exception.Message
+        Write-PackageExecutionMessage -Level 'ERR' -Message ("[FAIL] Step '{0}' failed: {1}" -f $PackageResult.CurrentStep, $_.Exception.Message)
+        $PackageResult.FailureReason = Get-PackageCommandFailureReason -CurrentStep ([string]$PackageResult.CurrentStep)
+    }
+
+    return $PackageResult
+}
+
 function Invoke-PackageDefinitionCommandCore {
     [CmdletBinding()]
     param(
@@ -232,6 +368,10 @@ function Invoke-PackageDefinitionCommandCore {
         [string]$PackageVersion = $null,
 
         [switch]$AcceptUnknownSigningKey,
+
+        [switch]$Offline,
+
+        [switch]$MaterializeOnly,
 
         [object[]]$DependencyStack = @()
     )
@@ -255,6 +395,9 @@ function Invoke-PackageDefinitionCommandCore {
             OperationId                      = [guid]::NewGuid().ToString('n')
             OperationStartedAtUtc            = [DateTime]::UtcNow.ToString('o')
             DesiredState                     = $DesiredState
+            CommandMode                      = if ($MaterializeOnly.IsPresent) { 'MaterializeOnly' } else { $DesiredState }
+            Offline                          = [bool]$Offline
+            MaterializeOnly                  = [bool]$MaterializeOnly
             PackageVersionOverrideSpecified  = $packageVersionOverrideSpecified
             PackageVersionSelectionSource    = if ($packageVersionOverrideSpecified) { 'command' } else { 'definition' }
             PackageVersionSelector           = $normalizedPackageVersion
@@ -271,6 +414,9 @@ function Invoke-PackageDefinitionCommandCore {
     $packageConfig = Get-PackageConfig -PublisherId $PublisherId -DefinitionId $DefinitionId -DesiredState $DesiredState -AcceptUnknownSigningKey:$AcceptUnknownSigningKey
     $newResultParams = @{
         DesiredState   = $DesiredState
+        CommandMode    = if ($MaterializeOnly.IsPresent) { 'MaterializeOnly' } else { $DesiredState }
+        Offline        = $Offline
+        MaterializeOnly = $MaterializeOnly
         PackageConfig  = $packageConfig
     }
     if ($packageVersionOverrideSpecified) {
@@ -278,6 +424,17 @@ function Invoke-PackageDefinitionCommandCore {
     }
     $result = New-PackageResult @newResultParams
     $result.LocalEnvironment = $localEnvironment
+
+    if ($MaterializeOnly.IsPresent) {
+        $result = Invoke-PackageMaterializeOnlyFlow -PackageResult $result -DependencyStack $DependencyStack
+        $failedStep = if ([string]::Equals([string]$result.Status, 'Failed', [System.StringComparison]::OrdinalIgnoreCase)) { [string]$result.CurrentStep } else { $null }
+        $completedResult = Complete-PackageResult -PackageResult $result
+        if ([string]::Equals([string]$completedResult.Status, 'Failed', [System.StringComparison]::OrdinalIgnoreCase) -and [string]::IsNullOrWhiteSpace($failedStep)) {
+            $failedStep = [string]$result.CurrentStep
+        }
+        Add-PackageOperationHistoryRecord -PackageConfig $packageConfig -PackageResult $completedResult -FailedStep $failedStep
+        return $completedResult
+    }
 
     if ([string]::Equals($DesiredState, 'Removed', [System.StringComparison]::OrdinalIgnoreCase)) {
         $result = Invoke-PackageRemovedFlow -PackageResult $result

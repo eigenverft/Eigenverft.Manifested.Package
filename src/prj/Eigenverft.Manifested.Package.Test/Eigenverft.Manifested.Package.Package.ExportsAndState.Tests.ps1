@@ -16,6 +16,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
         $command.Parameters.Keys | Should -Not -Contain 'RepositorySourceId'
         $command.Parameters.Keys | Should -Contain 'DesiredState'
         $command.Parameters.Keys | Should -Contain 'AcceptUnknownSigningKey'
+        $command.Parameters.Keys | Should -Contain 'Offline'
+        $command.Parameters.Keys | Should -Contain 'MaterializeOnly'
         $command.Parameters.Keys | Should -Contain 'FailFast'
         $command.Parameters.Keys | Should -Not -Contain 'CommandName'
         $command.Parameters.Keys | Should -Not -Contain 'DependencyStack'

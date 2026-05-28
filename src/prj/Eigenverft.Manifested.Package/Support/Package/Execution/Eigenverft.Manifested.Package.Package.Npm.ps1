@@ -1085,6 +1085,9 @@ function Invoke-PackageNpmMaterialization {
         }) -Force
         Write-PackageExecutionMessage -Message ("[ACTION] Hydrated npm materialization from depot '{0}'." -f [string]$depotMaterialization.SourceId)
     }
+    elseif ($PackageResult.PSObject.Properties['Offline'] -and [bool]$PackageResult.Offline) {
+        throw "Offline npm materialization failed for '$($PackageResult.PackageId)': no depot contains materialized tarballs for '$packageSpec'. Vendor registry acquisition is disabled by Offline mode."
+    }
     else {
         $materialization = New-PackageNpmMaterializationFromRegistry -PackageResult $PackageResult -PackageSpec $packageSpec -NpmPlatform $npmPlatform -NpmArchitecture $npmArchitecture -TargetDirectory $stageDirectory
         $PackageResult | Add-Member -MemberType NoteProperty -Name NpmMaterialization -Value ([pscustomobject]@{

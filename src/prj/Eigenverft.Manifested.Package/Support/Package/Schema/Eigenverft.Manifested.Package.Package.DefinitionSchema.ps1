@@ -10,7 +10,8 @@
 
 $script:PackageDefinitionSupportedSchemaVersions = @(
     '1.6',
-    '1.7'
+    '1.7',
+    '1.8'
 )
 
 function Assert-PackageDefinitionSchemaVersionSupported {
@@ -93,6 +94,158 @@ function Assert-PackageDefinitionSignatureSchema_1_7 {
     }
     catch {
         throw "Package definition '$DefinitionId' signed definitionSignature.signatureValue must be base64."
+    }
+}
+
+function Assert-PackageDefinitionAcquisitionCandidateKind_1_8 {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$DefinitionId,
+
+        [Parameter(Mandatory = $true)]
+        [psobject]$Candidate,
+
+        [Parameter(Mandatory = $true)]
+        [string]$CandidatePath
+    )
+
+    $kind = if ($Candidate.PSObject.Properties['kind']) { [string]$Candidate.kind } else { $null }
+    if ([string]::IsNullOrWhiteSpace($kind)) {
+        throw "Package definition '$DefinitionId' schemaVersion 1.8 acquisition candidate '$CandidatePath' is missing kind."
+    }
+
+    switch -Exact ($kind) {
+        'packageDepot' { return }
+        'vendorDownload' { return }
+        'download' {
+            throw "Package definition '$DefinitionId' schemaVersion 1.8 acquisition candidate '$CandidatePath' uses retired kind 'download'. Use 'vendorDownload'."
+        }
+        'filesystem' {
+            throw "Package definition '$DefinitionId' schemaVersion 1.8 acquisition candidate '$CandidatePath' uses retired package-definition kind 'filesystem'. Use packageDepot with PackageDepotInventory.json depot sources."
+        }
+        default {
+            throw "Package definition '$DefinitionId' schemaVersion 1.8 acquisition candidate '$CandidatePath' uses unsupported kind '$kind'. Use packageDepot or vendorDownload."
+        }
+    }
+}
+
+function Assert-PackageDefinitionVendorDownloadCandidate_1_8 {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$Definition,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DefinitionId,
+
+        [Parameter(Mandatory = $true)]
+        [psobject]$VersionEntry,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TargetId,
+
+        [Parameter(Mandatory = $true)]
+        [psobject]$Artifact,
+
+        [Parameter(Mandatory = $true)]
+        [psobject]$Candidate
+    )
+
+    if (-not [string]::Equals([string]$Candidate.kind, 'vendorDownload', [System.StringComparison]::OrdinalIgnoreCase)) {
+        return
+    }
+
+    $releaseLabel = [string]$VersionEntry.version
+    $hasSourceId = Test-PackageDefinitionTextPropertyPresent_1_6 -InputObject $Candidate -PropertyName 'sourceId'
+    $hasCandidateSourcePath = Test-PackageDefinitionTextPropertyPresent_1_6 -InputObject $Candidate -PropertyName 'sourcePath'
+    $hasArtifactSourcePath = Test-PackageDefinitionTextPropertyPresent_1_6 -InputObject $Artifact -PropertyName 'sourcePath'
+    $hasCandidateUrl = Test-PackageDefinitionTextPropertyPresent_1_6 -InputObject $Candidate -PropertyName 'url'
+    $hasCandidateUrlTemplate = Test-PackageDefinitionTextPropertyPresent_1_6 -InputObject $Candidate -PropertyName 'urlTemplate'
+    $hasArtifactUrl = Test-PackageDefinitionTextPropertyPresent_1_6 -InputObject $Artifact -PropertyName 'url'
+    $hasArtifactUrlTemplate = Test-PackageDefinitionTextPropertyPresent_1_6 -InputObject $Artifact -PropertyName 'urlTemplate'
+    $directDownloadCount = 0
+    foreach ($hasDirectDownload in @($hasCandidateUrl, $hasCandidateUrlTemplate, $hasArtifactUrl, $hasArtifactUrlTemplate)) {
+        if ($hasDirectDownload) {
+            $directDownloadCount++
+        }
+    }
+
+    if ($directDownloadCount -gt 1) {
+        throw "Package definition '$DefinitionId' release '$releaseLabel' artifact '$TargetId' vendorDownload candidate must define only one direct url/urlTemplate location."
+    }
+    if ($directDownloadCount -gt 0 -and ($hasSourceId -or $hasCandidateSourcePath -or $hasArtifactSourcePath)) {
+        throw "Package definition '$DefinitionId' release '$releaseLabel' artifact '$TargetId' vendorDownload candidate must use either direct url/urlTemplate or sourceId with sourcePath, not both."
+    }
+    if ($directDownloadCount -gt 0) {
+        return
+    }
+    if (-not $hasSourceId) {
+        throw "Package definition '$DefinitionId' release '$releaseLabel' artifact '$TargetId' vendorDownload candidate requires sourceId, direct url, or urlTemplate."
+    }
+    if (-not (Test-PackageObjectHasProperty -InputObject $Definition.artifacts.sources -Name ([string]$Candidate.sourceId))) {
+        throw "Package definition '$DefinitionId' release '$releaseLabel' artifact '$TargetId' references unknown artifacts source '$($Candidate.sourceId)'."
+    }
+
+    $releaseUpstream = if ($VersionEntry.PSObject.Properties['upstreamRelease']) { $VersionEntry.upstreamRelease } else { $null }
+    $candidateSource = Get-PackageObjectPropertyValue -InputObject $Definition.artifacts.sources -Name ([string]$Candidate.sourceId)
+    if ($candidateSource -and [string]::Equals([string]$candidateSource.kind, 'githubRelease', [System.StringComparison]::OrdinalIgnoreCase)) {
+        if (-not $releaseUpstream -or -not $releaseUpstream.PSObject.Properties['sourceId'] -or [string]::IsNullOrWhiteSpace([string]$releaseUpstream.sourceId) -or
+            -not [string]::Equals([string]$releaseUpstream.sourceId, [string]$Candidate.sourceId, [System.StringComparison]::OrdinalIgnoreCase) -or
+            -not $releaseUpstream.PSObject.Properties['releaseTag'] -or [string]::IsNullOrWhiteSpace([string]$releaseUpstream.releaseTag)) {
+            throw "Package definition '$DefinitionId' release '$releaseLabel' artifact '$TargetId' requires releaseTag because candidate '$($Candidate.sourceId)' uses GitHub release."
+        }
+        return
+    }
+
+    if (-not ($hasCandidateSourcePath -or $hasArtifactSourcePath)) {
+        throw "Package definition '$DefinitionId' release '$releaseLabel' artifact '$TargetId' vendorDownload candidate requires sourcePath, artifact sourcePath, url, or urlTemplate."
+    }
+}
+
+function Assert-PackageDefinitionAcquisitionVocabulary_1_8 {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$DefinitionDocumentInfo,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DefinitionId
+    )
+
+    $definition = $DefinitionDocumentInfo.Document
+    $targetsById = @{}
+    foreach ($target in @($definition.artifacts.targets)) {
+        if ($target -and $target.PSObject.Properties['id']) {
+            $targetsById[[string]$target.id] = $target
+        }
+        $candidateIndex = 0
+        $targetCandidates = if ($target -and $target.PSObject.Properties['acquisitionCandidates']) { @($target.acquisitionCandidates) } else { @() }
+        foreach ($candidate in @($targetCandidates)) {
+            Assert-PackageDefinitionAcquisitionCandidateKind_1_8 -DefinitionId $DefinitionId -Candidate $candidate -CandidatePath ("artifacts.targets['{0}'].acquisitionCandidates[{1}]" -f [string]$target.id, $candidateIndex)
+            $candidateIndex++
+        }
+    }
+
+    foreach ($versionEntry in @($definition.artifacts.releases)) {
+        foreach ($artifactProperty in @($versionEntry.targetArtifacts.PSObject.Properties)) {
+            $targetId = [string]$artifactProperty.Name
+            $artifact = $artifactProperty.Value
+            $candidateIndex = 0
+            $declaredArtifactCandidates = if ($artifact -and $artifact.PSObject.Properties['acquisitionCandidates']) { @($artifact.acquisitionCandidates) } else { @() }
+            foreach ($candidate in @($declaredArtifactCandidates)) {
+                Assert-PackageDefinitionAcquisitionCandidateKind_1_8 -DefinitionId $DefinitionId -Candidate $candidate -CandidatePath ("artifacts.releases['{0}'].targetArtifacts['{1}'].acquisitionCandidates[{2}]" -f [string]$versionEntry.version, $targetId, $candidateIndex)
+                $candidateIndex++
+            }
+
+            $artifactAcquisitionCandidates = if ($artifact -and $artifact.PSObject.Properties['acquisitionCandidates']) { @($artifact.acquisitionCandidates) } else { @() }
+            if (-not $artifactAcquisitionCandidates -and $targetsById.ContainsKey($targetId) -and $targetsById[$targetId].PSObject.Properties['acquisitionCandidates']) {
+                $artifactAcquisitionCandidates = @($targetsById[$targetId].acquisitionCandidates)
+            }
+            foreach ($candidate in @($artifactAcquisitionCandidates)) {
+                Assert-PackageDefinitionVendorDownloadCandidate_1_8 -Definition $definition -DefinitionId $DefinitionId -VersionEntry $versionEntry -TargetId $targetId -Artifact $artifact -Candidate $candidate
+            }
+        }
     }
 }
 
@@ -194,6 +347,12 @@ Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -Definiti
         '1.7' {
             Assert-PackageDefinitionSchema_1_6 -DefinitionDocumentInfo $DefinitionDocumentInfo -DefinitionId $DefinitionId -PublisherId $PublisherId
             Assert-PackageDefinitionSignatureSchema_1_7 -DefinitionDocumentInfo $DefinitionDocumentInfo -DefinitionId $DefinitionId
+            return
+        }
+        '1.8' {
+            Assert-PackageDefinitionSchema_1_6 -DefinitionDocumentInfo $DefinitionDocumentInfo -DefinitionId $DefinitionId -PublisherId $PublisherId
+            Assert-PackageDefinitionSignatureSchema_1_7 -DefinitionDocumentInfo $DefinitionDocumentInfo -DefinitionId $DefinitionId
+            Assert-PackageDefinitionAcquisitionVocabulary_1_8 -DefinitionDocumentInfo $DefinitionDocumentInfo -DefinitionId $DefinitionId
             return
         }
         default {

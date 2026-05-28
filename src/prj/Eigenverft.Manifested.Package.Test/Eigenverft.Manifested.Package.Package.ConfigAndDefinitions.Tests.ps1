@@ -435,6 +435,87 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $result.Status | Should -Be 'Ready'
     }
 
+    It 'passes Offline and MaterializeOnly command mode through Invoke-Package' {
+        Mock Invoke-PackageDefinitionCommandCore {
+            [pscustomobject]@{
+                DefinitionId     = $DefinitionId
+                DesiredState     = $DesiredState
+                CommandMode      = if ($MaterializeOnly) { 'MaterializeOnly' } else { $DesiredState }
+                Offline          = [bool]$Offline
+                MaterializeOnly  = [bool]$MaterializeOnly
+                Status           = if ($MaterializeOnly) { 'Materialized' } else { 'Ready' }
+            }
+        }
+
+        $result = Invoke-Package -DefinitionId 'OpenCodeCli' -Offline -MaterializeOnly
+
+        Assert-MockCalled Invoke-PackageDefinitionCommandCore -Times 1 -ParameterFilter {
+            $DefinitionId -eq 'OpenCodeCli' -and
+            $DesiredState -eq 'Assigned' -and
+            [bool]$Offline -and
+            [bool]$MaterializeOnly
+        }
+        $result.Status | Should -Be 'Materialized'
+        $result.Offline | Should -BeTrue
+    }
+
+    It 'rejects MaterializeOnly when DesiredState is explicitly set' {
+        { Invoke-Package -DefinitionId 'OpenCodeCli' -MaterializeOnly -DesiredState Assigned } | Should -Throw '*MaterializeOnly*DesiredState*'
+        { Invoke-Package -DefinitionId 'OpenCodeCli' -MaterializeOnly -DesiredState Removed } | Should -Throw '*MaterializeOnly*DesiredState*'
+    }
+
+    It 'runs materialize-only flow without assignment, readiness, PATH, or inventory effects' {
+        $packageResult = [pscustomobject]@{
+            DefinitionPublisherId  = 'Eigenverft'
+            DefinitionEndpointName  = 'test'
+            DefinitionId            = 'OpenCodeCli'
+            DesiredState            = 'Assigned'
+            CommandMode             = 'MaterializeOnly'
+            Offline                 = $false
+            MaterializeOnly         = $true
+            PackageConfig           = [pscustomobject]@{}
+            LocalEnvironment        = [pscustomobject]@{ Status = 'Initialized' }
+            Dependencies            = @()
+            Status                  = 'Pending'
+            ErrorMessage            = $null
+            FailureReason           = $null
+            CurrentStep             = 'Pending'
+        }
+
+        Mock Resolve-PackagePackage {
+            $PackageResult | Add-Member -MemberType NoteProperty -Name PackageId -Value 'opencode-runtime' -Force
+            $PackageResult | Add-Member -MemberType NoteProperty -Name Package -Value ([pscustomobject]@{ id = 'opencode-runtime' }) -Force
+            $PackageResult
+        }
+        Mock Resolve-PackageDependencies { $PackageResult }
+        Mock Resolve-PackagePaths { $PackageResult }
+        Mock Build-PackageAcquisitionPlan { $PackageResult }
+        Mock Resolve-PackageInstallFile {
+            $PackageResult | Add-Member -MemberType NoteProperty -Name PackageFilePreparation -Value ([pscustomobject]@{ Success = $true; Status = 'Skipped'; ErrorMessage = $null }) -Force
+            $PackageResult
+        }
+        Mock Invoke-PackageDepotDistribution { $PackageResult }
+        Mock Invoke-PackageNpmMaterialization { $PackageResult }
+        Mock Assert-PackageMaterializationDurable {
+            $PackageResult | Add-Member -MemberType NoteProperty -Name Materialization -Value ([pscustomobject]@{ Success = $true; Status = 'Durable' }) -Force
+            $PackageResult
+        }
+        Mock Clear-PackageWorkDirectories { $PackageResult }
+        Mock Set-PackageAssignedState { throw 'assign should not run in materialize-only mode' }
+        Mock Test-PackageAssignedReadiness { throw 'readiness should not run in materialize-only mode' }
+        Mock Register-PackagePath { throw 'path registration should not run in materialize-only mode' }
+        Mock Update-PackageInventoryRecord { throw 'inventory should not run in materialize-only mode' }
+
+        $result = Invoke-PackageMaterializeOnlyFlow -PackageResult $packageResult
+        $completed = Complete-PackageResult -PackageResult $result
+
+        $completed.Status | Should -Be 'Materialized'
+        Assert-MockCalled Set-PackageAssignedState -Times 0
+        Assert-MockCalled Test-PackageAssignedReadiness -Times 0
+        Assert-MockCalled Register-PackagePath -Times 0
+        Assert-MockCalled Update-PackageInventoryRecord -Times 0
+    }
+
     It 'runs Invoke-Package definition id arrays in listed order' {
         Mock Invoke-PackageDefinitionCommandCore {
             [pscustomobject]@{
@@ -520,6 +601,32 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         @($catalog.Results | Where-Object { $_.KeyThumbprint -ne $trustRows[0].KeyThumbprint }).Count | Should -Be 0
         @($signedDocuments | Where-Object { -not $_.definitionPublication.definitionSignature.PSObject.Properties['certificatePem'] }).Count | Should -Be 0
         @($signedDocuments | Where-Object { [string]::IsNullOrWhiteSpace([string]$_.definitionPublication.definitionSignature.certificatePem) }).Count | Should -Be 0
+    }
+
+    It 'ships no package-definition filesystem acquisition candidates' {
+        $definitionRoot = Join-Path (Get-PackageShippedEndpointRoot) 'Defaults\Eigenverft'
+        $filesystemCandidatePaths = New-Object System.Collections.Generic.List[string]
+        foreach ($definitionFile in @(Get-ChildItem -LiteralPath $definitionRoot -Filter '*.json' -File)) {
+            $document = Get-Content -LiteralPath $definitionFile.FullName -Raw | ConvertFrom-Json
+            foreach ($target in @($document.artifacts.targets)) {
+                foreach ($candidate in @($target.acquisitionCandidates)) {
+                    if ([string]::Equals([string]$candidate.kind, 'filesystem', [System.StringComparison]::OrdinalIgnoreCase)) {
+                        $filesystemCandidatePaths.Add("$($definitionFile.Name):target:$($target.id)") | Out-Null
+                    }
+                }
+            }
+            foreach ($release in @($document.artifacts.releases)) {
+                foreach ($artifactProperty in @($release.targetArtifacts.PSObject.Properties)) {
+                    foreach ($candidate in @($artifactProperty.Value.acquisitionCandidates)) {
+                        if ([string]::Equals([string]$candidate.kind, 'filesystem', [System.StringComparison]::OrdinalIgnoreCase)) {
+                            $filesystemCandidatePaths.Add("$($definitionFile.Name):release:$($release.version):$($artifactProperty.Name)") | Out-Null
+                        }
+                    }
+                }
+            }
+        }
+
+        @($filesystemCandidatePaths.ToArray()) | Should -Be @()
     }
 
     It 'fails clearly when a publisher id selector does not match a discovered definition' {
@@ -1073,6 +1180,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $result = Resolve-PackagePackage -PackageResult $result
 
         $config.DefinitionId | Should -Be 'VSCodeUser'
+        $config.SchemaVersion | Should -Be '1.8'
+        @($result.Package.acquisitionCandidates | ForEach-Object { $_.kind }) | Should -Be @('packageDepot', 'vendorDownload')
         $result.Package.assigned.install.kind | Should -Be 'innoSetupInstaller'
         $result.Package.removed.operation.kind | Should -Be 'innoSetupUninstaller'
         $result.Package.discovery.existingInstall.enabled | Should -Be $true
@@ -1367,6 +1476,56 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         @($resolved.Dependencies[1].Commands.Name) | Should -Be @('npm')
     }
 
+    It 'materializes direct package dependencies recursively in materialize-only mode' {
+        $definition = [pscustomobject]@{
+            definitionId = 'CodexCli'
+            dependencies = @(
+                [pscustomobject]@{ definitionId = 'NodeRuntime' }
+            )
+        }
+        $result = [pscustomobject]@{
+            DefinitionId          = 'CodexCli'
+            DefinitionPublisherId = 'Eigenverft'
+            Offline               = $true
+            MaterializeOnly       = $true
+            PackageConfig         = [pscustomobject]@{
+                Definition = $definition
+            }
+            Dependencies          = @()
+        }
+
+        Mock Invoke-PackageDefinitionCommandCore {
+            [pscustomobject]@{
+                DefinitionPublisherId = 'Eigenverft'
+                DefinitionId          = $DefinitionId
+                CommandMode           = if ($MaterializeOnly) { 'MaterializeOnly' } else { $DesiredState }
+                Offline               = [bool]$Offline
+                Status                = 'Materialized'
+            }
+        }
+
+        $resolved = Resolve-PackageDependencies -PackageResult $result
+
+        Assert-MockCalled Invoke-PackageDefinitionCommandCore -Times 1 -ParameterFilter {
+            $DefinitionId -eq 'NodeRuntime' -and
+            [bool]$MaterializeOnly -and
+            [bool]$Offline
+        }
+        @($resolved.Dependencies.DefinitionId) | Should -Be @('NodeRuntime')
+        @($resolved.Dependencies.Status) | Should -Be @('Materialized')
+        @($resolved.Dependencies.CommandMode) | Should -Be @('MaterializeOnly')
+    }
+
+    It 'fails clearly when materialize-only command-backed work requires a missing command' {
+        $result = [pscustomobject]@{
+            PackageId       = 'OpenCodeCli'
+            MaterializeOnly = $true
+            Dependencies    = @()
+        }
+
+        { Resolve-PackageDependencyCommandPath -PackageResult $result -CommandName 'evf-missing-materializer-command' } | Should -Throw '*already be ready*MaterializeOnly*'
+    }
+
     It 'fails clearly when direct package dependencies contain a cycle' {
         $definition = [pscustomobject]@{
             definitionId = 'CodexCli'
@@ -1565,6 +1724,106 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
 
         $definitionInfo = Read-PackageJsonDocument -Path $documents.DefinitionPath
         { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw '*schemaVersion*'
+    }
+
+    It 'accepts schema 1.8 packageDepot and vendorDownload candidates' {
+        $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -FileName 'VSCode-win32-x64-2.0.0.zip' -AcquisitionCandidates @(
+            @{
+                kind         = 'packageDepot'
+                searchOrder  = 100
+                verification = @{ mode = 'optional' }
+            },
+            @{
+                kind         = 'vendorDownload'
+                sourceId     = 'vsCodeUpdateService'
+                sourcePath   = '2.0.0/win32-x64-archive/stable'
+                searchOrder  = 900
+                verification = @{ mode = 'required' }
+            }
+        )
+        $definitionDocument = New-TestVSCodeDefinitionDocument -Releases @($release)
+        $definitionDocument.schemaVersion = '1.8'
+        $definitionDocument.definitionPublication.definitionSignature = @{
+            kind          = 'unsigned'
+            format        = 'embedded-json-rsa-sha256-v1'
+            signedContent = 'canonicalDefinitionExcludingSignatureValue'
+        }
+        $definitionInfo = [pscustomobject]@{ Path = 'test-1.8.json'; Document = ConvertTo-TestPsObject $definitionDocument }
+
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Not -Throw
+    }
+
+    It 'rejects schema 1.8 package-definition download and filesystem acquisition candidates' {
+        foreach ($kind in @('download', 'filesystem')) {
+            $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -FileName 'VSCode-win32-x64-2.0.0.zip' -AcquisitionCandidates @(
+                @{
+                    kind         = $kind
+                    sourceId     = 'vsCodeUpdateService'
+                    sourcePath   = '2.0.0/win32-x64-archive/stable'
+                    searchOrder  = 100
+                    verification = @{ mode = 'required' }
+                }
+            )
+            $definitionDocument = New-TestVSCodeDefinitionDocument -Releases @($release)
+            $definitionDocument.schemaVersion = '1.8'
+            $definitionDocument.definitionPublication.definitionSignature = @{
+                kind          = 'unsigned'
+                format        = 'embedded-json-rsa-sha256-v1'
+                signedContent = 'canonicalDefinitionExcludingSignatureValue'
+            }
+            $definitionInfo = [pscustomobject]@{ Path = "test-1.8-$kind.json"; Document = ConvertTo-TestPsObject $definitionDocument }
+
+            { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw "*schemaVersion 1.8*$kind*"
+        }
+    }
+
+    It 'validates GitHub releaseTag requirements behind schema 1.8 vendorDownload' {
+        $release = New-TestPackageRelease -Id 'llama-cpu-x64-stable' -Version '0.0.1' -Architecture 'x64' -ArtifactDistributionVariant 'win-cpu-x64' -FileName 'llama-b8863-bin-win-cpu-x64.zip' -AcquisitionCandidates @(
+            @{
+                kind         = 'vendorDownload'
+                sourceId     = 'llamaCppGitHub'
+                searchOrder  = 100
+                verification = @{ mode = 'required' }
+            }
+        )
+        $definitionDocument = New-TestVSCodeDefinitionDocument -Releases @($release) -SharedReadiness (New-TestReadiness -Version '0.0.1') -UpstreamSources @{
+            llamaCppGitHub = @{
+                kind             = 'githubRelease'
+                githubOwner      = 'ggml-org'
+                githubRepository = 'llama.cpp'
+            }
+        }
+        $definitionDocument.schemaVersion = '1.8'
+        $definitionDocument.definitionPublication.definitionSignature = @{
+            kind          = 'unsigned'
+            format        = 'embedded-json-rsa-sha256-v1'
+            signedContent = 'canonicalDefinitionExcludingSignatureValue'
+        }
+        $definitionInfo = [pscustomobject]@{ Path = 'test-1.8-github.json'; Document = ConvertTo-TestPsObject $definitionDocument }
+
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw '*requires releaseTag*'
+    }
+
+    It 'keeps schema 1.7 legacy download candidates valid' {
+        $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -FileName 'VSCode-win32-x64-2.0.0.zip' -AcquisitionCandidates @(
+            @{
+                kind         = 'download'
+                sourceId     = 'vsCodeUpdateService'
+                sourcePath   = '2.0.0/win32-x64-archive/stable'
+                searchOrder  = 100
+                verification = @{ mode = 'required' }
+            }
+        )
+        $definitionDocument = New-TestVSCodeDefinitionDocument -Releases @($release)
+        $definitionDocument.schemaVersion = '1.7'
+        $definitionDocument.definitionPublication.definitionSignature = @{
+            kind          = 'unsigned'
+            format        = 'embedded-json-rsa-sha256-v1'
+            signedContent = 'canonicalDefinitionExcludingSignatureValue'
+        }
+        $definitionInfo = [pscustomobject]@{ Path = 'test-1.7-download.json'; Document = ConvertTo-TestPsObject $definitionDocument }
+
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Not -Throw
     }
 
     It 'fails clearly when a definition still uses retired root discovery properties' {

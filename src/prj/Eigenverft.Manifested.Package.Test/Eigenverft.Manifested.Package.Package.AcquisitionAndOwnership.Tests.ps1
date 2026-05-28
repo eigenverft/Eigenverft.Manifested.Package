@@ -171,6 +171,101 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - acquis
         Assert-MockCalled Save-PackageDownloadFile -Times 0
     }
 
+    It 'uses only depot candidates in Offline mode and skips vendorDownload' {
+        $rootPath = Join-Path $TestDrive 'offline-depot-hit'
+        $packageArchive = New-TestPackageArchiveInfo -RootPath (Join-Path $rootPath 'archive') -Version '2.0.0' -ArchiveFileName 'VSCode-win32-x64-2.0.0.zip'
+        $globalDocument = New-TestPackageGlobalDocument -PackageFileStagingDirectory (Join-Path $rootPath 'workspace') -DefaultPackageDepotDirectory (Join-Path $rootPath 'default-depot')
+        $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64' -FileName 'VSCode-win32-x64-2.0.0.zip' -AcquisitionCandidates @(
+            @{
+                kind         = 'packageDepot'
+                searchOrder  = 10
+                verification = @{ mode = 'required'; algorithm = 'sha256'; sha256 = $packageArchive.Sha256 }
+            },
+            @{
+                kind         = 'vendorDownload'
+                sourceId     = 'vsCodeUpdateService'
+                sourcePath   = '2.0.0/win32-x64-archive/stable'
+                searchOrder  = 100
+                verification = @{ mode = 'required'; algorithm = 'sha256'; sha256 = $packageArchive.Sha256 }
+            }
+        )
+        $definitionDocument = New-TestVSCodeDefinitionDocument -Releases @($release) -SharedReadiness (New-TestReadiness -Version '2.0.0')
+        $definitionDocument.schemaVersion = '1.8'
+        $definitionDocument.definitionPublication.definitionSignature = @{
+            kind          = 'unsigned'
+            format        = 'embedded-json-rsa-sha256-v1'
+            signedContent = 'canonicalDefinitionExcludingSignatureValue'
+        }
+        $documents = Write-TestPackageDocuments -RootPath $rootPath -GlobalDocument $globalDocument -DefinitionDocument $definitionDocument
+        Mock Get-PackageConfigPath { $documents.GlobalConfigPath }
+        Mock Get-PackageDefinitionPath { param($DefinitionId) $documents.DefinitionPath }
+        Mock Save-PackageDownloadFile { throw 'vendor download should not run in Offline mode' }
+
+        $config = Get-PackageConfig -DefinitionId 'VSCodeRuntime'
+        $result = New-PackageResult -PackageConfig $config -Offline
+        $result = Resolve-PackagePackage -PackageResult $result
+        $result = Resolve-PackagePaths -PackageResult $result
+        $result = Build-PackageAcquisitionPlan -PackageResult $result
+
+        $null = New-Item -ItemType Directory -Path (Split-Path -Parent $result.DefaultPackageDepotFilePath) -Force
+        Copy-Item -LiteralPath $packageArchive.ZipPath -Destination $result.DefaultPackageDepotFilePath -Force
+
+        $result = Resolve-PackageInstallFile -PackageResult $result
+
+        @($result.AcquisitionPlan.Candidates | ForEach-Object { $_.kind }) | Should -Be @('packageDepot')
+        $result.AcquisitionPlan.SkippedOfflineVendorCandidateCount | Should -Be 1
+        $result.PackageFilePreparation.Status | Should -Be 'HydratedFromDefaultPackageDepot'
+        Assert-MockCalled Save-PackageDownloadFile -Times 0
+    }
+
+    It 'fails closed on Offline depot misses and does not accept package-file staging as a source' {
+        $rootPath = Join-Path $TestDrive 'offline-depot-miss'
+        $packageArchive = New-TestPackageArchiveInfo -RootPath (Join-Path $rootPath 'archive') -Version '2.0.0' -ArchiveFileName 'VSCode-win32-x64-2.0.0.zip'
+        $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64' -FileName 'VSCode-win32-x64-2.0.0.zip' -AcquisitionCandidates @(
+            @{
+                kind         = 'packageDepot'
+                searchOrder  = 10
+                verification = @{ mode = 'required'; algorithm = 'sha256'; sha256 = $packageArchive.Sha256 }
+            },
+            @{
+                kind         = 'download'
+                sourceId     = 'vsCodeUpdateService'
+                sourcePath   = '2.0.0/win32-x64-archive/stable'
+                searchOrder  = 100
+                verification = @{ mode = 'required'; algorithm = 'sha256'; sha256 = $packageArchive.Sha256 }
+            },
+            @{
+                kind         = 'filesystem'
+                sourceId     = 'localShare'
+                sourcePath   = 'VSCode-win32-x64-2.0.0.zip'
+                searchOrder  = 110
+                verification = @{ mode = 'required'; algorithm = 'sha256'; sha256 = $packageArchive.Sha256 }
+            }
+        )
+        $documents = Write-TestPackageDocuments -RootPath $rootPath -GlobalDocument (New-TestPackageGlobalDocument -PackageFileStagingDirectory (Join-Path $rootPath 'workspace')) -DefinitionDocument (New-TestVSCodeDefinitionDocument -Releases @($release) -SharedReadiness (New-TestReadiness -Version '2.0.0'))
+        Mock Get-PackageConfigPath { $documents.GlobalConfigPath }
+        Mock Get-PackageDefinitionPath { param($DefinitionId) $documents.DefinitionPath }
+        Mock Save-PackageDownloadFile { throw 'download should not run in Offline mode' }
+
+        $config = Get-PackageConfig -DefinitionId 'VSCodeRuntime'
+        $result = New-PackageResult -PackageConfig $config -Offline
+        $result = Resolve-PackagePackage -PackageResult $result
+        $result = Resolve-PackagePaths -PackageResult $result
+        $result = Build-PackageAcquisitionPlan -PackageResult $result
+
+        $null = New-Item -ItemType Directory -Path (Split-Path -Parent $result.PackageFilePath) -Force
+        Copy-Item -LiteralPath $packageArchive.ZipPath -Destination $result.PackageFilePath -Force
+
+        $result = Resolve-PackageInstallFile -PackageResult $result
+
+        @($result.AcquisitionPlan.Candidates | ForEach-Object { $_.kind }) | Should -Be @('packageDepot')
+        $result.AcquisitionPlan.SkippedOfflineCandidateCount | Should -Be 2
+        $result.PackageFilePreparation.Success | Should -BeFalse
+        $result.PackageFilePreparation.FailureReason | Should -Be 'DepotMiss'
+        @($result.PackageFilePreparation.Attempts | Where-Object { $_.AttemptType -eq 'ReuseCheck' }).Count | Should -Be 0
+        Assert-MockCalled Save-PackageDownloadFile -Times 0
+    }
+
     It 'reconciles a newly added writable mirror depot from an existing depot artifact' {
         $rootPath = Join-Path $TestDrive 'mirror-from-depot'
         $packageArchive = New-TestPackageArchiveInfo -RootPath (Join-Path $rootPath 'archive') -Version '2.0.0' -ArchiveFileName 'VSCode-win32-x64-2.0.0.zip'
