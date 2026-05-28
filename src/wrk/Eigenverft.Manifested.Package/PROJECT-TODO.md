@@ -64,24 +64,6 @@
   Requester perspective: package-definition author, reviewer of generated JSON, new contributor.
   Outcome: validation output points to the bad value, explains why it is wrong, and names the preferred replacement.
 
-#### Depot and offline reliability
-
-- **Feature issue: keep the depot clean for file shares and NAS sync.** As a user syncing a package depot through a file share or NAS, I want the depot to contain only files that are meant to be shared, so sync tools do not copy temp files, sidecar files, or half-built package state.
-  Requester perspective: home NAS user, team share maintainer, offline package user.
-  Outcome: depot hydration, mirror, and reuse behavior remains predictable when files are copied by external sync tools.
-
-- **Feature issue: show which package types really work offline.** As an offline or low-network operator, I want each package type to say whether it can install fully from the depot, so I can build a package profile that works after the depot is seeded.
-  Requester perspective: air-gapped lab user, package power user, team laptop bootstrap owner.
-  Outcome: package state or validation can separate fully offline-ready packages from packages that still need live metadata or network fallback.
-
-- **Feature issue: fail closed in isolated networks.** As an industrial or isolated-network operator, I want an offline-only mode that fails when the depot is missing a required file instead of falling back to the internet, so package assignment respects dedicated communication rules.
-  Requester perspective: plant-floor workstation maintainer, air-gapped lab operator, regulated network administrator.
-  Outcome: planning and install logs clearly say "depot miss, network disabled by policy" rather than trying an unexpected public download.
-
-- **Feature issue: prove a depot is complete before moving it offline.** As a depot seeder, I want a report that says whether all files needed by a selected package set are present in the depot, so I can prepare a plant share or offline lab before users depend on it.
-  Requester perspective: offline depot maintainer, team share owner, industrial staging operator.
-  Outcome: a package set can be checked on a connected staging machine and then moved into an isolated network with fewer surprises.
-
 ### [P3] Normal
 
 #### Package discovery and reporting
@@ -130,6 +112,14 @@
   Requester perspective: new maintainer, schema reviewer, contributor debugging package lifecycle behavior.
   Outcome: retired terms remain only where they are intentionally rejected or documented as migration guidance.
 
+### [P5] Backlog / Nice-to-have
+
+#### Depot transports
+
+- **Feature issue: support read-only HTTP/HTTPS package depots.** As a team or endpoint maintainer, I want prepared package artifacts to be readable from an internal HTTP/HTTPS depot source, so managed machines can reuse centrally hosted artifacts without treating the source as a vendor download.
+  Requester perspective: team endpoint maintainer, corporate network operator, depot maintainer.
+  Outcome: `PackageDepotInventory.json` can model read-only HTTP/HTTPS depot sources separately from package-definition `vendorDownload`; writable or authenticated mirroring remains out of scope.
+
 ### [P6] Pixelperfect / optional polish
 
 #### Presentation polish
@@ -160,9 +150,6 @@ The package engine already covers per-machine **Assigned** state, endpoint-drive
 - What minimum recurring validation should LLM-maintained catalog definitions pass before they are published to an endpoint?
 - Should the Eigenverft online endpoint have an index or manifest so clients can discover packages without scanning every JSON file?
 - Should the next breaking schema revisit `artifacts` naming now, or wait until more package kinds prove where the wording hurts?
-- Which package type should be the next confidence test for fully offline depot reuse after npm, MSI, archive, PowerShell module, and portable SDK packages?
-- Should offline-only behavior be global, endpoint-specific, package-set-specific, or a command override?
-
 ## Closed
 
 - [P3] Rename - 2026-05-24: Completed repository and module surface rename to **Eigenverft.Manifested.Package**, including public command names, module metadata, local root default `Evf.Package`, and removal of obsolete launch-profile artifacts.
