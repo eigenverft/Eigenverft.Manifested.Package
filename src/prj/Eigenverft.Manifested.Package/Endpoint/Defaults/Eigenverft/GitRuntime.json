@@ -1,12 +1,12 @@
 {
-  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.7.schema.json",
-  "schemaVersion": "1.7",
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.8.schema.json",
+  "schemaVersion": "1.8",
   "definitionPublication": {
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "GitRuntime",
-    "definitionRevision": 1,
-    "publishedAtUtc": "2026-05-13T12:00:00Z",
+    "definitionRevision": 2,
+    "publishedAtUtc": "2026-05-28T12:00:00Z",
     "definitionSignature": {
       "kind": "signed",
       "format": "embedded-json-rsa-sha256-v1",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-05-27T17:25:14.0441083Z",
-      "signatureValue": "vhWatpuSOswCRb/lwfZMOWlKRmLzAQh5doJD/UQyWD8qd66766SVzDtIe6vjAyW0JQ9EgvJD1dByKItclb7Y647UqnnD/6pivWtOOKCN2/Zv0D3o3MWYxdQhgOvsJJNo0d2BBQvA9IE5QFsgA5WI5HPy38h3DkNAUfKZmTzDQjjr/Ardoy24tl3eGY/vPX4HER1YlFFAHfbr6g0+QXlzokVE8GJcbTHmUsq569LtRrUoZa9AfOG5nRi9CBzRg27wBOTMaTQwan65v5+B3bJV6pzlL62OD1pOYlRTwTG4VLMD9ax0xz48EeWxvnLZjSNaO7OCZTuMdIEvcNu5hGEAtZzR8MsqX9649PaadjjbScsYJvr8pzHubq26BWc293rq/23Zar86hKQKJSm9dLtIQeJsHbymfYf0Ia8Pf/vccm7zbpoUen2DAHsLLVpkqotrm+P3P2lqLJAYu0i8xUhrUCwICvLwqiubmWdleqVPoLLQD5j7eIOsowqLbKy8MpL4"
+      "signedAtUtc": "2026-05-28T18:11:09.1712638Z",
+      "signatureValue": "b0QXJ555usY7dneVwj5D9wdgpF1xQbKbh2K3H3NB62GR79yNlOoY1YA8pKQrz2p7OPgwJK6H98ZnEyLyQ6sFTUaGlVQS3P1Z98t2sTpyZGCDDZ+wuhBryR/tL8RpkaGHKH4PQgUJ7uVeKHPOZwlKxP4Of/roEJY8D2NqOJHfDs467IqrKtOT5n1/JlRvZPFAKG2KE96LgnFMMTaFcFEta6Vhf4p138qFNO9IGHB1LF8u+mogd/6B4N4W/yrMv0dVBiuM3/ufoMUZL0ZQN7RgPMo0igvqAZGIRvYfm1+mTtgCl5siWqCzp5W46mhal3hKT8AD83V+JKajZEGAqNKinCRSuVxFPs11H3NpSdCSOvys924xsxl4XGmOVysrShDRGloD43seiNF/BI6U4jB3UNEhWdT7zrZ/IdDy8wVTHcrC346mRRdnajP/mtWwbOCR8IUK7sMMMqj+upzTRFBDgecC6TsiBJOYgpLuCjSKf2sMswumkhQIQO1jaNhbBGhi"
     }
   },
   "display": {
@@ -56,7 +56,7 @@
             }
           },
           {
-            "kind": "download",
+            "kind": "vendorDownload",
             "sourceId": "gitForWindowsGitHub",
             "searchOrder": 900,
             "verification": {
@@ -91,7 +91,7 @@
             }
           },
           {
-            "kind": "download",
+            "kind": "vendorDownload",
             "sourceId": "gitForWindowsGitHub",
             "searchOrder": 900,
             "verification": {

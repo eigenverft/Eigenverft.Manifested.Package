@@ -4,13 +4,11 @@
 
     Runtime validation is PowerShell-only (this module + DefinitionSchema.Wire1_6.ps1). The JSON schema file
     is the editor/agent contract (canonical examples under Endpoint/Defaults); keep schema and asserts aligned.
-    Schema 1.7 root description and x-eigenverftAgentHint tell LLMs to author kind=unsigned drafts first and run
+    Schema 1.8 root description and x-eigenverftAgentHint tell LLMs to author kind=unsigned drafts first and run
     Sign-PackageDefinition after content is final; runtime ignores those hints.
 #>
 
 $script:PackageDefinitionSupportedSchemaVersions = @(
-    '1.6',
-    '1.7',
     '1.8'
 )
 
@@ -47,7 +45,7 @@ function Assert-PackageDefinitionSignatureSchema_1_7 {
     $definition = $DefinitionDocumentInfo.Document
     $publication = $definition.definitionPublication
     if (-not $publication.PSObject.Properties['definitionSignature'] -or -not $publication.definitionSignature) {
-        throw "Package definition '$DefinitionId' schemaVersion 1.7 is missing definitionPublication.definitionSignature."
+        throw "Package definition '$DefinitionId' schemaVersion 1.8 is missing definitionPublication.definitionSignature."
     }
 
     $signature = $publication.definitionSignature
@@ -255,7 +253,7 @@ function Assert-PackageDefinitionSchema {
 Validates the Package definition schema for this package pass.
 
     .DESCRIPTION
-Rejects retired top-level names, requires schemaVersion 1.6 fields, then
+Rejects retired top-level names, requires schemaVersion 1.8 fields, then
 validates dependencies/artifacts/discovery/packageOperations references.
 
 .PARAMETER DefinitionDocumentInfo
@@ -340,15 +338,6 @@ Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -Definiti
     }
 
     switch -Exact ($schemaVersionText) {
-        '1.6' {
-            Assert-PackageDefinitionSchema_1_6 -DefinitionDocumentInfo $DefinitionDocumentInfo -DefinitionId $DefinitionId -PublisherId $PublisherId
-            return
-        }
-        '1.7' {
-            Assert-PackageDefinitionSchema_1_6 -DefinitionDocumentInfo $DefinitionDocumentInfo -DefinitionId $DefinitionId -PublisherId $PublisherId
-            Assert-PackageDefinitionSignatureSchema_1_7 -DefinitionDocumentInfo $DefinitionDocumentInfo -DefinitionId $DefinitionId
-            return
-        }
         '1.8' {
             Assert-PackageDefinitionSchema_1_6 -DefinitionDocumentInfo $DefinitionDocumentInfo -DefinitionId $DefinitionId -PublisherId $PublisherId
             Assert-PackageDefinitionSignatureSchema_1_7 -DefinitionDocumentInfo $DefinitionDocumentInfo -DefinitionId $DefinitionId

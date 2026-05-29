@@ -274,7 +274,7 @@ function Resolve-PackagePackage {
 Attaches the selected release to a Package result.
 
 .DESCRIPTION
-Selects a schemaVersion 1.6 artifact target and release entry for the
+Selects a schemaVersion 1.8 artifact target and release entry for the
 resolved Package config, projects that artifact target/release into the runtime
 assigned package object, and attaches it to the result.
 

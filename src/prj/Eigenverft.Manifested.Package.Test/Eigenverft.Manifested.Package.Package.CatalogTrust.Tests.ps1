@@ -59,7 +59,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - catalo
         $certificate.Thumbprint | Should -Not -BeNullOrEmpty
         $signature.VerificationStatus | Should -Be 'validUntrusted'
         $signedInfo.Document.definitionPublication.definitionSignature.certificatePem | Should -Match 'BEGIN CERTIFICATE'
-        $signedText | Should -Match '"schemaVersion": "1\.7"'
+        $signedText | Should -Match '"schemaVersion": "1\.8"'
         $signedText | Should -Match '"dependencies": \[\]'
         $signedText | Should -Not -Match '":  '
         $verification.Valid | Should -BeTrue
@@ -68,9 +68,29 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - catalo
         $embeddedVerification.Status | Should -Be 'validUntrusted'
         $embeddedVerification.CertificateSource | Should -Be 'embedded'
         $stripped.Status | Should -Be 'Unsigned'
-        $strippedInfo.Document.schemaVersion | Should -Be '1.7'
+        $strippedInfo.Document.schemaVersion | Should -Be '1.8'
         $strippedInfo.Document.definitionPublication.definitionSignature.kind | Should -Be 'unsigned'
         $strippedInfo.Document.definitionPublication.definitionSignature.PSObject.Properties['signatureValue'] | Should -BeNullOrEmpty
+    }
+
+    It 'resigns a package definition with the same command shape as sign and remove' {
+        $rootPath = Join-Path $TestDrive 'resign'
+        $pfxPath = Join-Path $rootPath 'eigenverft-package-catalog-signing.pfx'
+        $definitionPath = Join-Path $rootPath 'VSCodeRuntime.json'
+        $password = ConvertTo-SecureString 'CatalogTrust-Test-Password-123!' -AsPlainText -Force
+        $definition = New-TestVSCodeDefinitionDocument -Releases @(
+            New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+        )
+        Write-TestJsonDocument -Path $definitionPath -Document $definition
+        $null = New-PackageSigningCertificate -PfxPath $pfxPath -Password $password
+        $null = Sign-PackageDefinition -Path $definitionPath -Cert $pfxPath -Password $password
+
+        $result = Resign-PackageDefinition -Path $definitionPath -Cert $pfxPath -Password $password -KeepSchemaVersion
+        $verification = Verify-PackageDefinitionSignature -Path $definitionPath
+
+        $result.VerificationStatus | Should -Be 'validUntrusted'
+        $verification.Valid | Should -BeTrue
+        $verification.Status | Should -Be 'validUntrusted'
     }
 
     It 'creates a friendly signing certificate descriptor and signs by certificate name' {
@@ -246,7 +266,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - catalo
         $signingCertificate = Import-PackageCertificate -Path $pfxPath -Password $password -WithPrivateKey
         try {
             $signedInfo = Read-PackageJsonDocument -Path $definitionPath
-            Set-PackageObjectProperty -InputObject $signedInfo.Document -Name 'schemaVersion' -Value '1.7'
+            Set-PackageObjectProperty -InputObject $signedInfo.Document -Name 'schemaVersion' -Value '1.8'
             Set-PackageDefinitionSignature -Definition $signedInfo.Document -Certificate $signingCertificate -SignatureValue ''
             $signedInfo.Document.definitionPublication.definitionSignature.PSObject.Properties.Remove('certificatePem')
             $signable = Get-PackageDefinitionSignableContent -Definition $signedInfo.Document
@@ -452,11 +472,11 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - catalo
 
         Mock Get-PackageEndpointInventoryPath { $documents.EndpointInventoryPath }
 
-        { Resolve-PackageDefinitionReference -DefinitionId 'VSCodeRuntime' -LocalEndpointRoot (Join-Path $rootPath 'StrictEndpoint') -CatalogTrustPolicy strict } | Should -Throw "*catalog trust policy 'strict'*definitionPublication.definitionSignature.kind='signed'*"
+        { Resolve-PackageDefinitionReference -DefinitionId 'VSCodeRuntime' -LocalEndpointRoot (Join-Path $rootPath 'StrictEndpoint') -CatalogTrustPolicy strict } | Should -Throw "*catalogTrust.policy='strict' rejects unsigned definitions*"
 
         $reference = Resolve-PackageDefinitionReference -DefinitionId 'VSCodeRuntime' -LocalEndpointRoot (Join-Path $rootPath 'UnsignedEndpoint') -CatalogTrustPolicy allowUnsigned -CatalogTrustAllowUnsignedPublisherIds @('Eigenverft')
         $reference.CatalogTrustStatus | Should -Be 'unsignedConfigTrust'
-        $reference.SignatureStatus | Should -Be 'missingSignature'
+        $reference.SignatureStatus | Should -Be 'unsigned'
     }
 
     It 'rejects trusted keys scoped to a different publisherId' {
@@ -514,7 +534,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - catalo
 
     It 'enforces package-file payload hash metadata when strict payload verification is enabled' {
         $candidate = [pscustomobject]@{
-            kind         = 'download'
+            kind         = 'vendorDownload'
             verification = [pscustomobject]@{ mode = 'none' }
         }
         $unsignedPackage = New-TestPackageRelease -Id 'payload-without-hash' -Version '1.0.0' -Architecture 'x64' -FileName 'payload.zip'

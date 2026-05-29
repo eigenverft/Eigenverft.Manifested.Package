@@ -279,9 +279,9 @@ function Sign-PackageDefinition {
         $certificate = Import-PackageCertificate -Path $signingReference.PfxPath -Password $signingReference.Password -WithPrivateKey
         try {
             if (-not $KeepSchemaVersion.IsPresent) {
-                Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name 'schemaVersion' -Value '1.7'
+                Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name 'schemaVersion' -Value '1.8'
                 if ($definitionInfo.Document.PSObject.Properties['$schema'] -and -not [string]::IsNullOrWhiteSpace([string]$definitionInfo.Document.'$schema')) {
-                    Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name '$schema' -Value (([string]$definitionInfo.Document.'$schema') -replace '1\.6\.schema\.json', '1.7.schema.json')
+                    Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name '$schema' -Value (([string]$definitionInfo.Document.'$schema') -replace '1\.[678]\.schema\.json', '1.8.schema.json')
                 }
             }
 
@@ -331,6 +331,28 @@ function Sign-PackageDefinition {
         finally {
             $certificate.Dispose()
         }
+    }
+}
+
+function Resign-PackageDefinition {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
+    [CmdletBinding(SupportsShouldProcess = $true)]
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [Alias('FullName')]
+        [string]$Path,
+
+        [AllowNull()]
+        [string]$Cert = $null,
+
+        [AllowNull()]
+        [securestring]$Password = $null,
+
+        [switch]$KeepSchemaVersion
+    )
+
+    process {
+        return Sign-PackageDefinition -Path $Path -Cert $Cert -Password $Password -KeepSchemaVersion:$KeepSchemaVersion
     }
 }
 
@@ -442,9 +464,9 @@ function Remove-PackageDefinitionSignature {
     process {
         $definitionInfo = Read-PackageJsonDocument -Path $Path
         if (-not $KeepSchemaVersion.IsPresent) {
-            Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name 'schemaVersion' -Value '1.7'
+            Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name 'schemaVersion' -Value '1.8'
             if ($definitionInfo.Document.PSObject.Properties['$schema'] -and -not [string]::IsNullOrWhiteSpace([string]$definitionInfo.Document.'$schema')) {
-                Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name '$schema' -Value (([string]$definitionInfo.Document.'$schema') -replace '1\.6\.schema\.json', '1.7.schema.json')
+                Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name '$schema' -Value (([string]$definitionInfo.Document.'$schema') -replace '1\.[678]\.schema\.json', '1.8.schema.json')
             }
         }
         Set-PackageDefinitionUnsignedSignature -Definition $definitionInfo.Document
@@ -458,7 +480,7 @@ function Remove-PackageDefinitionSignature {
             SchemaVersion = [string]$definitionInfo.Document.schemaVersion
             Status        = 'Unsigned'
         }
-        return Add-PackageTrustCommandMessages -InputObject $result -Messages @("Removed embedded package definition signature from '$($definitionInfo.Path)'.") -NextSteps @("Re-sign this definition with Sign-PackageDefinition -Path '$($definitionInfo.Path)' -Cert '<signing-name-or-pfx>' before using strict catalog trust.")
+        return Add-PackageTrustCommandMessages -InputObject $result -Messages @("Removed embedded package definition signature from '$($definitionInfo.Path)'.") -NextSteps @("Re-sign this definition with Resign-PackageDefinition -Path '$($definitionInfo.Path)' -Cert '<signing-name-or-pfx>' before using strict catalog trust.")
     }
 }
 

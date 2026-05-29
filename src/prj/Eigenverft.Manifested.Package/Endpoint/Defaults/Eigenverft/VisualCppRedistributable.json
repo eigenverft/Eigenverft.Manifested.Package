@@ -1,12 +1,12 @@
 {
-  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.7.schema.json",
-  "schemaVersion": "1.7",
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.8.schema.json",
+  "schemaVersion": "1.8",
   "definitionPublication": {
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "VisualCppRedistributable",
-    "definitionRevision": 1,
-    "publishedAtUtc": "2026-05-13T12:00:00Z",
+    "definitionRevision": 2,
+    "publishedAtUtc": "2026-05-28T12:00:00Z",
     "definitionSignature": {
       "kind": "signed",
       "format": "embedded-json-rsa-sha256-v1",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-05-27T17:25:16.7049722Z",
-      "signatureValue": "R1irJRtJZn2NXx9h/cXIbVoJJoKs+4C7et9LVyw9GrQMb0r8I3Gs9bBKzZeWyG/S6d0i1XwaP+VAIc+QH23NPbp+gd91yw0n1d9gJcObEjAmpo0EkFO047IWqoEWNehfYXQMkTFzccOhjvW2Ws2vAujBy0Ivbf4LPb0QZZIJNe9NByUQOP0TNyFA/hECI2Hi9kMwsqgFQtKTWzM/IwGN3+tYiGoWwCV2g0aJ7da/s9KWqCa3oeBGUQ+QU0TyWhYijgeVf0Ndwx606CmAbGWaq+OnXSLWyZ6z7TH2KmwEgNwFZUgDlbWYEdbgm7QXSqBYtzXpTehKxbWPZXpPwvnN/YFc8TeCtlwA8PizlRgdbf9h9KlwQXF+eDN8AyH77x7jnaluhvx/Fu+usy61mTus4/87GQdQmKstDjpxsYXjzx5Sx642Kc1cw/a4hkkT2vVEoip9DQUdOEUrwbVH5O9LxHk96pQ8JmdoPjUDUFxXWC8sHehoX0okPNB2l5mEFgma"
+      "signedAtUtc": "2026-05-28T18:11:12.3756594Z",
+      "signatureValue": "LUbsxwn/9l4TF30Q7op509zWBM3Hyjjz/Ckdv3gB4aqTBjqVQqBjeTV3VsuPY+olc91NIuk3JZOSfvVqlnW6vGoR0U71hPINfux5IThi9gOsmXMwFALgpUbeN23JAARQFkcjHsnvGg1GpmjIY0fHIvHYc15AJ8+RgvLg03962HY1D1FGhdkKw/EXr7Ye9psGo3oKxMwkoT98s9J9k1jMndeOu92YeVGufJzhOQdX7V0Rh0j2t2CcZHOj+WAlgzxUR4WIkF5mYHtQs9kI1f7IRfE27uNN5iY7QslTTMXXoSWu/2aqgc0LWAkSCl18ekMyvEr4D/Cgs83GdxH1YchjUWgye0RBjRLgjEtgfhXEmqjlI4nGtHoJHadbf4kKpzInlEtzOiUzp87e4RZC2Z5+uJC5bZr+3Ifqi1NOJv/TdSiUvj6Yy/NL21eSyqPGBaGwXmRjOosyC18IPaws9M8UL18fO5G0KgllG4WNXH8/PRJhfuYo9waU7Auqzx6wygjq"
     }
   },
   "display": {
@@ -56,7 +56,7 @@
             }
           },
           {
-            "kind": "download",
+            "kind": "vendorDownload",
             "sourceId": "visualCppRedistributableDownload",
             "sourcePath": "vc14/vc_redist.x64.exe",
             "searchOrder": 900,

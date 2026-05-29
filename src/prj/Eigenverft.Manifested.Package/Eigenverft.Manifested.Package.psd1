@@ -95,6 +95,7 @@ FunctionsToExport = @(
     'Remove-PackageEndpoint',
     'Remove-PackagePublisher',
     'Remove-PackageTrust',
+    'Resign-PackageDefinition',
     'Revoke-PackageSigningCertificate',
     'Set-PackageDepot',
     'Set-PackageEndpoint',

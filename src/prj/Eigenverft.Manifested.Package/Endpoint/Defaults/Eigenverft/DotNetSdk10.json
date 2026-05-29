@@ -1,12 +1,12 @@
 {
-  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.7.schema.json",
-  "schemaVersion": "1.7",
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.8.schema.json",
+  "schemaVersion": "1.8",
   "definitionPublication": {
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "DotNetSdk10",
-    "definitionRevision": 1,
-    "publishedAtUtc": "2026-05-23T12:00:00Z",
+    "definitionRevision": 2,
+    "publishedAtUtc": "2026-05-28T12:00:00Z",
     "definitionSignature": {
       "kind": "signed",
       "format": "embedded-json-rsa-sha256-v1",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-05-27T17:25:13.5698378Z",
-      "signatureValue": "owIfA3UZ2J+GcmdrExl1ON2RLu7CC9/J4QfZIkfWeySbkqAKLPYwi9eE/g8e2MmB6dodig8YQpwTvfp1wyGZsxm4tIjs+XAKi6h+sYb3ZMTti6FHtRuOKPXCw8XaLfp1wrmu8gRARTodPjJBniRPJoAsu+rXa+PLR8Qo6NuBw4rXD6xTKlI87TEXkJiTIg+PB1kf3jp1JzvvuC3bMSQT7yfIY89ChqAlWbRU0CGojw3e1GTnMZltnVy63YNYitz/ty+YtEClvicJTl6BctLA40W86nvIA9ppihV6OL2k4fAq6nJIJeHV1QNawcE7nFYZT+wP1TDUgr4/KI5A4e7B1xswTTocCb6XjxCoi3zEWaDNcHDby9JRCw1hME+FCgjEniJg3VQYbnuA0Eq63dd1MkYSdoeK+7OLC7mY94PVQpk4wa9ek4bfm/jS5azHYI65vfPj5qHPr13Tu+Kd/KUjNEdoOQbJG2OaP6Utw1wdVWk8TuudILKyMzeedQgQZuIW"
+      "signedAtUtc": "2026-05-28T18:11:08.6942132Z",
+      "signatureValue": "UnyQR/Q/LoPYHfIzRuDiucuUKPVJOunvN82ZhZ+Y/Y//EtiAC+1a6Su1fcdy/8helozvCExn2QK+tbLe301WZc/KqF2LNEBy77uTqaneOSlWHC/PJmBoAkp1RqU6uC74mFp8y/Dxomq/kFuvUhy1IDCk74C7OJWOjOBPR8gKpPTkWuRn2Cd/81GCnppvHF8XjFMg3RgtzZftTQmu6RicH1BnogFwLpXwlTczIUzlMNLD1bRWlCyw0OUTLqME9H6a6LOW3dmCz7kuLvn7iSlLiSoi9vrxd6pJmGVtYezXuc2cSVLOx4eRYKBHr4kjFtiPIMOocWej1qj/ucc5s78t+IVBGgXgGjPpkUfu4gRjMQZS4x0g/8JO7ULdejSZ9iwEjlIRMt0sgtq/5W0xWqecMWVYS/mdY6A21ViibsDyV8tU0wnVf4c5wGRFQaw1BN6o+J42V7k/Lu8ovNN9hzSorhGaRdyi2vZVSGugbGfHgxe+zyMLGUHWnB3EJJAmJZ3B"
     }
   },
   "display": {
@@ -56,7 +56,7 @@
             }
           },
           {
-            "kind": "download",
+            "kind": "vendorDownload",
             "sourceId": "dotNetBuilds",
             "sourcePath": "Sdk/{version}/dotnet-sdk-{version}-win-x64.zip",
             "searchOrder": 900,
@@ -92,7 +92,7 @@
             }
           },
           {
-            "kind": "download",
+            "kind": "vendorDownload",
             "sourceId": "dotNetBuilds",
             "sourcePath": "Sdk/{version}/dotnet-sdk-{version}-win-arm64.zip",
             "searchOrder": 900,

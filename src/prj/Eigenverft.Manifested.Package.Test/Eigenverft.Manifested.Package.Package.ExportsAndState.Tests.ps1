@@ -78,6 +78,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'Remove-PackageEndpoint',
             'Remove-PackagePublisher',
             'Remove-PackageTrust',
+            'Resign-PackageDefinition',
             'Revoke-PackageSigningCertificate',
             'Set-PackageDepot',
             'Set-PackageEndpoint',

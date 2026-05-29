@@ -1075,7 +1075,7 @@ Build-PackageAcquisitionPlan -PackageResult $result
             $candidateKind = [string]$candidate.kind
             if ($offline -and -not [string]::Equals($candidateKind, 'packageDepot', [System.StringComparison]::OrdinalIgnoreCase)) {
                 $skippedOfflineCandidateCount++
-                if ($candidateKind -in @('download', 'vendorDownload')) {
+                if ([string]::Equals($candidateKind, 'vendorDownload', [System.StringComparison]::OrdinalIgnoreCase)) {
                     $skippedOfflineVendorCandidateCount++
                 }
                 continue
@@ -1098,7 +1098,7 @@ Build-PackageAcquisitionPlan -PackageResult $result
                         }) | Out-Null
                     }
                 }
-                { $_ -in @('download', 'vendorDownload') } {
+                'vendorDownload' {
                     $directUrl = if ($candidate.PSObject.Properties['url']) { [string]$candidate.url } else { $null }
                     $orderedCandidates.Add([pscustomobject]@{
                         kind         = $candidateKind
@@ -1311,8 +1311,7 @@ Resolve-PackageInstallFile -PackageResult $result
             if ($candidate.sourceRef) {
                 $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $packageConfig -SourceRef $candidate.sourceRef
             }
-            elseif (([string]::Equals([string]$candidate.kind, 'download', [System.StringComparison]::OrdinalIgnoreCase) -or
-                    [string]::Equals([string]$candidate.kind, 'vendorDownload', [System.StringComparison]::OrdinalIgnoreCase)) -and
+            elseif ([string]::Equals([string]$candidate.kind, 'vendorDownload', [System.StringComparison]::OrdinalIgnoreCase) -and
                 $candidate.PSObject.Properties['url'] -and
                 -not [string]::IsNullOrWhiteSpace([string]$candidate.url)) {
                 $sourceDefinition = [pscustomobject]@{
@@ -1441,7 +1440,7 @@ Resolve-PackageInstallFile -PackageResult $result
 
     $failureReason = if ($offline) { 'DepotMiss' } else { 'AllSourcesFailed' }
     $errorMessage = if ($offline) {
-        "Offline acquisition failed for Package release '$($package.id)': no packageDepot candidate provided a verified depot artifact. Vendor download and package-definition filesystem candidates were skipped by policy."
+        "Offline acquisition failed for Package release '$($package.id)': no packageDepot candidate provided a verified depot artifact. vendorDownload and package-definition filesystem candidates were skipped by policy."
     }
     else {
         "All acquisition candidates failed for Package release '$($package.id)'."

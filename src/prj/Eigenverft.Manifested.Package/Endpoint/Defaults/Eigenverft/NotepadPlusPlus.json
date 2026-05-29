@@ -1,12 +1,12 @@
 {
-  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.7.schema.json",
-  "schemaVersion": "1.7",
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.8.schema.json",
+  "schemaVersion": "1.8",
   "definitionPublication": {
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "NotepadPlusPlus",
-    "definitionRevision": 2,
-    "publishedAtUtc": "2026-05-22T12:00:00Z",
+    "definitionRevision": 3,
+    "publishedAtUtc": "2026-05-28T12:00:00Z",
     "definitionSignature": {
       "kind": "signed",
       "format": "embedded-json-rsa-sha256-v1",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-05-27T17:25:14.8324218Z",
-      "signatureValue": "Sv/IdlY9OvhNuFsq7XQeDGMQFl5yK0we4qivyMVi0kwcWxArwTZM1PIAY2wg/NQIBPt7UFq8auU72nXFxXp0UNN3fCen3R1tQqTZBvM7sQicEjRc7RuBQAEKB/c8aXGYQLw7fitm7f//2ow8KkP7BB+phvIAuT8vNLw4GzK1Auu0OcJRFq4yYgwMAFtkC1GPwkEjhF/7TfjVzWM/nLxsfz3ua2jCmYrmDcgd9dZJxzHd2aKIK+trMl2t5WiUlpHWMeLZSFfCxVb+0/AEqDnOzEJXOVeNZgyLQKDL6KHBFnCWBDnMv4/zfiEIBkRvbdPH8yjv9pdehNEbLVgkWJ1wd/h4UuF0fx/bYOITxSDXg826jeVWIY7FPJRhIiyPluQiD1N06sL9CDcruUjTXpJeLVb09f3/1Vs8dpoc7MBh07evZvESjKB6mOy4XKXkNgg9QgrFxBbhVXpt1hmr6Uoow/3Kjc+G1aNL2DCZTZr6xRWWZG0OPp4N4uNEwRSvlguE"
+      "signedAtUtc": "2026-05-28T18:11:09.9917891Z",
+      "signatureValue": "aHqIez7p7GtbKrCclhgWYE0g+EvWoWmnpO/hf0BiD3Ipp4Crkc9u20epgYg9S7QWNdh/r8OVw1VsxkjR0wUiXVHVbposqPcVXKhbaEo9GORjGSXlcYCzOMjEFD6EV2jXQdz/ZFPFGZgs8Gh9JjUxrPPYg9A7L7goruArSyWDplMJUDKGRuvDLwqyUy58hATCez7c+/7bZVQmgr6Gxjuk5FnLiSDiZSVleEl0/7ZcvsZ232OPlDjNEOX476i+I4WO5av2NtimFJUSHM1rgK3Nvxj26zcZP90abIZ3OlapbAqthWQqvf1o2NctQFSVCPHXxe+nn89O7DBTC1j0X8ou2l/xlfmzvEDihfLQxyp4m1jH6bKtrC1nr33+Q2c884l63rP2FenbJdQ9eXM2O6VcH11ibc/awjLwKkey6IlhdxVwVPI16+GQVsnqGL4Q7mPTD0wAUY/YeswTHzaX74D6kywdK/XoS61iJz0t6LB1T0dGU2EO4JbJUwLha8SdlbzW"
     }
   },
   "display": {
@@ -56,7 +56,7 @@
             }
           },
           {
-            "kind": "download",
+            "kind": "vendorDownload",
             "sourceId": "notepadPlusPlusGitHubRelease",
             "sourcePath": "v{version}/npp.{version}.Installer.x64.exe",
             "searchOrder": 900,
@@ -92,7 +92,7 @@
             }
           },
           {
-            "kind": "download",
+            "kind": "vendorDownload",
             "sourceId": "notepadPlusPlusGitHubRelease",
             "sourcePath": "v{version}/npp.{version}.Installer.arm64.exe",
             "searchOrder": 900,

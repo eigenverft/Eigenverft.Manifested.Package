@@ -1215,7 +1215,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $result.Package.discovery.existingInstall.searchLocations[0].displayNamePatterns | Should -Contain '7-Zip* (x64)*'
         $result.Package.removed.policy.allowedInventoryOwnershipKinds | Should -Contain 'AdoptedExternal'
         $result.AcquisitionPlan.PackageFileRequired | Should -BeTrue
-        @($result.AcquisitionPlan.Candidates | ForEach-Object { $_.kind }) | Should -Be @('packageDepot', 'download')
+        @($result.AcquisitionPlan.Candidates | ForEach-Object { $_.kind }) | Should -Be @('packageDepot', 'vendorDownload')
     }
 
     It 'loads the shipped NodeRuntime definition and selects the fixed Node.js archive release' {
@@ -1430,7 +1430,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
             $result.Package.packageFile.contentHash.value | Should -Be $case.Hash
             $result.InstallDirectory | Should -BeNullOrEmpty
             $result.AcquisitionPlan.PackageFileRequired | Should -BeTrue
-            @($result.AcquisitionPlan.Candidates | ForEach-Object { $_.kind }) | Should -Be @('packageDepot', 'download')
+            @($result.AcquisitionPlan.Candidates | ForEach-Object { $_.kind }) | Should -Be @('packageDepot', 'vendorDownload')
         }
     }
 
@@ -1804,7 +1804,26 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw '*requires releaseTag*'
     }
 
-    It 'keeps schema 1.7 legacy download candidates valid' {
+    It 'rejects retired schema 1.6 and 1.7 definitions' {
+        foreach ($schemaVersion in @('1.6', '1.7')) {
+            $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -FileName 'VSCode-win32-x64-2.0.0.zip' -AcquisitionCandidates @(
+                @{
+                    kind         = 'vendorDownload'
+                    sourceId     = 'vsCodeUpdateService'
+                    sourcePath   = '2.0.0/win32-x64-archive/stable'
+                    searchOrder  = 100
+                    verification = @{ mode = 'required' }
+                }
+            )
+            $definitionDocument = New-TestVSCodeDefinitionDocument -Releases @($release)
+            $definitionDocument.schemaVersion = $schemaVersion
+            $definitionInfo = [pscustomobject]@{ Path = "test-$schemaVersion.json"; Document = ConvertTo-TestPsObject $definitionDocument }
+
+            { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw "*unsupported schemaVersion '$schemaVersion'*"
+        }
+    }
+
+    It 'rejects retired download candidates in the only supported schema' {
         $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -FileName 'VSCode-win32-x64-2.0.0.zip' -AcquisitionCandidates @(
             @{
                 kind         = 'download'
@@ -1815,15 +1834,9 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
             }
         )
         $definitionDocument = New-TestVSCodeDefinitionDocument -Releases @($release)
-        $definitionDocument.schemaVersion = '1.7'
-        $definitionDocument.definitionPublication.definitionSignature = @{
-            kind          = 'unsigned'
-            format        = 'embedded-json-rsa-sha256-v1'
-            signedContent = 'canonicalDefinitionExcludingSignatureValue'
-        }
-        $definitionInfo = [pscustomobject]@{ Path = 'test-1.7-download.json'; Document = ConvertTo-TestPsObject $definitionDocument }
+        $definitionInfo = [pscustomobject]@{ Path = 'test-1.8-download.json'; Document = ConvertTo-TestPsObject $definitionDocument }
 
-        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Not -Throw
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw "*retired kind 'download'*"
     }
 
     It 'fails clearly when a definition still uses retired root discovery properties' {
@@ -2132,7 +2145,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $rootPath = Join-Path $TestDrive 'github-release-source'
         $release = New-TestPackageRelease -Id 'llama-cpu-x64-stable' -Version '0.0.1' -ReleaseTag 'b8863' -Architecture 'x64' -ArtifactDistributionVariant 'win-cpu-x64' -FileName 'llama-b8863-bin-win-cpu-x64.zip' -AcquisitionCandidates @(
             @{
-                kind         = 'download'
+                kind         = 'vendorDownload'
                 sourceId     = 'llamaCppGitHub'
                 searchOrder     = 100
                 verification = @{ mode = 'required' }
@@ -2164,7 +2177,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $rootPath = Join-Path $TestDrive 'github-release-tag-required'
         $release = New-TestPackageRelease -Id 'llama-cpu-x64-stable' -Version '0.0.1' -Architecture 'x64' -ArtifactDistributionVariant 'win-cpu-x64' -FileName 'llama-b8863-bin-win-cpu-x64.zip' -AcquisitionCandidates @(
             @{
-                kind         = 'download'
+                kind         = 'vendorDownload'
                 sourceId     = 'llamaCppGitHub'
                 searchOrder     = 100
                 verification = @{ mode = 'required' }
@@ -2187,7 +2200,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $rootPath = Join-Path $TestDrive 'github-release-resolve'
         $release = New-TestPackageRelease -Id 'llama-cpu-x64-stable' -Version '0.0.1' -ReleaseTag 'b8863' -Architecture 'x64' -ArtifactDistributionVariant 'win-cpu-x64' -FileName 'llama-b8863-bin-win-cpu-x64.zip' -AcquisitionCandidates @(
             @{
-                kind         = 'download'
+                kind         = 'vendorDownload'
                 sourceId     = 'llamaCppGitHub'
                 searchOrder     = 100
                 verification = @{ mode = 'required' }
@@ -2291,7 +2304,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
             }
         }
         $candidate = ConvertTo-TestPsObject @{
-            kind     = 'download'
+            kind     = 'vendorDownload'
             sourceId = 'llamaCppGitHub'
         }
 

@@ -95,7 +95,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - acquis
                 verification = @{ mode = 'required'; algorithm = 'sha256'; sha256 = $packageArchive.Sha256 }
             },
             @{
-                kind        = 'download'
+                kind        = 'vendorDownload'
                 sourceId    = 'vsCodeUpdateService'
                 searchOrder    = 100
                 sourcePath  = '2.0.0/win32-x64-archive/stable'
@@ -141,7 +141,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - acquis
                 verification = @{ mode = 'required'; algorithm = 'sha256'; sha256 = $packageArchive.Sha256 }
             },
             @{
-                kind         = 'download'
+                kind         = 'vendorDownload'
                 sourceId     = 'vsCodeUpdateService'
                 searchOrder  = 100
                 sourcePath   = '2.0.0/win32-x64-archive/stable'
@@ -228,17 +228,10 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - acquis
                 verification = @{ mode = 'required'; algorithm = 'sha256'; sha256 = $packageArchive.Sha256 }
             },
             @{
-                kind         = 'download'
+                kind         = 'vendorDownload'
                 sourceId     = 'vsCodeUpdateService'
                 sourcePath   = '2.0.0/win32-x64-archive/stable'
                 searchOrder  = 100
-                verification = @{ mode = 'required'; algorithm = 'sha256'; sha256 = $packageArchive.Sha256 }
-            },
-            @{
-                kind         = 'filesystem'
-                sourceId     = 'localShare'
-                sourcePath   = 'VSCode-win32-x64-2.0.0.zip'
-                searchOrder  = 110
                 verification = @{ mode = 'required'; algorithm = 'sha256'; sha256 = $packageArchive.Sha256 }
             }
         )
@@ -259,7 +252,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - acquis
         $result = Resolve-PackageInstallFile -PackageResult $result
 
         @($result.AcquisitionPlan.Candidates | ForEach-Object { $_.kind }) | Should -Be @('packageDepot')
-        $result.AcquisitionPlan.SkippedOfflineCandidateCount | Should -Be 2
+        $result.AcquisitionPlan.SkippedOfflineCandidateCount | Should -Be 1
         $result.PackageFilePreparation.Success | Should -BeFalse
         $result.PackageFilePreparation.FailureReason | Should -Be 'DepotMiss'
         @($result.PackageFilePreparation.Attempts | Where-Object { $_.AttemptType -eq 'ReuseCheck' }).Count | Should -Be 0
@@ -290,7 +283,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - acquis
                 verification = @{ mode = 'required'; algorithm = 'sha256'; sha256 = $packageArchive.Sha256 }
             },
             @{
-                kind         = 'download'
+                kind         = 'vendorDownload'
                 sourceId     = 'vsCodeUpdateService'
                 searchOrder  = 100
                 sourcePath   = '2.0.0/win32-x64-archive/stable'
@@ -408,7 +401,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - acquis
                 verification = @{ mode = 'required'; algorithm = 'sha256'; sha256 = $packageArchive.Sha256 }
             },
             @{
-                kind         = 'download'
+                kind         = 'vendorDownload'
                 sourceId     = 'vsCodeUpdateService'
                 searchOrder  = 100
                 sourcePath   = '2.0.0/win32-x64-archive/stable'
@@ -990,4 +983,3 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - acquis
     }
 
 }
-

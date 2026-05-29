@@ -753,13 +753,18 @@ function global:New-TestVSCodeDefinitionDocument {
     }
 
     return @{
-        schemaVersion = '1.6'
+        schemaVersion = '1.8'
         definitionPublication = @{
             publisherId = $PublisherId
             publisherName = $PublisherName
             definitionId = $DefinitionId
             definitionRevision = $DefinitionRevision
             publishedAtUtc = $PublishedAtUtc
+            definitionSignature = @{
+                kind          = 'unsigned'
+                format        = 'embedded-json-rsa-sha256-v1'
+                signedContent = 'canonicalDefinitionExcludingSignatureValue'
+            }
         }
         display       = @{
             default = @{

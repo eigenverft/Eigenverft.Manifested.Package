@@ -1,6 +1,6 @@
 <#
     Eigenverft.Manifested.Package.Package.DefinitionSchema.Wire1_6
-    Validators and runtime projection for package definition schemaVersion 1.6.
+    Shared validators and runtime projection for the current package definition wire shape.
 #>
 
 function Get-PackageObjectPropertyValue {
@@ -653,12 +653,12 @@ function Assert-PackageDefinitionSchema_1_6 {
 
     foreach ($requiredProperty in @('schemaVersion', 'definitionPublication', 'display', 'dependencies', 'artifacts', 'discovery', 'packageOperations')) {
         if (-not $definition.PSObject.Properties[$requiredProperty]) {
-            throw "Package definition '$($DefinitionDocumentInfo.Path)' is missing required schemaVersion 1.6 property '$requiredProperty'."
+            throw "Package definition '$($DefinitionDocumentInfo.Path)' is missing required schemaVersion 1.8 property '$requiredProperty'."
         }
     }
     foreach ($requiredDiscoveryProperty in @('presence', 'existingInstall')) {
         if (-not $definition.discovery.PSObject.Properties[$requiredDiscoveryProperty]) {
-            throw "Package definition '$($DefinitionDocumentInfo.Path)' is missing required schemaVersion 1.6 property 'discovery.$requiredDiscoveryProperty'."
+            throw "Package definition '$($DefinitionDocumentInfo.Path)' is missing required schemaVersion 1.8 property 'discovery.$requiredDiscoveryProperty'."
         }
     }
     foreach ($retiredProperty in @('definitionId', 'repositoryId')) {
@@ -821,7 +821,7 @@ function Assert-PackageDefinitionSchema_1_6 {
                 if ($candidate.PSObject.Properties['priority']) {
                     throw "Package definition '$DefinitionId' release '$($versionEntry.version)' artifact '$($artifactProperty.Name)' still uses retired acquisitionCandidate property 'priority'. Use searchOrder."
                 }
-                if (-not [string]::Equals([string]$candidate.kind, 'download', [System.StringComparison]::OrdinalIgnoreCase)) {
+                if (-not [string]::Equals([string]$candidate.kind, 'vendorDownload', [System.StringComparison]::OrdinalIgnoreCase)) {
                     continue
                 }
 
@@ -840,16 +840,16 @@ function Assert-PackageDefinitionSchema_1_6 {
                 }
 
                 if ($directDownloadCount -gt 1) {
-                    throw "Package definition '$DefinitionId' release '$($versionEntry.version)' artifact '$($artifactProperty.Name)' download candidate must define only one direct url/urlTemplate location."
+                    throw "Package definition '$DefinitionId' release '$($versionEntry.version)' artifact '$($artifactProperty.Name)' vendorDownload candidate must define only one direct url/urlTemplate location."
                 }
                 if ($directDownloadCount -gt 0 -and ($hasSourceId -or $hasCandidateSourcePath -or $hasArtifactSourcePath)) {
-                    throw "Package definition '$DefinitionId' release '$($versionEntry.version)' artifact '$($artifactProperty.Name)' download candidate must use either direct url/urlTemplate or sourceId with sourcePath, not both."
+                    throw "Package definition '$DefinitionId' release '$($versionEntry.version)' artifact '$($artifactProperty.Name)' vendorDownload candidate must use either direct url/urlTemplate or sourceId with sourcePath, not both."
                 }
                 if ($directDownloadCount -gt 0) {
                     continue
                 }
                 if (-not $hasSourceId) {
-                    throw "Package definition '$DefinitionId' release '$($versionEntry.version)' artifact '$($artifactProperty.Name)' download candidate requires sourceId, direct url, or urlTemplate."
+                    throw "Package definition '$DefinitionId' release '$($versionEntry.version)' artifact '$($artifactProperty.Name)' vendorDownload candidate requires sourceId, direct url, or urlTemplate."
                 }
                 if (-not (Test-PackageObjectHasProperty -InputObject $definition.artifacts.sources -Name ([string]$candidate.sourceId))) {
                     throw "Package definition '$DefinitionId' release '$($versionEntry.version)' artifact '$($artifactProperty.Name)' references unknown artifacts source '$($candidate.sourceId)'."
@@ -866,7 +866,7 @@ function Assert-PackageDefinitionSchema_1_6 {
                 }
 
                 if (-not ($hasCandidateSourcePath -or $hasArtifactSourcePath)) {
-                    throw "Package definition '$DefinitionId' release '$($versionEntry.version)' artifact '$($artifactProperty.Name)' download candidate requires sourcePath, artifact sourcePath, url, or urlTemplate."
+                    throw "Package definition '$DefinitionId' release '$($versionEntry.version)' artifact '$($artifactProperty.Name)' vendorDownload candidate requires sourcePath, artifact sourcePath, url, or urlTemplate."
                 }
             }
         }
@@ -1084,8 +1084,7 @@ function Resolve-PackageEffectivePackage_1_6 {
     $acquisitionCandidates = @(
         foreach ($source in @($artifactAcquisitionCandidates)) {
             $candidate = ConvertTo-PackageObject -InputObject $source
-            if ([string]::Equals([string]$candidate.kind, 'download', [System.StringComparison]::OrdinalIgnoreCase) -or
-                [string]::Equals([string]$candidate.kind, 'vendorDownload', [System.StringComparison]::OrdinalIgnoreCase)) {
+            if ([string]::Equals([string]$candidate.kind, 'vendorDownload', [System.StringComparison]::OrdinalIgnoreCase)) {
                 if ($candidate.PSObject.Properties['urlTemplate'] -and -not [string]::IsNullOrWhiteSpace([string]$candidate.urlTemplate)) {
                     $candidate | Add-Member -MemberType NoteProperty -Name 'url' -Value (Resolve-PackageTargetArtifactText -Text ([string]$candidate.urlTemplate) -ArtifactTarget $target -VersionEntry $versionEntry -UpstreamRelease $upstreamRelease) -Force
                 }
