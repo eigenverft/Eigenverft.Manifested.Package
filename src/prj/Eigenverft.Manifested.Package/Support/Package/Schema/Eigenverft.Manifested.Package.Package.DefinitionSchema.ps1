@@ -2,7 +2,7 @@
     Eigenverft.Manifested.Package.Package.DefinitionSchema
     Package definition JSON validation for package definition wire models.
 
-    Runtime validation is PowerShell-only (this module + DefinitionSchema.Wire1_6.ps1). The JSON schema file
+    Runtime validation is PowerShell-only (this module + DefinitionSchema.Wire1_8.ps1). The JSON schema file
     is the editor/agent contract (canonical examples under Endpoint/Defaults); keep schema and asserts aligned.
     Schema 1.8 root description and x-eigenverftAgentHint tell LLMs to author kind=unsigned drafts first and run
     Sign-PackageDefinition after content is final; runtime ignores those hints.
@@ -32,7 +32,7 @@ function Assert-PackageDefinitionSchemaVersionSupported {
     throw "Package definition '$DefinitionDocumentPath' uses unsupported schemaVersion '$SchemaVersionText'. Supported schemaVersion values are $supportedList."
 }
 
-function Assert-PackageDefinitionSignatureSchema_1_7 {
+function Assert-PackageDefinitionSignatureSchema_1_8 {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -155,13 +155,13 @@ function Assert-PackageDefinitionVendorDownloadCandidate_1_8 {
     }
 
     $releaseLabel = [string]$VersionEntry.version
-    $hasSourceId = Test-PackageDefinitionTextPropertyPresent_1_6 -InputObject $Candidate -PropertyName 'sourceId'
-    $hasCandidateSourcePath = Test-PackageDefinitionTextPropertyPresent_1_6 -InputObject $Candidate -PropertyName 'sourcePath'
-    $hasArtifactSourcePath = Test-PackageDefinitionTextPropertyPresent_1_6 -InputObject $Artifact -PropertyName 'sourcePath'
-    $hasCandidateUrl = Test-PackageDefinitionTextPropertyPresent_1_6 -InputObject $Candidate -PropertyName 'url'
-    $hasCandidateUrlTemplate = Test-PackageDefinitionTextPropertyPresent_1_6 -InputObject $Candidate -PropertyName 'urlTemplate'
-    $hasArtifactUrl = Test-PackageDefinitionTextPropertyPresent_1_6 -InputObject $Artifact -PropertyName 'url'
-    $hasArtifactUrlTemplate = Test-PackageDefinitionTextPropertyPresent_1_6 -InputObject $Artifact -PropertyName 'urlTemplate'
+    $hasSourceId = Test-PackageDefinitionTextPropertyPresent_1_8 -InputObject $Candidate -PropertyName 'sourceId'
+    $hasCandidateSourcePath = Test-PackageDefinitionTextPropertyPresent_1_8 -InputObject $Candidate -PropertyName 'sourcePath'
+    $hasArtifactSourcePath = Test-PackageDefinitionTextPropertyPresent_1_8 -InputObject $Artifact -PropertyName 'sourcePath'
+    $hasCandidateUrl = Test-PackageDefinitionTextPropertyPresent_1_8 -InputObject $Candidate -PropertyName 'url'
+    $hasCandidateUrlTemplate = Test-PackageDefinitionTextPropertyPresent_1_8 -InputObject $Candidate -PropertyName 'urlTemplate'
+    $hasArtifactUrl = Test-PackageDefinitionTextPropertyPresent_1_8 -InputObject $Artifact -PropertyName 'url'
+    $hasArtifactUrlTemplate = Test-PackageDefinitionTextPropertyPresent_1_8 -InputObject $Artifact -PropertyName 'urlTemplate'
     $directDownloadCount = 0
     foreach ($hasDirectDownload in @($hasCandidateUrl, $hasCandidateUrlTemplate, $hasArtifactUrl, $hasArtifactUrlTemplate)) {
         if ($hasDirectDownload) {
@@ -339,8 +339,8 @@ Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -Definiti
 
     switch -Exact ($schemaVersionText) {
         '1.8' {
-            Assert-PackageDefinitionSchema_1_6 -DefinitionDocumentInfo $DefinitionDocumentInfo -DefinitionId $DefinitionId -PublisherId $PublisherId
-            Assert-PackageDefinitionSignatureSchema_1_7 -DefinitionDocumentInfo $DefinitionDocumentInfo -DefinitionId $DefinitionId
+            Assert-PackageDefinitionSchema_1_8 -DefinitionDocumentInfo $DefinitionDocumentInfo -DefinitionId $DefinitionId -PublisherId $PublisherId
+            Assert-PackageDefinitionSignatureSchema_1_8 -DefinitionDocumentInfo $DefinitionDocumentInfo -DefinitionId $DefinitionId
             Assert-PackageDefinitionAcquisitionVocabulary_1_8 -DefinitionDocumentInfo $DefinitionDocumentInfo -DefinitionId $DefinitionId
             return
         }

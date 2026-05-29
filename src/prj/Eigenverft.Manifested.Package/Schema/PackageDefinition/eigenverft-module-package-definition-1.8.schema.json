@@ -2,9 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://eigenverft.local/schemas/eigenverft-module-package-definition-1.8.schema.json",
   "title": "Eigenverft module package definition document (wire format 1.8)",
-  "$comment": "META: JSON Schema for INSTANCE package-definition documents (one file per definition). Runtime validates with DefinitionSchema.ps1 + DefinitionSchema.Wire1_6.ps1, signature assertions, and 1.8 acquisition vocabulary assertions. definitionPublication.definitionSignature is required; kind=unsigned is valid for draft authoring, kind=signed after Sign-PackageDefinition. Endpoints are discovery-only. Recommended layout under an endpoint root: <publisherId>/<definitionId>.json.",
+  "$comment": "META: JSON Schema for INSTANCE package-definition documents (one file per definition). Runtime validates with DefinitionSchema.ps1 + DefinitionSchema.Wire1_8.ps1, signature assertions, and 1.8 acquisition vocabulary assertions. definitionPublication.definitionSignature is required; kind=unsigned is valid for draft authoring, kind=signed after Sign-PackageDefinition. Endpoints are discovery-only. Recommended layout under an endpoint root: <publisherId>/<definitionId>.json.",
   "description": "AUTHOR TASK - Produce or edit one complete package-definition JSON object for Eigenverft.Manifested.Package. Required top-level order: schemaVersion, definitionPublication, display, dependencies, artifacts, discovery, packageOperations. Use schemaVersion exactly 1.8.\n\nAUTHORING VS SIGNING: Design semantic package content first (dependencies, artifacts, discovery, packageOperations). A valid embedded signature is not required while drafting. Always include definitionPublication.definitionSignature: for drafts use kind=unsigned with format and signedContent only; do not invent keyThumbprint, signedAtUtc, certificatePem, or signatureValue. Never hand-edit signatureValue base64. After the JSON content is final, signing is a separate maintainer step.\n\nSIGNING WORKFLOW: If no catalog-signing certificate exists, run New-PackageSigningCertificate (creates a password-protected PFX, public CER, and adjacent DPAPI password descriptor; keep the private key off endpoints). Prefer friendly metadata fields such as -CommonName, -Organization, -OrganizationalUnit, -Country, and -SignerDisplayName over raw -Subject unless advanced X.509 control is required. Inject or refresh the embedded signature with Sign-PackageDefinition -Path <file> -Cert <friendly-name-or-pfx> -KeepSchemaVersion and optionally -Password <secure> for CI. Sign-PackageDefinition embeds the public certificate so clients can verify before trusting. Verify with Verify-PackageDefinitionSignature or Verify-PackageDefinitionCatalog before replacing published copies. Admins can preseed public trust with the CER via Import-PackageTrust or Trust-PackageSigningCertificate. Re-run Sign-PackageDefinition after any meaningful definition change and bump definitionRevision.\n\nDEPLOYMENT (neutral): Whether an embedded signature is required depends on client catalogTrust.policy and how trust is delivered—not on this schema alone. Synced file-share or NAS endpoint roots used with strict policy need kind=signed definitions and either trusted keys in PackageTrustInventory.json or a valid embedded certificate that local policy allows the user to trust. Unsigned catalogs may run only where catalogTrust.policy=allowUnsigned and publisher policy explicitly allows unsigned definitions.\n\nPUBLICATION: definitionPublication.publisherId is the maintainer namespace (shipped: Eigenverft; teams: e.g. My Team). definitionPublication.definitionId is the id used by Invoke-Package. Increment definitionPublication.definitionRevision for every meaningful JSON change. publishedAtUtc is audit metadata only.\n\nCATALOG TRUST: Production strict clients expect kind=signed with RSA/SHA-256 signatureValue over canonical JSON excluding signatureValue. certificatePem is public verification material, not a trust decision. kind=unsigned is explicit draft/migration shape and does not prove authorship under strict policy.\n\nDEPENDENCIES: dependencies is required but may be []. dependency.publisherId is optional.\n\nCOMMON TRAPS: root repositoryId and root definitionId are retired; vendorDownload candidates need sourceId+sourcePath or direct url/urlTemplate; GitHub release sources need real assets and releaseTag; packageDepot is the only prepared artifact acquisition candidate; package-definition filesystem acquisition is retired in 1.8; NSIS and Inno Setup differ; choose package-managed shims vs installer PATH deliberately.",
-  "x-eigenverftAgentHint": "LLM/agent: edit INSTANCE JSON conforming to this schema and DefinitionSchema.Wire1_6.ps1 plus 1.8 signature rules. Author drafts with definitionPublication.definitionSignature.kind=unsigned (no signatureValue). Do not fabricate signatures. After content is stable, a human or automation runs Sign-PackageDefinition -KeepSchemaVersion or Resign-PackageDefinition -KeepSchemaVersion; use New-PackageSigningCertificate when no key exists yet. Shipped examples: Endpoint/Defaults/Eigenverft (signed). Layout: <publisherId>/<definitionId>.json under endpoint roots. Bump definitionRevision on every definition change. Embedded signatures are required for strict file-based catalogs; web or centrally trusted endpoints may use other trust delivery—check deployment policy before assuming unsigned JSON is runnable.",
+  "x-eigenverftAgentHint": "LLM/agent: edit INSTANCE JSON conforming to this schema and DefinitionSchema.Wire1_8.ps1 plus 1.8 signature rules. Author drafts with definitionPublication.definitionSignature.kind=unsigned (no signatureValue). Do not fabricate signatures. After content is stable, a human or automation runs Sign-PackageDefinition -KeepSchemaVersion or Resign-PackageDefinition -KeepSchemaVersion; use New-PackageSigningCertificate when no key exists yet. Shipped examples: Endpoint/Defaults/Eigenverft (signed). Layout: <publisherId>/<definitionId>.json under endpoint roots. Bump definitionRevision on every definition change. Embedded signatures are required for strict file-based catalogs; web or centrally trusted endpoints may use other trust delivery—check deployment policy before assuming unsigned JSON is runnable.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -455,7 +455,7 @@
     "upstreamRelease": {
       "type": "object",
       "additionalProperties": false,
-      "$comment": "Conditional requirements: when sourceId resolves to a source whose kind requires a fixed upstream tag (for example githubRelease), the runtime expects releaseTag to be populated. JSON Schema cannot express that dependency here; validate combinations against Wire1_6 or follow existing definitions.",
+      "$comment": "Conditional requirements: when sourceId resolves to a source whose kind requires a fixed upstream tag (for example githubRelease), the runtime expects releaseTag to be populated. JSON Schema cannot express that dependency here; validate combinations against Wire1_8 or follow existing definitions.",
       "required": [
         "sourceId"
       ],
@@ -827,7 +827,7 @@
     "metadataFileProbe": {
       "type": "object",
       "additionalProperties": true,
-      "$comment": "additionalProperties allows forward-compatible metadata keys beyond relativePath; only keys understood by the engine have effect - treat unknown keys as documentation until Wire1_6 recognizes them.",
+      "$comment": "additionalProperties allows forward-compatible metadata keys beyond relativePath; only keys understood by the engine have effect - treat unknown keys as documentation until Wire1_8 recognizes them.",
       "required": [
         "relativePath"
       ],
@@ -1108,7 +1108,7 @@
             "kind": { "const": "fileName" },
             "value": { "type": "string", "minLength": 1 }
           },
-          "description": "Supported shape in Wire1_6: { \"kind\": \"fileName\", \"value\": \"example.exe\" }."
+          "description": "Supported shape in Wire1_8: { \"kind\": \"fileName\", \"value\": \"example.exe\" }."
         },
         "installRootRelativePath": {
           "type": "string",
@@ -2021,7 +2021,7 @@
           }
         }
       ],
-      "$comment": "This oneOf currently covers osVersion and memory GiB checks implemented in Wire1_6; additional compatibility kinds may appear in definitions before this schema lists them - extend the schema when adding new kinds."
+      "$comment": "This oneOf currently covers osVersion and memory GiB checks implemented in Wire1_8; additional compatibility kinds may appear in definitions before this schema lists them - extend the schema when adding new kinds."
     },
     "onFail": {
       "type": "string",

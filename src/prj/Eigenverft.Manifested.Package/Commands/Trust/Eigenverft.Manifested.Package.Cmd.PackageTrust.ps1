@@ -281,7 +281,7 @@ function Sign-PackageDefinition {
             if (-not $KeepSchemaVersion.IsPresent) {
                 Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name 'schemaVersion' -Value '1.8'
                 if ($definitionInfo.Document.PSObject.Properties['$schema'] -and -not [string]::IsNullOrWhiteSpace([string]$definitionInfo.Document.'$schema')) {
-                    Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name '$schema' -Value (([string]$definitionInfo.Document.'$schema') -replace '1\.[678]\.schema\.json', '1.8.schema.json')
+                    Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name '$schema' -Value (([string]$definitionInfo.Document.'$schema') -replace 'package-definition-1\.(?:6|7|8)\.schema\.json', 'package-definition-1.8.schema.json')
                 }
             }
 
@@ -466,7 +466,7 @@ function Remove-PackageDefinitionSignature {
         if (-not $KeepSchemaVersion.IsPresent) {
             Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name 'schemaVersion' -Value '1.8'
             if ($definitionInfo.Document.PSObject.Properties['$schema'] -and -not [string]::IsNullOrWhiteSpace([string]$definitionInfo.Document.'$schema')) {
-                Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name '$schema' -Value (([string]$definitionInfo.Document.'$schema') -replace '1\.[678]\.schema\.json', '1.8.schema.json')
+                Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name '$schema' -Value (([string]$definitionInfo.Document.'$schema') -replace 'package-definition-1\.(?:6|7|8)\.schema\.json', 'package-definition-1.8.schema.json')
             }
         }
         Set-PackageDefinitionUnsignedSignature -Definition $definitionInfo.Document

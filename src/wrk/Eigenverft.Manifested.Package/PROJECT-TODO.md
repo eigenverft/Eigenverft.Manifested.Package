@@ -16,16 +16,6 @@
 
 ### [P1] Critical
 
-#### Supply chain / release age
-
-- **Feature issue: wait before auto-picking brand-new releases.** As a security-conscious package maintainer, I want automatic updates to wait a little before choosing a release that just appeared upstream, so a bad same-day release is less likely to enter the depot by accident.
-  Requester perspective: team endpoint maintainer, release manager, security reviewer.
-  Outcome: the engine can explain why it picked or skipped a version; an explicit version pin still works when the operator accepts the risk.
-
-- **Feature issue: record when each package version was released.** As a catalog author, I want each package version to say when the upstream release happened, so release-age policy is based on the real package version rather than when the JSON file was edited.
-  Requester perspective: package catalog maintainer, compliance reviewer, agent-generated catalog reviewer.
-  Outcome: package state and dry-run output can tell the difference between "this definition changed today" and "this package version was released last week."
-
 ### [P2] High
 
 #### Dependency resolution
@@ -115,6 +105,10 @@
 ### [P5] Backlog / Nice-to-have
 
 #### Depot transports
+
+- **Feature issue: add depot hygiene checks.** As a depot maintainer, I want the engine to detect incomplete files, unexpected sidecars, and stale materialization artifacts in depot folders, so synced shares stay clean and trustworthy.
+  Requester perspective: team depot maintainer, mirror operator.
+  Outcome: validation or maintenance tooling flags depot layout problems before they cause ambiguous acquisition or mirror behavior.
 
 - **Feature issue: support read-only HTTP/HTTPS package depots.** As a team or endpoint maintainer, I want prepared package artifacts to be readable from an internal HTTP/HTTPS depot source, so managed machines can reuse centrally hosted artifacts without treating the source as a vendor download.
   Requester perspective: team endpoint maintainer, corporate network operator, depot maintainer.

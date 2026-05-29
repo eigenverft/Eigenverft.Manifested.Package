@@ -1118,24 +1118,6 @@ Build-PackageAcquisitionPlan -PackageResult $result
                         verification = $resolvedVerification
                     }) | Out-Null
                 }
-                'filesystem' {
-                    $orderedCandidates.Add([pscustomobject]@{
-                        kind         = 'filesystem'
-                        searchOrder     = if ($candidate.PSObject.Properties['searchOrder']) { [int]$candidate.searchOrder } else { [int]::MaxValue }
-                        sourceSearchOrder = 1000
-                        sourceRef    = if ($candidate.PSObject.Properties['sourceId'] -and -not [string]::IsNullOrWhiteSpace([string]$candidate.sourceId)) {
-    [pscustomobject]@{
-                                scope = 'environment'
-                                id    = [string]$candidate.sourceId
-                            }
-                        }
-                        else {
-                            $null
-                        }
-                        sourcePath   = [string]$candidate.sourcePath
-                        verification = $resolvedVerification
-                    }) | Out-Null
-                }
             }
         }
     }
@@ -1324,15 +1306,6 @@ Resolve-PackageInstallFile -PackageResult $result
                     GitHubRepository = $null
                 }
             }
-            elseif ([string]::Equals([string]$candidate.kind, 'filesystem', [System.StringComparison]::OrdinalIgnoreCase)) {
-                $sourceDefinition = [pscustomobject]@{
-                    Scope   = 'direct'
-                    Id      = 'directFilesystem'
-                    Kind    = 'filesystem'
-                    BaseUri = $null
-                    BasePath = $null
-                }
-            }
             else {
                 throw "Package acquisition candidate kind '$($candidate.kind)' could not be resolved to a source definition."
             }
@@ -1440,7 +1413,7 @@ Resolve-PackageInstallFile -PackageResult $result
 
     $failureReason = if ($offline) { 'DepotMiss' } else { 'AllSourcesFailed' }
     $errorMessage = if ($offline) {
-        "Offline acquisition failed for Package release '$($package.id)': no packageDepot candidate provided a verified depot artifact. vendorDownload and package-definition filesystem candidates were skipped by policy."
+        "Offline acquisition failed for Package release '$($package.id)': no packageDepot candidate provided a verified depot artifact. vendorDownload candidates were skipped by policy."
     }
     else {
         "All acquisition candidates failed for Package release '$($package.id)'."

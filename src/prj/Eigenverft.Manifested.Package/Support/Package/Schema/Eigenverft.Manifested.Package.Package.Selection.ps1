@@ -306,7 +306,7 @@ Resolve-PackagePackage -PackageResult $result
         $null
     }
 
-    $selectedPackage = Resolve-PackageEffectivePackage_1_6 -PackageConfig $packageConfig -PackageVersionOverride $packageVersionOverride
+    $selectedPackage = Resolve-PackageEffectivePackage_1_8 -PackageConfig $packageConfig -PackageVersionOverride $packageVersionOverride
 
     $PackageResult.Package = $selectedPackage
     $PackageResult.EffectiveRelease = $selectedPackage

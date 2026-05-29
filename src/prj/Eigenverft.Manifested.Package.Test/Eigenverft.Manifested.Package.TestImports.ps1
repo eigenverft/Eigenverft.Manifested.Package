@@ -33,7 +33,7 @@ $moduleProjectRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'Eigenverft.Ma
 . "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.PublisherInventory.Management.ps1"
 . "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.Trust.ps1"
 . "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DefinitionReference.ps1"
-. "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DefinitionSchema.Wire1_6.ps1"
+. "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DefinitionSchema.Wire1_8.ps1"
 . "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DefinitionSchema.ps1"
 . "$moduleProjectRoot\Support\Package\Execution\Eigenverft.Manifested.Package.Package.LocalEnvironment.ps1"
 . "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.Selection.ps1"

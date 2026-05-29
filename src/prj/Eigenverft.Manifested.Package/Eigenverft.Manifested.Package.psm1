@@ -30,7 +30,7 @@
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.PublisherInventory.Management.ps1"
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.Trust.ps1"
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DefinitionReference.ps1"
-. "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DefinitionSchema.Wire1_6.ps1"
+. "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DefinitionSchema.Wire1_8.ps1"
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DefinitionSchema.ps1"
 . "$PSScriptRoot\Support\Package\Execution\Eigenverft.Manifested.Package.Package.LocalEnvironment.ps1"
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.Selection.ps1"
