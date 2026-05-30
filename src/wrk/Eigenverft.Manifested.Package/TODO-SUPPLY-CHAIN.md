@@ -6,6 +6,8 @@ Design scratchpad for **delayed auto-update** and **vendor release-age** policy 
 
 Promotion to [`PROJECT-TODO.md`](PROJECT-TODO.md) happens when implementation is scheduled. **No engine, schema, or catalog changes are implied by this file alone.**
 
+**Compose with:** version selection should plug into the unified package resolver as its own step (not mixed with prerequisite or peer-policy logic). See **Unified resolver** in [`TODO-DEPENDENCY.md`](TODO-DEPENDENCY.md).
+
 ---
 
 ## Current engine facts
@@ -142,11 +144,13 @@ Reference only — not started by this document.
 
 ## Still open
 
+- Should the wait-before-release-pick rule be global, package-specific, publisher-specific, or only enabled for sensitive packages?
+- Should explicit `-PackageVersion` always bypass the wait period, or should bypass require a separate accept-risk signal?
 - Exact syntax for `minReleaseAge` duration strings and parsing rules.
 - Whether `previousByVersion` applies age policy to the “second” slot the same way as `latestByVersion` (recommended: yes, both operate on the age-filtered set).
 - Final names for offset strategies (`currentMinusOneWeek` vs `latestReleasedBefore` / similar).
 - Agent and maintainer workflow for populating `upstreamReleasedAtUtc` on every new release row (validation rules, signing, CI).
-- Shape of a future planning / dry-run command vs log-only explainability (see PROJECT-TODO backlog; not required for phase 1).
+- Shape of a future planning / dry-run command vs log-only explainability (not required for phase 1).
 
 ---
 
