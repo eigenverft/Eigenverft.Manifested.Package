@@ -1709,7 +1709,7 @@ exit /b 0
         $preferredTargetInstallDirectory = Join-Path $rootPath 'installs'
         $packageStateIndexFilePath = Join-Path $rootPath 'PackageAssignmentInventory.json'
         $definitionDocument = @{
-            schemaVersion = '1.8'
+            schemaVersion = '1.9'
             definitionPublication = @{
                 publisherId = 'Eigenverft'
                 publisherName = 'Eigenverft Module'
@@ -1730,7 +1730,9 @@ exit /b 0
                     summary = 'Quantized GGUF model resource'
                 }
             }
-            dependencies = @()
+            dependency = @{
+                requires = @()
+            }
             artifacts = @{
                 targets = @(
                     @{

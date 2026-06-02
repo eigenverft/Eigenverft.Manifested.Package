@@ -42,6 +42,81 @@ function Test-PackageStateLeafPath {
     return (Test-Path -LiteralPath $Path -PathType Leaf)
 }
 
+function Write-PackageStateFormattedView {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$State
+    )
+
+    $localRootText = if ([string]::IsNullOrWhiteSpace([string]$State.LocalRoot)) { '<none>' } else { [string]$State.LocalRoot }
+    Write-Host ''
+    Write-Host ("Package state (local root: {0})" -f $localRootText)
+    Write-Host ("  Assigned packages: {0}  |  Recent operations: {1}" -f $State.PackageRecordCount, $State.OperationRecordCount)
+
+    if (@($State.PackageRecords).Count -gt 0) {
+        Write-Host ''
+        Write-Host 'Assigned packages'
+        @($State.PackageRecords) |
+            Select-Object -Property @(
+                @{ Name = 'DefinitionId'; Expression = { $_.DefinitionId } }
+                @{ Name = 'Version'; Expression = { $_.CurrentVersion } }
+                @{ Name = 'Ownership'; Expression = { $_.OwnershipKind } }
+                @{ Name = 'InstallSlot'; Expression = { $_.InstallSlotId } }
+                @{ Name = 'PathReg'; Expression = {
+                        if ($_.PathRegistration -and $_.PathRegistration.Status) { [string]$_.PathRegistration.Status }
+                        else { '' }
+                    }
+                }
+                @{ Name = 'InstallDir'; Expression = {
+                        if ($_.InstallDirectoryExists) { 'present' }
+                        elseif (-not [string]::IsNullOrWhiteSpace([string]$_.InstallDirectory)) { 'missing' }
+                        else { '' }
+                    }
+                }
+            ) |
+            Format-Table -AutoSize |
+            Out-String -Width 4096 |
+            ForEach-Object { $_.TrimEnd() } |
+            Write-Host
+    }
+
+    if (@($State.OperationRecords).Count -gt 0) {
+        Write-Host ''
+        Write-Host 'Recent operations'
+        @($State.OperationRecords) |
+            Select-Object -Property @(
+                @{ Name = 'DefinitionId'; Expression = { if ($_.PSObject.Properties['definitionId']) { $_.definitionId } else { $null } } }
+                @{ Name = 'DesiredState'; Expression = { if ($_.PSObject.Properties['desiredState']) { $_.desiredState } else { $null } } }
+                @{ Name = 'Status'; Expression = { if ($_.PSObject.Properties['status']) { $_.status } else { $null } } }
+                @{ Name = 'Version'; Expression = { if ($_.PSObject.Properties['packageVersion']) { $_.packageVersion } else { $null } } }
+                @{ Name = 'CompletedUtc'; Expression = { if ($_.PSObject.Properties['completedAtUtc']) { $_.completedAtUtc } else { $null } } }
+            ) |
+            Format-Table -AutoSize |
+            Out-String -Width 4096 |
+            ForEach-Object { $_.TrimEnd() } |
+            Write-Host
+    }
+
+    Write-Host ''
+    Write-Host 'Key paths'
+    @(
+        [pscustomobject]@{ Name = 'PackageConfig'; Path = $State.PackageConfigPath; Exists = $State.PackageConfigExists }
+        [pscustomobject]@{ Name = 'AssignmentInventory'; Path = $State.PackageAssignmentInventoryPath; Exists = $State.PackageAssignmentInventoryExists }
+        [pscustomobject]@{ Name = 'OperationHistory'; Path = $State.PackageOperationHistoryPath; Exists = $State.PackageOperationHistoryExists }
+        [pscustomobject]@{ Name = 'InstalledRoot'; Path = $State.Directories.Installed.Path; Exists = $State.Directories.Installed.Exists }
+        [pscustomobject]@{ Name = 'Shims'; Path = $State.Directories.Shims.Path; Exists = $State.Directories.Shims.Exists }
+    ) |
+        Select-Object Name, Exists, Path |
+        Format-Table -AutoSize |
+        Out-String -Width 4096 |
+        ForEach-Object { $_.TrimEnd() } |
+        Write-Host
+
+    Write-Host 'Use Get-PackageState -Raw for full inventories and configuration.'
+    Write-Host ''
+}
+
 function Select-PackageStateOwnershipRecord {
     [CmdletBinding()]
     param(

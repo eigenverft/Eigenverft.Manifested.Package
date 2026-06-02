@@ -59,11 +59,12 @@ function Get-PackageInventoryDependentBlockingRecords {
         }
 
         $definition = $definitionDocumentInfo.Document
-        if (-not $definition.PSObject.Properties['dependencies'] -or $null -eq $definition.dependencies) {
+        $dependencyModel = Get-PackageDefinitionDependencyModel_1_9 -Definition $definition -DefinitionId $parentDefinitionId
+        if (@($dependencyModel.Requires).Count -eq 0) {
             continue
         }
 
-        foreach ($dependency in @($definition.dependencies)) {
+        foreach ($dependency in @($dependencyModel.Requires)) {
             if ($null -eq $dependency) {
                 continue
             }

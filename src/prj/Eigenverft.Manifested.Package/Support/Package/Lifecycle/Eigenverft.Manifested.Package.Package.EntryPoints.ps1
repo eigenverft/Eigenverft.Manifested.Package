@@ -123,6 +123,7 @@ Complete-PackageResult -PackageResult $result
     $null = $PackageResult.PSObject.Properties.Remove('CurrentStep')
     $null = $PackageResult.PSObject.Properties.Remove('EffectiveRelease')
     $null = $PackageResult.PSObject.Properties.Remove('AcquisitionPlan')
+    $null = $PackageResult.PSObject.Properties.Remove('DependencyPlan')
     return [pscustomobject]$PackageResult
 }
 

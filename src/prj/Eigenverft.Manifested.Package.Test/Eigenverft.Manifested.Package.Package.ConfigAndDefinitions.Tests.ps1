@@ -133,6 +133,14 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         @((Sort-PackageVersionCandidates -Candidates $tieCandidates).Label) | Should -Be @('first', 'second')
     }
 
+    It 'evaluates dependency versionRange comparator terms' {
+        Test-PackageVersionRange -VersionText '1.5.0' -VersionRange '>=1.0.0 <2.0.0' | Should -BeTrue
+        Test-PackageVersionRange -VersionText '2.0.0' -VersionRange '>=1.0.0 <2.0.0' | Should -BeFalse
+        Test-PackageVersionRange -VersionText '1.14.46' -VersionRange '1.14.46' | Should -BeTrue
+        Test-PackageVersionRange -VersionText '1.14.47' -VersionRange '1.14.46' | Should -BeFalse
+        { Resolve-PackageVersionRangeTerms -VersionRange '^1.0.0' } | Should -Throw '*Unsupported Package versionRange term*'
+    }
+
     It 'resolves package config paths from applicationRootDirectory and supports missing applicationRootDirectory fallback' {
         $rootPath = Join-Path $TestDrive 'application-root-config'
         $applicationRootPath = Join-Path $rootPath 'AppRoot'
@@ -570,6 +578,89 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $results[0].Status | Should -Be 'Failed'
     }
 
+    It 'returns failed root results without execution when multi-root dependency planning fails' {
+        $failedPlan = [pscustomobject]@{
+            Accepted   = $false
+            Status     = 'Failed'
+            Roots      = @(
+                [pscustomobject]@{ RequestedPublisherId = $null; RequestedDefinitionId = 'RootA'; PublisherId = $null; DefinitionId = 'RootA'; NodeKey = $null; PackageConfig = $null }
+                [pscustomobject]@{ RequestedPublisherId = $null; RequestedDefinitionId = 'RootB'; PublisherId = $null; DefinitionId = 'RootB'; NodeKey = $null; PackageConfig = $null }
+            )
+            Nodes      = @()
+            Edges      = @()
+            Violations = @(
+                New-PackageDependencyPlanViolation -Reason 'DependencyConflict' -Message 'planned conflict' -RootDefinitionId 'RootA' -DefinitionId 'RootB'
+            )
+        }
+        Mock New-PackageDependencyPlan { $failedPlan }
+        Mock Invoke-PackageDefinitionCommandCore { throw 'execution should not run' }
+
+        $results = @(Invoke-Package -DefinitionId RootA, RootB)
+
+        Assert-MockCalled Invoke-PackageDefinitionCommandCore -Times 0
+        @($results.DefinitionId) | Should -Be @('RootA', 'RootB')
+        @($results.Status) | Should -Be @('Failed', 'Failed')
+        @($results.FailureReason) | Should -Be @('PackageDependencyPlanFailed', 'PackageDependencyPlanFailed')
+        @($results.CurrentStep) | Should -Be @('PlanDependencies', 'PlanDependencies')
+    }
+
+    It 'passes approved dependency plan root context while preserving Invoke-Package array order' {
+        $approvedPlan = [pscustomobject]@{
+            Accepted   = $true
+            Status     = 'Approved'
+            Roots      = @(
+                [pscustomobject]@{ RequestedPublisherId = $null; RequestedDefinitionId = 'RootA'; PublisherId = 'Eigenverft'; DefinitionId = 'RootA'; NodeKey = 'Eigenverft:RootA'; PackageConfig = $null }
+                [pscustomobject]@{ RequestedPublisherId = $null; RequestedDefinitionId = 'RootB'; PublisherId = 'Eigenverft'; DefinitionId = 'RootB'; NodeKey = 'Eigenverft:RootB'; PackageConfig = $null }
+            )
+            Nodes      = @([pscustomobject]@{ NodeKey = 'Eigenverft:RootA' }, [pscustomobject]@{ NodeKey = 'Eigenverft:RootB' })
+            Edges      = @()
+            Violations = @()
+        }
+        Mock New-PackageDependencyPlan { $approvedPlan }
+        Mock Invoke-PackageDefinitionCommandCore {
+            [pscustomobject]@{
+                PublisherId            = $PublisherId
+                DefinitionId           = $DefinitionId
+                DependencyPlanNodeKey  = $DependencyPlanNodeKey
+                DesiredState           = $DesiredState
+                Status                 = 'Ready'
+            }
+        }
+
+        $results = @(Invoke-Package -DefinitionId RootA, RootB)
+
+        @($results.DefinitionId) | Should -Be @('RootA', 'RootB')
+        @($results.DependencyPlanNodeKey) | Should -Be @('Eigenverft:RootA', 'Eigenverft:RootB')
+        Assert-MockCalled Invoke-PackageDefinitionCommandCore -Times 1 -ParameterFilter { $DefinitionId -eq 'RootA' -and $DependencyPlan -eq $approvedPlan -and $DependencyPlanNodeKey -eq 'Eigenverft:RootA' }
+        Assert-MockCalled Invoke-PackageDefinitionCommandCore -Times 1 -ParameterFilter { $DefinitionId -eq 'RootB' -and $DependencyPlan -eq $approvedPlan -and $DependencyPlanNodeKey -eq 'Eigenverft:RootB' }
+    }
+
+    It 'uses the approved dependency plan for MaterializeOnly invokes' {
+        $approvedPlan = [pscustomobject]@{
+            Accepted   = $true
+            Status     = 'Approved'
+            Roots      = @([pscustomobject]@{ RequestedPublisherId = $null; RequestedDefinitionId = 'RootA'; PublisherId = 'Eigenverft'; DefinitionId = 'RootA'; NodeKey = 'Eigenverft:RootA'; PackageConfig = $null })
+            Nodes      = @([pscustomobject]@{ NodeKey = 'Eigenverft:RootA' })
+            Edges      = @()
+            Violations = @()
+        }
+        Mock New-PackageDependencyPlan { $approvedPlan }
+        Mock Invoke-PackageDefinitionCommandCore {
+            [pscustomobject]@{
+                DefinitionId          = $DefinitionId
+                CommandMode           = if ($MaterializeOnly) { 'MaterializeOnly' } else { $DesiredState }
+                DependencyPlanNodeKey = $DependencyPlanNodeKey
+                Status                = 'Materialized'
+            }
+        }
+
+        $result = Invoke-Package -DefinitionId RootA -MaterializeOnly
+
+        $result.Status | Should -Be 'Materialized'
+        $result.DependencyPlanNodeKey | Should -Be 'Eigenverft:RootA'
+        Assert-MockCalled Invoke-PackageDefinitionCommandCore -Times 1 -ParameterFilter { [bool]$MaterializeOnly -and $DependencyPlan -eq $approvedPlan }
+    }
+
     It 'resolves shipped package definitions through signed trust and endpoint seams' {
         $reference = Resolve-PackageDefinitionReference -DefinitionId 'VSCodeRuntime'
 
@@ -578,6 +669,93 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $reference.DefinitionId | Should -Be 'VSCodeRuntime'
         $reference.SourceKind | Should -Be 'moduleLocal'
         Split-Path -Leaf $reference.DefinitionPath | Should -Be 'VSCodeRuntime.json'
+    }
+
+    It 'searches enabled endpoints by definition metadata and command names' {
+        $rootPath = Join-Path $TestDrive 'search-command'
+        $globalDocument = New-TestPackageGlobalDocument -ApplicationRootDirectory (Join-Path $rootPath 'AppRoot') -CatalogTrustPolicy allowUnsigned -CatalogTrustAllowUnsignedPublisherIds @('Eigenverft')
+        $nodeDefinition = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -DefinitionId 'NodeRuntime' -Releases @(
+                New-TestPackageRelease -Id 'node-win-x64-stable' -Version '20.11.1' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+            ))
+        $nodeDefinition.display.default.name = 'Node.js'
+        $nodeDefinition.display.default.publisher = 'OpenJS'
+        $nodeDefinition.display.default.corporation = 'OpenJS Foundation'
+        $nodeDefinition.display.default.summary = 'Server-side JavaScript runtime'
+        $nodeDefinition.discovery.presence.files = @('node.exe')
+        $nodeDefinition.discovery.presence.directories = @()
+        $nodeDefinition.discovery.presence.commands = @(
+            [pscustomobject]@{
+                name             = 'node'
+                relativePath     = 'node.exe'
+                requiredForState = $true
+                exposeCommand    = $true
+                stateChecks      = @()
+            }
+        )
+        $nodeDefinition.discovery.presence.apps = @()
+
+        $documents = Write-TestPackageDocuments -RootPath $rootPath -GlobalDocument $globalDocument -DefinitionDocument $nodeDefinition
+        $definitionRoot = Split-Path -Parent (Split-Path -Parent $documents.DefinitionPath)
+        Write-TestJsonDocument -Path (Join-Path (Join-Path $definitionRoot 'Eigenverft') 'VSCodeRuntime.json') -Document (New-TestVSCodeDefinitionDocument -DefinitionId 'VSCodeRuntime' -Releases @(
+                New-TestPackageRelease -Id 'code-win-x64-stable' -Version '1.99.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+            ))
+
+        Mock Get-PackageConfigPath { $documents.GlobalConfigPath }
+        Mock Get-PackageEndpointInventoryPath { $documents.EndpointInventoryPath }
+
+        $nodeResults = @(Search-Package -Query 'node' -Platform windows -Architecture x64 -ReleaseTrack stable)
+        $codeResults = @(Search-Package -Query 'Code editor' -PublisherId Eigenverft -EndpointName moduleDefaults -Platform windows -Architecture x64 -ReleaseTrack stable)
+
+        $nodeResults.Count | Should -Be 1
+        $nodeResults[0].DefinitionId | Should -Be 'NodeRuntime'
+        $nodeResults[0].Name | Should -Be 'Node.js'
+        $nodeResults[0].Version | Should -Be '20.11.1'
+        $nodeResults[0].PlatformAvailable | Should -BeTrue
+        @($nodeResults[0].Commands) | Should -Be @('node')
+        $nodeResults[0].EndpointName | Should -Be 'moduleDefaults'
+        $nodeResults[0].EndpointSourceKind | Should -Be 'filesystem'
+        $nodeResults[0].CatalogTrustStatus | Should -Be 'unsignedConfigTrust'
+        $nodeResults[0].InvokeCommand | Should -Be "Invoke-Package -DefinitionId 'NodeRuntime' -PublisherId 'Eigenverft'"
+        $codeResults.Count | Should -Be 1
+        $codeResults[0].DefinitionId | Should -Be 'VSCodeRuntime'
+        Test-Path -LiteralPath (Join-Path (Join-Path $rootPath 'AppRoot') 'PkgEndpoint') | Should -BeFalse
+    }
+
+    It 'filters Search-Package results by catalog trust and current platform eligibility' {
+        $rootPath = Join-Path $TestDrive 'search-trust-platform'
+        $globalDocument = New-TestPackageGlobalDocument -ApplicationRootDirectory (Join-Path $rootPath 'AppRoot') -CatalogTrustPolicy allowUnsigned -CatalogTrustAllowUnsignedPublisherIds @('Eigenverft')
+        $allowedDefinition = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -DefinitionId 'AllowedTool' -Releases @(
+                New-TestPackageRelease -Id 'allowed-win-x64-stable' -Version '1.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+            ))
+        $allowedDefinition.display.default.name = 'Allowed Tool'
+        $allowedDefinition.display.default.summary = 'Allowed endpoint fixture'
+
+        $blockedDefinition = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -DefinitionId 'InternalTool' -PublisherId 'OtherTeam' -PublisherName 'Other Team' -Releases @(
+                New-TestPackageRelease -Id 'internal-win-x64-stable' -Version '9.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+            ))
+        $blockedDefinition.display.default.name = 'Internal Tool'
+        $blockedDefinition.display.default.summary = 'Internal team fixture'
+
+        $documents = Write-TestPackageDocuments -RootPath $rootPath -GlobalDocument $globalDocument -DefinitionDocument $allowedDefinition
+        $definitionRoot = Split-Path -Parent (Split-Path -Parent $documents.DefinitionPath)
+        Write-TestJsonDocument -Path (Join-Path (Join-Path $definitionRoot 'OtherTeam') 'InternalTool.json') -Document $blockedDefinition
+
+        Mock Get-PackageConfigPath { $documents.GlobalConfigPath }
+        Mock Get-PackageEndpointInventoryPath { $documents.EndpointInventoryPath }
+
+        @(Search-Package -Query 'internal' -Platform windows -Architecture x64 -ReleaseTrack stable).Count | Should -Be 0
+
+        $ineligible = @(Search-Package -Query 'internal' -IncludeIneligible -Platform windows -Architecture x64 -ReleaseTrack stable)
+        $ineligible.Count | Should -Be 1
+        $ineligible[0].DefinitionId | Should -Be 'InternalTool'
+        $ineligible[0].CatalogTrustEligible | Should -BeFalse
+        $ineligible[0].CatalogTrustReason | Should -Match 'not listed in catalogTrust.allowUnsignedPublisherIds'
+
+        @(Search-Package -Query 'allowed' -Platform linux -Architecture x64 -ReleaseTrack stable -CurrentPlatformOnly).Count | Should -Be 0
+        $incompatible = @(Search-Package -Query 'allowed' -Platform linux -Architecture x64 -ReleaseTrack stable)
+        $incompatible.Count | Should -Be 1
+        $incompatible[0].PlatformAvailable | Should -BeFalse
+        $incompatible[0].SelectionError | Should -Not -BeNullOrEmpty
     }
 
     It 'ships Eigenverft defaults as trusted signed definitions with embedded public certificates' {
@@ -601,6 +779,30 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         @($catalog.Results | Where-Object { $_.KeyThumbprint -ne $trustRows[0].KeyThumbprint }).Count | Should -Be 0
         @($signedDocuments | Where-Object { -not $_.definitionPublication.definitionSignature.PSObject.Properties['certificatePem'] }).Count | Should -Be 0
         @($signedDocuments | Where-Object { [string]::IsNullOrWhiteSpace([string]$_.definitionPublication.definitionSignature.certificatePem) }).Count | Should -Be 0
+    }
+
+    It 'ships Eigenverft dependency planner examples for ranges, model runtime dependencies, and command conflicts' {
+        $codexPlan = New-PackageDependencyPlan -DefinitionId 'CodexCli'
+        $codexNode = @($codexPlan.Nodes | Where-Object DefinitionId -EQ 'CodexCli')[0]
+        $nodeEdge = @(Get-PackageDependencyPlanChildEdges -Plan $codexPlan -NodeKey $codexNode.NodeKey | Where-Object DefinitionId -EQ 'NodeRuntime')[0]
+        $nodeRuntime = @($codexPlan.Nodes | Where-Object DefinitionId -EQ 'NodeRuntime')[0]
+
+        $codexPlan.Accepted | Should -BeTrue
+        $nodeEdge.VersionRange | Should -Be '>=16.0.0'
+        $nodeRuntime.PackageVersion | Should -Be '26.2.0'
+
+        $qwenPlan = New-PackageDependencyPlan -DefinitionId 'Qwen35_9B_Q6_K_Model'
+        $qwenNode = @($qwenPlan.Nodes | Where-Object DefinitionId -EQ 'Qwen35_9B_Q6_K_Model')[0]
+        $llamaEdge = @(Get-PackageDependencyPlanChildEdges -Plan $qwenPlan -NodeKey $qwenNode.NodeKey | Where-Object DefinitionId -EQ 'LlamaCppRuntime')[0]
+
+        $qwenPlan.Accepted | Should -BeTrue
+        $llamaEdge.VersionRange | Should -Be '>=9094'
+        @($qwenPlan.Nodes.DefinitionId) | Should -Contain 'LlamaCppRuntime'
+
+        $vsCodeConflictPlan = New-PackageDependencyPlan -DefinitionId VSCodeRuntime, VSCodeUser
+
+        $vsCodeConflictPlan.Accepted | Should -BeFalse
+        @($vsCodeConflictPlan.Violations.Reason) | Should -Contain 'DependencyConflict'
     }
 
     It 'ships no package-definition filesystem acquisition candidates' {
@@ -1094,8 +1296,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $config -SourceRef ([pscustomobject]@{ scope = 'definition'; id = 'llamaCppGitHub' })
 
         $config.DefinitionId | Should -Be 'LlamaCppRuntime'
-        @($config.Definition.dependencies.definitionId) | Should -Be @('VisualCppRedistributable')
-        @($config.Definition.dependencies.publisherId) | Should -Be @($null)
+        @($config.Definition.dependency.requires.definitionId) | Should -Be @('VisualCppRedistributable')
+        @($config.Definition.dependency.requires.publisherId) | Should -Be @($null)
         $sourceDefinition.Kind | Should -Be 'githubRelease'
         $sourceDefinition.GitHubOwner | Should -Be 'ggml-org'
         $sourceDefinition.GitHubRepository | Should -Be 'llama.cpp'
@@ -1180,7 +1382,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $result = Resolve-PackagePackage -PackageResult $result
 
         $config.DefinitionId | Should -Be 'VSCodeUser'
-        $config.SchemaVersion | Should -Be '1.8'
+        $config.SchemaVersion | Should -Be '1.9'
         @($result.Package.acquisitionCandidates | ForEach-Object { $_.kind }) | Should -Be @('packageDepot', 'vendorDownload')
         $result.Package.assigned.install.kind | Should -Be 'innoSetupInstaller'
         $result.Package.removed.operation.kind | Should -Be 'innoSetupUninstaller'
@@ -1334,7 +1536,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
             $result = Build-PackageAcquisitionPlan -PackageResult $result
 
             $config.DefinitionId | Should -Be $case.DefinitionId
-            @($config.Definition.dependencies.definitionId) | Should -Be $case.Dependencies
+            @($config.Definition.dependency.requires.definitionId) | Should -Be $case.Dependencies
             $result.Package.version | Should -Be $case.Version
             $result.Package.assigned.install.kind | Should -Be 'npmMaterializedInstallGlobalPackage'
             $result.Package.assigned.install.packageSpec | Should -Be $case.PackageSpec
@@ -1342,7 +1544,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
             $result.Package.assigned.pathRegistration.source.use | Should -Be 'discovery.presence.commands'
             $config.Definition.discovery.presence.commands[0].name | Should -Be $case.Command
             $config.Definition.discovery.presence.commands[0].relativePath | Should -Be $case.RelativePath
-            foreach ($dep in @($config.Definition.dependencies)) {
+            foreach ($dep in @($config.Definition.dependency.requires)) {
                 $dep.PSObject.Properties.Name | Should -Not -Contain 'repositoryId'
             }
             $result.Package.packageFile | Should -BeNullOrEmpty
@@ -1417,7 +1619,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
             $result = Build-PackageAcquisitionPlan -PackageResult $result
 
             $config.DefinitionId | Should -Be $case.DefinitionId
-            @($config.Definition.dependencies.definitionId) | Should -Be $case.Dependencies
+            @($config.Definition.dependency.requires.definitionId) | Should -Be $case.Dependencies
             $result.Package.version | Should -Be $case.Version
             $result.Package.assigned.install.kind | Should -Be 'powershellModuleInstaller'
             $result.Package.assigned.install.moduleName | Should -Be $case.ModuleName
@@ -1437,10 +1639,12 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
     It 'ensures direct package dependencies before package-specific install flow continues' {
         $definition = [pscustomobject]@{
             definitionId = 'CodexCli'
-            dependencies = @(
-                [pscustomobject]@{ definitionId = 'VisualCppRedistributable' }
-                [pscustomobject]@{ definitionId = 'NodeRuntime' }
-            )
+            dependency = [pscustomobject]@{
+                requires = @(
+                    [pscustomobject]@{ definitionId = 'VisualCppRedistributable' }
+                    [pscustomobject]@{ definitionId = 'NodeRuntime' }
+                )
+            }
         }
         $result = [pscustomobject]@{
             DefinitionId                = 'CodexCli'
@@ -1479,9 +1683,11 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
     It 'materializes direct package dependencies recursively in materialize-only mode' {
         $definition = [pscustomobject]@{
             definitionId = 'CodexCli'
-            dependencies = @(
-                [pscustomobject]@{ definitionId = 'NodeRuntime' }
-            )
+            dependency = [pscustomobject]@{
+                requires = @(
+                    [pscustomobject]@{ definitionId = 'NodeRuntime' }
+                )
+            }
         }
         $result = [pscustomobject]@{
             DefinitionId          = 'CodexCli'
@@ -1529,9 +1735,11 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
     It 'fails clearly when direct package dependencies contain a cycle' {
         $definition = [pscustomobject]@{
             definitionId = 'CodexCli'
-            dependencies = @(
-                [pscustomobject]@{ definitionId = 'NodeRuntime' }
-            )
+            dependency = [pscustomobject]@{
+                requires = @(
+                    [pscustomobject]@{ definitionId = 'NodeRuntime' }
+                )
+            }
         }
         $result = [pscustomobject]@{
             DefinitionId       = 'CodexCli'
@@ -1543,6 +1751,197 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         }
 
         { Resolve-PackageDependencies -PackageResult $result -DependencyStack @('Eigenverft:CodexCli', 'Eigenverft:NodeRuntime') } | Should -Throw '*dependency cycle*'
+    }
+
+    It 'builds a single-root dependency plan and preserves dependency objects' {
+        $configs = @{
+            CodexCli    = New-TestDependencyPlannerConfig -DefinitionId 'CodexCli' -Dependencies @([pscustomobject]@{ definitionId = 'NodeRuntime' }) -InventoryPath (Join-Path $TestDrive 'planner-legacy-inventory.json')
+            NodeRuntime = New-TestDependencyPlannerConfig -DefinitionId 'NodeRuntime' -Versions @('1.0.0') -InventoryPath (Join-Path $TestDrive 'planner-legacy-inventory.json')
+        }
+        Mock Get-PackageConfig { $configs[$DefinitionId] }
+
+        $plan = New-PackageDependencyPlan -DefinitionId 'CodexCli'
+
+        $plan.Accepted | Should -BeTrue
+        @($plan.Nodes.DefinitionId) | Should -Be @('CodexCli', 'NodeRuntime')
+        @($plan.Edges.DefinitionId) | Should -Be @('NodeRuntime')
+        $plan.Violations.Count | Should -Be 0
+    }
+
+    It 'dedupes shared dependencies and selects the newest version satisfying all incoming ranges' {
+        $configs = @{
+            RootA      = New-TestDependencyPlannerConfig -DefinitionId 'RootA' -Dependencies @([pscustomobject]@{ definitionId = 'SharedRuntime'; versionRange = '>=1.0.0 <3.0.0' }) -InventoryPath (Join-Path $TestDrive 'planner-dedupe-inventory.json')
+            RootB      = New-TestDependencyPlannerConfig -DefinitionId 'RootB' -Dependencies @([pscustomobject]@{ definitionId = 'SharedRuntime'; versionRange = '<2.0.0' }) -InventoryPath (Join-Path $TestDrive 'planner-dedupe-inventory.json')
+            SharedRuntime = New-TestDependencyPlannerConfig -DefinitionId 'SharedRuntime' -Versions @('1.0.0', '1.5.0', '2.5.0') -InventoryPath (Join-Path $TestDrive 'planner-dedupe-inventory.json')
+        }
+        Mock Get-PackageConfig { $configs[$DefinitionId] }
+
+        $plan = New-PackageDependencyPlan -DefinitionId RootA, RootB
+        $shared = @($plan.Nodes | Where-Object DefinitionId -EQ 'SharedRuntime')
+
+        $plan.Accepted | Should -BeTrue
+        @($shared).Count | Should -Be 1
+        $shared[0].PackageVersion | Should -Be '1.5.0'
+        @($plan.Edges | Where-Object DefinitionId -EQ 'SharedRuntime').Count | Should -Be 2
+    }
+
+    It 'fails dependency planning for cycles, invalid ranges, and unsatisfied ranges' {
+        $cycleConfigs = @{
+            RootA = New-TestDependencyPlannerConfig -DefinitionId 'RootA' -Dependencies @([pscustomobject]@{ definitionId = 'RootB' }) -InventoryPath (Join-Path $TestDrive 'planner-cycle-inventory.json')
+            RootB = New-TestDependencyPlannerConfig -DefinitionId 'RootB' -Dependencies @([pscustomobject]@{ definitionId = 'RootA' }) -InventoryPath (Join-Path $TestDrive 'planner-cycle-inventory.json')
+        }
+        Mock Get-PackageConfig { $cycleConfigs[$DefinitionId] }
+        $cyclePlan = New-PackageDependencyPlan -DefinitionId 'RootA'
+        @($cyclePlan.Violations.Reason) | Should -Contain 'DependencyCycle'
+
+        $rangeConfigs = @{
+            RootA = New-TestDependencyPlannerConfig -DefinitionId 'RootA' -Dependencies @([pscustomobject]@{ definitionId = 'Runtime'; versionRange = '^1.0.0' }) -InventoryPath (Join-Path $TestDrive 'planner-invalid-range-inventory.json')
+            Runtime = New-TestDependencyPlannerConfig -DefinitionId 'Runtime' -Versions @('1.0.0') -InventoryPath (Join-Path $TestDrive 'planner-invalid-range-inventory.json')
+        }
+        Mock Get-PackageConfig { $rangeConfigs[$DefinitionId] }
+        $invalidRangePlan = New-PackageDependencyPlan -DefinitionId 'RootA'
+        @($invalidRangePlan.Violations.Reason) | Should -Contain 'DependencyVersionRangeInvalid'
+
+        $unsatisfiedConfigs = @{
+            RootA = New-TestDependencyPlannerConfig -DefinitionId 'RootA' -Dependencies @([pscustomobject]@{ definitionId = 'Runtime'; versionRange = '>=9.0.0' }) -InventoryPath (Join-Path $TestDrive 'planner-unsatisfied-range-inventory.json')
+            Runtime = New-TestDependencyPlannerConfig -DefinitionId 'Runtime' -Versions @('1.0.0') -InventoryPath (Join-Path $TestDrive 'planner-unsatisfied-range-inventory.json')
+        }
+        Mock Get-PackageConfig { $unsatisfiedConfigs[$DefinitionId] }
+        $unsatisfiedPlan = New-PackageDependencyPlan -DefinitionId 'RootA'
+        @($unsatisfiedPlan.Violations.Reason) | Should -Contain 'DependencyVersionRangeUnsatisfied'
+    }
+
+    It 'enforces dependency peer policy conflicts and requiresAbsent checks' {
+        $conflictPolicy = [pscustomobject]@{
+            conflictsWith = @([pscustomobject]@{ definitionId = 'RootB' })
+        }
+        $conflictConfigs = @{
+            RootA = New-TestDependencyPlannerConfig -DefinitionId 'RootA' -DependencyPolicy $conflictPolicy -InventoryPath (Join-Path $TestDrive 'planner-conflict-inventory.json')
+            RootB = New-TestDependencyPlannerConfig -DefinitionId 'RootB' -InventoryPath (Join-Path $TestDrive 'planner-conflict-inventory.json')
+        }
+        Mock Get-PackageConfig { $conflictConfigs[$DefinitionId] }
+        $conflictPlan = New-PackageDependencyPlan -DefinitionId RootA, RootB
+        @($conflictPlan.Violations.Reason) | Should -Contain 'DependencyConflict'
+
+        $requiresAbsentPolicy = [pscustomobject]@{
+            requiresAbsent = @([pscustomobject]@{ definitionId = 'BlockedRuntime'; versionRange = '>=1.0.0' })
+        }
+        $inventoryPath = Join-Path $TestDrive 'planner-absent-inventory.json'
+        Write-TestJsonDocument -Path $inventoryPath -Document @{
+            records = @(
+                @{
+                    installSlotId = 'BlockedRuntime-stable-win32-x64'
+                    definitionId = 'BlockedRuntime'
+                    definitionPublisherId = 'Eigenverft'
+                    currentVersion = '1.2.0'
+                }
+            )
+        }
+        $absentConfigs = @{
+            RootA = New-TestDependencyPlannerConfig -DefinitionId 'RootA' -DependencyPolicy $requiresAbsentPolicy -InventoryPath $inventoryPath
+            BlockedRuntime = New-TestDependencyPlannerConfig -DefinitionId 'BlockedRuntime' -Versions @('1.2.0') -InventoryPath $inventoryPath
+        }
+        Mock Get-PackageConfig { $absentConfigs[$DefinitionId] }
+        $inventoryPlan = New-PackageDependencyPlan -DefinitionId 'RootA'
+        @($inventoryPlan.Violations.Reason) | Should -Contain 'DependencyRequiresAbsent'
+
+        $planConflict = New-PackageDependencyPlan -DefinitionId RootA, BlockedRuntime
+        @($planConflict.Violations.Reason) | Should -Contain 'DependencyRequiresAbsent'
+    }
+
+    It 'passes approved dependency plan context through recursive dependency execution' {
+        $configs = @{
+            RootA = New-TestDependencyPlannerConfig -DefinitionId 'RootA' -Dependencies @([pscustomobject]@{ definitionId = 'Runtime'; versionRange = '>=1.0.0' }) -InventoryPath (Join-Path $TestDrive 'planner-execution-inventory.json')
+            Runtime = New-TestDependencyPlannerConfig -DefinitionId 'Runtime' -Versions @('1.2.0') -InventoryPath (Join-Path $TestDrive 'planner-execution-inventory.json')
+        }
+        Mock Get-PackageConfig { $configs[$DefinitionId] }
+        $plan = New-PackageDependencyPlan -DefinitionId 'RootA'
+        $rootNodeKey = Get-PackageDependencyPlanRootNodeKey -Plan $plan -DefinitionId 'RootA'
+        $childEdge = @(Get-PackageDependencyPlanChildEdges -Plan $plan -NodeKey $rootNodeKey)[0]
+
+        Mock Invoke-PackageDefinitionCommandCore {
+            [pscustomobject]@{
+                DefinitionPublisherId = 'Eigenverft'
+                DefinitionId          = $DefinitionId
+                CommandMode           = if ($MaterializeOnly) { 'MaterializeOnly' } else { $DesiredState }
+                Offline               = [bool]$Offline
+                Status                = 'Ready'
+                InstallOrigin         = 'PackageReused'
+            }
+        }
+        $result = [pscustomobject]@{
+            DefinitionId          = 'RootA'
+            DefinitionPublisherId = 'Eigenverft'
+            PackageConfig         = $configs.RootA
+            DependencyPlan        = $plan
+            DependencyPlanNodeKey = $rootNodeKey
+            Dependencies          = @()
+        }
+
+        $resolved = Resolve-PackageDependencies -PackageResult $result
+
+        Assert-MockCalled Invoke-PackageDefinitionCommandCore -Times 1 -ParameterFilter {
+            $DefinitionId -eq 'Runtime' -and
+            $DependencyPlan -eq $plan -and
+            $DependencyPlanNodeKey -eq $childEdge.ChildNodeKey
+        }
+        @($resolved.Dependencies.PlanNodeKey) | Should -Be @($childEdge.ChildNodeKey)
+    }
+
+    It 'accepts dependency versionRange and dependency.policy schema additions' {
+        $definitionDocument = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -DefinitionId 'RootA' -Releases @(
+                New-TestPackageRelease -Id 'RootA-win-x64-1.0.0' -Version '1.0.0' -Architecture 'x64'
+            ))
+        $definitionDocument.dependency.requires = @(
+            [pscustomobject]@{ publisherId = 'Eigenverft'; definitionId = 'Runtime'; versionRange = '>=1.0.0 <2.0.0' }
+        )
+        $definitionDocument.dependency | Add-Member -MemberType NoteProperty -Name policy -Value ([pscustomobject]@{
+                conflictsWith = @([pscustomobject]@{ definitionId = 'OldRuntime'; versionRange = '<1.0.0' })
+                requiresAbsent = @([pscustomobject]@{ publisherId = 'Eigenverft'; definitionId = 'BlockedRuntime' })
+            }) -Force
+        $definitionInfo = [pscustomobject]@{
+            Path     = Join-Path $TestDrive 'RootA.json'
+            Document = $definitionDocument
+        }
+
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'RootA' } | Should -Not -Throw
+    }
+
+    It 'rejects invalid dependency planner wire fields' {
+        $emptyRange = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -DefinitionId 'RootA' -Releases @(
+                New-TestPackageRelease -Id 'RootA-win-x64-1.0.0' -Version '1.0.0' -Architecture 'x64'
+            ))
+        $emptyRange.dependency.requires = @([pscustomobject]@{ definitionId = 'Runtime'; versionRange = '' })
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo ([pscustomobject]@{ Path = Join-Path $TestDrive 'RootA-empty-range.json'; Document = $emptyRange }) -DefinitionId 'RootA' } | Should -Throw '*versionRange*'
+
+        $invalidPolicy = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -DefinitionId 'RootA' -Releases @(
+                New-TestPackageRelease -Id 'RootA-win-x64-1.0.0' -Version '1.0.0' -Architecture 'x64'
+            ))
+        $invalidPolicy.dependency | Add-Member -MemberType NoteProperty -Name policy -Value ([pscustomobject]@{
+                conflictsWith = @([pscustomobject]@{ publisherId = ''; definitionId = 'Runtime' })
+                requiresAbsent = @([pscustomobject]@{ definitionId = 'BlockedRuntime'; versionRange = '^1.0.0' })
+            }) -Force
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo ([pscustomobject]@{ Path = Join-Path $TestDrive 'RootA-invalid-policy.json'; Document = $invalidPolicy }) -DefinitionId 'RootA' } | Should -Throw '*dependency.policy*'
+
+        $retiredDependencies = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -DefinitionId 'RootA' -Releases @(
+                New-TestPackageRelease -Id 'RootA-win-x64-1.0.0' -Version '1.0.0' -Architecture 'x64'
+            ))
+        $retiredDependencies | Add-Member -MemberType NoteProperty -Name dependencies -Value @([pscustomobject]@{ definitionId = 'Runtime' }) -Force
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo ([pscustomobject]@{ Path = Join-Path $TestDrive 'RootA-retired-dependencies.json'; Document = $retiredDependencies }) -DefinitionId 'RootA' } | Should -Throw "*retired top-level property 'dependencies'*"
+
+        $retiredPolicy = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -DefinitionId 'RootA' -Releases @(
+                New-TestPackageRelease -Id 'RootA-win-x64-1.0.0' -Version '1.0.0' -Architecture 'x64'
+            ))
+        $retiredPolicy | Add-Member -MemberType NoteProperty -Name dependencyPolicy -Value ([pscustomobject]@{
+                conflictsWith = @([pscustomobject]@{ definitionId = 'Runtime' })
+            }) -Force
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo ([pscustomobject]@{ Path = Join-Path $TestDrive 'RootA-retired-policy.json'; Document = $retiredPolicy }) -DefinitionId 'RootA' } | Should -Throw "*retired top-level property 'dependencyPolicy'*"
+
+        $missingDependency = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -DefinitionId 'RootA' -Releases @(
+                New-TestPackageRelease -Id 'RootA-win-x64-1.0.0' -Version '1.0.0' -Architecture 'x64'
+            ))
+        $missingDependency.PSObject.Properties.Remove('dependency')
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo ([pscustomobject]@{ Path = Join-Path $TestDrive 'RootA-missing-dependency.json'; Document = $missingDependency }) -DefinitionId 'RootA' } | Should -Throw '*dependency*'
     }
 
     It 'loads the shipped PythonRuntime definition and selects the fixed NuGet package release' {
@@ -1726,7 +2125,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw '*schemaVersion*'
     }
 
-    It 'accepts schema 1.8 packageDepot and vendorDownload candidates' {
+    It 'accepts schema 1.9 packageDepot and vendorDownload candidates' {
         $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -FileName 'VSCode-win32-x64-2.0.0.zip' -AcquisitionCandidates @(
             @{
                 kind         = 'packageDepot'
@@ -1742,18 +2141,18 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
             }
         )
         $definitionDocument = New-TestVSCodeDefinitionDocument -Releases @($release)
-        $definitionDocument.schemaVersion = '1.8'
+        $definitionDocument.schemaVersion = '1.9'
         $definitionDocument.definitionPublication.definitionSignature = @{
             kind          = 'unsigned'
             format        = 'embedded-json-rsa-sha256-v1'
             signedContent = 'canonicalDefinitionExcludingSignatureValue'
         }
-        $definitionInfo = [pscustomobject]@{ Path = 'test-1.8.json'; Document = ConvertTo-TestPsObject $definitionDocument }
+        $definitionInfo = [pscustomobject]@{ Path = 'test-1.9.json'; Document = ConvertTo-TestPsObject $definitionDocument }
 
         { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Not -Throw
     }
 
-    It 'rejects schema 1.8 package-definition download and filesystem acquisition candidates' {
+    It 'rejects schema 1.9 package-definition download and filesystem acquisition candidates' {
         foreach ($kind in @('download', 'filesystem')) {
             $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -FileName 'VSCode-win32-x64-2.0.0.zip' -AcquisitionCandidates @(
                 @{
@@ -1765,19 +2164,19 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
                 }
             )
             $definitionDocument = New-TestVSCodeDefinitionDocument -Releases @($release)
-            $definitionDocument.schemaVersion = '1.8'
+            $definitionDocument.schemaVersion = '1.9'
             $definitionDocument.definitionPublication.definitionSignature = @{
                 kind          = 'unsigned'
                 format        = 'embedded-json-rsa-sha256-v1'
                 signedContent = 'canonicalDefinitionExcludingSignatureValue'
             }
-            $definitionInfo = [pscustomobject]@{ Path = "test-1.8-$kind.json"; Document = ConvertTo-TestPsObject $definitionDocument }
+            $definitionInfo = [pscustomobject]@{ Path = "test-1.9-$kind.json"; Document = ConvertTo-TestPsObject $definitionDocument }
 
-            { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw "*schemaVersion 1.8*$kind*"
+            { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw "*schemaVersion 1.9*$kind*"
         }
     }
 
-    It 'validates GitHub releaseTag requirements behind schema 1.8 vendorDownload' {
+    It 'validates GitHub releaseTag requirements behind schema 1.9 vendorDownload' {
         $release = New-TestPackageRelease -Id 'llama-cpu-x64-stable' -Version '0.0.1' -Architecture 'x64' -ArtifactDistributionVariant 'win-cpu-x64' -FileName 'llama-b8863-bin-win-cpu-x64.zip' -AcquisitionCandidates @(
             @{
                 kind         = 'vendorDownload'
@@ -1793,19 +2192,19 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
                 githubRepository = 'llama.cpp'
             }
         }
-        $definitionDocument.schemaVersion = '1.8'
+        $definitionDocument.schemaVersion = '1.9'
         $definitionDocument.definitionPublication.definitionSignature = @{
             kind          = 'unsigned'
             format        = 'embedded-json-rsa-sha256-v1'
             signedContent = 'canonicalDefinitionExcludingSignatureValue'
         }
-        $definitionInfo = [pscustomobject]@{ Path = 'test-1.8-github.json'; Document = ConvertTo-TestPsObject $definitionDocument }
+        $definitionInfo = [pscustomobject]@{ Path = 'test-1.9-github.json'; Document = ConvertTo-TestPsObject $definitionDocument }
 
         { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw '*requires releaseTag*'
     }
 
-    It 'rejects retired schema 1.6 and 1.7 definitions' {
-        foreach ($schemaVersion in @('1.6', '1.7')) {
+    It 'rejects retired schema 1.6, 1.7, and 1.8 definitions' {
+        foreach ($schemaVersion in @('1.6', '1.7', '1.8')) {
             $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -FileName 'VSCode-win32-x64-2.0.0.zip' -AcquisitionCandidates @(
                 @{
                     kind         = 'vendorDownload'
@@ -1834,7 +2233,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
             }
         )
         $definitionDocument = New-TestVSCodeDefinitionDocument -Releases @($release)
-        $definitionInfo = [pscustomobject]@{ Path = 'test-1.8-download.json'; Document = ConvertTo-TestPsObject $definitionDocument }
+        $definitionInfo = [pscustomobject]@{ Path = 'test-1.9-download.json'; Document = ConvertTo-TestPsObject $definitionDocument }
 
         { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw "*retired kind 'download'*"
     }

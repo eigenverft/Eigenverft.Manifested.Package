@@ -59,8 +59,9 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - catalo
         $certificate.Thumbprint | Should -Not -BeNullOrEmpty
         $signature.VerificationStatus | Should -Be 'validUntrusted'
         $signedInfo.Document.definitionPublication.definitionSignature.certificatePem | Should -Match 'BEGIN CERTIFICATE'
-        $signedText | Should -Match '"schemaVersion": "1\.8"'
-        $signedText | Should -Match '"dependencies": \[\]'
+        $signedText | Should -Match '"schemaVersion": "1\.9"'
+        $signedText | Should -Match '"dependency": \{'
+        $signedText | Should -Match '"requires": \[\]'
         $signedText | Should -Not -Match '":  '
         $verification.Valid | Should -BeTrue
         $verification.Status | Should -Be 'validUntrusted'
@@ -68,7 +69,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - catalo
         $embeddedVerification.Status | Should -Be 'validUntrusted'
         $embeddedVerification.CertificateSource | Should -Be 'embedded'
         $stripped.Status | Should -Be 'Unsigned'
-        $strippedInfo.Document.schemaVersion | Should -Be '1.8'
+        $strippedInfo.Document.schemaVersion | Should -Be '1.9'
         $strippedInfo.Document.definitionPublication.definitionSignature.kind | Should -Be 'unsigned'
         $strippedInfo.Document.definitionPublication.definitionSignature.PSObject.Properties['signatureValue'] | Should -BeNullOrEmpty
     }
@@ -266,7 +267,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - catalo
         $signingCertificate = Import-PackageCertificate -Path $pfxPath -Password $password -WithPrivateKey
         try {
             $signedInfo = Read-PackageJsonDocument -Path $definitionPath
-            Set-PackageObjectProperty -InputObject $signedInfo.Document -Name 'schemaVersion' -Value '1.8'
+            Set-PackageObjectProperty -InputObject $signedInfo.Document -Name 'schemaVersion' -Value '1.9'
             Set-PackageDefinitionSignature -Definition $signedInfo.Document -Certificate $signingCertificate -SignatureValue ''
             $signedInfo.Document.definitionPublication.definitionSignature.PSObject.Properties.Remove('certificatePem')
             $signable = Get-PackageDefinitionSignableContent -Definition $signedInfo.Document

@@ -38,6 +38,21 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
         $text | Should -Match 'Other exported commands:'
     }
 
+    It 'exports Search-Package with endpoint, trust, and platform filters' {
+        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
+        $command = $module.ExportedCommands['Search-Package']
+
+        $command | Should -Not -BeNullOrEmpty
+        $command.Parameters.Keys | Should -Contain 'Query'
+        $command.Parameters.Keys | Should -Contain 'PublisherId'
+        $command.Parameters.Keys | Should -Contain 'EndpointName'
+        $command.Parameters.Keys | Should -Contain 'Platform'
+        $command.Parameters.Keys | Should -Contain 'Architecture'
+        $command.Parameters.Keys | Should -Contain 'ReleaseTrack'
+        $command.Parameters.Keys | Should -Contain 'CurrentPlatformOnly'
+        $command.Parameters.Keys | Should -Contain 'IncludeIneligible'
+    }
+
     It 'exports Get-PackageState with only the Raw view switch' {
         $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
         $command = Get-Command -Name 'Get-PackageState'
@@ -80,6 +95,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'Remove-PackageTrust',
             'Resign-PackageDefinition',
             'Revoke-PackageSigningCertificate',
+            'Search-Package',
             'Set-PackageDepot',
             'Set-PackageEndpoint',
             'Set-PackagePublisher',
@@ -98,6 +114,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
 
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Package\Eigenverft.Manifested.Package.Cmd.InvokePackage.ps1') -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Package\Eigenverft.Manifested.Package.Cmd.GetPackageState.ps1') -PathType Leaf | Should -BeTrue
+        Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Package\Eigenverft.Manifested.Package.Cmd.SearchPackage.ps1') -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Depot\Eigenverft.Manifested.Package.Cmd.PackageDepot.ps1') -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Endpoint\Eigenverft.Manifested.Package.Cmd.PackageEndpoint.ps1') -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Publisher\Eigenverft.Manifested.Package.Cmd.PackagePublisher.ps1') -PathType Leaf | Should -BeTrue

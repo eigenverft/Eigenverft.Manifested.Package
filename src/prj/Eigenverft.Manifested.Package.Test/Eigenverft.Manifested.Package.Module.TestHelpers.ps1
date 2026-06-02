@@ -753,7 +753,7 @@ function global:New-TestVSCodeDefinitionDocument {
     }
 
     return @{
-        schemaVersion = '1.8'
+        schemaVersion = '1.9'
         definitionPublication = @{
             publisherId = $PublisherId
             publisherName = $PublisherName
@@ -774,7 +774,9 @@ function global:New-TestVSCodeDefinitionDocument {
                 summary     = 'Code editor'
             }
         }
-        dependencies  = @()
+        dependency    = @{
+            requires = @()
+        }
         artifacts     = @{
             targets  = $artifactTargets
             releases = $artifactReleases
@@ -842,6 +844,56 @@ function global:New-TestVSCodeDefinitionDocument {
         }
     }
 }
+
+function global:New-TestDependencyPlannerConfig {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$DefinitionId,
+
+        [string]$PublisherId = 'Eigenverft',
+
+        [string[]]$Versions = @('1.0.0'),
+
+        [object[]]$Dependencies = @(),
+
+        [AllowNull()]
+        [object]$DependencyPolicy = $null,
+
+        [AllowNull()]
+        [string]$InventoryPath = $null
+    )
+
+    $releases = @(
+        foreach ($version in @($Versions)) {
+            New-TestPackageRelease -Id ("{0}-win-x64-{1}" -f $DefinitionId, $version) -Version ([string]$version) -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+        }
+    )
+    $definition = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -DefinitionId $DefinitionId -PublisherId $PublisherId -Releases $releases)
+    $definition.dependency.requires = @($Dependencies)
+    if ($null -ne $DependencyPolicy) {
+        if (-not $definition.dependency.PSObject.Properties['policy']) {
+            $definition.dependency | Add-Member -MemberType NoteProperty -Name policy -Value $DependencyPolicy -Force
+        }
+        else {
+            $definition.dependency.policy = $DependencyPolicy
+        }
+    }
+
+    return [pscustomobject]@{
+        DefinitionId                         = $DefinitionId
+        DefinitionPublisherId                = $PublisherId
+        DefinitionPublisherName              = $PublisherId
+        DefinitionRevision                   = 1
+        DefinitionPublishedAtUtc             = '2026-05-13T12:00:00Z'
+        DefinitionEndpointName               = 'test'
+        Definition                           = $definition
+        ReleaseTrack                         = 'stable'
+        Platform                             = 'windows'
+        Architecture                         = 'x64'
+        PackageAssignmentInventoryFilePath   = $InventoryPath
+    }
+}
+
 function global:Write-TestPackageDocuments {
     param(
         [Parameter(Mandatory = $true)]

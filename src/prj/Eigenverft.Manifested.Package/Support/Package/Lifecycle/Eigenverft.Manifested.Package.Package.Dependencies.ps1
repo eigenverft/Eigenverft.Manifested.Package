@@ -115,7 +115,13 @@ dependency logic can extend this function without changing the command flow.
         [AllowNull()]
         [string]$PublisherId,
 
-        [object[]]$DependencyStack = @()
+        [object[]]$DependencyStack = @(),
+
+        [AllowNull()]
+        [psobject]$DependencyPlan = $null,
+
+        [AllowNull()]
+        [string]$DependencyPlanNodeKey = $null
     )
 
     $acceptUnknownSigningKey = $PackageResult.PSObject.Properties['PackageConfig'] -and
@@ -135,6 +141,10 @@ dependency logic can extend this function without changing the command flow.
     }
     if ($PackageResult.PSObject.Properties['MaterializeOnly'] -and [bool]$PackageResult.MaterializeOnly) {
         $invokeParams.MaterializeOnly = $true
+    }
+    if ($DependencyPlan -and -not [string]::IsNullOrWhiteSpace($DependencyPlanNodeKey)) {
+        $invokeParams.DependencyPlan = $DependencyPlan
+        $invokeParams.DependencyPlanNodeKey = $DependencyPlanNodeKey
     }
 
     return (Invoke-PackageDefinitionCommandCore @invokeParams)
@@ -164,9 +174,64 @@ Resolve-PackageDependencies -PackageResult $result
     )
 
     $definition = $PackageResult.PackageConfig.Definition
+    $dependencyModel = Get-PackageDefinitionDependencyModel_1_9 -Definition $definition -DefinitionId ([string]$PackageResult.DefinitionId)
     $dependencyRecords = New-Object System.Collections.Generic.List[object]
     $seenDependencyIds = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
-    if (-not $definition.PSObject.Properties['dependencies'] -or $null -eq $definition.dependencies) {
+
+    if ($PackageResult.PSObject.Properties['DependencyPlan'] -and $PackageResult.DependencyPlan -and
+        $PackageResult.PSObject.Properties['DependencyPlanNodeKey'] -and
+        -not [string]::IsNullOrWhiteSpace([string]$PackageResult.DependencyPlanNodeKey)) {
+        $dependencyRecords = New-Object System.Collections.Generic.List[object]
+        $plan = $PackageResult.DependencyPlan
+        $nodeKey = [string]$PackageResult.DependencyPlanNodeKey
+        $childEdges = @(Get-PackageDependencyPlanChildEdges -Plan $plan -NodeKey $nodeKey)
+        foreach ($edge in @($childEdges)) {
+            $childNode = Get-PackageDependencyPlanNode -Plan $plan -NodeKey ([string]$edge.ChildNodeKey)
+            if (-not $childNode) {
+                throw "Approved dependency plan references missing node '$($edge.ChildNodeKey)'."
+            }
+
+            $dependencyDefinitionId = [string]$childNode.DefinitionId
+            $dependencyPublisherId = [string]$childNode.PublisherId
+            Write-PackageExecutionMessage -Message ("[STEP] Ensuring approved package dependency '{0}' from publisher '{1}'." -f $dependencyDefinitionId, $dependencyPublisherId)
+            $dependencyResult = Resolve-PackageDependencyDefinition -PackageResult $PackageResult -PublisherId $dependencyPublisherId -DefinitionId $dependencyDefinitionId -DependencyStack $DependencyStack -DependencyPlan $plan -DependencyPlanNodeKey ([string]$childNode.NodeKey)
+            $resolvedDependencyPublisherId = if ($dependencyResult) { Get-PackageResultPublisherId -PackageResult $dependencyResult } else { $dependencyPublisherId }
+            $dependencyStatus = if ($dependencyResult) { [string]$dependencyResult.Status } else { '<none>' }
+            $materializeOnly = $PackageResult.PSObject.Properties['MaterializeOnly'] -and [bool]$PackageResult.MaterializeOnly
+            $dependencyAccepted = if ($materializeOnly) {
+                [string]::Equals($dependencyStatus, 'Materialized', [System.StringComparison]::OrdinalIgnoreCase) -or
+                    [string]::Equals($dependencyStatus, 'Ready', [System.StringComparison]::OrdinalIgnoreCase)
+            }
+            else {
+                [string]::Equals($dependencyStatus, 'Ready', [System.StringComparison]::OrdinalIgnoreCase)
+            }
+            if (-not $dependencyResult -or -not $dependencyAccepted) {
+                $expectedStatus = if ($materializeOnly) { 'materialized' } else { 'ready' }
+                throw "Package dependency '$dependencyPublisherId/$dependencyDefinitionId' did not become $expectedStatus. Status='$dependencyStatus'."
+            }
+
+            $dependencyRecords.Add([pscustomobject]@{
+                PublisherId    = $resolvedDependencyPublisherId
+                DefinitionId   = $dependencyDefinitionId
+                Status         = $dependencyStatus
+                CommandMode    = if ($dependencyResult.PSObject.Properties['CommandMode']) { [string]$dependencyResult.CommandMode } else { $null }
+                Offline        = if ($dependencyResult.PSObject.Properties['Offline']) { [bool]$dependencyResult.Offline } else { $false }
+                InstallOrigin  = [string]$dependencyResult.InstallOrigin
+                InstallStatus  = if ($dependencyResult.Assigned -and $dependencyResult.Assigned.PSObject.Properties['Status']) { [string]$dependencyResult.Assigned.Status } else { $null }
+                EntryPoints    = if ($dependencyResult.PSObject.Properties['EntryPoints']) { $dependencyResult.EntryPoints } else { $null }
+                Commands       = @(Resolve-PackageDependencyCommandEntryPoints -DependencyResult $dependencyResult)
+                PlanNodeKey    = [string]$childNode.NodeKey
+                Result         = $dependencyResult
+            }) | Out-Null
+
+            Write-PackageExecutionMessage -Message ("[STATE] Approved package dependency ready: publisher='{0}', definition='{1}', version='{2}', installOrigin='{3}', installStatus='{4}'." -f $resolvedDependencyPublisherId, $dependencyDefinitionId, [string]$childNode.PackageVersion, [string]$dependencyResult.InstallOrigin, $(if ($dependencyResult.Assigned -and $dependencyResult.Assigned.PSObject.Properties['Status']) { [string]$dependencyResult.Assigned.Status } else { '<none>' }))
+        }
+
+        $PackageResult.Dependencies = @($dependencyRecords.ToArray())
+        return $PackageResult
+    }
+
+    if (@($dependencyModel.Requires).Count -eq 0) {
         $PackageResult.Dependencies = @()
         return $PackageResult
     }
@@ -177,7 +242,7 @@ Resolve-PackageDependencies -PackageResult $result
         $currentStack = @(Get-PackageDependencyReferenceKey -PublisherId $parentPublisherId -DefinitionId ([string]$PackageResult.DefinitionId))
     }
 
-    foreach ($dependency in @($definition.dependencies)) {
+    foreach ($dependency in @($dependencyModel.Requires)) {
         if (-not $dependency.PSObject.Properties['definitionId'] -or [string]::IsNullOrWhiteSpace([string]$dependency.definitionId)) {
             $defLabel = if ($definition.PSObject.Properties['definitionPublication'] -and $definition.definitionPublication.PSObject.Properties['definitionId']) { [string]$definition.definitionPublication.definitionId } elseif ($definition.PSObject.Properties['id']) { [string]$definition.id } else { [string]$PackageResult.DefinitionId }
             throw "Package definition '$defLabel' has dependency without definitionId."

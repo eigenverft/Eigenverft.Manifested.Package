@@ -279,9 +279,9 @@ function Sign-PackageDefinition {
         $certificate = Import-PackageCertificate -Path $signingReference.PfxPath -Password $signingReference.Password -WithPrivateKey
         try {
             if (-not $KeepSchemaVersion.IsPresent) {
-                Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name 'schemaVersion' -Value '1.8'
+                Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name 'schemaVersion' -Value '1.9'
                 if ($definitionInfo.Document.PSObject.Properties['$schema'] -and -not [string]::IsNullOrWhiteSpace([string]$definitionInfo.Document.'$schema')) {
-                    Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name '$schema' -Value (([string]$definitionInfo.Document.'$schema') -replace 'package-definition-1\.(?:6|7|8)\.schema\.json', 'package-definition-1.8.schema.json')
+                    Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name '$schema' -Value (([string]$definitionInfo.Document.'$schema') -replace 'package-definition-1\.(?:6|7|8|9)\.schema\.json', 'package-definition-1.9.schema.json')
                 }
             }
 
@@ -464,9 +464,9 @@ function Remove-PackageDefinitionSignature {
     process {
         $definitionInfo = Read-PackageJsonDocument -Path $Path
         if (-not $KeepSchemaVersion.IsPresent) {
-            Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name 'schemaVersion' -Value '1.8'
+            Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name 'schemaVersion' -Value '1.9'
             if ($definitionInfo.Document.PSObject.Properties['$schema'] -and -not [string]::IsNullOrWhiteSpace([string]$definitionInfo.Document.'$schema')) {
-                Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name '$schema' -Value (([string]$definitionInfo.Document.'$schema') -replace 'package-definition-1\.(?:6|7|8)\.schema\.json', 'package-definition-1.8.schema.json')
+                Set-PackageObjectProperty -InputObject $definitionInfo.Document -Name '$schema' -Value (([string]$definitionInfo.Document.'$schema') -replace 'package-definition-1\.(?:6|7|8|9)\.schema\.json', 'package-definition-1.9.schema.json')
             }
         }
         Set-PackageDefinitionUnsignedSignature -Definition $definitionInfo.Document

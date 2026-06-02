@@ -1,17 +1,17 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://eigenverft.local/schemas/eigenverft-module-package-definition-1.8.schema.json",
-  "title": "Eigenverft module package definition document (wire format 1.8)",
-  "$comment": "META: JSON Schema for INSTANCE package-definition documents (one file per definition). Runtime validates with DefinitionSchema.ps1 + DefinitionSchema.Wire1_8.ps1, signature assertions, and 1.8 acquisition vocabulary assertions. definitionPublication.definitionSignature is required; kind=unsigned is valid for draft authoring, kind=signed after Sign-PackageDefinition. Endpoints are discovery-only. Recommended layout under an endpoint root: <publisherId>/<definitionId>.json.",
-  "description": "AUTHOR TASK - Produce or edit one complete package-definition JSON object for Eigenverft.Manifested.Package. Required top-level order: schemaVersion, definitionPublication, display, dependencies, artifacts, discovery, packageOperations. Use schemaVersion exactly 1.8.\n\nAUTHORING VS SIGNING: Design semantic package content first (dependencies, artifacts, discovery, packageOperations). A valid embedded signature is not required while drafting. Always include definitionPublication.definitionSignature: for drafts use kind=unsigned with format and signedContent only; do not invent keyThumbprint, signedAtUtc, certificatePem, or signatureValue. Never hand-edit signatureValue base64. After the JSON content is final, signing is a separate maintainer step.\n\nSIGNING WORKFLOW: If no catalog-signing certificate exists, run New-PackageSigningCertificate (creates a password-protected PFX, public CER, and adjacent DPAPI password descriptor; keep the private key off endpoints). Prefer friendly metadata fields such as -CommonName, -Organization, -OrganizationalUnit, -Country, and -SignerDisplayName over raw -Subject unless advanced X.509 control is required. Inject or refresh the embedded signature with Sign-PackageDefinition -Path <file> -Cert <friendly-name-or-pfx> -KeepSchemaVersion and optionally -Password <secure> for CI. Sign-PackageDefinition embeds the public certificate so clients can verify before trusting. Verify with Verify-PackageDefinitionSignature or Verify-PackageDefinitionCatalog before replacing published copies. Admins can preseed public trust with the CER via Import-PackageTrust or Trust-PackageSigningCertificate. Re-run Sign-PackageDefinition after any meaningful definition change and bump definitionRevision.\n\nDEPLOYMENT (neutral): Whether an embedded signature is required depends on client catalogTrust.policy and how trust is delivered—not on this schema alone. Synced file-share or NAS endpoint roots used with strict policy need kind=signed definitions and either trusted keys in PackageTrustInventory.json or a valid embedded certificate that local policy allows the user to trust. Unsigned catalogs may run only where catalogTrust.policy=allowUnsigned and publisher policy explicitly allows unsigned definitions.\n\nPUBLICATION: definitionPublication.publisherId is the maintainer namespace (shipped: Eigenverft; teams: e.g. My Team). definitionPublication.definitionId is the id used by Invoke-Package. Increment definitionPublication.definitionRevision for every meaningful JSON change. publishedAtUtc is audit metadata only.\n\nCATALOG TRUST: Production strict clients expect kind=signed with RSA/SHA-256 signatureValue over canonical JSON excluding signatureValue. certificatePem is public verification material, not a trust decision. kind=unsigned is explicit draft/migration shape and does not prove authorship under strict policy.\n\nDEPENDENCIES: dependencies is required but may be []. dependency.publisherId is optional.\n\nCOMMON TRAPS: root repositoryId and root definitionId are retired; vendorDownload candidates need sourceId+sourcePath or direct url/urlTemplate; GitHub release sources need real assets and releaseTag; packageDepot is the only prepared artifact acquisition candidate; package-definition filesystem acquisition is retired in 1.8; NSIS and Inno Setup differ; choose package-managed shims vs installer PATH deliberately.",
-  "x-eigenverftAgentHint": "LLM/agent: edit INSTANCE JSON conforming to this schema and DefinitionSchema.Wire1_8.ps1 plus 1.8 signature rules. Author drafts with definitionPublication.definitionSignature.kind=unsigned (no signatureValue). Do not fabricate signatures. After content is stable, a human or automation runs Sign-PackageDefinition -KeepSchemaVersion or Resign-PackageDefinition -KeepSchemaVersion; use New-PackageSigningCertificate when no key exists yet. Shipped examples: Endpoint/Defaults/Eigenverft (signed). Layout: <publisherId>/<definitionId>.json under endpoint roots. Bump definitionRevision on every definition change. Embedded signatures are required for strict file-based catalogs; web or centrally trusted endpoints may use other trust delivery—check deployment policy before assuming unsigned JSON is runnable.",
+  "$id": "https://eigenverft.local/schemas/eigenverft-module-package-definition-1.9.schema.json",
+  "title": "Eigenverft module package definition document (wire format 1.9)",
+  "$comment": "META: JSON Schema for INSTANCE package-definition documents (one file per definition). Runtime validates with DefinitionSchema.ps1 + DefinitionSchema.Wire1_9.ps1, signature assertions, and 1.9 acquisition vocabulary assertions. definitionPublication.definitionSignature is required; kind=unsigned is valid for draft authoring, kind=signed after Sign-PackageDefinition. Endpoints are discovery-only. Recommended layout under an endpoint root: <publisherId>/<definitionId>.json.",
+  "description": "AUTHOR TASK - Produce or edit one complete package-definition JSON object for Eigenverft.Manifested.Package. Required top-level order: schemaVersion, definitionPublication, display, dependency, artifacts, discovery, packageOperations. Use schemaVersion exactly 1.9.\n\nAUTHORING VS SIGNING: Design semantic package content first (dependency, artifacts, discovery, packageOperations). A valid embedded signature is not required while drafting. Always include definitionPublication.definitionSignature: for drafts use kind=unsigned with format and signedContent only; do not invent keyThumbprint, signedAtUtc, certificatePem, or signatureValue. Never hand-edit signatureValue base64. After the JSON content is final, signing is a separate maintainer step.\n\nSIGNING WORKFLOW: If no catalog-signing certificate exists, run New-PackageSigningCertificate (creates a password-protected PFX, public CER, and adjacent DPAPI password descriptor; keep the private key off endpoints). Prefer friendly metadata fields such as -CommonName, -Organization, -OrganizationalUnit, -Country, and -SignerDisplayName over raw -Subject unless advanced X.509 control is required. Inject or refresh the embedded signature with Sign-PackageDefinition -Path <file> -Cert <friendly-name-or-pfx> -KeepSchemaVersion and optionally -Password <secure> for CI. Sign-PackageDefinition embeds the public certificate so clients can verify before trusting. Verify with Verify-PackageDefinitionSignature or Verify-PackageDefinitionCatalog before replacing published copies. Admins can preseed public trust with the CER via Import-PackageTrust or Trust-PackageSigningCertificate. Re-run Sign-PackageDefinition after any meaningful definition change and bump definitionRevision.\n\nDEPLOYMENT (neutral): Whether an embedded signature is required depends on client catalogTrust.policy and how trust is delivered-not on this schema alone. Synced file-share or NAS endpoint roots used with strict policy need kind=signed definitions and either trusted keys in PackageTrustInventory.json or a valid embedded certificate that local policy allows the user to trust. Unsigned catalogs may run only where catalogTrust.policy=allowUnsigned and publisher policy explicitly allows unsigned definitions.\n\nPUBLICATION: definitionPublication.publisherId is the maintainer namespace (shipped: Eigenverft; teams: e.g. My Team). definitionPublication.definitionId is the id used by Invoke-Package. Increment definitionPublication.definitionRevision for every meaningful JSON change. publishedAtUtc is audit metadata only.\n\nCATALOG TRUST: Production strict clients expect kind=signed with RSA/SHA-256 signatureValue over canonical JSON excluding signatureValue. certificatePem is public verification material, not a trust decision. kind=unsigned is explicit draft/migration shape and does not prove authorship under strict policy.\n\nDEPENDENCY: dependency is required. dependency.requires is required but may be []. dependency.policy is optional and contains peer policy such as conflictsWith and requiresAbsent. dependency.requires[].publisherId is optional.\n\nCOMMON TRAPS: root repositoryId and root definitionId are retired; top-level dependencies and dependencyPolicy are retired in 1.9; vendorDownload candidates need sourceId+sourcePath or direct url/urlTemplate; GitHub release sources need real assets and releaseTag; packageDepot is the only prepared artifact acquisition candidate; package-definition filesystem acquisition is retired; NSIS and Inno Setup differ; choose package-managed shims vs installer PATH deliberately.",
+  "x-eigenverftAgentHint": "LLM/agent: edit INSTANCE JSON conforming to this schema and DefinitionSchema.Wire1_9.ps1 plus 1.9 signature rules. Author drafts with definitionPublication.definitionSignature.kind=unsigned (no signatureValue). Do not fabricate signatures. After content is stable, a human or automation runs Sign-PackageDefinition -KeepSchemaVersion or Resign-PackageDefinition -KeepSchemaVersion; use New-PackageSigningCertificate when no key exists yet. Shipped examples: Endpoint/Defaults/Eigenverft (signed). Layout: <publisherId>/<definitionId>.json under endpoint roots. Bump definitionRevision on every definition change. Embedded signatures are required for strict file-based catalogs; web or centrally trusted endpoints may use other trust delivery-check deployment policy before assuming unsigned JSON is runnable.",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "schemaVersion",
     "definitionPublication",
     "display",
-    "dependencies",
+    "dependency",
     "artifacts",
     "discovery",
     "packageOperations"
@@ -23,12 +23,12 @@
     },
     "$schema": {
       "type": "string",
-      "description": "Optional. In instance documents set to ../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.8.schema.json (relative to Endpoint/Defaults/Eigenverft) so editors attach validation; runtime ignores."
+      "description": "Optional. In instance documents set to ../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json (relative to Endpoint/Defaults/Eigenverft) so editors attach validation; runtime ignores."
     },
     "schemaVersion": {
       "type": "string",
-      "const": "1.8",
-      "description": "Must be the literal string 1.8. This wire version clarifies package artifact acquisition as packageDepot or vendorDownload."
+      "const": "1.9",
+      "description": "Must be the literal string 1.9. This wire version consolidates dependency edges and peer policy under one top-level dependency object."
     },
     "definitionPublication": {
       "$ref": "#/$defs/definitionPublication",
@@ -38,12 +38,9 @@
       "$ref": "#/$defs/display",
       "description": "Human-readable names and summaries for logs and UI; does not affect install mechanics."
     },
-    "dependencies": {
-      "type": "array",
-      "description": "Required array (may be empty []). Lists other package definitions that must reach Assigned before this one. publisherId is optional; omit it for catalog-trust conflict policy, include it to pin one definitionPublication.publisherId. Do not use retired repositoryId or repositorySourceId on dependency objects.",
-      "items": {
-        "$ref": "#/$defs/dependency"
-      }
+    "dependency": {
+      "$ref": "#/$defs/dependencyModel",
+      "description": "Required dependency model. dependency.requires lists package definitions that must reach Assigned before this one; dependency.policy declares peer-policy constraints evaluated by the dependency planner."
     },
     "artifacts": {
       "$ref": "#/$defs/artifacts",
@@ -119,7 +116,7 @@
         },
         "definitionSignature": {
           "$ref": "#/$defs/definitionSignature",
-          "description": "Catalog trust metadata for this file. Required on every 1.8 definition. Draft authoring: kind=unsigned (no signatureValue). Published strict catalogs: kind=signed after Sign-PackageDefinition or Resign-PackageDefinition. Do not hand-edit signatureValue."
+          "description": "Catalog trust metadata for this file. Required on every 1.9 definition. Draft authoring: kind=unsigned (no signatureValue). Published strict catalogs: kind=signed after Sign-PackageDefinition or Resign-PackageDefinition. Do not hand-edit signatureValue."
         }
       }
     },
@@ -144,7 +141,7 @@
         "format": {
           "type": "string",
           "const": "embedded-json-rsa-sha256-v1",
-          "description": "Fixed catalog signature format for 1.8. Required for both unsigned and signed kinds."
+          "description": "Fixed catalog signature format for 1.9. Required for both unsigned and signed kinds."
         },
         "signedContent": {
           "type": "string",
@@ -260,7 +257,28 @@
         }
       }
     },
-    "dependency": {
+    "dependencyPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "conflictsWith": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/dependencyPolicyReference"
+          },
+          "description": "Definitions that must not appear in the same approved dependency plan."
+        },
+        "requiresAbsent": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/dependencyPolicyReference"
+          },
+          "description": "Definitions that must be absent from the approved plan and local assignment inventory."
+        }
+      },
+      "description": "Optional peer policy evaluated by the dependency planner before install/materialization. conflictsWith blocks incompatible planned peers; requiresAbsent blocks peers that are planned or already assigned locally."
+    },
+    "dependencyPolicyReference": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -269,13 +287,23 @@
       "properties": {
         "publisherId": {
           "$ref": "#/$defs/publisherIdentifier",
-          "description": "Optional publisher namespace pin for this dependency. Omit to use catalog-trust conflict policy."
+          "description": "Optional publisher namespace pin for the peer-policy reference."
         },
         "definitionId": {
           "$ref": "#/$defs/identifier",
-          "description": "Package definition id to assign before this package."
+          "description": "Package definition id referenced by peer policy."
+        },
+        "versionRange": {
+          "$ref": "#/$defs/versionRange",
+          "description": "Optional version range limiting the peer-policy match."
         }
       }
+    },
+    "versionRange": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?:\\s*,?\\s*(?:>=|<=|==|=|>|<)?[^\\s,|*^~]+)+\\s*$",
+      "description": "Comparator range string. Terms are whitespace or comma separated and ANDed; supported operators are =, ==, >, >=, <, <=; bare version means exact match."
     },
     "artifacts": {
       "type": "object",
@@ -455,7 +483,7 @@
     "upstreamRelease": {
       "type": "object",
       "additionalProperties": false,
-      "$comment": "Conditional requirements: when sourceId resolves to a source whose kind requires a fixed upstream tag (for example githubRelease), the runtime expects releaseTag to be populated. JSON Schema cannot express that dependency here; validate combinations against Wire1_8 or follow existing definitions.",
+      "$comment": "Conditional requirements: when sourceId resolves to a source whose kind requires a fixed upstream tag (for example githubRelease), the runtime expects releaseTag to be populated. JSON Schema cannot express that dependency here; validate combinations against Wire1_9 or follow existing definitions.",
       "required": [
         "sourceId"
       ],
@@ -827,7 +855,7 @@
     "metadataFileProbe": {
       "type": "object",
       "additionalProperties": true,
-      "$comment": "additionalProperties allows forward-compatible metadata keys beyond relativePath; only keys understood by the engine have effect - treat unknown keys as documentation until Wire1_8 recognizes them.",
+      "$comment": "additionalProperties allows forward-compatible metadata keys beyond relativePath; only keys understood by the engine have effect - treat unknown keys as documentation until Wire1_9 recognizes them.",
       "required": [
         "relativePath"
       ],
@@ -985,100 +1013,224 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": [ "id", "kind", "searchOrder", "name" ],
+          "required": [
+            "id",
+            "kind",
+            "searchOrder",
+            "name"
+          ],
           "properties": {
-            "id": { "$ref": "#/$defs/identifier" },
-            "kind": { "const": "command" },
-            "searchOrder": { "type": "integer", "minimum": 0 },
-            "name": { "type": "string", "minLength": 1, "description": "Executable command name resolved as an application from PATH." }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [ "id", "kind", "searchOrder", "path" ],
-          "properties": {
-            "id": { "$ref": "#/$defs/identifier" },
-            "kind": { "const": "path" },
-            "searchOrder": { "type": "integer", "minimum": 0 },
-            "path": { "type": "string", "minLength": 1, "description": "Concrete file path to probe." }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [ "id", "kind", "searchOrder", "path" ],
-          "properties": {
-            "id": { "$ref": "#/$defs/identifier" },
-            "kind": { "const": "directory" },
-            "searchOrder": { "type": "integer", "minimum": 0 },
-            "path": { "type": "string", "minLength": 1, "description": "Concrete install directory path to probe." }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [ "id", "kind", "searchOrder", "paths", "installDirectorySource" ],
-          "properties": {
-            "id": { "$ref": "#/$defs/identifier", "description": "Stable id so removal can reference this uninstall-registry source." },
-            "kind": { "const": "windowsUninstallRegistryKey" },
-            "searchOrder": { "type": "integer", "minimum": 0 },
-            "paths": {
-              "type": "array",
-              "minItems": 1,
-              "items": { "type": "string", "minLength": 1 },
-              "description": "Direct registry key paths such as HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Example."
+            "id": {
+              "$ref": "#/$defs/identifier"
             },
-            "installDirectorySource": {
+            "kind": {
+              "const": "command"
+            },
+            "searchOrder": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "name": {
               "type": "string",
-              "enum": [ "installLocation", "displayIcon", "displayIconDirectory", "uninstallString", "uninstallStringDirectory" ]
+              "minLength": 1,
+              "description": "Executable command name resolved as an application from PATH."
             }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": [ "id", "kind", "searchOrder", "rootPaths", "displayNamePatterns", "installDirectorySource" ],
+          "required": [
+            "id",
+            "kind",
+            "searchOrder",
+            "path"
+          ],
           "properties": {
-            "id": { "$ref": "#/$defs/identifier", "description": "Stable id so removal can reference this uninstall-registry search." },
-            "kind": { "const": "windowsUninstallRegistrySearch" },
-            "searchOrder": { "type": "integer", "minimum": 0 },
+            "id": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "path"
+            },
+            "searchOrder": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Concrete file path to probe."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "kind",
+            "searchOrder",
+            "path"
+          ],
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
+              "const": "directory"
+            },
+            "searchOrder": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Concrete install directory path to probe."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "kind",
+            "searchOrder",
+            "paths",
+            "installDirectorySource"
+          ],
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/identifier",
+              "description": "Stable id so removal can reference this uninstall-registry source."
+            },
+            "kind": {
+              "const": "windowsUninstallRegistryKey"
+            },
+            "searchOrder": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "paths": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": "Direct registry key paths such as HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Example."
+            },
+            "installDirectorySource": {
+              "type": "string",
+              "enum": [
+                "installLocation",
+                "displayIcon",
+                "displayIconDirectory",
+                "uninstallString",
+                "uninstallStringDirectory"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "kind",
+            "searchOrder",
+            "rootPaths",
+            "displayNamePatterns",
+            "installDirectorySource"
+          ],
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/identifier",
+              "description": "Stable id so removal can reference this uninstall-registry search."
+            },
+            "kind": {
+              "const": "windowsUninstallRegistrySearch"
+            },
+            "searchOrder": {
+              "type": "integer",
+              "minimum": 0
+            },
             "rootPaths": {
               "type": "array",
               "minItems": 1,
-              "items": { "type": "string", "minLength": 1 },
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
               "description": "Uninstall registry roots to enumerate, for example HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall."
             },
             "displayNamePatterns": {
               "type": "array",
               "minItems": 1,
-              "items": { "type": "string", "minLength": 1 },
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
               "description": "Wildcard patterns matched against DisplayName after template expansion, for example 7-Zip {version}*."
             },
             "publisherPatterns": {
               "type": "array",
-              "items": { "type": "string", "minLength": 1 },
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
               "description": "Optional wildcard patterns matched against Publisher after template expansion."
             },
             "installDirectorySource": {
               "type": "string",
-              "enum": [ "installLocation", "displayIcon", "displayIconDirectory", "uninstallString", "uninstallStringDirectory" ]
+              "enum": [
+                "installLocation",
+                "displayIcon",
+                "displayIconDirectory",
+                "uninstallString",
+                "uninstallStringDirectory"
+              ]
             }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": [ "id", "kind", "searchOrder", "name", "requiredVersion" ],
+          "required": [
+            "id",
+            "kind",
+            "searchOrder",
+            "name",
+            "requiredVersion"
+          ],
           "properties": {
-            "id": { "$ref": "#/$defs/identifier", "description": "Stable id for this PowerShell module discovery entry." },
-            "kind": { "const": "powershellModule" },
-            "searchOrder": { "type": "integer", "minimum": 0 },
-            "name": { "type": "string", "minLength": 1 },
-            "requiredVersion": { "type": "string", "minLength": 1 },
+            "id": {
+              "$ref": "#/$defs/identifier",
+              "description": "Stable id for this PowerShell module discovery entry."
+            },
+            "kind": {
+              "const": "powershellModule"
+            },
+            "searchOrder": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "requiredVersion": {
+              "type": "string",
+              "minLength": 1
+            },
             "scope": {
               "type": "string",
-              "enum": [ "CurrentUser", "AllUsers" ],
+              "enum": [
+                "CurrentUser",
+                "AllUsers"
+              ],
               "default": "CurrentUser"
             },
             "requireNuGetProvider": {
@@ -1103,12 +1255,20 @@
         "match": {
           "type": "object",
           "additionalProperties": false,
-          "required": [ "kind", "value" ],
+          "required": [
+            "kind",
+            "value"
+          ],
           "properties": {
-            "kind": { "const": "fileName" },
-            "value": { "type": "string", "minLength": 1 }
+            "kind": {
+              "const": "fileName"
+            },
+            "value": {
+              "type": "string",
+              "minLength": 1
+            }
           },
-          "description": "Supported shape in Wire1_8: { \"kind\": \"fileName\", \"value\": \"example.exe\" }."
+          "description": "Supported shape in Wire1_9: { \"kind\": \"fileName\", \"value\": \"example.exe\" }."
         },
         "installRootRelativePath": {
           "type": "string",
@@ -1329,10 +1489,19 @@
         "targetDirectoryArgument": {
           "type": "object",
           "additionalProperties": false,
-          "required": [ "enabled", "prefix" ],
+          "required": [
+            "enabled",
+            "prefix"
+          ],
           "properties": {
-            "enabled": { "type": "boolean" },
-            "prefix": { "type": "string", "minLength": 1, "description": "Usually /D=. The engine appends the install directory unquoted and last." }
+            "enabled": {
+              "type": "boolean"
+            },
+            "prefix": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Usually /D=. The engine appends the install directory unquoted and last."
+            }
           },
           "description": "NSIS target directory argument. If enabled, the engine appends {prefix}{installDirectory} as the final argument without quotes."
         },
@@ -1380,11 +1549,24 @@
         "targetDirectoryArgument": {
           "type": "object",
           "additionalProperties": false,
-          "required": [ "enabled", "prefix", "quoteValue" ],
+          "required": [
+            "enabled",
+            "prefix",
+            "quoteValue"
+          ],
           "properties": {
-            "enabled": { "type": "boolean" },
-            "prefix": { "type": "string", "minLength": 1, "description": "Usually /DIR=." },
-            "quoteValue": { "type": "boolean", "description": "Usually true for Inno Setup because install paths commonly contain spaces." }
+            "enabled": {
+              "type": "boolean"
+            },
+            "prefix": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Usually /DIR=."
+            },
+            "quoteValue": {
+              "type": "boolean",
+              "description": "Usually true for Inno Setup because install paths commonly contain spaces."
+            }
           }
         },
         "successExitCodes": {
@@ -1432,10 +1614,19 @@
         "targetDirectoryProperty": {
           "type": "object",
           "additionalProperties": false,
-          "required": [ "enabled", "name" ],
+          "required": [
+            "enabled",
+            "name"
+          ],
           "properties": {
-            "enabled": { "type": "boolean" },
-            "name": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$", "description": "MSI public property receiving installDirectory, for example INSTALLDIR." }
+            "enabled": {
+              "type": "boolean"
+            },
+            "name": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Z0-9_]*$",
+              "description": "MSI public property receiving installDirectory, for example INSTALLDIR."
+            }
           }
         },
         "successExitCodes": {
@@ -1692,7 +1883,11 @@
           "properties": {
             "kind": {
               "type": "string",
-              "enum": [ "nsisUninstaller", "innoSetupUninstaller", "msiUninstaller" ]
+              "enum": [
+                "nsisUninstaller",
+                "innoSetupUninstaller",
+                "msiUninstaller"
+              ]
             },
             "commandSource": {
               "$ref": "#/$defs/uninstallCommandSource"
@@ -2021,7 +2216,7 @@
           }
         }
       ],
-      "$comment": "This oneOf currently covers osVersion and memory GiB checks implemented in Wire1_8; additional compatibility kinds may appear in definitions before this schema lists them - extend the schema when adding new kinds."
+      "$comment": "This oneOf currently covers osVersion and memory GiB checks implemented in Wire1_9; additional compatibility kinds may appear in definitions before this schema lists them - extend the schema when adding new kinds."
     },
     "onFail": {
       "type": "string",
@@ -2086,6 +2281,48 @@
       "type": "array",
       "items": {
         "type": "integer"
+      }
+    },
+    "dependencyRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "definitionId"
+      ],
+      "properties": {
+        "publisherId": {
+          "$ref": "#/$defs/publisherIdentifier",
+          "description": "Optional publisher namespace pin for this dependency. Omit to use catalog-trust conflict policy."
+        },
+        "definitionId": {
+          "$ref": "#/$defs/identifier",
+          "description": "Package definition id to assign before this package."
+        },
+        "versionRange": {
+          "$ref": "#/$defs/versionRange",
+          "description": "Optional dependency edge version range. Use comparator terms such as >=1.2.0 <2.0.0; terms separated by whitespace or comma are ANDed. Bare versions are exact matches."
+        }
+      },
+      "description": "Dependency edge reference used inside dependency.requires[]."
+    },
+    "dependencyModel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requires"
+      ],
+      "properties": {
+        "requires": {
+          "type": "array",
+          "description": "Required array (may be empty []). Lists other package definitions that must reach Assigned before this one. publisherId is optional; omit it for catalog-trust conflict policy, include it to pin one definitionPublication.publisherId. Do not use retired repositoryId or repositorySourceId on dependency objects.",
+          "items": {
+            "$ref": "#/$defs/dependencyRequirement"
+          }
+        },
+        "policy": {
+          "$ref": "#/$defs/dependencyPolicy",
+          "description": "Optional peer policy evaluated by the dependency planner before install/materialization."
+        }
       }
     }
   }

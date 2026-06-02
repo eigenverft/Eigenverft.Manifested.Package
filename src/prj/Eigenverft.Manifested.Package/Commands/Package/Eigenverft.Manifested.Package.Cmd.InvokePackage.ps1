@@ -54,6 +54,19 @@ function Invoke-Package {
         throw "Invoke-Package -MaterializeOnly is its own command mode. Do not combine it with -DesiredState Assigned or -DesiredState Removed."
     }
 
+    $dependencyPlan = $null
+    $shouldPlanDependencies = $MaterializeOnly.IsPresent -or [string]::Equals($DesiredState, 'Assigned', [System.StringComparison]::OrdinalIgnoreCase)
+    if ($shouldPlanDependencies) {
+        Write-PackageExecutionMessage -Message ("[STEP] Planning package dependencies for {0} root definition(s)." -f @($DefinitionId).Count)
+        $dependencyPlan = New-PackageDependencyPlan -PublisherId $PublisherId -DefinitionId $DefinitionId -DesiredState 'Assigned' -PackageVersion $normalizedPackageVersion -PackageVersionOverrideSpecified $packageVersionOverrideSpecified -AcceptUnknownSigningKey:$AcceptUnknownSigningKey
+        if (-not $dependencyPlan.Accepted) {
+            Write-PackageExecutionMessage -Level 'ERR' -Message ("[FAIL] Dependency plan rejected with {0} violation(s)." -f $dependencyPlan.Violations.Count)
+            New-PackageDependencyPlanFailureResults -Plan $dependencyPlan -DesiredState $DesiredState -Offline:$Offline -MaterializeOnly:$MaterializeOnly -PackageVersion $normalizedPackageVersion
+            return
+        }
+        Write-PackageExecutionMessage -Message ("[STATE] Dependency plan approved with {0} node(s) and {1} edge(s)." -f $dependencyPlan.Nodes.Count, $dependencyPlan.Edges.Count)
+    }
+
     foreach ($definition in $DefinitionId) {
         $invokeParams = @{
             PublisherId              = $PublisherId
@@ -65,6 +78,10 @@ function Invoke-Package {
         }
         if ($packageVersionOverrideSpecified) {
             $invokeParams.PackageVersion = $normalizedPackageVersion
+        }
+        if ($dependencyPlan) {
+            $invokeParams.DependencyPlan = $dependencyPlan
+            $invokeParams.DependencyPlanNodeKey = Get-PackageDependencyPlanRootNodeKey -Plan $dependencyPlan -DefinitionId $definition
         }
         $result = Invoke-PackageDefinitionCommandCore @invokeParams
         $result

@@ -110,6 +110,94 @@ function Sort-PackageVersionCandidates {
         @{ Expression = { $_.VersionOrdering.CandidateIndex }; Descending = $false }
 }
 
+function Resolve-PackageVersionRangeTerms {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [string]$VersionRange
+    )
+
+    if ([string]::IsNullOrWhiteSpace($VersionRange)) {
+        return @()
+    }
+
+    $terms = New-Object System.Collections.Generic.List[object]
+    foreach ($rawToken in ([regex]::Split(([string]$VersionRange).Trim(), '[\s,]+'))) {
+        $token = ([string]$rawToken).Trim()
+        if ([string]::IsNullOrWhiteSpace($token)) {
+            continue
+        }
+        if ($token -match '[\*\^~\|]' -or $token -match '(?i)(?:^|[^a-z])x(?:$|[^a-z])') {
+            throw "Unsupported Package versionRange term '$token'. Use comparator terms such as '>=1.2.0' and '<2.0.0'."
+        }
+
+        $operator = '='
+        $versionText = $token
+        $match = [regex]::Match($token, '^(>=|<=|==|=|>|<)(.+)$')
+        if ($match.Success) {
+            $operator = $match.Groups[1].Value
+            $versionText = $match.Groups[2].Value.Trim()
+        }
+
+        if ([string]::IsNullOrWhiteSpace($versionText)) {
+            throw "Package versionRange term '$token' is missing a version."
+        }
+        if ($operator -ne '=' -and $operator -ne '==' -and $versionText -notmatch '\d') {
+            throw "Package versionRange term '$token' does not contain a comparable version."
+        }
+
+        $terms.Add([pscustomobject]@{
+            Operator    = $operator
+            VersionText = $versionText
+        }) | Out-Null
+    }
+
+    return @($terms.ToArray())
+}
+
+function Test-PackageVersionRange {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [AllowNull()]
+        [string]$VersionText,
+
+        [AllowNull()]
+        [string]$VersionRange
+    )
+
+    $terms = @(Resolve-PackageVersionRangeTerms -VersionRange $VersionRange)
+    if ($terms.Count -eq 0) {
+        return $true
+    }
+
+    $actualComparable = ConvertTo-PackageVersion -VersionText $VersionText
+    foreach ($term in @($terms)) {
+        $operator = [string]$term.Operator
+        $expectedText = [string]$term.VersionText
+        if ($operator -eq '=' -or $operator -eq '==') {
+            if (-not [string]::Equals([string]$VersionText, $expectedText, [System.StringComparison]::OrdinalIgnoreCase)) {
+                return $false
+            }
+            continue
+        }
+
+        $expectedComparable = ConvertTo-PackageVersion -VersionText $expectedText
+        $accepted = switch -Exact ($operator) {
+            '>' { $actualComparable -gt $expectedComparable }
+            '>=' { $actualComparable -ge $expectedComparable }
+            '<' { $actualComparable -lt $expectedComparable }
+            '<=' { $actualComparable -le $expectedComparable }
+            default { throw "Unsupported Package versionRange operator '$operator'." }
+        }
+        if (-not $accepted) {
+            return $false
+        }
+    }
+
+    return $true
+}
+
 function Resolve-PackageVersionCandidateSelection {
     [CmdletBinding()]
     param(
@@ -132,11 +220,29 @@ function Resolve-PackageVersionCandidateSelection {
         [string]$ReleaseTrack,
 
         [AllowNull()]
-        [object[]]$AllVersionEntries
+        [object[]]$AllVersionEntries,
+
+        [AllowNull()]
+        [string]$VersionRange = $null
     )
 
     if (@($Candidates).Count -eq 0) {
         throw "No Package target/release entry matched platform '$Platform', architecture '$Architecture', and releaseTrack '$ReleaseTrack'."
+    }
+
+    $rangeText = if ([string]::IsNullOrWhiteSpace($VersionRange)) { $null } else { ([string]$VersionRange).Trim() }
+    if (-not [string]::IsNullOrWhiteSpace($rangeText)) {
+        $null = Resolve-PackageVersionRangeTerms -VersionRange $rangeText
+        $Candidates = @(
+            foreach ($candidate in @($Candidates)) {
+                if (Test-PackageVersionRange -VersionText ([string]$candidate.VersionEntry.version) -VersionRange $rangeText) {
+                    $candidate
+                }
+            }
+        )
+        if (@($Candidates).Count -eq 0) {
+            throw "No Package version satisfied versionRange '$rangeText' for definition '$DefinitionId' on platform '$Platform', architecture '$Architecture', and releaseTrack '$ReleaseTrack'."
+        }
     }
 
     $selector = if ([string]::IsNullOrWhiteSpace($CommandSelector)) { $null } else { ([string]$CommandSelector).Trim() }
@@ -203,5 +309,6 @@ function Resolve-PackageVersionCandidateSelection {
         SelectionKind    = $selectionKind
         OrderingKind     = [string]$selected.VersionOrdering.OrderingKind
         RequestedVersion = $requestedVersion
+        VersionRange     = $rangeText
     }
 }

@@ -190,7 +190,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - acquis
             }
         )
         $definitionDocument = New-TestVSCodeDefinitionDocument -Releases @($release) -SharedReadiness (New-TestReadiness -Version '2.0.0')
-        $definitionDocument.schemaVersion = '1.8'
+        $definitionDocument.schemaVersion = '1.9'
         $definitionDocument.definitionPublication.definitionSignature = @{
             kind          = 'unsigned'
             format        = 'embedded-json-rsa-sha256-v1'

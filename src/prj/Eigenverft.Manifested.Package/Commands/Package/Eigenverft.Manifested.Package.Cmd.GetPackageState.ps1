@@ -44,7 +44,7 @@ function Get-PackageState {
     $packageRecords = @($packageInventory.Records)
     $operationRecords = @($operationHistory.Records)
 
-    return [pscustomobject]@{
+    $state = [pscustomobject]@{
         LocalRoot                 = $localRoot
         ApplicationRootDirectory  = $config.ApplicationRootDirectory
         PackageConfigPath    = $config.PackageConfigPath
@@ -72,4 +72,7 @@ function Get-PackageState {
         OperationRecords          = @($operationRecords)
         Directories               = $directories
     }
+
+    Write-PackageStateFormattedView -State $state
+    return $state
 }

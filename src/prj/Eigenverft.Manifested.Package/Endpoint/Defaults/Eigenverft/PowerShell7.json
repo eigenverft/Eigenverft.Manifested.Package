@@ -1,12 +1,12 @@
 {
-  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.8.schema.json",
-  "schemaVersion": "1.8",
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json",
+  "schemaVersion": "1.9",
   "definitionPublication": {
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "PowerShell7",
-    "definitionRevision": 3,
-    "publishedAtUtc": "2026-05-28T12:00:00Z",
+    "definitionRevision": 4,
+    "publishedAtUtc": "2026-06-02T03:47:57.3510000Z",
     "definitionSignature": {
       "kind": "signed",
       "format": "embedded-json-rsa-sha256-v1",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-05-28T18:11:10.7692504Z",
-      "signatureValue": "mR4FBJ0WfcfSnL+MPrh7eJ7DWbk57Q8sI2FcFogJaBnlW2Rdw8gP31gpIn2QruebWh6HHUgd2radf2ZepyIoyZRnf3IJIO95C8rSlhIBtX/XtpfeGtrmeqS+GVKIzeRO8LMH+iND3lHu8n1a2Av1cVTCUBFfvehArlyK198GrIiouEixgLRS/ziFVXUYA6EE8mYUzu5XAF1pziBGiDVa7yEOUk/4b4ERgaTTz+LI+gTlKdX+wNgsXpTKY9kx9gcWSXhFS2dkNNxi1DQrkS+xwmJp+B+hAgHRhgxWuacNHSMli6dn69oOz1BHq0wPlkDUVFLgpXIChS1xkqkuWLgJlnL1zUyTQbld3syg96reipB+TI7NoZHkqnh/F8S3KhNo2Bah5bvOSLKnyRJX0Nd9txn3JBI2k3qTJsXdKjLs+wIEO9zlU+JEcOkIaXQ5cZbLhVWqC5oheuMPgWhFQkCCbIpz14XgIKFoiWXUVJtB+py8VzYYm4Eye4OKPbpdc5nz"
+      "signedAtUtc": "2026-06-02T03:49:17.1946845Z",
+      "signatureValue": "kRg8THN2rd4GMwgGYxNVpT9Abh1jT7mvauH+qsON1Ckksx27hLLQrSRE6icj2A4ToWqITG7uCk1bGzAJ6FSLwFfm5nLp0HJFgeOL2rc4Z/c8tyEw+hlp6XYarCCj41KUmb/8VgiuAqfb4XbLIH02JlCfLPVs6rFqMbKRuLtQxetVHnVCGFG4XNEWK1Z8/wENc1IgqnUTSJpVMPXK5oHYLScy4haDNtDNybomV36N6MnqHohJzBqh8GOwsP10iMb6wgLYYI8I1NwrU77rrllI+Ez8wUH9svPbxRPhoPVDbDEujdZ5eu9Sxtxc9u2eIr6mrSKCMOo62ivaiQIlWennQGphg05GbqqugmK8WFAiGfKohbfTuzQG9wqVO2sfEVQg0bC1FmPiG8XVc78eht6sqAzKY3RG337k/d+5BuXBt+LO5mL17f7II7cpHx553o5MpdIW7+I67FZVQxXhrAadR2PVW9KuNuwYDU2gukmZZzbjCaZGJ/K2zJe/SBLlvCPS"
     }
   },
   "display": {
@@ -27,7 +27,9 @@
       "summary": "Portable PowerShell 7 runtime"
     }
   },
-  "dependencies": [],
+  "dependency": {
+    "requires": []
+  },
   "artifacts": {
     "targets": [
       {

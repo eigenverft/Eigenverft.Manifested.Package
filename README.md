@@ -9,6 +9,7 @@ The product sits between public package managers and heavy endpoint-management s
 🚀 **Key Features:**
 
 - Local package assignment through `Invoke-Package`
+- Package catalog discovery through `Search-Package`
 - Inventory-backed state and operation history through `Get-PackageState`
 - Versioned, reviewable package-definition JSON
 - Trusted signing-key records for package-definition authority
@@ -42,10 +43,11 @@ Install once, then run exported commands directly (no `Import-Module` needed):
 Install-Module Eigenverft.Manifested.Package -Scope CurrentUser -Repository PSGallery -Force -AllowClobber
 
 Invoke-Package -DefinitionId SevenZip,DotNetSdk10,NodeRuntime,CodexCli
+Search-Package -Query code
 Get-PackageState
 ```
 
-`Invoke-Package` resolves definitions from enabled endpoints, verifies catalog trust, prepares or reuses payloads, applies dependency order, and records state.
+`Search-Package` scans enabled package-definition endpoints by name, definition id, publisher, and entry points such as commands. `Invoke-Package` resolves definitions from enabled endpoints, verifies catalog trust, prepares or reuses payloads, applies dependency order, and records state.
 
 ## 🏢 Corporate First Install
 
@@ -65,7 +67,9 @@ For disposable fresh-machine bring-up, use the [Eigenverft.Manifested.Sandbox](h
 
 ## 📌 Current State
 
-The module centers on **`Invoke-Package`** for assignment and removal, plus helpers for package state, team depots, team endpoints, and signing-key trust.
+The module centers on **`Invoke-Package`** for assignment and removal, plus helpers for package search, package state, team depots, team endpoints, and signing-key trust.
+
+Use `Search-Package` when you know a friendly name or command but not the exact `DefinitionId`. Results include publisher metadata, summary, selected version, platform availability, catalog-trust status, endpoint source, and an `InvokeCommand` string for the matching definition.
 
 `Invoke-Package` requires `-DefinitionId` and scans every enabled row in `Configuration/Internal/PackageEndpointInventory.json` in endpoint `searchOrder`. Discovery matches `definitionPublication.definitionId`, then catalog trust checks `definitionPublication.definitionSignature` against `PackageTrustInventory.json` and `PackageConfig.json` policy. Optional `-PublisherId` pins one signed `definitionPublication.publisherId` label. If a signed team definition carries an embedded public certificate that is valid but unknown, the default `catalogTrust.unknownSignedKeyPolicy` prompts before adding local trust. Use `-AcceptUnknownSigningKey` only when you intentionally want to auto-trust that verified embedded key for the invocation. If multiple eligible publishers provide the same definition id, `PackageConfig.json` controls the conflict mode; the default is `fail`.
 

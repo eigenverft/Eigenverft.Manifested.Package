@@ -2,6 +2,57 @@
     Eigenverft.Manifested.Package.Package.CommandFlow
 #>
 
+function Get-PackagePriorAssignedVersionLabel {
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$PackageResult
+    )
+
+    if ($PackageResult.Ownership -and
+        $PackageResult.Ownership.OwnershipRecord -and
+        $PackageResult.Ownership.OwnershipRecord.PSObject.Properties['currentVersion'] -and
+        -not [string]::IsNullOrWhiteSpace([string]$PackageResult.Ownership.OwnershipRecord.currentVersion)) {
+        return [string]$PackageResult.Ownership.OwnershipRecord.currentVersion
+    }
+
+    return $null
+}
+
+function Get-PackageVersionChangeLabel {
+    param(
+        [AllowNull()]
+        [string]$PriorVersion,
+
+        [AllowNull()]
+        [string]$SelectedVersion
+    )
+
+    if ([string]::IsNullOrWhiteSpace($PriorVersion) -or [string]::IsNullOrWhiteSpace($SelectedVersion)) {
+        return 'version changed'
+    }
+
+    if ([string]::Equals($PriorVersion, $SelectedVersion, [System.StringComparison]::OrdinalIgnoreCase)) {
+        return 'same version'
+    }
+
+    try {
+        $prior = [version]$PriorVersion
+        $selected = [version]$SelectedVersion
+        if ($selected -gt $prior) {
+            return 'upgraded'
+        }
+
+        if ($selected -lt $prior) {
+            return 'downgraded'
+        }
+
+        return 'version changed'
+    }
+    catch {
+        return 'version changed'
+    }
+}
+
 function Get-PackageOutcomeSummary {
     param(
         [Parameter(Mandatory = $true)]
@@ -40,24 +91,79 @@ function Get-PackageOutcomeSummary {
         '<none>'
     }
 
+    $priorVersion = Get-PackagePriorAssignedVersionLabel -PackageResult $PackageResult
+    $selectedVersion = if ($PackageResult.PSObject.Properties['PackageVersion'] -and -not [string]::IsNullOrWhiteSpace([string]$PackageResult.PackageVersion)) {
+        [string]$PackageResult.PackageVersion
+    }
+    else {
+        $null
+    }
+    $versionChangeLabel = Get-PackageVersionChangeLabel -PriorVersion $priorVersion -SelectedVersion $selectedVersion
+    $versionSpanText = if ($priorVersion -and $selectedVersion) {
+        ("{0} '{1}' -> '{2}'" -f $versionChangeLabel, $priorVersion, $selectedVersion)
+    }
+    elseif ($selectedVersion) {
+        ("selected version '{0}'" -f $selectedVersion)
+    }
+    else {
+        $null
+    }
+
+    switch -Exact ($existingDecisionText) {
+        'ReplacePackageOwnedInstall' {
+            $versionDetail = if ($versionSpanText) { $versionSpanText } else { 'selected version changed' }
+            return ("[OUTCOME] Replaced package-owned install ({0}) into '{1}' with installStatus='{2}'." -f $versionDetail, $installDirectoryText, $assignedStatusText)
+        }
+        'UpgradeAdoptedInstall' {
+            return ("[OUTCOME] Replaced adopted external install with a package-owned install ({0})." -f $(if ($versionSpanText) { $versionSpanText } else { 'new package-owned install' }))
+        }
+        'ExistingInstallReadinessFailed' {
+            if ([string]::Equals($assignedStatusText, 'RepairedPackageOwnedInstall', [System.StringComparison]::OrdinalIgnoreCase)) {
+                return ("[OUTCOME] Repaired existing package-owned install at '{0}' after readiness checks failed." -f $installDirectoryText)
+            }
+
+            return ("[OUTCOME] Existing install readiness failed; install was not reused (installStatus='{0}')." -f $assignedStatusText)
+        }
+        'ExternalIgnored' {
+            return ("[OUTCOME] Ignored external install and continued with a fresh package-owned install into '{0}'." -f $installDirectoryText)
+        }
+    }
+
+    if ([string]::Equals($assignedStatusText, 'RepairedPackageOwnedInstall', [System.StringComparison]::OrdinalIgnoreCase)) {
+        return ("[OUTCOME] Repaired package-owned install at '{0}'." -f $installDirectoryText)
+    }
+
     switch -Exact ([string]$PackageResult.InstallOrigin) {
         'PackageReused' {
-            return ("[OUTCOME] Reused Package-owned install '{0}' (existingDecision='{1}', packageFileStep='{2}')." -f $installDirectoryText, $existingDecisionText, $packageFileStatusText)
+            $reuseDetail = if ($versionSpanText -and $versionChangeLabel -eq 'same version') {
+                "same version '{0}'" -f $selectedVersion
+            }
+            elseif ($versionSpanText) {
+                $versionSpanText
+            }
+            else {
+                'existing package-owned install'
+            }
+
+            return ("[OUTCOME] Reused package-owned install '{0}' ({1})." -f $installDirectoryText, $reuseDetail)
         }
         'AdoptedExternal' {
-            return ("[OUTCOME] Adopted external install '{0}' (existingDecision='{1}', packageFileStep='{2}')." -f $installDirectoryText, $existingDecisionText, $packageFileStatusText)
+            return ("[OUTCOME] Adopted external install '{0}'." -f $installDirectoryText)
         }
         'PackageInstalled' {
-            return ("[OUTCOME] Completed Package-owned install into '{0}' with installStatus='{1}' and packageFileStep='{2}'." -f $installDirectoryText, $assignedStatusText, $packageFileStatusText)
+            $installDetail = if ($versionSpanText) { $versionSpanText } else { 'new install' }
+            return ("[OUTCOME] Installed package-owned release ({0}) into '{1}' with installStatus='{2}'." -f $installDetail, $installDirectoryText, $assignedStatusText)
         }
         'PackageApplied' {
-            return ("[OUTCOME] Applied Package prerequisite with installStatus='{0}', packageFileStep='{1}', restartRequired='{2}'." -f $assignedStatusText, $packageFileStatusText, $assignedRestartText)
+            return ("[OUTCOME] Applied package prerequisite ({0}) with installStatus='{1}' and restartRequired='{2}'." -f $(if ($versionSpanText) { $versionSpanText } else { 'dependency package' }), $assignedStatusText, $assignedRestartText)
         }
         'AlreadySatisfied' {
-            return ("[OUTCOME] Package prerequisite already satisfied; installer and package-file acquisition were skipped.")
+            return '[OUTCOME] Package prerequisite already satisfied; installer and package-file acquisition were skipped.'
         }
         default {
-            return ("[OUTCOME] Completed Package run with installOrigin='{0}', installStatus='{1}', packageFileStep='{2}', installDirectory='{3}'." -f [string]$PackageResult.InstallOrigin, $assignedStatusText, $packageFileStatusText, $installDirectoryText)
+            $originText = if ([string]::IsNullOrWhiteSpace([string]$PackageResult.InstallOrigin)) { 'completed' } else { [string]$PackageResult.InstallOrigin }
+            $detailText = if ($versionSpanText) { $versionSpanText } else { "installStatus='$assignedStatusText'" }
+            return ("[OUTCOME] Package run {0} ({1}) at '{2}'." -f $originText, $detailText, $installDirectoryText)
         }
     }
 }
@@ -71,6 +177,7 @@ function Get-PackageCommandFailureReason {
     switch -Exact ($CurrentStep) {
         'InitializeLocalEnvironment' { return 'LocalEnvironmentInitializationFailed' }
         'ResolveDesiredState' { return 'PackageDesiredStateNotImplemented' }
+        'PlanDependencies' { return 'PackageDependencyPlanFailed' }
         'ResolvePackage' { return 'PackageSelectionFailed' }
         'ResolveDependencies' { return 'PackageDependencyFailed' }
         'ResolvePaths' { return 'PackagePathResolutionFailed' }
@@ -169,7 +276,7 @@ function Invoke-PackageAssignedFlow {
     )
 
     $steps = @(
-        [pscustomobject]@{ Name = 'ResolvePackage'; Message = '[STEP] Resolving package selection.'; Action = { param($r) Resolve-PackagePackage -PackageResult $r } },
+        [pscustomobject]@{ Name = 'ResolvePackage'; Message = '[STEP] Resolving package selection.'; Action = { param($r) $r = Resolve-PackagePackage -PackageResult $r; Confirm-PackageDependencyPlanSelection -PackageResult $r } },
         [pscustomobject]@{ Name = 'ResolveDependencies'; Message = '[STEP] Ensuring package dependencies.'; Action = { param($r) Resolve-PackageDependencies -PackageResult $r -DependencyStack $DependencyStack } },
         [pscustomobject]@{ Name = 'ResolvePaths'; Message = '[STEP] Resolving package paths.'; Action = { param($r) Resolve-PackagePaths -PackageResult $r } },
         [pscustomobject]@{ Name = 'ResolvePreAssignmentSatisfaction'; Message = '[STEP] Checking pre-assignment satisfaction.'; Action = { param($r) Resolve-PackagePreAssignmentSatisfaction -PackageResult $r } },
@@ -309,7 +416,7 @@ function Invoke-PackageMaterializeOnlyFlow {
     )
 
     $steps = @(
-        [pscustomobject]@{ Name = 'ResolvePackage'; Message = '[STEP] Resolving package selection.'; Action = { param($r) Resolve-PackagePackage -PackageResult $r } },
+        [pscustomobject]@{ Name = 'ResolvePackage'; Message = '[STEP] Resolving package selection.'; Action = { param($r) $r = Resolve-PackagePackage -PackageResult $r; Confirm-PackageDependencyPlanSelection -PackageResult $r } },
         [pscustomobject]@{ Name = 'ResolveDependencies'; Message = '[STEP] Materializing package dependencies.'; Action = { param($r) Resolve-PackageDependencies -PackageResult $r -DependencyStack $DependencyStack } },
         [pscustomobject]@{ Name = 'ResolvePaths'; Message = '[STEP] Resolving package paths.'; Action = { param($r) Resolve-PackagePaths -PackageResult $r } },
         [pscustomobject]@{ Name = 'BuildAcquisitionPlan'; Message = '[STEP] Building acquisition plan.'; Action = { param($r) Build-PackageAcquisitionPlan -PackageResult $r } },
@@ -373,7 +480,13 @@ function Invoke-PackageDefinitionCommandCore {
 
         [switch]$MaterializeOnly,
 
-        [object[]]$DependencyStack = @()
+        [object[]]$DependencyStack = @(),
+
+        [AllowNull()]
+        [psobject]$DependencyPlan = $null,
+
+        [AllowNull()]
+        [string]$DependencyPlanNodeKey = $null
     )
 
     $packageVersionOverrideSpecified = $PSBoundParameters.ContainsKey('PackageVersion') -and -not [string]::IsNullOrWhiteSpace([string]$PackageVersion)
@@ -424,6 +537,7 @@ function Invoke-PackageDefinitionCommandCore {
     }
     $result = New-PackageResult @newResultParams
     $result.LocalEnvironment = $localEnvironment
+    $result = Set-PackageResultDependencyPlanContext -PackageResult $result -DependencyPlan $DependencyPlan -DependencyPlanNodeKey $DependencyPlanNodeKey
 
     if ($MaterializeOnly.IsPresent) {
         $result = Invoke-PackageMaterializeOnlyFlow -PackageResult $result -DependencyStack $DependencyStack
