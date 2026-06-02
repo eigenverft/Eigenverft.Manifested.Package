@@ -30,13 +30,14 @@
 |------|--------|
 | [TODO-CATALOG-VALIDATION.md](TODO-CATALOG-VALIDATION.md) | Catalog validation without install |
 | [TODO-SUPPLY-CHAIN.md](TODO-SUPPLY-CHAIN.md) | Vendor release-age policy on version selection |
-| [TODO-DEPENDENCY-A.md](TODO-DEPENDENCY-A.md) | Selected Option A dependency planner track |
 | [TODO-DOCUMENTATION.md](TODO-DOCUMENTATION.md) | Hybrid product documentation |
 | [TODO-CATALOG-AGENT.md](TODO-CATALOG-AGENT.md) | `PackageDefinitionAuthoring` agent skill |
 
 **Cross-file duplicates among `TODO-*.md`:** none — each 📌 title appears in exactly one domain file.
 
 **Deleted split parent:** `TODO-COMMANDS.md` (state/outcome/search polish shipped — see [DECISIONS.md](DECISIONS.md)).
+
+**Deleted completed dependency track:** the dependency issue and implementation artifacts were removed after the dependency planner and schema 1.9 wire shipped.
 
 ---
 
@@ -46,7 +47,6 @@
 |---|------|--------|
 | 2 | [TODO-CATALOG-VALIDATION.md](TODO-CATALOG-VALIDATION.md) | Validate definitions / endpoint folders without install |
 | 2 | [TODO-SUPPLY-CHAIN.md](TODO-SUPPLY-CHAIN.md) | Release-age / cooling window on version selection |
-| 2 | [TODO-DEPENDENCY-A.md](TODO-DEPENDENCY-A.md) | Dependency graph, peer policy, batch planning |
 | 3 | [TODO-DOCUMENTATION.md](TODO-DOCUMENTATION.md) | Hybrid docs (repo → module HTML → command) |
 | 3 | [TODO-CATALOG-AGENT.md](TODO-CATALOG-AGENT.md) | Agent authoring skill |
 | 4 | [TODO-OWNERSHIP.md](TODO-OWNERSHIP.md) | Ownership / adoption guide |

@@ -34,33 +34,33 @@ Sorted by **Priority** (lower number first), then higher **Benefit**, then lower
 
 ### 📝 Statement
 
-Authors and CI need to validate package-definition JSON **before** `Invoke-Package` mutates the machine. Today **`Assert-PackageDefinitionSchema`** (wire 1.8 + policy) runs only when a definition is loaded on the invoke path; **`Verify-PackageDefinitionCatalog`** scans folders for **signature/trust per file** but does not produce a combined schema + cross-file report (duplicate ids, mixed schema versions, dependency references).
+Authors and CI need to validate package-definition JSON **before** `Invoke-Package` mutates the machine. Today **`Assert-PackageDefinitionSchema`** (wire 1.9 + policy) runs only when a definition is loaded on the invoke path; **`Verify-PackageDefinitionCatalog`** scans folders for **signature/trust per file** but does not produce a combined schema + cross-file report (duplicate ids, mixed schema versions, dependency references).
 
 ### 🧭 Related Context
 
 Related Issues:
 - [`TODO-CATALOG-AGENT.md`](TODO-CATALOG-AGENT.md) — skill checklist should call validate command when shipped.
-- [`TODO-DEPENDENCY-A.md`](TODO-DEPENDENCY-A.md) — runtime resolver and peer enforcement; validation catches **authored** policy mistakes only.
+- Shipped dependency planner / schema 1.9 — runtime resolver and peer enforcement are implemented; validation catches **authored** policy mistakes only.
 - [`TODO-OWNERSHIP.md`](TODO-OWNERSHIP.md) — optional ownership-policy warnings (separate from this issue).
 
 Affected Areas:
-- New validate command (name TBD); `Package.DefinitionSchema.ps1`, `Package.DefinitionSchema.Wire1_8.ps1`, `Package.DefinitionReference.ps1`; trust verify reuse; **18** shipped definitions under `Endpoint/Defaults/Eigenverft/`.
+- New validate command (name TBD); `Package.DefinitionSchema.ps1`, `Package.DefinitionSchema.Wire1_9.ps1`, `Package.DefinitionReference.ps1`; trust verify reuse; **18** shipped definitions under `Endpoint/Defaults/Eigenverft/`.
 
 Dependencies:
-- Cmdlet naming and report shape before implementation; peer-policy static checks align with TODO-DEPENDENCY wire.
+- Cmdlet naming and report shape before implementation; peer-policy static checks align with schema 1.9 `dependency.policy` wire.
 
 ### 🎯 Required Outcome
 
-1. Validate **single file or endpoint folder** without install: schema version, wire 1.8, signature shape, trust (policy-aware), artifacts/dependencies shape.
+1. Validate **single file or endpoint folder** without install: schema version, wire 1.9, signature shape, trust (policy-aware), artifacts/dependencies shape.
 2. **Folder report:** aggregate issues, duplicate `publisherId` + `definitionId`, optional strict schema-version consistency.
 3. **Concept-first errors** for top failure kinds (extend retired-property pattern).
-4. Optional later: machine-target warnings, peer-policy static checks ([`TODO-DEPENDENCY-A.md`](TODO-DEPENDENCY-A.md)), batch simulation.
+4. Optional later: machine-target warnings, peer-policy static checks, batch simulation.
 
 ### 🔎 Facts
 
 Known:
 - **`Assert-PackageDefinitionSchema`** (`Package.DefinitionSchema.ps1`): PowerShell asserts, not JSON Schema alone at runtime; invoked from **`Package.Config.Aggregation.ps1`** when resolving a definition for assign — **not** exposed as validate-only.
-- **`Assert-PackageDefinitionSchema_1_8`** / **`Assert-PackageDefinitionSchemaVersionSupported`** in `Package.DefinitionSchema.Wire1_8.ps1` — retired nested properties throw with replacement paths (e.g. `artifactsByTarget` → `targetArtifacts`).
+- **`Assert-PackageDefinitionSchema_1_9`** / **`Assert-PackageDefinitionSchemaVersionSupported`** in `Package.DefinitionSchema.Wire1_9.ps1` — retired nested properties throw with replacement paths (e.g. `dependencies` → `dependency.requires`).
 - **`Verify-PackageDefinitionSignature`** — per file via `Read-PackageJsonDocument` + `Test-PackageDefinitionSignatureDocument`; `-RequireTrusted`, `-ErrorOnFailure` (`Cmd.PackageTrust.ps1`).
 - **`Verify-PackageDefinitionCatalog`** — `-Path` file or directory; recursive `*.json`; calls **`Verify-PackageDefinitionSignature`** per file; returns `CheckedCount`, `ValidCount`, `TrustedCount`, `FailedCount`, `Results` — **no** `Assert-PackageDefinitionSchema`, **no** duplicate-id scan across files.
 - **`Get-PackageDefinitionJsonPathsUnderDirectory`** — lists `*.json` under a root (`Package.DefinitionReference.ps1`); used by endpoint scan, not validation report.
@@ -233,7 +233,7 @@ Required Checks:
 
 - Machine-target matching default on vs opt-in.
 - Strict vs warn for unsigned JSON on internal endpoints.
-- Shared policy evaluator with TODO-DEPENDENCY resolver vs duplicated rules.
+- Shared policy evaluator with the shipped dependency planner vs duplicated rules.
 
 ### 🚫 Out of Scope
 
@@ -264,13 +264,13 @@ Required Checks:
 | Signature verify | `Verify-PackageDefinitionSignature`; `Verify-PackageDefinitionCatalog` (`-Path`, `-RequireTrusted`, `-ErrorOnFailure`) | Catalog verify = per-file trust; **no** wire assert in that loop |
 | Folder scan | `Get-PackageDefinitionJsonPathsUnderDirectory` (`Package.DefinitionReference.ps1`) | Lists paths only |
 | Cross-file rules | Within-file duplicate target/location ids asserted | **No** endpoint-wide duplicate `definitionId` scan |
-| Shipped catalog | **18** × `schemaVersion` **1.8** under `Endpoint/Defaults/Eigenverft/` | — |
+| Shipped catalog | **18** × `schemaVersion` **1.9** under `Endpoint/Defaults/Eigenverft/` | — |
 | Error text | Retired-property throws with replacement hints (good pattern) | Not uniform for all failure kinds |
 | Install side effects | `Invoke-Package` mutates on assign | No `-WhatIf` / validate-only surface |
 
-**Remember:** [`TODO-DEPENDENCY-A.md`](TODO-DEPENDENCY-A.md) owns the **runtime resolver** (plan tree, batch pre-check, peer policy enforcement). Catalog validation here is **authored JSON correctness** and **static policy consistency** on an endpoint folder — it must not re-implement the full resolver, but it should catch mistakes **before** invoke.
+**Remember:** the shipped dependency planner owns the **runtime resolver** (plan tree, batch pre-check, peer policy enforcement). Catalog validation here is **authored JSON correctness** and **static policy consistency** on an endpoint folder — it must not re-implement the full resolver, but it should catch mistakes **before** invoke.
 
-When [`TODO-DEPENDENCY-A.md`](TODO-DEPENDENCY-A.md) adds `conflictsWith` / `requiresAbsent` (and optional mutex groups), this doc adds matching **validate-only** steps. A **clean resolver split** (graph / versions / peer policy / plan emit) is required on the dependency side; validation calls the same rules in read-only form where possible.
+Schema 1.9 ships `conflictsWith` / `requiresAbsent`; this doc adds matching **validate-only** steps. Validation should call the same read-only rule helpers where possible instead of duplicating planner policy logic.
 
 ---
 
@@ -282,19 +282,19 @@ These are **engine responsibilities** — deterministic, repeatable, same in CI 
 |------|----------------|---------------|
 | **Parse** | Valid JSON, UTF-8, file readable | Ad hoc |
 | **Schema version** | Supported `schemaVersion`; `$schema` alignment | `Assert-PackageDefinitionSchemaVersionSupported` |
-| **Wire 1.8** | Required sections, retired properties, acquisition kinds | `Assert-PackageDefinitionSchema_1_8`, vocabulary asserts |
+| **Wire 1.9** | Required sections, retired properties, acquisition kinds | `Assert-PackageDefinitionSchema_1_9`, vocabulary asserts |
 | **Publication identity** | `definitionId`, `publisherId`, duplicate ids in folder | Partial via discovery; folder duplicate scan **missing** |
 | **Signature shape** | unsigned vs signed rules; no partial crypto fields | Signature schema asserts |
 | **Trust** | Embedded cert valid; thumbprint vs trust inventory (policy-aware) | Verify commands |
 | **Artifacts shape** | targets/releases/sources consistency, hashes present when required | Wire + policy |
 | **Dependencies** | `definitionId` resolvable on endpoint; optional cycle pre-check | Load-time only today |
-| **Peer policy (future)** | `conflictsWith` / `requiresAbsent` targets exist; no self-reference; symmetric warnings; mutex group well-formed | Not on wire — see [`TODO-DEPENDENCY-A.md`](TODO-DEPENDENCY-A.md) |
+| **Peer policy** | `conflictsWith` / `requiresAbsent` targets exist; no self-reference; symmetric warnings | Schema 1.9 `dependency.policy`; validate-only wrapper **missing** |
 | **Platform / target** | At least one target matching current machine class (optional mode) | Selection code exists; validate-only wrapper **missing** |
 | **Depot / download plan** | `packageDepot` paths plausible; `vendorDownload` template resolvable (optional offline mode) | Partial at acquire time |
 
 Folder validation = run the pipeline for **every** `*.json` under an endpoint root, plus **cross-file** rules (duplicate `publisherId` + `definitionId`, mixed schema versions).
 
-### Peer policy static checks (when schema ships — from TODO-DEPENDENCY)
+### Peer policy static checks (schema 1.9)
 
 Validate **authored intent**, not machine inventory:
 
@@ -304,7 +304,7 @@ Validate **authored intent**, not machine inventory:
 | No self-reference | `DotNetSdk10` conflicts with itself |
 | Symmetry warning (optional) | A conflicts with B but B silent about A |
 | Mutex group string non-empty; members share group only when intended | Typo splits one family across two groups |
-| Policy + dependencies sanity (warning) | `requiresAbsent NodeRuntime18` but `dependencies` pulls `NodeRuntime18` |
+| Policy + dependencies sanity (warning) | `requiresAbsent NodeRuntime18` but `dependency.requires` pulls `NodeRuntime18` |
 | Batch simulation mode (optional) | Given `-SimulateBatch DefinitionIds`, report peer violations without install |
 
 Runtime peer enforcement remains the **dependency resolver**; validation reports should use the same **concept names** (`conflictsWith`, `requiresAbsent`, mutex group) so agents and humans align with plan failures.
@@ -378,19 +378,19 @@ Reference only.
 | 2 | Folder report + duplicate id detection |
 | 3 | Concept-first error messages across top failure types |
 | 4 | Optional machine-target and offline depot/download plan warnings |
-| 5 | Peer policy static checks (align with TODO-DEPENDENCY wire) |
+| 5 | Peer policy static checks (align with schema 1.9 dependency policy) |
 | 6 | Optional batch simulation for catalog maintainers |
 
 ---
 
 ## Resolved (facts about today)
 
-- Schema validation is **PowerShell asserts** (`Package.DefinitionSchema.ps1` + `Wire1_8.ps1`), not JSON Schema alone at runtime.
+- Schema validation is **PowerShell asserts** (`Package.DefinitionSchema.ps1` + `Wire1_9.ps1`), not JSON Schema alone at runtime.
 - **`Verify-PackageDefinitionCatalog`** exists but only aggregates **signature/trust** per JSON file (2026-05-30).
 - **`Assert-PackageDefinitionSchema`** runs on invoke load path, not as a standalone exported command.
 - Trust verification per file: **`Verify-PackageDefinitionSignature`**.
 - Validation on invoke is **not** the same product as validate-before-publish.
-- **18** shipped signed definitions on wire **1.8**.
+- **18** shipped signed definitions on wire **1.9**.
 
 ---
 
@@ -400,7 +400,7 @@ Reference only.
 - Whether machine-target matching is default on or opt-in.
 - Strict vs warn for unsigned JSON on team endpoints.
 - JSON report schema for CI consumers.
-- Relationship to dependency tree preview and **peer policy** ([`TODO-DEPENDENCY-A.md`](TODO-DEPENDENCY-A.md)).
+- Relationship to dependency tree preview and **peer policy**.
 - Shared rule module vs duplicated logic between validator and resolver (prefer one policy evaluator, two hosts).
 
 ---

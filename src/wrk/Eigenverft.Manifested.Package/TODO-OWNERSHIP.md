@@ -199,7 +199,7 @@ Required Checks:
 
 - Rewriting `Resolve-PackageExistingPackageDecision` or MSI/NSIS engines (already implemented).
 - Non-Windows installer ecosystems unless a shipped definition requires them.
-- Dependency resolver work ([`TODO-DEPENDENCY-A.md`](TODO-DEPENDENCY-A.md)).
+- Runtime dependency planning and schema 1.9 dependency policy.
 
 ### 🌱 Extracted Work
 

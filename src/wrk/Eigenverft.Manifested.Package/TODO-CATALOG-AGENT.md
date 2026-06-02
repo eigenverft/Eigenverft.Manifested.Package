@@ -42,7 +42,7 @@ Maintainers want a repeatable **external-agent** workflow for LLM-authored packa
 
 Related Issues:
 - [`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md) — validate-before-publish command (skill should reference when shipped).
-- [`TODO-DEPENDENCY-A.md`](TODO-DEPENDENCY-A.md) / [`TODO-SUPPLY-CHAIN.md`](TODO-SUPPLY-CHAIN.md) — policy vocabulary links only in v1 skill.
+- Schema 1.9 dependency policy / [`TODO-SUPPLY-CHAIN.md`](TODO-SUPPLY-CHAIN.md) — policy vocabulary links only in v1 skill.
 - [`TODO-OWNERSHIP.md`](TODO-OWNERSHIP.md) — ownership/adoption guide may feed maintainer chapter text.
 
 Affected Areas:
@@ -87,7 +87,7 @@ Unknown:
   - 🧾 Agent Work: 📝 Writing / Docs
 
 Description:
-Create `AgentSkills/PackageDefinitionAuthoring.md` from the draft outline: workflow, self-check, trust verify steps (`Verify-PackageDefinitionSignature` / catalog), human review gate, policy vocabulary (link-only for peer fields until wire exists). Include explicit **future** step for catalog validate command.
+Create `AgentSkills/PackageDefinitionAuthoring.md` from the draft outline: workflow, self-check, trust verify steps (`Verify-PackageDefinitionSignature` / catalog), human review gate, policy vocabulary (link to schema 1.9 dependency fields for peer policy). Include explicit **future** step for catalog validate command.
 
 Current State:
 No module skill file; agents rely on ad hoc schema reading.
@@ -292,7 +292,7 @@ Sections to consider for `PackageDefinitionAuthoring.md`; order and depth **not 
 6. **Common mistakes** — retired properties, hand-edited signatures, bad `vendorDownload` shape, duplicate ids on endpoint.
 7. **Catalog policy vocabulary (author-facing text only)** — see [Catalog policy authors should know](#catalog-policy-authors-should-know); no resolver architecture in the skill.
 8. **Out of scope** — engine changes, fleet manager, npm lock model inside materialized packages.
-9. **Related design** — links to `TODO-DEPENDENCY`, `TODO-SUPPLY-CHAIN`, `TODO-CATALOG-VALIDATION`.
+9. **Related design** — links to schema 1.9 dependency policy, `TODO-SUPPLY-CHAIN`, and `TODO-CATALOG-VALIDATION`.
 
 ```mermaid
 flowchart LR
@@ -317,18 +317,18 @@ flowchart LR
 
 ## Catalog policy authors should know
 
-*For the future skill — product language only. Wire names and resolver design live in [`TODO-DEPENDENCY-A.md`](TODO-DEPENDENCY-A.md); static checks in [`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md).*
+*For the future skill — product language only. Wire names live in schema 1.9 and resolver behavior lives in the shipped dependency planner; static checks are tracked in [`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md).*
 
 | Idea | What authors should write in catalog JSON |
 |------|-------------------------------------------|
-| **Prerequisite** | “Package B must be installed before package A” → use `dependencies[]` on A toward B. |
+| **Prerequisite** | “Package B must be installed before package A” → use `dependency.requires[]` on A toward B. |
 | **Side-by-side allowed** | “Two SDK majors may both be on the machine” → usually **two `definitionId`s** (e.g. separate runtime packages); do **not** use `conflictsWith` between them unless product policy forbids pairing. Shipped catalog today includes **`DotNetSdk10`** only (no `DotNetSdk9` definition). |
-| **Mutual exclusion** | “Only one Node major as default” → when wire exists: `conflictsWith` / `requiresAbsent` or a **mutex group** — not a second copy of the same `definitionId`. |
-| **Bundle** | “Install these together” → parent definition with `dependencies[]` listing members; still respect peer policy on children. |
+| **Mutual exclusion** | “Only one Node major as default” → use `dependency.policy.conflictsWith` / `dependency.policy.requiresAbsent` when product policy forbids pairing — not a second copy of the same `definitionId`. |
+| **Bundle** | “Install these together” → parent definition with `dependency.requires[]` listing members; still respect peer policy on children. |
 | **Do not guess** | Agents must not invent `conflictsWith` pairs without maintainer intent; ambiguous duplicates (two Node packages) need an explicit policy line, not silent JSON. |
 | **PATH / command names** | Coexistence on disk ≠ two packages both owning `node` on PATH — call out in display/summary or separate command discovery when maintainers care. |
 
-When `TODO-DEPENDENCY` policy fields ship, the skill checklist should say: “If this package must not coexist with X, declare it in policy; if coexistence is intentional, use separate `definitionId`s and omit conflict rules.”
+For schema 1.9 policy fields, the skill checklist should say: “If this package must not coexist with X, declare it in policy; if coexistence is intentional, use separate `definitionId`s and omit conflict rules.”
 
 ---
 
@@ -336,7 +336,7 @@ When `TODO-DEPENDENCY` policy fields ship, the skill checklist should say: “If
 
 - This backlog story is **design + future skill**, not “skill already shipped”.
 - **`AgentSkills/`** path is **not present** in the module tree yet (2026-05-30).
-- Schema 1.8 embeds **`x-eigenverftAgentHint`** and authoring vs signing guidance in `description`.
+- Schema 1.9 embeds **`x-eigenverftAgentHint`** and authoring vs signing guidance in `description`.
 - Signing is a **separate maintainer step** from semantic JSON editing (`Sign-PackageDefinition` / `Resign-PackageDefinition`).
 - `Verify-PackageDefinitionCatalog` helps trust checks but **does not** replace schema/wire validation.
 - Human review before production `Invoke-Package` is a product requirement (`PRODUCT-BOUNDARY`).
@@ -353,10 +353,10 @@ When `TODO-DEPENDENCY` policy fields ship, the skill checklist should say: “If
 - CI guidance for endpoint PRs (verify-only vs future validate command).
 - Discoverability: README, PSGallery notes, Eigenverft online endpoint docs.
 - Symlink / copy strategy for Cursor vs Codex vs CI agents.
-- Re-validation playbook when schema 1.9+ ships.
+- Re-validation playbook for future schema changes after 1.9.
 - Minimum content length vs link-out to shipped examples only.
 - Who approves first published skill version (maintainer sign-off).
-- How much peer-policy vocabulary to include in v1 skill vs link-only to schema `description` (after TODO-DEPENDENCY wire exists).
+- How much peer-policy vocabulary to include in v1 skill vs link-only to schema 1.9 `description`.
 
 ---
 
@@ -375,5 +375,5 @@ Reference only.
 ## Out of scope
 
 - Implementing validation cmdlets ([`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md)).
-- Dependency solver ([`TODO-DEPENDENCY-A.md`](TODO-DEPENDENCY-A.md)).
+- Redesigning the shipped dependency planner.
 - Release-age policy ([`TODO-SUPPLY-CHAIN.md`](TODO-SUPPLY-CHAIN.md)).
