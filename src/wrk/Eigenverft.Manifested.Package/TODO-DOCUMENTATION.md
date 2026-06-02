@@ -1,214 +1,405 @@
-# TODO DOCUMENTATION
+# DOCUMENTATION — Design Issues
 
-## Purpose
+Design scratchpad for a **hybrid product documentation system**: markdown sources in the repository, release-built static HTML shipped inside the module, and an exported command to open it locally. Issue ratings and definitions follow [PROJECT-ISSUE-FRAMEWORK.md](PROJECT-ISSUE-FRAMEWORK.md) (V1.6): vertical ratings; **Option Kind** in each option heading; **💶 Value Assessment** after Options with **✅ Good Result**; **📬 Stakeholder Success Note** after Recommendation; one **Prefer/Choose Option X** per issue with required author and `YYYY-MM-DD HH:mm`. Facts re-verified against the repository on **2026-06-01**.
 
-Design scratchpad for **in-depth product documentation** — a coherent doc set and optional packaged viewer, not just a one-off positioning page.
+**Compose with:** [`PRODUCT-BOUNDARY.md`](PRODUCT-BOUNDARY.md) (canonical scope — link or summarize, do not fork). [`TODO-OWNERSHIP.md`](TODO-OWNERSHIP.md) — ownership/adoption guide chapter. [`DECISIONS.md`](DECISIONS.md) — shipped polish and recorded decisions (not the hybrid guide). [`DECISION-ENDPOINT-DISCOVERY-V1.md`](DECISION-ENDPOINT-DISCOVERY-V1.md) / [`TODO-DEPOTS-HTTP.md`](TODO-DEPOTS-HTTP.md) — conceptual mention in team-channel chapter only. Active `TODO-*.md` scratchpads — summarize and link in maintainer chapter, do not copy.
 
-Today the repo has a **README** (entry, install, quick start) and [`PRODUCT-BOUNDARY.md`](PRODUCT-BOUNDARY.md) (scope and decision test for contributors). Those are necessary but not a full documentation story. This TODO tracks deeper material: concepts, workflows, examples, and presentation — with **product positioning / sweet spot** as **one section**, not the whole effort.
+Open issues in this file are scheduled here. Scheduling implies **markdown sources, HTML build, module packaging, and a new exported command**.
 
-Promotion to [`PROJECT-TODO.md`](PROJECT-TODO.md) happens when work is scheduled. **No HTML, commands, or module files are implied by this document alone.**
+---
+
+## Open Issues
+
+Sorted by **Priority** (lower number first), then higher **Benefit**, then lower **Effort** within the same priority.
+
+**Priority 3/6 — Normal**
+
+---
+---
+
+## 📌 Deliver hybrid product documentation (repo markdown → module HTML → open command)
+
+- 🏷 Rating
+  - 🚦 Priority: 3/6 Normal ▰▰▰▰▱▱▱
+  - 🛠 Effort: 4/4 Major ▰▰▰▰
+  - 🧠 Complexity: 2/5 Normal ▰▰▱▱▱
+  - 🌍 Benefit: 3/4 Team ▰▰▰▱
+  - 📦 Shape: 3/4 Epic / Theme ▰▰▰▱
+  - 🎯 Quality: 🧭 Usability
+  - 🚧 Readiness: 🟠 Needs Refinement
+
+### 📝 Statement
+
+The repo has a solid **README** and **PRODUCT-BOUNDARY**, but no structured manual for adopters, operators, or catalog maintainers — and **no offline guide for Gallery-only installs**.
+
+**What this issue is (fixed scope, not an option set):** ship one documentation **system** with three parts:
+
+1. **Sources** — markdown chapters in git; README links to the doc index.
+2. **Bundle** — static HTML built from those sources, packaged in the module (offline, **no CDN**), e.g. under `Docs/Guide/`.
+3. **Discovery** — exported command opens `index.html` via `file://`; clear failure if assets are missing.
+
+Phasing is **implementation order** (content → build → bundle → command), not optional legs. Content includes concepts, team channel, positioning (one chapter), troubleshooting — not positioning alone. **PRODUCT-BOUNDARY** stays canonical; the guide summarizes and links.
+
+**What this issue decides (options below):** which **v1 implementation path** to use for sources, HTML build, boundary presentation, opener command, and public web mirror — each option is one coherent, selectable stack (not a letter combination).
+
+### 🧭 Related Context
+
+Related Issues:
+- [`TODO-OWNERSHIP.md`](TODO-OWNERSHIP.md) — ownership/adoption guide → chapter in same doc set.
+- [`DECISIONS.md`](DECISIONS.md) — shipped `Get-PackageState` formatting and related polish; does not replace bundled guide.
+- [DECISION-ENDPOINT-DISCOVERY-V1.md](DECISION-ENDPOINT-DISCOVERY-V1.md) / [`TODO-DEPOTS-HTTP.md`](TODO-DEPOTS-HTTP.md) — endpoint/depot backlog → conceptual mention in team-channel chapter only.
+
+Affected Areas:
+- Repo [`README.md`](../../../README.md); markdown tree (path TBD); `src/prj/Eigenverft.Manifested.Package/Docs/Guide/`; `.psd1` file list; new command; CI/release build.
+
+May Influence:
+- PSGallery package size; release pipeline; [`TODO-CATALOG-AGENT.md`](TODO-CATALOG-AGENT.md) onboarding.
+
+Dependencies:
+- Record choices under **✅ Resolved Decisions** from **🧩 Options** before bulk writing and packaging.
+
+### 🎯 Required Outcome
+
+| # | Leg | Done when |
+|---|-----|-----------|
+| 1 | **Sources** | Full chapter set ([map](#documentation-map-target-shape)) as repo markdown; index + README links; PRODUCT-BOUNDARY not duplicated as normative text. |
+| 2 | **Build** | CI/release produces static HTML from markdown; **no CDN**; vendored licenses if JS/CSS used. |
+| 3 | **Bundle** | Installed module contains offline `index.html` + chapters; `.psd1` includes files. |
+| 4 | **Command** | Exported opener; module path resolution; tested on PowerShell 5.1 and 7+. |
+| 5 | **Parity** | Git readers use markdown; `Install-Module` users get the **same** content via bundle + command. |
+
+Implementation choices (repo path, renderer, boundary shape, command name, web mirror) are decided via **🧩 Options** and recorded in **✅ Resolved Decisions**.
+
+### 🔎 Facts
+
+Known:
+- **README** (206 lines): no “Documentation” section (2026-06-01).
+- **`docs/` tree:** does not exist.
+- **Module:** no bundled guide path; **35** exported functions; **no** doc opener.
+- **PRODUCT-BOUNDARY:** `src/wrk/Eigenverft.Manifested.Package/PRODUCT-BOUNDARY.md`.
+- **Help:** comment-based only; wrk `TODO-*` are not user manuals.
+- **Catalog examples:** **18** signed definitions under `Endpoint/Defaults/Eigenverft/`.
+- **Drift risk:** README paraphrases positioning; boundary chapter shape is still an open choice between options.
+
+Unknown:
+- PSGallery size budget for HTML + vendor assets.
+- Doc PR policy (docs-only vs mixed commits).
+
+---
+
+### 🧩 Options
+
+*Each option is one **coherent v1 path** for the fixed hybrid system. Do not combine option letters in the recommendation.*
+
+#### Option A — v1 default stack (repo `docs/`, CI static HTML, link-only boundary, `Show-PackageDocumentation`) (Implementation Option)
+
+- 🧾 Option Profile
+  - 🧭 Resolution: 🟢 Full
+  - 🛠 Option Effort: 4/4 Major ▰▰▰▰
+  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
+  - 🔮 Future Impact: 🟢 -1 Improves
+  - ↩️ Reversibility: 🟡 Moderate
+  - 🧬 Integration: 🟣 Strategic
+  - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
+  - 🧾 Agent Work: 📝 Writing / Docs
+
+Description:
+Ship the full hybrid system using one integrated v1 stack. Maintainers author markdown under repo-root `docs/` with README links. CI pre-renders markdown to static HTML (tool TBD) and packages output under `Docs/Guide/` with **no CDN**. The product-boundary chapter summarizes purpose and **links** to `PRODUCT-BOUNDARY.md` without duplicating normative scope text. Export `Show-PackageDocumentation` to open `index.html` via `file://`. v1 delivers **module bundle only** — no GitHub Pages workflow yet.
+
+Current State:
+No doc tree, no HTML build, no bundle, no opener.
+
+Resulting State:
+Git contributors edit `docs/`; Gallery users get the same chapters offline via bundled HTML + command; single pipeline to maintain for v1.
+
+Solves:
+- Clear product entry for repo visitors; smallest sensible offline module; one scope source of truth for boundary; discoverable post-install command.
+
+Leaves Open:
+- Exact pre-render tool choice; PSGallery size after first artifact; ownership chapter may trail core phases.
+
+Risks:
+- CI must gate pack on successful HTML build; cross-tree build from repo `docs/` into module layout.
+
+Later Cost:
+- Ongoing doc + release pipeline maintenance; GitHub Pages can be a follow-up issue.
+
+---
+
+#### Option B — v1 stack with project-local markdown sources (Implementation Option)
+
+- 🧾 Option Profile
+  - 🧭 Resolution: 🟢 Full
+  - 🛠 Option Effort: 4/4 Major ▰▰▰▰
+  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
+  - 🔮 Future Impact: ⚪ 0 Neutral
+  - ↩️ Reversibility: 🟡 Moderate
+  - 🧬 Integration: 🔵 Local
+  - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
+  - 🧾 Agent Work: 📝 Writing / Docs
+
+Description:
+Same v1 stack as Option A (CI pre-render to static HTML, link-only boundary chapter, `Show-PackageDocumentation`, module bundle only) but markdown sources live beside the module project (e.g. `src/prj/Eigenverft.Manifested.Package/Docs/Source/` → build → `Docs/Guide/`). README links into the project path.
+
+Current State:
+No doc tree.
+
+Resulting State:
+Sources and bundle co-located in the module project folder; shorter paths for module-centric CI.
+
+Solves:
+- Convenient for developers working only in `src/prj/...`.
+
+Leaves Open:
+- Weaker repo-root discoverability for evaluators; longer README links.
+
+Risks:
+- Docs perceived as implementation-internal; may relocate to root `docs/` later.
+
+Later Cost:
+- Possible migration to Option A layout if onboarding suffers.
+
+---
+
+#### Option C — v1 stack with client-side markdown in the bundle (Reframed Implementation Option)
+
+- 🧾 Option Profile
+  - 🧭 Resolution: 🟡 Partial
+  - 🛠 Option Effort: 4/4 Major ▰▰▰▰
+  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
+  - 🔮 Future Impact: 🟠 +1 Adds Debt
+  - ↩️ Reversibility: 🟡 Moderate
+  - 🧬 Integration: 🔵 Local
+  - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
+  - 🧾 Agent Work: 🔌 Integration
+
+Description:
+Deliver the same hybrid outcomes (repo markdown at root, link-only boundary, `Show-PackageDocumentation`, module-only v1) but the module ships **markdown plus vendored client-side renderer** (e.g. marked/markdown-it) instead of CI pre-rendered HTML. CI mostly copies sources and vendor assets into `Docs/Guide/`.
+
+Current State:
+No bundle.
+
+Resulting State:
+Larger Gallery package; possible `file://` quirks; simpler CI copy step.
+
+Solves:
+- Avoids choosing a server-side renderer in CI initially.
+
+Leaves Open:
+- License and security review for vendored JS; heavier offline payload.
+
+Risks:
+- Renderer behavior under `file://`; may need later migration to pre-render (Option A style).
+
+Later Cost:
+- Likely second pass to pre-render if bundle size or reliability hurts adoption.
+
+---
+
+#### Option D — v1 default stack plus GitHub Pages from the same build (Combined Path Option)
+
+- 🧾 Option Profile
+  - 🧭 Resolution: 🟢 Full
+  - 🛠 Option Effort: 4/4 Major ▰▰▰▰
+  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
+  - 🔮 Future Impact: ⚪ 0 Neutral
+  - ↩️ Reversibility: 🟢 Easy
+  - 🧬 Integration: 🔵 Local
+  - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
+  - 🧾 Agent Work: 🔌 Integration
+
+Description:
+Deliver Option A’s full hybrid stack (repo `docs/`, CI pre-render, link-only boundary, `Show-PackageDocumentation`, module bundle) **and** publish the same built HTML to GitHub Pages on release in one v1 path. Module bundle remains required for offline Gallery users; Pages is a public mirror for evaluators, not a substitute for the bundle.
+
+Current State:
+No doc site or Pages workflow.
+
+Resulting State:
+Three surfaces: repo markdown, module bundle + command, public HTTPS docs.
+
+Solves:
+- Easier sharing during evaluations without installing the module.
+
+Leaves Open:
+- Second deploy target and CI complexity in v1.
+
+Risks:
+- Scope creep before bundle quality is proven; Pages drift if not same artifact as module.
+
+Later Cost:
+- Ongoing Pages deploy on every release.
+
+---
+
+### 💶 Value Assessment
+
+- 💎 Value Type: 🧭 User Experience Improved · 🧲 Adoption / Retention Improved · 🚚 Delivery Unblocked
+- 🧭 Value Direction: 🚀 Opportunity / Improvement
+- 🧾 Value Mechanism: Gives git contributors and Gallery-only installers the same structured product guide (repo markdown + offline bundled HTML + open command); reduces evaluation friction, support threads, and README-only onboarding without duplicating PRODUCT-BOUNDARY as normative scope text.
+- ⚖️ Option Value Summary:
+  - Option A — v1 default stack (repo `docs/`, CI static HTML, link-only boundary, `Show-PackageDocumentation`) (Implementation Option)
+    - 🧭 Resolution: 🟢 Full
+    - 🛠 Option Effort: 4/4 Major ▰▰▰▰
+    - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
+    - 🔮 Future Impact: 🟢 -1 Improves
+    - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
+    - 🧬 Integration: 🟣 Strategic
+    - 🧾 Decision Note: Strongest v1 fit: common repo layout, smaller Gallery package via pre-render, boundary link-only, cmdlet naming aligned with existing surface.
+  - Option B — v1 stack with project-local markdown sources (Implementation Option)
+    - 🧭 Resolution: 🟢 Full
+    - 🛠 Option Effort: 4/4 Major ▰▰▰▰
+    - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
+    - 🔮 Future Impact: ⚪ 0 Neutral
+    - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
+    - 🧾 Decision Note: Same hybrid outcomes as A with weaker repo-root discoverability; may relocate sources later.
+  - Option C — v1 stack with client-side markdown in the bundle (Reframed Implementation Option)
+    - 🧭 Resolution: 🟡 Partial
+    - 🛠 Option Effort: 4/4 Major ▰▰▰▰
+    - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
+    - 🔮 Future Impact: 🟠 +1 Adds Debt
+    - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
+    - 🧾 Decision Note: Defers CI renderer choice but adds vendored JS, `file://` risk, and likely pre-render migration later.
+  - Option D — v1 default stack plus GitHub Pages from the same build (Combined Path Option)
+    - 🧭 Resolution: 🟢 Full
+    - 🛠 Option Effort: 4/4 Major ▰▰▰▰
+    - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
+    - 🔮 Future Impact: ⚪ 0 Neutral
+    - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
+    - 🧾 Decision Note: Best public sharing during evaluation; higher v1 CI scope — sensible after bundle pipeline is proven, not as first ship blocker.
+- ✅ Good Result: Git and Gallery users access the same chapter set; offline `index.html` opens from an exported command; PRODUCT-BOUNDARY stays the single normative scope source.
+
+---
+
+### 🏁 Recommendation
+
+- [2026-05-30 16:00 | Author: Composer | Recommendation: Prefer Option A | Support: 2/3 Reasoned ▰▰▱]
+
+Reasoning:
+Option A is one coherent v1 path that matches common open-source layout, keeps the module smaller via CI pre-render, avoids boundary drift with a link-only chapter, and uses a command name consistent with existing package cmdlets. Option B trades discoverability for project-local convenience. Option C adds vendored JS weight and `file://` risk without a strong v1 need. Option D is reasonable after the bundle pipeline is stable; it should not block first ship.
+
+Required Checks:
+- Confirm PSGallery package size after first pre-rendered HTML artifact.
+- Pick CI build tool (mdbook, pandoc, or other) before Phase 5.
+- Record **Choose Option A** under **✅ Resolved Decisions** when stakeholders agree.
+
+### 📬 Stakeholder Success Note
+
+- 👥 Stakeholder Role: 🧑‍💼 Product Management · 🔧 Engineering · 🛟 Support / Customer Success
+- 🗣 Communication Lens: 🧑‍💼 Product Summary
+- 📬 Success Note: The product now ships a structured guide inside the module, not only README fragments. Gallery installs can open offline HTML that matches the repo markdown chapters. Evaluators and operators get clearer onboarding without hunting wrk scratchpads or duplicating scope text from PRODUCT-BOUNDARY.
+
+### ✅ Resolved Decisions
+
+- Decision: **Hybrid documentation system** is in scope — repo markdown, module HTML bundle, exported open command (three legs; phasing is order only).
+  Reason: Gallery-only users need offline guide parity with git contributors.
+  Consequence: Partial deliveries (markdown-only, bundle-only, command-only) do not close the issue.
+
+- Decision: **PRODUCT-BOUNDARY** remains canonical for scope; guide must not replace it.
+  Reason: Avoid two normative boundary texts.
+  Consequence: Recommended path uses a link-only boundary chapter (Option A), not a duplicated excerpt.
+
+- Decision: **Positioning** is one chapter in the IA, not a standalone doc effort.
+  Reason: Migrated from prior project backlog positioning story.
+  Consequence: Full chapter set still required per map.
+
+- Decision: **English-only v1**; **no CDN** in bundled guide assets.
+  Reason: Controlled/offline reading; defer localization.
+  Consequence: Pre-rendered static HTML (Option A) preferred over client-side renderer (Option C).
+
+- Decision: **Pending — v1 implementation path** — recommendation is **Prefer Option A**; not yet recorded as final until Required Checks pass.
+  Reason: Framework requires one selectable option, not a letter combination.
+  Consequence: Until confirmed, treat Option B/C/D as documented alternatives only.
+
+### ❓ Open Decisions
+
+- Confirm **Choose Option A** vs Option B/C/D (after Required Checks).
+- Exact CI build tool when Option A is confirmed (mdbook, pandoc, custom PowerShell, other).
+- PSGallery package size budget after first HTML artifact.
+- Doc PR policy (docs-only PRs vs mixed).
+- Whether ownership/adoption chapter ([`TODO-OWNERSHIP.md`](TODO-OWNERSHIP.md)) blocks v1 or trails in Phase 3+.
+
+### 🚫 Out of Scope
+
+- Markdown-only or bundle-only or command-only delivery (incomplete vs fixed hybrid scope).
+- Replacing JSON Schema or `Get-Help`.
+- Auto-generating docs from every `.ps1` unless a later tooling issue.
+- Public marketing website (separate from guide + optional Pages).
+- Fleet manager documentation beyond PRODUCT-BOUNDARY.
+- HTTPS catalog / HTTP depot implementation (conceptual mention only).
+
+### 🌱 Extracted Work
+
+- [ ] **Phase 1 — IA + markdown skeleton** — map; index; placeholders; README links (repo `docs/` if Option A confirmed).
+- [ ] **Phase 2 — Substantive markdown** — concepts, team channel, positioning.
+- [ ] **Phase 3 — Remaining markdown** — install, trust, troubleshooting, maintainer index.
+- [ ] **Phase 4 — README + boundary** — link-only boundary chapter; reconcile README duplication.
+- [ ] **Phase 5 — HTML build in CI** — pre-render markdown → static HTML; review artifact.
+- [ ] **Phase 6 — Module bundle + `.psd1`** — `Docs/Guide/` offline verify.
+- [ ] **Phase 7 — `Show-PackageDocumentation`** — export opener; tests 5.1 + 7+.
+- [ ] **Phase 8 — Release gates** — CI fails if sources or `index.html` missing from package.
+
+Optional:
+- [ ] **README package index / wrk catalog overview** — improve repo [`README.md`](../../../README.md) package list / quick-start and add a wrk index of the **18** shipped definitions (tables, grouping by kind). Complements shipped `Get-PackageState` formatting ([DECISIONS.md](DECISIONS.md)).
+- [ ] **Ownership / adoption chapter** — when [`TODO-OWNERSHIP.md`](TODO-OWNERSHIP.md) guide content exists.
+- [ ] **GitHub Pages** — only if **Choose Option D** is recorded (Combined Path Option includes Pages in v1; otherwise defer as follow-up after Option A ships).
+
+---
+
+## Delivery model (fixed architecture)
+
+*Not an option — describes the system this issue ships.*
+
+```text
+  [Maintainers]  edit markdown in repo
+        |
+        v
+  [CI / release]  markdown --> static HTML
+        |
+        v
+  [Module package]  Docs/Guide/index.html  (offline, no CDN)
+        |
+        v
+  [User]  <open-doc command>  -->  file:// index
+```
+
+| Audience | Entry |
+|----------|--------|
+| Git clone / PR | README → markdown tree |
+| PSGallery install | Open-doc command → bundled HTML |
 
 ---
 
 ## Documentation map (target shape)
 
-| Layer | Audience | Status today | Target |
-|-------|----------|--------------|--------|
-| **README** | Everyone landing on the repo | Exists | Stays short; points into deeper docs |
-| **Getting started** | New installer | Partially in README | Install paths (Gallery, corporate bootstrap), first `Invoke-Package`, `Get-PackageState` |
-| **Concepts** | Users and maintainers | Fragmented in README + comments | Endpoints, depots, trust, inventory, install slots, assignment vs removal |
-| **Team channel guide** | Team endpoint / depot owners | README team section | Expanded walkthrough: signing, trust preseed, layout on share |
-| **Package definitions (overview)** | Catalog authors | Schema descriptions, shipped examples | How JSON maps to behavior without reading all of `*.ps1` |
-| **Positioning / sweet spot** | Adopters, leads presenting the product | Paragraphs in PRODUCT-BOUNDARY + README | Clear “between WinGet/Scoop and fleet CM” narrative; comparisons; who it is for |
-| **Product boundary** | Contributors, agents building features | [`PRODUCT-BOUNDARY.md`](PRODUCT-BOUNDARY.md) | **Included as a chapter** — in/out of scope, manager product, decision test; not duplicated, summarized in explainer with link to canonical file |
-| **Command reference** | Daily users | Comment-based help | Optional generated or curated command/switch reference |
-| **Maintainer / catalog** | Eigenverft and team catalog owners | Scattered TODO scratchpads | Links to `TODO-CATALOG-AGENT`, validation, dependency design docs when relevant |
-| **Troubleshooting** | Support | Minimal | Common failures: trust prompt, offline, dependency not ready |
-
-**Idea:** one documentation **system** (markdown sources + optional bundled HTML), not many unrelated one-pagers.
+| Layer | Audience | Today | Target |
+|-------|----------|-------|--------|
+| **README** | Everyone | 206 lines | Short; links to docs + open-doc command |
+| **Getting started** | New installer | Partial in README | Gallery, bootstrap, first assign |
+| **Core concepts** | Users, maintainers | Fragmented | Endpoints, depots, trust, inventory |
+| **Team channel guide** | Team owners | README section | Signing, trust, share layout |
+| **Package definitions (overview)** | Authors | Schema + 18 examples | JSON → behavior |
+| **Positioning / sweet spot** | Adopters | Scattered | WinGet/Scoop ← product → fleet CM |
+| **Product boundary** | Contributors | PRODUCT-BOUNDARY.md | Summary + link (Option A path) |
+| **Command reference** | Daily users | Comment help | Curated `Get-Help` tour |
+| **Maintainer / catalog** | Owners | TODO scratchpads | Links only |
+| **Troubleshooting** | Support | Minimal | Trust, depot, deps, removal |
 
 ---
 
-## Product goals
+## Content outlines (draft)
 
-### Overall (documentation program)
+### Positioning
 
-As a user or maintainer, I want documentation that goes beyond README length — structured concepts, workflows, and examples — so I can adopt, operate, and present the product without reading the engine source.
+1. One-sentence definition. 2. Sweet spot diagram. 3. Primary users. 4. `Invoke-Package` scope. 5. Boundary link. 6. Open-doc command after install.
 
-**Outcome:** a maintained doc set (repo and/or module-bundled) with clear entry from README; PRODUCT-BOUNDARY remains the normative scope document.
+### Other chapters
 
-### Positioning (subset — migrated from PROJECT-TODO)
-
-As a maintainer presenting the project, I want the **sweet spot** explained: governed team package channel for Windows dev environments — more than WinGet/Scoop ad hoc scripts, lighter than enterprise fleet management — not a public app store, not a fleet manager.
-
-**Outcome:** positioning content lives inside the larger doc IA (section or chapter), consistent with PRODUCT-BOUNDARY **Out Of Scope**.
-
-### Extension model (subset — migrated from PROJECT-TODO)
-
-As a package catalog maintainer, I want product language to present **team and online package endpoints** (and depots) as the normal way to grow the catalog beyond the shipped module set — without implying every definition must ship inside the Gallery package.
-
-**Outcome:** documentation explains endpoint vs depot roles, filesystem team channel today, and HTTPS catalog / HTTP depot directions as backlog (see PROJECT-TODO P5). README points here instead of duplicating engine backlog detail.
+Introduction · Install · Core concepts · First assignment (**18** defs) · Team channel · Trust and signing · Package definitions overview · Product boundary · Troubleshooting
 
 ---
 
-## What exists today
+## Closed / elsewhere
 
-| Asset | Role | Gap |
-|-------|------|-----|
-| [`README.md`](../../README.md) | Install, features, quick start, team basics | Not a full manual; evaluators need more narrative |
-| [`PRODUCT-BOUNDARY.md`](PRODUCT-BOUNDARY.md) | Scope, risky decisions, manager boundary | Contributor-focused; should be **referenced**, not the only “deep” doc |
-| `src/wrk/.../TODO-*.md` | Design scratchpads | Not end-user documentation |
-| Module comment help | Per-command | No guided tour or concept graph |
-| JSON Schema `description` / hints | Package authors | Not product-level story |
-
----
-
-## Deliverable ideas (not locked)
-
-### A — Markdown doc tree in repo (foundation)
-
-- e.g. `docs/` at repo root or `src/prj/.../Docs/` with index (`README.md` or `Index.md`) linking chapters.
-- Chapters align with [Documentation map](#documentation-map-target-shape); PRODUCT-BOUNDARY stays in `src/wrk` or is linked as canonical boundary chapter (avoid two diverging boundary texts).
-- README gets a “Documentation” section with 3–5 links.
-
-**Pros:** Git-reviewed, offline, no module release required for first value.  
-**Cons:** User must find and open files manually.
-
-### B — Bundled local HTML documentation site (idea)
-
-Ship static **HTML + JS** inside the PowerShell module (path TBD, e.g. `Docs/Guide/`):
-
-| Piece | Idea |
-|-------|------|
-| **Scope** | Full doc set (getting started through positioning and boundary summary), not positioning-only |
-| **Source** | Author in **Markdown**; render to HTML at build time or client-side |
-| **JS** | Small markdown renderer or pre-rendered pages |
-| **Libraries** | Vendored/materialized in the module package (no CDN) — offline-friendly |
-| **Entry** | `index.html` — table of contents for all chapters |
-
-**Pros:** One offline-capable “manual” after `Install-Module`; good for demos and onboarding workshops.  
-**Cons:** Module size; sync with repo `docs/` and PRODUCT-BOUNDARY.
-
-### C — Command to open documentation locally (idea)
-
-Exported command (name TBD, e.g. `Show-PackageDocumentation` / `Open-PackageGuide`):
-
-- Resolves `index.html` under the **installed module directory**.
-- Opens default browser via local file URI — no web server for v1.
-- Fails clearly if bundled docs missing.
-
-**Pros:** Discoverable next step after install.  
-**Cons:** New command; tests on Windows PowerShell 5.1 and 7+.
-
-### D — Hybrid (likely end state)
-
-- Markdown sources in repo (`docs/`); release pipeline copies or builds HTML into module layout.
-- Command opens bundled site.
-- README → repo docs for contributors cloning git; command → same content for Gallery-only users.
-
----
-
-## Content outline — positioning chapter (draft)
-
-One chapter inside the larger doc; not the whole site.
-
-1. One-sentence product definition.
-2. Sweet spot: WinGet/Scoop ← this product → Intune/ConfigMgr (manager = future).
-3. Primary users (developers, team owners, security-conscious operators).
-4. What `Invoke-Package` does and does not do (local, explicit, inventory-backed).
-5. Pointer to **Product boundary** chapter / PRODUCT-BOUNDARY file for scope rules.
-6. Next steps (install, team channel, maintainer paths).
-
----
-
-## Content outline — other chapters (draft)
-
-- **Introduction** — what the module is; relationship to Eigenverft.Manifested.* ecosystem if any.
-- **Install** — Gallery, corporate bootstrap, requirements (mirror README, can go deeper).
-- **Core concepts** — definition, endpoint, depot, trust, assignment inventory, operation history.
-- **First assignment** — walkthrough with shipped packages.
-- **Team package channel** — signing, endpoint layout, depot mirror (expand README).
-- **Trust and signing** — catalog trust policy, unknown key prompt, `.cer` preseed.
-- **Package definitions (author overview)** — point to schema and AgentSkills/TODOs, not duplicate wire spec.
-- **Product boundary** — summary + link to PRODUCT-BOUNDARY.md (canonical).
-- **Positioning / sweet spot** — [outline above](#content-outline--positioning-chapter-draft).
-- **Troubleshooting** — trust, offline, dependencies, removal blocked.
-
----
-
-## Materialization of JS/CSS libs (idea)
-
-If the HTML site uses client-side markdown rendering:
-
-- Vendor libraries under module `Docs/.../vendor/` (or pre-render in CI and ship static HTML only).
-- License files alongside vendored assets.
-- No runtime `npm install` on the reader’s machine.
-
-**Open:** marked vs markdown-it vs build-time static HTML only.
-
----
-
-## Relationship to other work
-
-| Topic | Where |
-|-------|--------|
-| HTTPS catalog / HTTP depot (engine) | PROJECT-TODO P5 — document conceptually in team-channel chapter |
-| Catalog agent skill | [`TODO-CATALOG-AGENT.md`](TODO-CATALOG-AGENT.md) |
-| Catalog validation | [`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md) |
-| Dependency / resolver design | [`TODO-DEPENDENCY.md`](TODO-DEPENDENCY.md) |
-| Supply-chain selection policy | [`TODO-SUPPLY-CHAIN.md`](TODO-SUPPLY-CHAIN.md) |
-
-Design scratchpads stay in `TODO-*`; user-facing docs **summarize and link**, not copy entire design docs.
-
----
-
-## Future implementation checklist
-
-Reference only.
-
-1. Agree doc IA (map above) and repo path (`docs/` vs module `Docs/`).
-2. Phase 1 markdown chapters in repo; README links.
-3. Reconcile positioning + boundary chapters with PRODUCT-BOUNDARY (single source of truth for scope).
-4. Prototype HTML site (repo only).
-5. Ship HTML in module + file list in `.psd1`.
-6. Open-documentation command.
-7. Optional: GitHub Pages from same sources (separate from module bundle).
-
-### Phased delivery
-
-| Phase | Deliverable |
-|-------|-------------|
-| 1 | `docs/` markdown skeleton + 2–3 substantive chapters (concepts, team channel, positioning) |
-| 2 | Remaining chapters; README documentation index |
-| 3 | Static HTML prototype; positioning + boundary integrated |
-| 4 | Module-bundled HTML + open command |
-| 5 | Markdown → HTML build pipeline; vendored or pre-rendered assets |
-
----
-
-## Resolved (facts about today)
-
-- README and PRODUCT-BOUNDARY are the only sustained product docs; depth is the gap.
-- PRODUCT-BOUNDARY should remain canonical for **scope**; documentation **embeds** it, does not replace it.
-- Positioning “sweet spot” is one PROJECT-TODO story now owned here, not a separate TODO file.
-
----
-
-## Still open
-
-- Single repo path convention (`/docs` vs `src/prj/.../Docs`).
-- Whether boundary chapter is excerpt vs link-only to `src/wrk/PRODUCT-BOUNDARY.md`.
-- Gallery package size budget for bundled HTML + vendor JS.
-- Who maintains docs vs code (same PR policy as schema?).
-- Localization — English-only v1 assumed.
-- Whether command name is “Documentation” vs “Guide” vs “Help”.
-- GitHub Pages vs module-only distribution.
-
----
-
-## Out of scope
-
-- Replacing JSON Schema or inline command help with the doc site.
-- Public marketing website (unless explicitly added later).
-- Auto-generating docs from every `.ps1` (unless a later explicit tooling story).
-- Fleet manager product documentation (PRODUCT-BOUNDARY out-of-scope section only).
+- README quick start — stays; guide adds depth.
+- JSON Schema — author reference; guide is narrative.
+- P6 cmdlet polish — separate issue.

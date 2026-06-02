@@ -1,15 +1,15 @@
-# Project Issue Framework V1.1
+# Project Issue Framework V1.6
 
-Version: V1.1
-Purpose: A readable Markdown framework for defining, rating, comparing, and deciding project issues.
+Version: V1.6
+Purpose: A readable Markdown framework for defining, rating, comparing, assessing value, deciding, and communicating project issues.
 
 This framework has two layers:
 
 1. Issue Rating — classifies the issue as it currently exists.
-2. Issue Definition — describes the issue, related context, known facts, possible options, recommendation, decisions, and scope.
+2. Issue Definition — describes the issue, related context, required outcome, known facts, possible options, value assessment, recommendation, stakeholder success note, decisions, and scope.
 
 The issue rating answers: What kind of issue is this right now?
-The issue definition answers: What do we know, what is connected, what can we do, what do we recommend, what is decided, and what is excluded?
+The issue definition answers: What do we know, what is connected, what must be true, what options exist, what value do the options offer, which option do we recommend, what can be communicated, what is decided, and what is excluded?
 
 ---
 
@@ -21,7 +21,7 @@ There are three visual layers:
 
 1. Icons identify the field.
 2. Meters show ordered numeric ratings.
-3. Chips show state, category, or risk for fields that do not use meters.
+3. Chips show state, category, value direction, or risk for fields that do not use meters.
 
 The text is always the source of truth. Icons, meters, and chips are only visual aids.
 
@@ -49,11 +49,11 @@ Use `▰▱` instead of stars, emoji ratings, or color-only markers.
 
 Reason:
 
-- `▰▱` has a clear filled/unfilled pair.
-- It is readable in plain Markdown.
-- It looks like a dashboard meter rather than a review score.
-- It avoids the emotional meaning of stars.
-- It works for effort, complexity, support, agent difficulty, and similar scales.
+* `▰▱` has a clear filled/unfilled pair.
+* It is readable in plain Markdown.
+* It looks like a dashboard meter rather than a review score.
+* It avoids the emotional meaning of stars.
+* It works for effort, complexity, support, agent difficulty, and similar scales.
 
 Do not use `⭐` as the main rating symbol. Stars can imply quality, preference, or approval, which is not what every rating means.
 
@@ -69,7 +69,7 @@ Use chips for fields that do not have a numeric meter.
 🟠 Caution / needs work / adds debt
 🔴 Harmful / blocked / reject / high risk
 🔵 Informational / discovery / local
-🟣 Strategic / design direction
+🟣 Decision / strategic direction
 ⚪ Neutral / deferred / inactive
 🧩 Split / structuring
 ```
@@ -78,14 +78,14 @@ Use chips sparingly. Do not add a chip when it does not clarify the meaning.
 
 Chip consistency rules:
 
-- Use 🟢 for clearly favorable states.
-- Use 🟡 for acceptable but incomplete states.
-- Use 🟠 for caution or debt.
-- Use 🔴 for risk, rejection, blockage, or harmful direction.
-- Use 🔵 for informational or discovery states.
-- Use 🟣 for strategic direction.
-- Use ⚪ for neutral or deferred states.
-- Use 🧩 only when the meaning is specifically splitting or structuring.
+* Use 🟢 for clearly favorable states.
+* Use 🟡 for acceptable but incomplete states.
+* Use 🟠 for caution or debt.
+* Use 🔴 for risk, rejection, blockage, or harmful direction.
+* Use 🔵 for informational or discovery states.
+* Use 🟣 for decision or strategic direction.
+* Use ⚪ for neutral or deferred states.
+* Use 🧩 only when the meaning is specifically splitting or structuring.
 
 ---
 
@@ -101,7 +101,9 @@ Use professional emoji icons for headings and major concepts.
 🎯 Required Outcome
 🔎 Facts
 🧩 Options
+💶 Value Assessment
 🏁 Recommendation
+📬 Stakeholder Success Note
 ✅ Resolved Decisions
 ❓ Open Decisions
 🚫 Out of Scope
@@ -122,7 +124,7 @@ Do not use `- [ ]` for full issue definitions. Checkboxes belong only in compact
 
 ## 1.4 Rating Icons
 
-Use one icon per rating dimension:
+Use one icon per issue-rating dimension:
 
 ```text
 🚦 Priority
@@ -134,7 +136,7 @@ Use one icon per rating dimension:
 🚧 Readiness
 ```
 
-Use one icon per option-only dimension:
+Use one icon per option-profile dimension:
 
 ```text
 🧭 Resolution
@@ -145,6 +147,24 @@ Use one icon per option-only dimension:
 🧬 Integration
 🤖 Agent Difficulty
 🧾 Agent Work
+```
+
+Use one icon per value-assessment field:
+
+```text
+💎 Value Type
+🧭 Value Direction
+🧾 Value Mechanism
+⚖️ Option Value Summary
+✅ Good Result
+```
+
+Use one icon per stakeholder-success field:
+
+```text
+👥 Stakeholder Role
+🗣 Communication Lens
+📬 Success Note
 ```
 
 ---
@@ -168,7 +188,7 @@ Use this vertical format:
   - 🚧 Readiness: 🟢 Ready
 ```
 
-The number is the source of truth. The meter is only a visual aid. Unordered dimensions such as Quality, Readiness, and Agent Work do not use meters.
+The number is the source of truth. The meter is only a visual aid. Unordered dimensions such as Quality, Readiness, Value Type, Value Direction, Option Kind, and Agent Work do not use meters.
 
 Do not use short codes like `P2`, `E2`, `C3`, or `Q:U` in normal issue text.
 
@@ -351,7 +371,7 @@ Readiness is not Shape. Shape judges issue structure. Readiness judges whether w
 
 # 3. Document Dividers
 
-Use visible dividers to separate large sections. This is important because options and recommendations can become long.
+Use visible dividers to separate large sections. This is important because options, value assessment, and recommendations can become long.
 
 Use this divider between full issues:
 
@@ -360,7 +380,7 @@ Use this divider between full issues:
 ---
 ```
 
-Use this divider before the Options section and before Recommendation:
+Use this divider before Options, Value Assessment, and Recommendation:
 
 ```markdown
 ---
@@ -386,13 +406,19 @@ Recommended layout:
 
 ### 🧩 Options
 
-#### Option A — First path
+#### Option A — First path (Implementation Option)
 
 ...
 
 ---
 
-#### Option B — Second path
+#### Option B — Second path (Reframed Implementation Option)
+
+...
+
+---
+
+### 💶 Value Assessment
 
 ...
 
@@ -424,28 +450,6 @@ Use compact issue cards when listing many open issues at the end of a project fi
   - 📦 Shape: 2/4 Composite ▰▰▱▱
   - 🎯 Quality: 🧱 Maintainability
   - 🚧 Readiness: 🟠 Needs Refinement
-
-### 📌 Resolver failure messages are not actionable
-
-- 🏷 Rating
-  - 🚦 Priority: 2/6 High ▰▰▰▰▰▱▱
-  - 🛠 Effort: 2/4 Moderate ▰▰▱▱
-  - 🧠 Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🌍 Benefit: 3/4 Team ▰▰▰▱
-  - 📦 Shape: 1/4 Focused ▰▱▱▱
-  - 🎯 Quality: 🧭 Usability
-  - 🚧 Readiness: 🟢 Ready
-
-### 🌱 Add consistency tests for resolver diagnostics
-
-- 🏷 Rating
-  - 🚦 Priority: 3/6 Normal ▰▰▰▰▱▱▱
-  - 🛠 Effort: 2/4 Moderate ▰▰▱▱
-  - 🧠 Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🌍 Benefit: 0/4 Internal ▱▱▱▱
-  - 📦 Shape: 1/4 Focused ▰▱▱▱
-  - 🎯 Quality: 🧱 Maintainability
-  - 🚧 Readiness: 🟢 Ready
 ```
 
 Use 📌 for normal issue entries.
@@ -498,20 +502,20 @@ Unknown:
 
 ### 🧩 Options
 
-#### Option A — <Short option name>
+#### Option A — <Short option name> (<Option Kind>)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: 🟡 Partial
-  - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
-  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🔮 Future Impact: 🟠 +1 Adds Debt
-  - ↩️ Reversibility: 🟢 Easy
-  - 🧬 Integration: 🟡 Temporary
-  - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
-  - 🧾 Agent Work: 💻 Local Code
+  - 🧭 Resolution: <resolution>
+  - 🛠 Option Effort: <option effort>
+  - 🧠 Option Complexity: <option complexity>
+  - 🔮 Future Impact: <future impact>
+  - ↩️ Reversibility: <reversibility>
+  - 🧬 Integration: <integration>
+  - 🤖 Agent Difficulty: <agent difficulty>
+  - 🧾 Agent Work: <agent work>
 
 Description:
-<Explain the option in plain language. Say what this option does, why someone might choose it, and what tradeoff it makes. This should be a short paragraph of 3 to 6 sentences, not a slogan.>
+<Explain the option in plain language. Say what this option does, why someone might choose it, and what tradeoff it makes. This should be a short paragraph of 3 to 6 sentences, not a slogan. The option must be independently selectable; it must describe one coherent path that could be recommended on its own.>
 
 Current State:
 <Describe how the issue looks today if this option is not implemented. Focus on the visible behavior, code structure, workflow, risk, or missing information that currently exists.>
@@ -520,7 +524,7 @@ Resulting State:
 <Describe how the issue would look after this option is implemented. Paint a clear picture of the changed behavior, structure, workflow, or decision state. A future reader should understand what improves without needing the original discussion.>
 
 Solves:
-- <What this option fixes, improves, or clarifies.>
+- <What this option fixes, improves, clarifies, decides, discovers, splits, defers, or rejects.>
 
 Leaves Open:
 - <What this option does not solve.>
@@ -530,154 +534,13 @@ Risks:
 
 Later Cost:
 - <What this option may make harder later.>
-
----
-
-#### Option B — <Short option name>
-
-- 🧾 Option Profile
-  - 🧭 Resolution: 🟢 Full
-  - 🛠 Option Effort: 3/4 Substantial ▰▰▰▱
-  - 🧠 Option Complexity: 3/5 Complex ▰▰▰▱▱
-  - 🔮 Future Impact: 🟢 -2 Simplifies
-  - ↩️ Reversibility: 🟡 Moderate
-  - 🧬 Integration: 🟣 Strategic
-  - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
-  - 🧾 Agent Work: 🧠 System Logic
-
-Description:
-<Explain the option in plain language. Say what this option does, why someone might choose it, and what tradeoff it makes. This should be a short paragraph of 3 to 6 sentences, not a slogan.>
-
-Current State:
-<Describe how the issue looks today if this option is not implemented. Focus on the visible behavior, code structure, workflow, risk, or missing information that currently exists.>
-
-Resulting State:
-<Describe how the issue would look after this option is implemented. Paint a clear picture of the changed behavior, structure, workflow, or decision state. A future reader should understand what improves without needing the original discussion.>
-
-Solves:
-- <What this option fixes, improves, or clarifies.>
-
-Leaves Open:
-- <What this option does not solve.>
-
-Risks:
-- <What could go wrong.>
-
-Later Cost:
-- <What this option may make harder later.>
-
----
-
-#### Option C — <Short option name>
-
-- 🧾 Option Profile
-  - 🧭 Resolution: 🔵 Discovery
-  - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
-  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🔮 Future Impact: 🟢 -1 Improves
-  - ↩️ Reversibility: 🟢 Easy
-  - 🧬 Integration: 🟢 Compatible
-  - 🤖 Agent Difficulty: 1/4 Routine ▰▱▱▱
-  - 🧾 Agent Work: 🔎 Research / Mapping
-
-Description:
-<Explain the option in plain language. Say what this option does, why someone might choose it, and what tradeoff it makes. This should be a short paragraph of 3 to 6 sentences, not a slogan.>
-
-Current State:
-<Describe how the issue looks today if this option is not implemented. Focus on the visible behavior, code structure, workflow, risk, or missing information that currently exists.>
-
-Resulting State:
-<Describe how the issue would look after this option is implemented. Paint a clear picture of the changed behavior, structure, workflow, or decision state. A future reader should understand what improves without needing the original discussion.>
-
-Solves:
-- <What this option fixes, improves, clarifies, or discovers.>
-
-Leaves Open:
-- <What this option does not solve.>
-
-Risks:
-- <What could go wrong.>
-
-Later Cost:
-- <What this option may make harder later.>
-
----
-
-#### Optional Split Option — <Only include when splitting is a real candidate>
-
-- 🧾 Option Profile
-  - 🧭 Resolution: 🧩 Split
-  - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
-  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🔮 Future Impact: 🟢 -1 Improves
-  - ↩️ Reversibility: 🟢 Easy
-  - 🧬 Integration: 🟢 Compatible
-  - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
-  - 🧾 Agent Work: 🧩 Planning / Structuring
-
-Description:
-<Explain how this issue could be split into smaller issues. Say which part should stay here, which part should move out, why the split would make the work clearer or safer, and what risk the split creates.>
-
-Current State:
-<Describe why the current issue is bundled, unclear, or too large to handle safely as one item.>
-
-Resulting State:
-<Describe what the issue structure would look like after the split. Say what remains here and what becomes separate work.>
-
-Creates:
-- <Separate issue or concern that should receive its own rating.>
-
-Keeps Here:
-- <Part that remains in this issue.>
-
-Risks:
-- <What could be lost, delayed, or duplicated by splitting.>
-
-Later Cost:
-- <Extra coordination or cleanup created by the split.>
-
----
-
-### 🏁 Recommendation
-
-- [YYYY-MM-DD | Author: <required author name> | Recommendation: <recommendation> | Support: <support level>]
-
-Reasoning:
-<Explain why this option is currently recommended. Mention the tradeoff honestly.>
-
-Required Checks:
-<State what must be checked before this recommendation becomes a final decision.>
-
-### ✅ Resolved Decisions
-
-- Decision: <Decision already made.>
-  Reason: <Why this decision was made.>
-  Consequence: <What this changes or excludes.>
-
-### ❓ Open Decisions
-
-- <Decision still needed.>
-
-### 🚫 Out of Scope
-
-- <Explicitly excluded item.>
-
-### 🌱 Extracted Work
-
-Required:
-- [ ] <Only include if a separate issue must exist.>
-  Reason: <Why this must be tracked separately.>
-
-Optional:
-- [ ] <Only include if valuable but not required now.>
-  Reason: <Why this may be useful later.>
 ```
 
 ---
 
 # 6. Section Rules
 
-## 📌 Title
+## 6.1 📌 Title
 
 The title should name the issue, not the solution, unless the solution is already decided.
 
@@ -701,30 +564,7 @@ Bad:
 
 ---
 
-## 🏷 Rating
-
-The issue rating describes the issue as it currently stands, before choosing an option.
-
-Use vertical layout:
-
-```markdown
-- 🏷 Rating
-  - 🚦 Priority: 4/6 Low ▰▰▰▱▱▱▱
-  - 🛠 Effort: 2/4 Moderate ▰▰▱▱
-  - 🧠 Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🌍 Benefit: 0/4 Internal ▱▱▱▱
-  - 📦 Shape: 2/4 Composite ▰▰▱▱
-  - 🎯 Quality: 🧱 Maintainability
-  - 🚧 Readiness: 🟠 Needs Refinement
-```
-
-Do not use one-line rating blocks inside full issue definitions.
-
-If the issue is split, each child issue receives its own rating.
-
----
-
-## 📝 Statement
+## 6.2 📝 Statement
 
 The Statement section explains the issue in human terms. It should say what was reported, requested, noticed, or required; why it matters; and what pain, risk, gap, or limitation exists today.
 
@@ -744,7 +584,7 @@ The Statement should be clear enough that someone can understand the issue witho
 
 ---
 
-## 🧭 Related Context
+## 6.3 🧭 Related Context
 
 Related Context records what this issue touches or may influence. It appears early so readers can see whether the issue is isolated or connected.
 
@@ -780,7 +620,7 @@ Do not invent relationships just to fill the section.
 
 ---
 
-## 🎯 Required Outcome
+## 6.4 🎯 Required Outcome
 
 Required Outcome defines success without forcing a specific implementation. It should say what must be true after resolution and how the issue will be judged as done.
 
@@ -794,7 +634,7 @@ Avoid implementation detail unless it has already been decided.
 
 ---
 
-## 🔎 Facts
+## 6.5 🔎 Facts
 
 Facts are verified observations, not guesses. Use Facts to prevent implementation based on assumptions. If facts are missing, say so directly.
 
@@ -818,39 +658,336 @@ Facts should be updated during refinement. Do not hide uncertainty inside confid
 
 # 7. Options
 
-Options describe possible ways to handle the issue. An option can fully solve the issue, partly solve it, reduce the pain, gather facts, defer the work, reject the issue, or split it.
+Options describe possible ways to handle the issue. An option can implement, reframe, partly solve, mitigate, discover, decide, split, combine, defer, or reject.
 
-Options should be written in simple language. The option should let a future reader understand the world before and after the option.
-
-A good option must explain:
-
-- what would actually change
-- what would stay the same
-- why someone might choose this option
-- what tradeoff the option makes
-- how the current state looks
-- how the resulting state would look
-- whether it is a quick fix, full fix, discovery step, split, deferral, or rejection
-
-Do not write abstract descriptions like:
+Each option has two separate concepts:
 
 ```text
-Introduce aligned remediation path for diagnostic consistency.
+Option Kind = what kind of path this option is.
+Resolution = what this option achieves.
 ```
 
-Prefer plain descriptions like:
+The option heading must include the option kind.
 
-```text
-Change the visible error messages first, without changing the internal resolver structure. This makes the output easier to understand now, but it leaves the duplicated error-building code in place. This option is useful when quick user-facing improvement matters more than solving the internal structure immediately.
+Use this heading format:
+
+```markdown
+#### Option A — <Short option name> (<Option Kind>)
 ```
 
-Option descriptions should usually be a short paragraph of 3 to 6 sentences. One sentence is usually too thin unless the option is trivial.
+Example:
+
+```markdown
+#### Option B — Define supported installer behavior instead of automating every removal path (Reframed Implementation Option)
+```
+
+The option title must describe the concrete path. The option kind classifies the path. The Resolution field classifies what the path achieves.
 
 ---
 
-## 7.1 Description, Current State, and Resulting State
+## 7.1 Option Kinds
 
-Use these three fields together:
+Use one of these option kinds in the option heading.
+
+```text
+Option Kinds:
+Implementation Option
+Reframed Implementation Option
+Discovery Option
+Decision Option
+Split Option
+Combined Path Option
+Defer Option
+Reject Option
+```
+
+---
+
+### Implementation Option
+
+Use when the option is a concrete implementation path.
+
+Typical resolutions:
+
+```text
+🟢 Full
+🟡 Partial
+🟠 Mitigation
+```
+
+Example:
+
+```markdown
+#### Option A — Introduce a shared resolver error model (Implementation Option)
+
+- 🧾 Option Profile
+  - 🧭 Resolution: 🟢 Full
+```
+
+Implementation options should describe what will be built, changed, removed, or corrected.
+
+---
+
+### Reframed Implementation Option
+
+Use when the original issue is valid, but the current framing points toward unnecessary effort, poor alignment, or excessive complexity.
+
+The option keeps the original concern, but changes the target outcome so the implementation becomes simpler, better aligned, or lower effort.
+
+Typical resolutions:
+
+```text
+🟢 Full
+🟡 Partial
+🟠 Mitigation
+```
+
+Example:
+
+```markdown
+#### Option B — Define supported installer behavior instead of automating every removal path (Reframed Implementation Option)
+
+- 🧾 Option Profile
+  - 🧭 Resolution: 🟡 Partial
+```
+
+The description should make the reframe explicit:
+
+```text
+Reframe the issue from “support every installer removal path automatically” to “make supported and unsupported removal behavior explicit.”
+```
+
+A reframed implementation option must explain:
+
+* what the original concern was
+* what the simpler or better-aligned framing is
+* what implementation becomes unnecessary
+* what value is preserved
+* what is intentionally left open or out of scope
+
+Do not add `Reframe` as a Resolution value. Reframing is an option kind, not an outcome.
+
+---
+
+### Discovery Option
+
+Use when the option gathers facts, maps the current state, prototypes, or produces evidence before choosing implementation.
+
+Resolution:
+
+```text
+🔵 Discovery
+```
+
+Example:
+
+```markdown
+#### Option C — Map current resolver error ownership first (Discovery Option)
+
+- 🧾 Option Profile
+  - 🧭 Resolution: 🔵 Discovery
+```
+
+A Discovery option must say what facts, map, prototype, or evidence it will produce, and what later decision it enables.
+
+---
+
+### Decision Option
+
+Use when the option produces a required design, product, scope, release, security, or business decision before implementation.
+
+Resolution:
+
+```text
+🟣 Decision
+```
+
+Example:
+
+```markdown
+#### Option D — Decide whether machine-readable errors are in scope (Decision Option)
+
+- 🧾 Option Profile
+  - 🧭 Resolution: 🟣 Decision
+```
+
+A Decision option must say which decision will be made, why it blocks a responsible implementation choice, and which role or decision authority is expected to decide.
+
+---
+
+### Split Option
+
+Use when the option turns one bundled issue into smaller separately rated issues.
+
+Resolution:
+
+```text
+🧩 Split
+```
+
+Example:
+
+```markdown
+#### Option E — Separate wording cleanup from internal error modeling (Split Option)
+
+- 🧾 Option Profile
+  - 🧭 Resolution: 🧩 Split
+```
+
+A Split option must say what stays in the current issue and what becomes separate work.
+
+---
+
+### Combined Path Option
+
+Use when several actions must be chosen together to form one coherent path.
+
+Typical resolutions:
+
+```text
+🟢 Full
+🟡 Partial
+🟠 Mitigation
+```
+
+Example:
+
+```markdown
+#### Option F — Improve visible wording now and prepare shared model later (Combined Path Option)
+
+- 🧾 Option Profile
+  - 🧭 Resolution: 🟡 Partial
+```
+
+A Combined Path option is not a bundle of unrelated tasks. It must be one coherent, independently selectable path.
+
+Use this when the recommendation would otherwise become invalid, such as:
+
+```text
+Recommendation: A + C + E
+```
+
+Instead, create one Combined Path option and recommend that option.
+
+---
+
+### Defer Option
+
+Use when the option intentionally postpones the issue under a clear revisit condition.
+
+Resolution:
+
+```text
+⚪ Defer
+```
+
+Example:
+
+```markdown
+#### Option G — Defer until resolver diagnostics become release-blocking (Defer Option)
+
+- 🧾 Option Profile
+  - 🧭 Resolution: ⚪ Defer
+```
+
+A Defer option must say why now is not the right time and what condition should cause the issue to be revisited.
+
+---
+
+### Reject Option
+
+Use when the option closes the issue because it should not be pursued.
+
+Resolution:
+
+```text
+🔴 Reject
+```
+
+Example:
+
+```markdown
+#### Option H — Reject because the behavior is intentional (Reject Option)
+
+- 🧾 Option Profile
+  - 🧭 Resolution: 🔴 Reject
+```
+
+A Reject option must explain why the issue should not be pursued.
+
+---
+
+## 7.2 Resolution Values
+
+Resolution describes what the option achieves.
+
+```text
+🧭 Resolution:
+🟢 Full
+🟡 Partial
+🟠 Mitigation
+🔵 Discovery
+🟣 Decision
+🧩 Split
+⚪ Defer
+🔴 Reject
+```
+
+Use 🟢 Full when the option resolves the required outcome.
+
+Use 🟡 Partial when the option solves part of the issue and leaves known work open.
+
+Use 🟠 Mitigation when the option reduces pain or risk but does not solve the underlying issue.
+
+Use 🔵 Discovery when the option gathers facts, maps the current state, prototypes, or produces evidence needed before a responsible implementation choice.
+
+Use 🟣 Decision when the option produces a required design, product, scope, security, release, or business decision before implementation.
+
+Use 🧩 Split when the option turns one issue into smaller separately rated issues.
+
+Use ⚪ Defer when the option intentionally postpones the issue under a clear revisit condition.
+
+Use 🔴 Reject when the option decides not to pursue the issue and gives a reason.
+
+---
+
+## 7.3 Independent Option Rule
+
+Options must be framed so one recommendation can be chosen at the end.
+
+Good option structure:
+
+```text
+Option A — Minimal wording cleanup (Implementation Option)
+Option B — Shared resolver error model (Implementation Option)
+Option C — Discovery map before implementation (Discovery Option)
+Option D — Define supported behavior instead of full automation (Reframed Implementation Option)
+```
+
+Bad option structure:
+
+```text
+Option A — Rename messages
+Option C — Add tests
+Option E — Add docs
+Option G — Review config
+```
+
+This often leads to bad recommendations like:
+
+```text
+Recommendation: A + C + E + G
+```
+
+That means the options were written as fragments, not selectable paths.
+
+If several fragments must happen together, combine them into one Combined Path Option.
+
+---
+
+## 7.4 Description, Current State, and Resulting State
+
+Use these fields together:
 
 ```markdown
 Description:
@@ -869,73 +1006,31 @@ Resulting State paints the future picture after implementation.
 
 Do not merge these fields into one vague paragraph when the option is important.
 
+Do not place stakeholder messaging inside the option. Options should describe solution paths, not management communication.
+
 ---
 
-## Number of Options
+## 7.5 Number of Options
 
 Most issues should have two or three real options. Use options mainly for implementation and integration choices. Do not create many artificial options just to fill the template.
 
-A fourth option is allowed only when it is a true Split Option. This is useful when the issue may be better handled as two or more smaller issues.
+A fourth option is allowed when it is a true Split Option, Discovery Option, Decision Option, Defer Option, Reject Option, Reframed Implementation Option, or Combined Path Option.
 
-The split option is optional. It should not be forced.
+Use a Discovery Option when facts are missing.
+Use a Decision Option when a blocking decision is needed.
+Use a Split Option when the issue is bundled.
+Use a Defer Option when postponement is a real candidate.
+Use a Reject Option when the issue should not be pursued.
+Use a Reframed Implementation Option when a simpler framing can preserve the original concern.
+Use a Combined Path Option when several actions must be selected together.
 
-Use a Split Option when the issue is Shape: 2/4 Composite or higher, one part can be solved now and another part should move later, different parts have different owners or acceptance conditions, solving everything together would make review harder, or a smaller first issue would reduce risk without hiding the remaining work.
-
-Do not use a Split Option when the issue is already Atomic or Focused.
-
----
-
-## Option Profile Format
-
-Use vertical layout:
-
-```markdown
-- 🧾 Option Profile
-  - 🧭 Resolution: 🟡 Partial
-  - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
-  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🔮 Future Impact: 🟠 +1 Adds Debt
-  - ↩️ Reversibility: 🟢 Easy
-  - 🧬 Integration: 🟡 Temporary
-  - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
-  - 🧾 Agent Work: 💻 Local Code
-```
-
-The Option Profile is different from the Issue Rating.
-
-The Issue Rating describes the problem.
-The Option Profile describes the consequences of choosing this solution path.
+Do not use the recommendation line as a replacement for missing options.
 
 ---
 
-## Option Profile Dimensions
+# 8. Option Profile Dimensions
 
-### 🧭 Resolution
-
-Resolution describes how the option handles the issue.
-
-```text
-🧭 Resolution:
-🟢 Full
-🟡 Partial
-🟠 Mitigation
-🔵 Discovery
-🧩 Split
-⚪ Defer
-🔴 Reject
-```
-
-Use 🟢 Full when the option resolves the required outcome.
-Use 🟡 Partial when the option solves part of the issue and leaves known work open.
-Use 🟠 Mitigation when the option reduces pain or risk but does not solve the underlying issue.
-Use 🔵 Discovery when the option gathers facts, prototypes, or produces a design decision.
-Use 🧩 Split when the option turns one issue into smaller separately rated issues.
-Use ⚪ Defer when the option intentionally postpones the issue.
-Use 🔴 Reject when the option decides not to pursue the issue.
-
----
-
-### 🛠 Option Effort
+## 8.1 🛠 Option Effort
 
 Option Effort measures delivery load for this option, not for the original issue.
 
@@ -951,7 +1046,7 @@ A partial option may be cheap even when the full issue is large.
 
 ---
 
-### 🧠 Option Complexity
+## 8.2 🧠 Option Complexity
 
 Option Complexity measures reasoning difficulty for this option, not for the original issue.
 
@@ -968,7 +1063,7 @@ An option can make today’s work simpler while leaving harder work for later. T
 
 ---
 
-### 🔮 Future Impact
+## 8.3 🔮 Future Impact
 
 Future Impact describes what choosing this option does to future work.
 
@@ -991,7 +1086,7 @@ Future Impact is the main guardrail against cheap options that quietly create ex
 
 ---
 
-### ↩️ Reversibility
+## 8.4 ↩️ Reversibility
 
 Reversibility describes how easy it is to undo or replace the option later.
 
@@ -1010,7 +1105,7 @@ Use 🔴 Irreversible when the option creates durable compatibility, policy, mig
 
 ---
 
-### 🧬 Integration
+## 8.5 🧬 Integration
 
 Integration describes how the option fits into the long-term design.
 
@@ -1020,6 +1115,7 @@ Integration describes how the option fits into the long-term design.
 🟢 Compatible
 🟣 Strategic
 🟡 Temporary
+⚪ Neutral
 🔴 Conflicting
 ```
 
@@ -1027,11 +1123,12 @@ Use 🔵 Local when the option is contained and does not define broader architec
 Use 🟢 Compatible when the option fits the likely future direction.
 Use 🟣 Strategic when the option directly advances the desired long-term design.
 Use 🟡 Temporary when the option is intentionally short-lived.
+Use ⚪ Neutral when the option does not materially affect long-term design.
 Use 🔴 Conflicting when the option solves the near-term issue but works against the expected future design.
 
 ---
 
-### 🤖 Agent Difficulty
+## 8.6 🤖 Agent Difficulty
 
 Agent Difficulty estimates how suitable this option is for a coding agent.
 
@@ -1055,7 +1152,7 @@ Agent Difficulty is not a judgement of whether AI is allowed. It is a planning s
 
 ---
 
-### 🧾 Agent Work
+## 8.7 🧾 Agent Work
 
 Agent Work describes the kind of work a coding agent would mostly do. Agent Work has no meter because it is a category, not a rank.
 
@@ -1071,287 +1168,324 @@ Agent Work describes the kind of work a coding agent would mostly do. Agent Work
 ```
 
 Use 📝 Writing / Docs when the work is mostly documentation, issue text, comments, examples, help output, or explanation.
-
 Use 🔁 Mechanical Edit when the work is mostly predictable editing, renaming, formatting, moving files, updating repeated patterns, or changing many similar locations.
-
 Use 💻 Local Code when the work changes local behavior in a bounded area and can be checked with localized tests.
-
 Use 🧠 System Logic when the work changes behavior that depends on several modules, state transitions, data flow, error handling, or domain rules.
-
 Use 🔌 Integration when the work touches boundaries between systems, schemas, compatibility, migrations, deployment, public APIs, external tools, or release behavior.
-
 Use 🔎 Research / Mapping when the work is mostly finding facts, reading the codebase, mapping ownership, listing affected areas, or preparing a decision.
-
 Use 🧩 Planning / Structuring when the work is mostly splitting issues, preparing child issues, organizing options, or turning vague work into implementable work.
 
 Use Agent Work together with Agent Difficulty.
 
 ---
 
-## Option Template
+# 9. Value Assessment
+
+Value Assessment is written after Options.
+
+It compares the value tradeoff of the presented options. It must be neutral, option-aware, and not written as a stakeholder preference.
+
+Value Assessment does not replace Recommendation. It prepares the ground for Recommendation.
+
+```text
+Value Assessment = what value the options offer.
+Recommendation = which one option should be chosen now.
+Stakeholder Success Note = how to communicate the solved result.
+```
+
+Use this format:
 
 ```markdown
-#### Option A — <Short option name>
+### 💶 Value Assessment
 
-- 🧾 Option Profile
-  - 🧭 Resolution: 🟡 Partial
-  - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
-  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🔮 Future Impact: 🟠 +1 Adds Debt
-  - ↩️ Reversibility: 🟢 Easy
-  - 🧬 Integration: 🟡 Temporary
-  - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
-  - 🧾 Agent Work: 💻 Local Code
-
-Description:
-Explain the option in plain language. Say what this option does, why someone might choose it, and what tradeoff it makes. This should be a short paragraph of 3 to 6 sentences, not a slogan.
-
-Current State:
-Describe how the issue looks today if this option is not implemented. Focus on the visible behavior, code structure, workflow, risk, or missing information that currently exists.
-
-Resulting State:
-Describe how the issue would look after this option is implemented. Paint a clear picture of the changed behavior, structure, workflow, or decision state. A future reader should understand what improves without needing the original discussion.
-
-Solves:
-- What this option fixes, improves, or clarifies.
-
-Leaves Open:
-- What this option does not solve.
-
-Risks:
-- What could go wrong.
-
-Later Cost:
-- What this option may make harder later.
+- 💎 Value Type: <primary value type>
+- 🧭 Value Direction: <value direction>
+- 🧾 Value Mechanism: <how the issue creates value, avoids waste, reduces risk, or enables upside>
+- ⚖️ Option Value Summary:
+  - Option A — <short option name> (<option kind>)
+    - 🧭 Resolution: <resolution>
+    - 🛠 Option Effort: <option effort>
+    - 🧠 Option Complexity: <option complexity>
+    - 🔮 Future Impact: <future impact>
+    - 🤖 Agent Difficulty: <agent difficulty>
+    - 🧾 Decision Note: <short value and effort judgement>
+  - Option B — <short option name> (<option kind>)
+    - 🧭 Resolution: <resolution>
+    - 🛠 Option Effort: <option effort>
+    - 🧠 Option Complexity: <option complexity>
+    - 🔮 Future Impact: <future impact>
+    - 🤖 Agent Difficulty: <agent difficulty>
+    - 🧾 Decision Note: <short value and effort judgement>
+- ✅ Good Result: <what would make the issue worthwhile across the acceptable option paths>
 ```
+
+Value Assessment must be applicable to all reasonable options. Do not write it so that only one option can satisfy it unless the options themselves prove that.
 
 ---
 
-## Split Option Template
+## 9.1 💎 Value Type
 
-```markdown
-#### Optional Split Option — <Short split name>
+Value Type describes the main type of value created by resolving the issue.
 
-- 🧾 Option Profile
-  - 🧭 Resolution: 🧩 Split
-  - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
-  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🔮 Future Impact: 🟢 -1 Improves
-  - ↩️ Reversibility: 🟢 Easy
-  - 🧬 Integration: 🟢 Compatible
-  - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
-  - 🧾 Agent Work: 🧩 Planning / Structuring
-
-Description:
-Explain how this issue could be split into smaller issues. Say which part should stay here, which part should move out, why the split would make the work clearer or safer, and what risk the split creates.
-
-Current State:
-Describe why the current issue is bundled, unclear, or too large to handle safely as one item.
-
-Resulting State:
-Describe what the issue structure would look like after the split. Say what remains here and what becomes separate work.
-
-Creates:
-- <Separate issue or concern that should receive its own rating.>
-
-Keeps Here:
-- <Part that remains in this issue.>
-
-Risks:
-- <What could be lost, delayed, or duplicated by splitting.>
-
-Later Cost:
-- <Extra coordination or cleanup created by the split.>
+```text
+💎 Value Type:
+💰 Revenue Enabled
+🧲 Adoption / Retention Improved
+✨ Product Capability Improved
+🧭 User Experience Improved
+🛟 Support Effort Reduced
+🧱 Maintenance Effort Reduced
+⚡ Operating Cost Reduced
+🚚 Delivery Unblocked
+🛡 Risk / Loss Avoided
+🔁 Rework Avoided
+🔎 Better Decision
 ```
+
+Use 💰 Revenue Enabled when the issue helps create or unlock revenue.
+Use 🧲 Adoption / Retention Improved when the issue makes users more likely to adopt, continue using, upgrade, or not abandon the product.
+Use ✨ Product Capability Improved when the issue adds, completes, or corrects a capability users or customers care about.
+Use 🧭 User Experience Improved when the issue makes the product easier to understand, operate, learn, or recover from.
+Use 🛟 Support Effort Reduced when the issue reduces tickets, escalations, diagnosis time, or support dependency on engineering.
+Use 🧱 Maintenance Effort Reduced when the issue reduces repeated engineering effort, duplicated logic, review uncertainty, or future change cost.
+Use ⚡ Operating Cost Reduced when the issue reduces recurring infrastructure, compute, storage, licensing, or runtime cost.
+Use 🚚 Delivery Unblocked when the issue enables blocked project, release, migration, rollout, or adoption work to continue.
+Use 🛡 Risk / Loss Avoided when the issue reduces the chance of outage, rollback, security problem, compliance problem, data loss, trust loss, or failed rollout.
+Use 🔁 Rework Avoided when the issue prevents doing the same work again, choosing a throwaway path, or paying later for avoidable cleanup.
+Use 🔎 Better Decision when the issue produces facts, mapping, prototype evidence, or design clarity that prevents a bad investment decision.
 
 ---
 
-## Option Examples
+## 9.2 🧭 Value Direction
 
-### Cheap partial option
+Value Direction describes the broad business lens.
+
+```text
+🧭 Value Direction:
+💰 Cost / Efficiency
+🛡 Risk / Protection
+🚀 Opportunity / Improvement
+🔎 Decision / Learning
+```
+
+Use 💰 Cost / Efficiency when the value is mainly lower effort, lower spend, lower waste, lower recurring cost, or better use of fixed capacity.
+Use 🛡 Risk / Protection when the value is mainly avoiding loss, outage, rollback, security exposure, compliance problems, adoption failure, or trust damage.
+Use 🚀 Opportunity / Improvement when the value is mainly better product capability, better user experience, improved adoption, or upside potential.
+Use 🔎 Decision / Learning when the value is mainly better facts, better investment choice, better design direction, or reduced uncertainty before committing effort.
+
+Value Direction is not a score. It helps the reader understand which kind of value the issue creates.
+
+---
+
+## 9.3 🧾 Value Mechanism
+
+Value Mechanism explains the concrete mechanism by which value is created.
+
+Good Value Mechanism examples:
+
+```text
+Reduces repeated engineering effort by making installer adoption and removal rules easier to understand, change, and review.
+```
+
+```text
+Protects adoption by making setup failures less confusing for new users.
+```
+
+```text
+Reduces support effort because users and support staff can diagnose resolver failures without engineering help.
+```
+
+```text
+Avoids rework by checking compatibility before the release path is chosen.
+```
+
+Bad Value Mechanism examples:
+
+```text
+Improves things.
+```
+
+```text
+Creates business value.
+```
+
+```text
+Makes the product better.
+```
+
+These are too vague.
+
+---
+
+## 9.4 ⚖️ Option Value Summary
+
+Option Value Summary compares the value, effort, difficulty, and future impact of the presented options.
+
+It should be short, neutral, and useful for judgement.
+
+Each option summary should use a compact multi-line block. Do not force all fields into one long line.
+
+Default format:
 
 ```markdown
-#### Option A — Improve visible wording only
+- Option A — <short option name> (<option kind>)
+  - 🧭 Resolution: <resolution>
+  - 🛠 Option Effort: <option effort>
+  - 🧠 Option Complexity: <option complexity>
+  - 🔮 Future Impact: <future impact>
+  - 🤖 Agent Difficulty: <agent difficulty>
+  - 🧾 Decision Note: <short value and effort judgement>
+```
 
-- 🧾 Option Profile
+Default fields:
+
+```text
+Option Kind
+🧭 Resolution
+🛠 Option Effort
+🧠 Option Complexity
+🔮 Future Impact
+🤖 Agent Difficulty
+🧾 Decision Note
+```
+
+Optional fields may be added only when they are decision-relevant:
+
+```text
+↩️ Reversibility
+🧬 Integration
+🧾 Agent Work
+```
+
+Use optional fields when they change the decision. For example, include Reversibility when an option is hard to undo, include Integration when an option is strategic or conflicting, and include Agent Work when delegation type matters.
+
+Good example:
+
+```markdown
+⚖️ Option Value Summary:
+- Option A — Improve visible wording only (Implementation Option)
   - 🧭 Resolution: 🟡 Partial
   - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
   - 🧠 Option Complexity: 1/5 Simple ▰▱▱▱▱
   - 🔮 Future Impact: 🟠 +1 Adds Debt
-  - ↩️ Reversibility: 🟢 Easy
-  - 🧬 Integration: 🟡 Temporary
   - 🤖 Agent Difficulty: 1/4 Routine ▰▱▱▱
-  - 🧾 Agent Work: 📝 Writing / Docs
-
-Description:
-Change the visible resolver error messages first, without changing the internal resolver structure. This option is useful when quick user-facing improvement matters more than solving the internal structure immediately. It is intentionally limited: it improves the text people see, but it does not redesign how errors are built internally. The tradeoff is that the duplicated error-building code remains in place, so another cleanup pass may still be needed later.
-
-Current State:
-Resolver errors are hard to understand because some messages are vague, inconsistent, or missing recovery hints. The internal error-building logic remains spread across several places.
-
-Resulting State:
-Users see clearer resolver error messages with better wording and recovery hints. The internal structure is still duplicated, but the immediate user-facing pain is reduced.
-
-Solves:
-- Makes several confusing messages easier to understand.
-- Reduces immediate user pain.
-- Can be done quickly.
-
-Leaves Open:
-- Error formatting remains duplicated.
-- Error ownership remains unclear.
-- Future messages may drift again.
-
-Risks:
-- The issue may look solved even though the internal structure is still weak.
-- Another cleanup pass may be needed later.
-
-Later Cost:
-- A later shared error model may need to rewrite these messages again.
-```
-
----
-
-### Strategic full option
-
-```markdown
-#### Option B — Introduce a shared resolver error model
-
-- 🧾 Option Profile
+  - 🧾 Decision Note: Fast visible improvement, but weak long-term value because the internal structure remains duplicated.
+- Option B — Introduce a shared resolver error model (Implementation Option)
   - 🧭 Resolution: 🟢 Full
   - 🛠 Option Effort: 3/4 Substantial ▰▰▰▱
   - 🧠 Option Complexity: 3/5 Complex ▰▰▰▱▱
   - 🔮 Future Impact: 🟢 -2 Simplifies
-  - ↩️ Reversibility: 🟡 Moderate
-  - 🧬 Integration: 🟣 Strategic
   - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
-  - 🧾 Agent Work: 🧠 System Logic
-
-Description:
-Create one shared internal model for resolver failures. The resolver records the failure in a structured way, and the CLI turns that structure into human-readable text. This takes more work now, but it gives the project one clear place to improve resolver errors later. The tradeoff is that this option may expose unclear boundaries between resolver, planner, and CLI, so it needs more careful implementation and review.
-
-Current State:
-Resolver failures are represented and formatted in multiple places. Similar failures may produce inconsistent messages, and tests may not clearly enforce one shared message structure.
-
-Resulting State:
-Resolver failures have one shared internal representation. Human-readable messages are produced from that structure, making wording, tests, and future diagnostics easier to maintain.
-
-Solves:
-- Centralizes resolver error ownership.
-- Makes wording and structure consistent.
-- Makes tests easier to write.
-- Creates a base for possible machine-readable error output later.
-
-Leaves Open:
-- Existing tools may depend on exact message text and need to be checked.
-
-Risks:
-- More work than simple wording cleanup.
-- May expose unclear boundaries between resolver, planner, and CLI.
-
-Later Cost:
-- Lower future cost if resolver diagnostics continue to grow.
-```
-
----
-
-### Discovery option
-
-```markdown
-#### Option C — Map current resolver error ownership first
-
-- 🧾 Option Profile
+  - 🧾 Decision Note: Higher effort, but strongest long-term value because it reduces maintenance effort and repeated rework.
+- Option C — Map current ownership first (Discovery Option)
   - 🧭 Resolution: 🔵 Discovery
   - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
   - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
   - 🔮 Future Impact: 🟢 -1 Improves
-  - ↩️ Reversibility: 🟢 Easy
-  - 🧬 Integration: 🟢 Compatible
   - 🤖 Agent Difficulty: 1/4 Routine ▰▱▱▱
-  - 🧾 Agent Work: 🔎 Research / Mapping
-
-Description:
-Do not change behavior yet. First, list where resolver errors are created today, which messages are user-facing, which messages are tested, and where ownership is unclear. This gives enough facts to choose a safer implementation option. The tradeoff is that users will not see immediate improvement, but the implementation risk becomes lower.
-
-Current State:
-The team does not yet have a complete map of where resolver errors are built, displayed, and tested. Choosing an implementation path may rely on assumptions.
-
-Resulting State:
-The team has a clear map of resolver error ownership and can decide whether wording cleanup, shared modeling, or splitting is the best next step.
-
-Solves:
-- Replaces assumptions with verified facts.
-- Reduces risk before changing behavior.
-- May show that the issue should be split.
-
-Leaves Open:
-- Does not directly improve user-facing errors.
-
-Risks:
-- Adds a refinement step before visible improvement.
-- Could become wasted effort if the issue is already obvious enough.
-
-Later Cost:
-- Low. The result should either guide the chosen option or justify closing the investigation.
+  - 🧾 Decision Note: Good when facts are weak; improves decision quality but delays visible improvement.
 ```
+
+Bad example:
+
+```text
+⚖️ Option Value Summary:
+- Option A: Low effort.
+- Option B: Best.
+- Option C: Maybe.
+```
+
+This is too shallow and biased.
+
+Another bad example:
+
+```text
+⚖️ Option Value Summary:
+- Option A + C + E should be done together.
+```
+
+This breaks the Independent Option Rule. If several actions belong together, create one Combined Path Option that describes that path.
 
 ---
 
-### Split option
+## 9.5 ✅ Good Result
 
-```markdown
-#### Optional Split Option — Separate wording cleanup from internal structure
+Good Result describes what would make the issue worthwhile from a value perspective across acceptable option paths.
 
-- 🧾 Option Profile
-  - 🧭 Resolution: 🧩 Split
-  - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
-  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🔮 Future Impact: 🟢 -1 Improves
-  - ↩️ Reversibility: 🟢 Easy
-  - 🧬 Integration: 🟢 Compatible
-  - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
-  - 🧾 Agent Work: 🧩 Planning / Structuring
+It should not be a progress update. It is a result criterion.
 
-Description:
-Split the issue into two parts. Keep the user-facing wording cleanup as the first issue, because it gives quick visible improvement. Move the shared internal error model into a separate issue, because it has different risks, tests, and design questions. The tradeoff is that splitting makes each issue easier to review, but it also creates a risk that the deeper internal cleanup is delayed after the visible wording improves.
+Good examples:
 
-Current State:
-The issue mixes visible wording cleanup with deeper internal structure questions. Handling both together may make the issue harder to estimate, review, and complete.
-
-Resulting State:
-The immediate wording cleanup remains here as a smaller implementation issue. The shared internal error model becomes separate work with its own rating, facts, options, and decisions.
-
-Creates:
-- Shared resolver error model.
-
-Keeps Here:
-- Improve visible resolver error messages.
-
-Risks:
-- The internal cleanup may be delayed after the visible wording improves.
-- The wording cleanup may need small changes again after the shared model exists.
-
-Later Cost:
-- Requires tracking the internal cleanup separately so it is not forgotten.
+```text
+Future installer changes require less investigation, create less rework, and consume less senior engineering attention.
 ```
+
+```text
+Users can complete the workflow without external tools or manual workaround steps.
+```
+
+```text
+Support can diagnose the failure without escalating to engineering.
+```
+
+```text
+The release path is safer because the compatibility risk is understood and controlled.
+```
+
+Bad examples:
+
+```text
+Work started.
+```
+
+```text
+Issue in progress.
+```
+
+```text
+Team aligned.
+```
+
+These are status statements, not good results.
 
 ---
 
-# 8. Recommendation
+# 10. Recommendation
 
-Recommendation is separate from Options.
+Recommendation is separate from Options and Value Assessment.
 
 Options describe possible paths.
-Recommendation says which path is currently preferred and why.
+Value Assessment compares what value the options offer.
+Recommendation says which one option is currently preferred and why.
 
-The recommendation line must always include date, author, recommendation, and support level. Do not leave author empty. If an LLM writes the recommendation, name it as the author.
+The recommendation line must always include timestamp, author, recommendation, and support level. Do not leave author empty. If an LLM writes the recommendation, name it as the author.
+
+Use local project time unless the project defines another timezone.
 
 Good:
 
 ```markdown
 ### 🏁 Recommendation
 
-- [2026-05-30 | Author: GPT-5.5 Thinking | Recommendation: Prefer Option B | Support: 2/3 Reasoned ▰▰▱]
+- [2026-05-30 14:30 | Author: GPT-5.5 Thinking | Recommendation: Prefer Option B | Support: 2/3 Reasoned ▰▰▱]
+```
+
+Good when more facts are needed:
+
+```markdown
+### 🏁 Recommendation
+
+- [2026-05-30 16:00 | Author: Composer | Recommendation: Prefer Option C | Support: 2/3 Reasoned ▰▰▱]
+```
+
+This is good only when Option C is a Discovery Option that clearly describes which facts will be gathered and what decision it enables.
+
+Bad:
+
+```markdown
+### 🏁 Recommendation
+
+- [2026-05-30 16:00 | Author: Composer | Recommendation: Needs More Facts | Support: 2/3 Reasoned ▰▰▱]
 ```
 
 Bad:
@@ -1359,20 +1493,26 @@ Bad:
 ```markdown
 ### 🏁 Recommendation
 
-- [2026-05-30 | Author: — | Recommendation: Prefer Option B | Support: 2/3 Reasoned ▰▰▱]
+- [2026-05-30 | Author: Composer | Recommendation: A + C + E + G + I | Support: 2/3 Reasoned ▰▰▱]
 ```
+
+The bad examples have one or more problems:
+
+1. The timestamp is incomplete.
+2. The recommendation does not select an option.
+3. The recommendation bundles multiple option fragments instead of selecting one independently selectable option.
 
 ---
 
-## Recommendation Line Format
+## 10.1 Recommendation Line Format
 
 ```markdown
 ### 🏁 Recommendation
 
-- [YYYY-MM-DD | Author: <required author name> | Recommendation: <recommendation> | Support: <support level>]
+- [YYYY-MM-DD HH:mm | Author: <required author name> | Recommendation: <Prefer Option X or Choose Option X> | Support: <support level>]
 
 Reasoning:
-<Explain why this option is currently recommended. Mention the tradeoff honestly.>
+<Explain why this one option is currently recommended. Mention the tradeoff honestly.>
 
 Required Checks:
 <State what must be checked before this recommendation becomes a final decision.>
@@ -1380,36 +1520,59 @@ Required Checks:
 
 The author is mandatory because recommendations are judgements. A judgement should have a source.
 
+The timestamp is mandatory because recommendations age. A recommendation made before facts changed should be easy to identify.
+
+The recommendation must reference one option.
+
 ---
 
-## Recommendation Types
+## 10.2 Recommendation Types
 
 ```text
 Recommendation:
 Prefer Option A
 Prefer Option B
 Prefer Option C
+Prefer Option D
 Choose Option A
 Choose Option B
 Choose Option C
-Split Issue
-Needs More Facts
-Defer
-Reject
+Choose Option D
 ```
 
 Use Prefer Option X when the option is currently favored but not final.
+
 Use Choose Option X when the decision is made.
-Use Split Issue when the current issue shape is too broad and the next action is splitting.
-Use Needs More Facts when no responsible recommendation can be made yet.
-Use Defer when the issue is valid but should not be worked on now.
-Use Reject when the issue should not be pursued.
+
+Do not use recommendation types such as:
+
+```text
+Needs More Facts
+Needs Decision
+Split Issue
+Defer
+Reject
+A + C + E
+```
+
+When those are the right direction, they must exist as independently selectable options first.
+
+Examples:
+
+```text
+Needs More Facts → create a Discovery Option, then recommend that option.
+Needs Decision → create a Decision Option, then recommend that option.
+Split Issue → create a Split Option, then recommend that option.
+Defer → create a Defer Option, then recommend that option.
+Reject → create a Reject Option, then recommend that option.
+A + C + E → create one Combined Path Option, then recommend that option.
+```
 
 ---
 
-## Support Level
+## 10.3 Support Level
 
-Support describes how well the recommendation is backed by facts, checked assumptions, and understood tradeoffs.
+Support describes how well the recommendation is backed by facts, checked assumptions, understood tradeoffs, and value assessment.
 
 ```text
 Support:
@@ -1422,13 +1585,15 @@ Use 1/3 Thin when important facts are missing, the recommendation is mostly a wo
 
 Use 2/3 Reasoned when the recommendation has a clear argument and known tradeoffs, but some checks remain.
 
-Use 3/3 Well Supported when facts, constraints, risks, and tradeoffs are well understood, and only normal implementation uncertainty remains.
+Use 3/3 Well Supported when facts, constraints, risks, value, and tradeoffs are well understood, and only normal implementation uncertainty remains.
 
 Support is not certainty. It says how much backing the recommendation currently has.
 
+A Discovery Option or Decision Option can still have Support: 2/3 Reasoned when the reason for gathering facts or making a decision is clear.
+
 ---
 
-## Recommendation Rules
+## 10.4 Recommendation Rules
 
 A recommendation must explain the tradeoff. Do not only say which option is preferred.
 
@@ -1444,21 +1609,170 @@ Bad:
 Option B is better.
 ```
 
-If the recommendation is Needs More Facts, name the missing facts.
+If more facts are needed, the recommendation should point to a Discovery Option and name the missing facts in the option and reasoning.
 
-If the recommendation is Split Issue, name the parts that should become separate issues.
+If a decision is needed, the recommendation should point to a Decision Option and name the decision in the option and reasoning.
 
-If the recommendation is Defer, explain what condition would make the issue worth revisiting.
+If splitting is needed, the recommendation should point to a Split Option and name what stays and what moves out.
 
-If the recommendation is Reject, explain why the issue should not be pursued.
+If deferring is needed, the recommendation should point to a Defer Option and explain the revisit condition.
+
+If rejecting is needed, the recommendation should point to a Reject Option and explain why the issue should not be pursued.
+
+If the recommendation would need to combine several option letters, rewrite the options first. The recommendation should be the result of good option design, not a workaround for fragmented options.
+
+The Recommendation may refer to the Value Assessment, but it must remain a separate judgement.
 
 ---
 
-# 9. Decisions
+# 11. Stakeholder Success Note
+
+Stakeholder Success Note is written after Recommendation.
+
+It is not part of the value judgement. It is communication packaging.
+
+Stakeholder Success Note answers:
+
+```text
+Who should be told when this is solved?
+In what language should it be explained?
+What 3–4 line message can be reused in mail, chat, release notes, or project updates?
+```
+
+Use this format:
+
+```markdown
+### 📬 Stakeholder Success Note
+
+- 👥 Stakeholder Role: <role or group to inform when this is solved>
+- 🗣 Communication Lens: <business, product, support, release, trust, or technical summary>
+- 📬 Success Note: <3–4 lines that can be reused in mail, chat, release notes, or a project update>
+```
+
+Stakeholder Success Note must not bias the Value Assessment. It is written for communication after a path is recommended or completed.
+
+---
+
+## 11.1 👥 Stakeholder Role
+
+Stakeholder Role identifies the role or group that should be informed when this issue is solved.
+
+Use roles, not personal names.
+
+```text
+👥 Stakeholder Role:
+🔧 Engineering
+🧑‍💼 Product Owner
+🧑‍💼 Product Management
+🛟 Support / Customer Success
+📡 Operations
+🛡 Security / Compliance
+🚚 Release Owner
+🏢 Leadership
+👥 Customer / User Representative
+```
+
+Use 🔧 Engineering when the value is mainly technical correctness, maintainability, tests, architecture, or future change safety.
+
+Use 🧑‍💼 Product Owner when the value affects product direction, backlog priority, user workflows, adoption, or tradeoff decisions.
+
+Use 🧑‍💼 Product Management when the value affects roadmap, positioning, adoption, retention, customer-facing capability, or opportunity.
+
+Use 🛟 Support / Customer Success when the value affects diagnosis, tickets, escalations, customer communication, or user recovery.
+
+Use 📡 Operations when the value affects runtime behavior, deployment, observability, recovery, incidents, or operational reliability.
+
+Use 🛡 Security / Compliance when the value affects trust, policy, auditability, access, risk, compliance, or safety boundaries.
+
+Use 🚚 Release Owner when the value affects rollout, migration, compatibility, release safety, or rollback risk.
+
+Use 🏢 Leadership when the value affects broad delivery risk, cost exposure, organizational trust, major adoption, or cross-team coordination.
+
+Use 👥 Customer / User Representative when the value should be explained in user-facing language or validated with user needs.
+
+---
+
+## 11.2 🗣 Communication Lens
+
+Communication Lens describes how the success should be explained.
+
+```text
+🗣 Communication Lens:
+💼 Business Summary
+🧑‍💼 Product Summary
+🛟 Support Summary
+🚚 Release Summary
+🛡 Trust / Risk Summary
+🔧 Technical Summary
+```
+
+Use 💼 Business Summary when the message should focus on cost, risk, value, capacity, adoption, or organizational impact.
+
+Use 🧑‍💼 Product Summary when the message should focus on user workflow, capability, adoption, retention, or product quality.
+
+Use 🛟 Support Summary when the message should focus on tickets, diagnosis, recovery, customer communication, or escalation reduction.
+
+Use 🚚 Release Summary when the message should focus on rollout safety, compatibility, migration, release readiness, or rollback risk.
+
+Use 🛡 Trust / Risk Summary when the message should focus on safety, compliance, policy, auditability, or trust.
+
+Use 🔧 Technical Summary when the message should focus on engineering quality, maintainability, tests, architecture, or implementation clarity.
+
+---
+
+## 11.3 📬 Success Note
+
+Success Note is a short message that can be reused when the issue is solved.
+
+It should be 3–4 lines, plain-language, and written for the Stakeholder Role.
+
+It should explain:
+
+* what changed
+* why it matters
+* what value was created
+* what limitation remains, if the result is partial
+
+It should not claim more than the issue actually solved.
+
+If the issue reduced risk but did not remove it, say reduced, not eliminated.
+If the issue partially improved the situation, say partial.
+If the issue produced facts instead of implementation, say the result is a better decision path.
+If the issue is internal, write the note in business-readable language without unnecessary code detail.
+
+Example:
+
+```text
+Installer adoption and removal rules are now clearer and easier to maintain.
+Future installer-related changes should require less investigation and create less rework.
+This reduces engineering friction around setup behavior and makes future product changes in this area safer.
+```
+
+Another example:
+
+```text
+The workflow can now be completed directly inside the product.
+This removes a manual workaround and makes the product easier to adopt for users who need this capability.
+The improvement strengthens the product’s practical value in day-to-day use.
+```
+
+Another example:
+
+```text
+The compatibility risk for this release path has been reduced.
+The affected behavior is now better understood and covered by the chosen implementation.
+This lowers the chance of rollback or unexpected release disruption.
+```
+
+---
+
+# 12. Decisions
 
 Decisions capture what has already been settled and what is still open.
 
-## ✅ Resolved Decisions
+---
+
+## 12.1 ✅ Resolved Decisions
 
 Use this section for decisions already made. A resolved decision should include the decision, reason, and consequence.
 
@@ -1474,7 +1788,7 @@ Do not bury decisions inside prose. Decisions should be easy to scan.
 
 ---
 
-## ❓ Open Decisions
+## 12.2 ❓ Open Decisions
 
 Use this section for decisions still required before implementation can start or finish.
 
@@ -1488,9 +1802,11 @@ Use this section for decisions still required before implementation can start or
 
 Open decisions are not todos. They are unresolved choices that affect design, scope, or implementation.
 
+If an open decision blocks a responsible recommendation, create a Decision Option in Options.
+
 ---
 
-# 10. Out of Scope
+# 13. Out of Scope
 
 Out of Scope says what this issue explicitly will not solve.
 
@@ -1511,7 +1827,7 @@ If an out-of-scope item is important enough to preserve, put it under Extracted 
 
 ---
 
-# 11. Extracted Work
+# 14. Extracted Work
 
 Extracted Work replaces generic “follow-up issues.”
 
@@ -1521,7 +1837,7 @@ Use Extracted Work only when a real separate issue should exist because of a spl
 
 ---
 
-## Extracted Work Threshold
+## 14.1 Extracted Work Threshold
 
 Only add extracted work when all of these are true:
 
@@ -1535,7 +1851,7 @@ If these conditions are not met, do not list it.
 
 ---
 
-## Extracted Work Format
+## 14.2 Extracted Work Format
 
 ```markdown
 ### 🌱 Extracted Work
@@ -1563,43 +1879,7 @@ None.
 
 ---
 
-## Extracted Work Examples
-
-Required extracted work:
-
-```markdown
-### 🌱 Extracted Work
-
-Required:
-- [ ] Add consistency tests for resolver diagnostics.
-  Reason: The chosen option changes resolver message structure and needs separate test coverage work.
-```
-
-Optional extracted work:
-
-```markdown
-### 🌱 Extracted Work
-
-Optional:
-- [ ] Add machine-readable resolver error output.
-  Reason: The shared error model may enable this later, but it is not required to solve the current issue.
-```
-
-Bad extracted work:
-
-```markdown
-### 🌱 Extracted Work
-
-- [ ] Improve things later.
-- [ ] Think about docs.
-- [ ] Maybe refactor more.
-```
-
-These are too vague. Do not write them.
-
----
-
-# 12. Full Issue Template
+# 15. Full Issue Template
 
 ```markdown
 ---
@@ -1656,20 +1936,20 @@ Unknown:
 
 ### 🧩 Options
 
-#### Option A — <Short option name>
+#### Option A — <Short option name> (<Option Kind>)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: 🟡 Partial
-  - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
-  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🔮 Future Impact: 🟠 +1 Adds Debt
-  - ↩️ Reversibility: 🟢 Easy
-  - 🧬 Integration: 🟡 Temporary
-  - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
-  - 🧾 Agent Work: 💻 Local Code
+  - 🧭 Resolution: <resolution>
+  - 🛠 Option Effort: <option effort>
+  - 🧠 Option Complexity: <option complexity>
+  - 🔮 Future Impact: <future impact>
+  - ↩️ Reversibility: <reversibility>
+  - 🧬 Integration: <integration>
+  - 🤖 Agent Difficulty: <agent difficulty>
+  - 🧾 Agent Work: <agent work>
 
 Description:
-<Explain the option in plain language. Say what this option does, why someone might choose it, and what tradeoff it makes. This should be a short paragraph of 3 to 6 sentences, not a slogan.>
+<Explain the option in plain language. Say what this option does, why someone might choose it, and what tradeoff it makes. This should be a short paragraph of 3 to 6 sentences, not a slogan. The option must be independently selectable; it must describe one coherent path that could be recommended on its own.>
 
 Current State:
 <Describe how the issue looks today if this option is not implemented. Focus on the visible behavior, code structure, workflow, risk, or missing information that currently exists.>
@@ -1678,7 +1958,7 @@ Resulting State:
 <Describe how the issue would look after this option is implemented. Paint a clear picture of the changed behavior, structure, workflow, or decision state. A future reader should understand what improves without needing the original discussion.>
 
 Solves:
-- <What this option fixes, improves, or clarifies.>
+- <What this option fixes, improves, clarifies, decides, discovers, splits, defers, or rejects.>
 
 Leaves Open:
 - <What this option does not solve.>
@@ -1691,120 +1971,80 @@ Later Cost:
 
 ---
 
-#### Option B — <Short option name>
+#### Option B — <Short option name> (<Option Kind>)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: 🟢 Full
-  - 🛠 Option Effort: 3/4 Substantial ▰▰▰▱
-  - 🧠 Option Complexity: 3/5 Complex ▰▰▰▱▱
-  - 🔮 Future Impact: 🟢 -2 Simplifies
-  - ↩️ Reversibility: 🟡 Moderate
-  - 🧬 Integration: 🟣 Strategic
-  - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
-  - 🧾 Agent Work: 🧠 System Logic
+  - 🧭 Resolution: <resolution>
+  - 🛠 Option Effort: <option effort>
+  - 🧠 Option Complexity: <option complexity>
+  - 🔮 Future Impact: <future impact>
+  - ↩️ Reversibility: <reversibility>
+  - 🧬 Integration: <integration>
+  - 🤖 Agent Difficulty: <agent difficulty>
+  - 🧾 Agent Work: <agent work>
 
 Description:
-<Explain the option in plain language. Say what this option does, why someone might choose it, and what tradeoff it makes. This should be a short paragraph of 3 to 6 sentences, not a slogan.>
+<Explain the option in plain language.>
 
 Current State:
-<Describe how the issue looks today if this option is not implemented. Focus on the visible behavior, code structure, workflow, risk, or missing information that currently exists.>
+<Describe the current state.>
 
 Resulting State:
-<Describe how the issue would look after this option is implemented. Paint a clear picture of the changed behavior, structure, workflow, or decision state. A future reader should understand what improves without needing the original discussion.>
+<Describe the resulting state.>
 
 Solves:
-- <What this option fixes, improves, or clarifies.>
+- <What this option solves.>
 
 Leaves Open:
-- <What this option does not solve.>
+- <What remains open.>
 
 Risks:
-- <What could go wrong.>
+- <Risk.>
 
 Later Cost:
-- <What this option may make harder later.>
+- <Later cost.>
 
 ---
 
-#### Option C — <Short option name>
+### 💶 Value Assessment
 
-- 🧾 Option Profile
-  - 🧭 Resolution: 🔵 Discovery
-  - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
-  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🔮 Future Impact: 🟢 -1 Improves
-  - ↩️ Reversibility: 🟢 Easy
-  - 🧬 Integration: 🟢 Compatible
-  - 🤖 Agent Difficulty: 1/4 Routine ▰▱▱▱
-  - 🧾 Agent Work: 🔎 Research / Mapping
-
-Description:
-<Explain the option in plain language. Say what this option does, why someone might choose it, and what tradeoff it makes. This should be a short paragraph of 3 to 6 sentences, not a slogan.>
-
-Current State:
-<Describe how the issue looks today if this option is not implemented. Focus on the visible behavior, code structure, workflow, risk, or missing information that currently exists.>
-
-Resulting State:
-<Describe how the issue would look after this option is implemented. Paint a clear picture of the changed behavior, structure, workflow, or decision state. A future reader should understand what improves without needing the original discussion.>
-
-Solves:
-- <What this option fixes, improves, clarifies, or discovers.>
-
-Leaves Open:
-- <What this option does not solve.>
-
-Risks:
-- <What could go wrong.>
-
-Later Cost:
-- <What this option may make harder later.>
-
----
-
-#### Optional Split Option — <Only include when splitting is a real candidate>
-
-- 🧾 Option Profile
-  - 🧭 Resolution: 🧩 Split
-  - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
-  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🔮 Future Impact: 🟢 -1 Improves
-  - ↩️ Reversibility: 🟢 Easy
-  - 🧬 Integration: 🟢 Compatible
-  - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
-  - 🧾 Agent Work: 🧩 Planning / Structuring
-
-Description:
-<Explain how this issue could be split into smaller issues. Say which part should stay here, which part should move out, why the split would make the work clearer or safer, and what risk the split creates.>
-
-Current State:
-<Describe why the current issue is bundled, unclear, or too large to handle safely as one item.>
-
-Resulting State:
-<Describe what the issue structure would look like after the split. Say what remains here and what becomes separate work.>
-
-Creates:
-- <Separate issue or concern that should receive its own rating.>
-
-Keeps Here:
-- <Part that remains in this issue.>
-
-Risks:
-- <What could be lost, delayed, or duplicated by splitting.>
-
-Later Cost:
-- <Extra coordination or cleanup created by the split.>
+- 💎 Value Type: <primary value type>
+- 🧭 Value Direction: <cost, risk, opportunity, or decision>
+- 🧾 Value Mechanism: <how the issue creates value, avoids waste, reduces risk, or enables upside>
+- ⚖️ Option Value Summary:
+  - Option A — <short option name> (<option kind>)
+    - 🧭 Resolution: <resolution>
+    - 🛠 Option Effort: <option effort>
+    - 🧠 Option Complexity: <option complexity>
+    - 🔮 Future Impact: <future impact>
+    - 🤖 Agent Difficulty: <agent difficulty>
+    - 🧾 Decision Note: <short value and effort judgement>
+  - Option B — <short option name> (<option kind>)
+    - 🧭 Resolution: <resolution>
+    - 🛠 Option Effort: <option effort>
+    - 🧠 Option Complexity: <option complexity>
+    - 🔮 Future Impact: <future impact>
+    - 🤖 Agent Difficulty: <agent difficulty>
+    - 🧾 Decision Note: <short value and effort judgement>
+- ✅ Good Result: <what would make the issue worthwhile across the acceptable option paths>
 
 ---
 
 ### 🏁 Recommendation
 
-- [YYYY-MM-DD | Author: <required author name> | Recommendation: <recommendation> | Support: <support level>]
+- [YYYY-MM-DD HH:mm | Author: <required author name> | Recommendation: <Prefer Option X or Choose Option X> | Support: <support level>]
 
 Reasoning:
-<Explain why this option is currently recommended. Mention the tradeoff honestly.>
+<Explain why this one option is currently recommended. Mention the tradeoff honestly.>
 
 Required Checks:
 <State what must be checked before this recommendation becomes a final decision.>
+
+### 📬 Stakeholder Success Note
+
+- 👥 Stakeholder Role: <role or group to inform when this is solved>
+- 🗣 Communication Lens: <business, product, support, release, trust, or technical summary>
+- 📬 Success Note: <3–4 lines that can be reused in mail, chat, release notes, or a project update>
 
 ### ✅ Resolved Decisions
 
@@ -1835,7 +2075,7 @@ Optional:
 
 ---
 
-# 13. Small Issue Template
+# 16. Small Issue Template
 
 Use this only when the issue is simple, ready, and does not need option analysis.
 
@@ -1874,6 +2114,37 @@ Known:
 Unknown:
 - <Only include if relevant.>
 
+### 💶 Value Assessment
+
+- 💎 Value Type: <primary value type>
+- 🧭 Value Direction: <cost, risk, opportunity, or decision>
+- 🧾 Value Mechanism: <how the issue creates value, avoids waste, reduces risk, or enables upside>
+- ⚖️ Option Value Summary:
+  - Direct Fix — <short fix name> (Implementation Option)
+    - 🧭 Resolution: 🟢 Full
+    - 🛠 Option Effort: <effort>
+    - 🧠 Option Complexity: <complexity>
+    - 🔮 Future Impact: <future impact>
+    - 🤖 Agent Difficulty: <agent difficulty>
+    - 🧾 Decision Note: <short value and effort judgement>
+- ✅ Good Result: <what would make the issue worthwhile>
+
+### 🏁 Recommendation
+
+- [YYYY-MM-DD HH:mm | Author: <required author name> | Recommendation: Choose Direct Fix | Support: <support level>]
+
+Reasoning:
+<Explain why the direct fix is recommended.>
+
+Required Checks:
+<State what must be checked before this recommendation becomes final, if anything.>
+
+### 📬 Stakeholder Success Note
+
+- 👥 Stakeholder Role: <role or group to inform when this is solved>
+- 🗣 Communication Lens: <business, product, support, release, trust, or technical summary>
+- 📬 Success Note: <3–4 lines that can be reused in mail, chat, release notes, or a project update>
+
 ### 🚫 Out of Scope
 
 - <Only include if relevant.>
@@ -1881,27 +2152,69 @@ Unknown:
 
 Use the full template when the issue has Shape: 2/4 Composite or higher, Readiness: Needs Refinement, multiple options, unresolved design questions, meaningful scope risk, or possible extracted work.
 
+Use the small template only when the solution path is obvious enough that a separate option comparison would add noise.
+
 ---
 
-# 14. Practical Rules
+# 17. Practical Rules
 
-If an issue is Shape: 0/4 Atomic or Shape: 1/4 Focused, it may not need options.
+If an issue is Shape: 0/4 Atomic or Shape: 1/4 Focused, it may not need multiple options.
 
-If an issue is Shape: 2/4 Composite, options should usually include at least one split, partial-resolution, or discovery path.
+If an issue is Shape: 2/4 Composite, options should usually include at least one split, partial-resolution, discovery, decision, or reframed implementation path.
 
 If an issue is Shape: 3/4 Epic / Theme, use it as a parent issue and create child issues only when the child issues are real, ratable, and separately useful.
 
-If an issue is Shape: 4/4 Dump / Catch-all, do not implement it. Rewrite it, split it, or convert it into discovery.
+If an issue is Shape: 4/4 Dump / Catch-all, do not implement it. Rewrite it, split it, reframe it, or convert it into discovery.
 
 If an option has 🔮 Future Impact: 🔴 +2 Rewrite Risk, do not choose it casually. It may still be valid, but it should be explicit debt.
 
 If an option has 🧭 Resolution: 🟡 Partial, it must say what remains open.
 
-If an option has 🧭 Resolution: 🔵 Discovery, it must say what decision or facts it will produce.
+If an option has 🧭 Resolution: 🔵 Discovery, it must say what facts, map, prototype, or evidence it will produce.
+
+If an option has 🧭 Resolution: 🟣 Decision, it must say which decision it will produce and who or what role is expected to decide.
 
 If an option has 🧭 Resolution: 🧩 Split, it must say what stays here and what becomes separate.
 
+If an option has 🧭 Resolution: ⚪ Defer, it must say the revisit condition.
+
+If an option has 🧭 Resolution: 🔴 Reject, it must say why the issue should not be pursued.
+
 If an option has 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱ or 🤖 Agent Difficulty: 4/4 Human-Led ▰▰▰▰, require human review before merging implementation work.
+
+If an option cannot be selected independently, rewrite it. Do not let the recommendation become a bundle of option letters.
+
+If the best path combines several actions, create one coherent Combined Path Option and recommend that option.
+
+If the issue can be made much simpler by changing the framing while preserving the real concern, create a Reframed Implementation Option.
+
+Do not add `Reframe` as a Resolution value. Reframing is an option kind, not an outcome.
+
+Write Value Assessment after Options. Do not write it before Options.
+
+Value Assessment must compare what the options show. It must not be a stakeholder preference disguised as economics.
+
+Value Assessment should summarize option value and effort tradeoffs, but it must not choose the option by itself.
+
+Option Value Summary should use compact multi-line option snapshots. Do not force all option fields into one long line.
+
+Option Value Summary should include Option Kind, Resolution, Option Effort, Option Complexity, Future Impact, Agent Difficulty, and a Decision Note by default.
+
+Option Value Summary may include Reversibility, Integration, or Agent Work only when they are decision-relevant.
+
+Recommendation must reference one option or the small-template Direct Fix. Do not use `Needs More Facts`, `Needs Decision`, `Split Issue`, `Defer`, `Reject`, or option-letter bundles as recommendation values.
+
+Recommendation chooses one option after facts, options, and value assessment are visible.
+
+Stakeholder Success Note belongs after Recommendation. It packages communication; it must not drive the option analysis.
+
+If the Success Note would overclaim, rewrite it. A Success Note must match what the issue actually solved or what the recommended option can honestly deliver.
+
+If the result is partial, the Success Note must say the improvement is partial.
+
+If the result reduces risk but does not remove it, the Success Note must say reduced, not eliminated.
+
+Use roles, not personal names, for Stakeholder Role.
 
 If something is excluded, put it in Out of Scope. Do not rely on memory.
 
@@ -1911,24 +2224,26 @@ If there is no real extracted work, omit Extracted Work or write None.
 
 If an LLM writes a recommendation, the LLM must be named as the author. Do not write `Author: —`.
 
-Use dividers to protect readability. In long issue files, poor separation makes options and decisions hard to review.
+Use `YYYY-MM-DD HH:mm` in recommendation lines. Recommendations age and should be timestamped.
+
+Use dividers to protect readability. In long issue files, poor separation makes options, value assessment, and decisions hard to review.
 
 Option descriptions should be verbose enough to preserve the idea. Do not compress them into slogans.
 
 Use Description, Current State, and Resulting State together when an option is important. This makes the option easier to judge without needing the original discussion.
 
-Use chips to clarify state and risk. Do not add chips where they create noise.
+Use chips to clarify state, value direction, and risk. Do not add chips where they create noise.
 
 Keep chip meanings consistent. For example, use `🟢 -2 Simplifies` and `🟢 -1 Improves` for helpful Future Impact values, not a mixture such as `✅ -2 Simplifies` and `🟢 -1 Improves`.
 
 ---
 
-# 15. Final Rule
+# 18. Final Rule
 
 The rating classifies the issue.
 The vertical rating layout keeps ratings readable.
 The visual meters make ordered ratings easier to scan.
-The semantic chips make states, categories, and risks easier to read.
+The semantic chips make states, categories, value direction, and risks easier to read.
 The section icons make issue documents easier to navigate.
 The dividers separate large issue blocks and option blocks.
 The statement explains the issue.
@@ -1936,11 +2251,21 @@ The related context shows connections.
 The required outcome defines success.
 The facts ground the issue.
 The options compare possible paths.
+Each option must be independently selectable.
+Each option has an explicit option kind in the option heading.
+The option kind describes what kind of path the option is.
+The resolution describes what the option achieves.
+A reframed implementation option preserves the original concern while changing the framing to make the work simpler or better aligned.
+The value assessment is written after options and compares what value the options offer.
+The option value summary gives decision-makers readable snapshots of option kind, value, effort, complexity, future impact, agent difficulty, and judgement.
+The value assessment must remain neutral and must not be written as stakeholder preference.
+The recommendation chooses one option.
+The stakeholder success note packages the result for communication after recommendation or completion.
 The option profile shows the cost, risk, future impact, and agent suitability of each path.
 The option description explains the idea and tradeoff.
 The current state shows the world before the option.
 The resulting state shows the world after the option.
-The recommendation states the preferred path and why.
+The recommendation timestamp shows when the judgement was made.
 The support level says how well-backed the recommendation is.
 The resolved decisions record what has been chosen.
 The open decisions show what is still unresolved.
