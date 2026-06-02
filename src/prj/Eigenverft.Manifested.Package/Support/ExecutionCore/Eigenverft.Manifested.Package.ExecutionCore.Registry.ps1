@@ -1,5 +1,5 @@
 <#
-    Eigenverft.Manifested.Package.ExecutionEngine.Registry
+    Eigenverft.Manifested.Package.ExecutionCore.Registry
 #>
 
 function Test-RegistryPathExists {

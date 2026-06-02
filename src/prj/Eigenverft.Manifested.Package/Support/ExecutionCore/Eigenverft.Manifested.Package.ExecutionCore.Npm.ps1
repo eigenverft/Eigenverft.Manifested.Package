@@ -1,5 +1,5 @@
 <#
-    Eigenverft.Manifested.Package.ExecutionEngine.Npm
+    Eigenverft.Manifested.Package.ExecutionCore.Npm
 #>
 
 function Get-NpmRegistryUri {

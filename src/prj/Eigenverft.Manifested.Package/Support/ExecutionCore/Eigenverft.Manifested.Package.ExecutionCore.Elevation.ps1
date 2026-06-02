@@ -1,5 +1,5 @@
 <#
-    Eigenverft.Manifested.Package.ExecutionEngine.Elevation
+    Eigenverft.Manifested.Package.ExecutionCore.Elevation
 #>
 
 function Test-ProcessElevation {

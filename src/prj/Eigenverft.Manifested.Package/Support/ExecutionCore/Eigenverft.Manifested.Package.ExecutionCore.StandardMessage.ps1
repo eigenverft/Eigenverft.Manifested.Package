@@ -1,5 +1,5 @@
 <#
-    Eigenverft.Manifested.Package.ExecutionEngine.StandardMessage
+    Eigenverft.Manifested.Package.ExecutionCore.StandardMessage
 #>
 
 function Write-StandardMessage {

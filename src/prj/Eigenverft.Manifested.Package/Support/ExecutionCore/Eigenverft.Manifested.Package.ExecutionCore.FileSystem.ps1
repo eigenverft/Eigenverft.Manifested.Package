@@ -1,5 +1,5 @@
 <#
-    Eigenverft.Manifested.Package.ExecutionEngine.FileSystem
+    Eigenverft.Manifested.Package.ExecutionCore.FileSystem
 #>
 
 function Remove-PathIfExists {

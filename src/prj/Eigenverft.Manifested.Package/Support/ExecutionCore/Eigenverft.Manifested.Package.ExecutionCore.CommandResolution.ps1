@@ -1,5 +1,5 @@
 <#
-    Eigenverft.Manifested.Package.ExecutionEngine.CommandResolution
+    Eigenverft.Manifested.Package.ExecutionCore.CommandResolution
 #>
 
 function Get-ResolvedApplicationPath {

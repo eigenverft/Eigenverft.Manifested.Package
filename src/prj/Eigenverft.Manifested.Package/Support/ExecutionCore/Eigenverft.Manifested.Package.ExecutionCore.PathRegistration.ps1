@@ -1,5 +1,5 @@
 <#
-    Eigenverft.Manifested.Package.ExecutionEngine.PathRegistration
+    Eigenverft.Manifested.Package.ExecutionCore.PathRegistration
 #>
 
 function Get-EnvironmentVariableValue {

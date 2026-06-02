@@ -1,5 +1,5 @@
 <#
-    Eigenverft.Manifested.Package.ExecutionEngine.SystemResources
+    Eigenverft.Manifested.Package.ExecutionCore.SystemResources
 #>
 
 function Get-PhysicalMemoryGiB {

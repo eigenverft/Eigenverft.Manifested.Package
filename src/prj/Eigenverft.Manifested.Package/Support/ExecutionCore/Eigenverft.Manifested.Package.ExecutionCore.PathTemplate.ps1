@@ -1,5 +1,5 @@
 <#
-    Eigenverft.Manifested.Package.ExecutionEngine.PathTemplate
+    Eigenverft.Manifested.Package.ExecutionCore.PathTemplate
 #>
 
 function Get-StableShortHash {
