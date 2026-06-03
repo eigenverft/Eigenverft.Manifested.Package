@@ -4,7 +4,7 @@ Design scratchpad for **delayed auto-update** and **vendor release-age** policy 
 
 Open issues in this file are scheduled here. **No engine, schema, or catalog changes are implied by this file alone.**
 
-**Compose with:** version selection is its own resolver step — keep release-age policy separate from the shipped dependency planner. Authors and agents — [`TODO-CATALOG-AGENT.md`](TODO-CATALOG-AGENT.md). Static policy lint should extend the shipped `Test-PackageDefinitionCatalog` command.
+**Compose with:** version selection is its own resolver step — keep release-age policy separate from the shipped dependency planner. Authors and agents — [`ISSUE-CATALOG-AGENT.md`](ISSUE-CATALOG-AGENT.md). Static policy lint should extend the shipped `Test-PackageDefinitionCatalog` command.
 
 **Product boundary (read narrowly):** [`PRODUCT-BOUNDARY.md`](PRODUCT-BOUNDARY.md) targets *governed, reviewable catalog content* and *explainable release selection* — not “never touch the network.” Depot/offline paths are a **core strength**, and isolated networks must **fail closed** instead of reaching public upstream unexpectedly. The engine **already** calls GitHub during **acquisition** for `githubRelease` sources (`Package.Source.ps1`). Release-age policy should not re-use PRODUCT-BOUNDARY as a blanket ban on GitHub; it should separate **which step** may use the network (authoring vs selection vs acquire).
 
@@ -48,7 +48,7 @@ Affected Areas:
 - `Package.VersionSelection.ps1`; `Package.DefinitionSchema.Wire1_9.ps1`; `eigenverft-module-package-definition-1.9.schema.json`; `Package.Config.Aggregation.ps1` / `PackageConfig.json` `selectionDefaults`; all **18** shipped definitions under `Endpoint/Defaults/Eigenverft/`; `Package.Selection.ps1` projection and execution messages.
 
 May Influence:
-- Agent authoring workflow ([`TODO-CATALOG-AGENT.md`](TODO-CATALOG-AGENT.md)) — every new `releases[]` row needs `upstreamReleasedAtUtc` when age-aware strategies are used.
+- Agent authoring workflow ([`ISSUE-CATALOG-AGENT.md`](ISSUE-CATALOG-AGENT.md)) — every new `releases[]` row needs `upstreamReleasedAtUtc` when age-aware strategies are used.
 - Catalog validation (`Test-PackageDefinitionCatalog`) — future release-age rules should lint missing vendor dates before sign/publish.
 
 Dependencies:

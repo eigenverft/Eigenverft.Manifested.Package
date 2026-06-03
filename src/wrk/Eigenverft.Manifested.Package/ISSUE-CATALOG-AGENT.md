@@ -1,16 +1,18 @@
-# TODO CATALOG AGENT
+# ISSUE CATALOG AGENT
 
 ## Purpose
 
-Design scratchpad for a future **agent skill** document: `AgentSkills/PackageDefinitionAuthoring.md` inside the PowerShell module (for Cursor, Codex, or other agents — not for the repo coding agent unless explicitly asked).
+Reviewed issue copy for a future **agent skill** document: `AgentSkills/PackageDefinitionAuthoring.md` inside the PowerShell module (for Cursor, Codex, or other agents — not for the repo coding agent unless explicitly asked).
 
-That file **does not exist yet**. This TODO tracks what it should contain, what the module already provides today, and what stays open until the skill is written and reviewed.
+That file **does not exist yet**. This issue tracks what it should contain, what the module already provides today, and what stays open until the skill is written and reviewed.
 
-Issue ratings and definitions follow [PROJECT-ISSUE-FRAMEWORK.md](PROJECT-ISSUE-FRAMEWORK.md) (V1.6): vertical ratings; **Option Kind** in each option heading; **💶 Value Assessment** after Options with **✅ Good Result**; **📬 Stakeholder Success Note** after Recommendation; one **Prefer/Choose Option X** per issue with required author and `YYYY-MM-DD HH:mm`. Facts re-verified against `src/prj/Eigenverft.Manifested.Package` on **2026-05-30**.
+Issue ratings and definitions follow [PROJECT-ISSUE-FRAMEWORK.md](PROJECT-ISSUE-FRAMEWORK.md) (V1.6): vertical ratings; **Option Kind** in each option heading; **💶 Value Assessment** after Options with **✅ Good Result**; **📬 Stakeholder Success Note** after Recommendation; one **Prefer/Choose Option X** per issue with required author and `YYYY-MM-DD HH:mm`. Facts reviewed against `src/prj/Eigenverft.Manifested.Package` on **2026-06-03**.
 
-Open issues in this file are scheduled here. **No skill file and no engine changes are implied by this document alone.**
+This issue is scheduled here. **No skill file and no engine changes are implied by this document alone.**
 
 **Shipped validation:** deterministic validation is available through `Test-PackageDefinitionCatalog`. The future skill should call it before signing or publishing; extending validation rules is separate from writing the skill.
+
+**Review note (2026-06-03 | Codex):** Composer's core facts were checked against the repository. Corrections made in this issue copy: refreshed verification dates, replaced stale "validate placeholder" wording with the shipped validation command, and added `Trust-PackageSigningCertificate` to the exported trust-command facts.
 
 ---
 
@@ -58,11 +60,11 @@ One markdown skill file agents can load: workflow, self-check checklist, pointer
 ### 🔎 Facts
 
 Known:
-- **`AgentSkills/` directory does not exist** in the module project (verified 2026-05-30).
+- **`AgentSkills/` directory does not exist** in the module project (verified 2026-06-03).
 - Schema: `Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json` with root `description` and **`x-eigenverftAgentHint`** (unsigned draft, sign when stable, layout `<publisherId>/<definitionId>.json`).
 - Runtime wire: `Package.DefinitionSchema.ps1` + `Package.DefinitionSchema.Wire1_9.ps1` (PowerShell asserts; retired names throw with replacement hints).
 - **`Assert-PackageDefinitionSchema`** runs when a definition is loaded for invoke (`Package.Config.Aggregation.ps1`) and is reused by `Test-PackageDefinitionCatalog`.
-- Trust/signing and validation (exported): `Sign-PackageDefinition`, `Resign-PackageDefinition` (`-KeepSchemaVersion`), `Verify-PackageDefinitionSignature`, `Verify-PackageDefinitionCatalog`, `Test-PackageDefinitionCatalog`, `New-PackageSigningCertificate`, `Import-PackageTrust`.
+- Trust/signing and validation (exported): `Sign-PackageDefinition`, `Resign-PackageDefinition` (`-KeepSchemaVersion`), `Verify-PackageDefinitionSignature`, `Verify-PackageDefinitionCatalog`, `Test-PackageDefinitionCatalog`, `New-PackageSigningCertificate`, `Import-PackageTrust`, `Trust-PackageSigningCertificate`.
 - **`Verify-PackageDefinitionCatalog`** scans a file or folder (`*.json` recursive) for **signature/trust per file**.
 - **`Test-PackageDefinitionCatalog`** validates a file or folder without install and reports parse, schema, signature/trust, duplicate identity, and static dependency-reference issues.
 - **18** signed examples under `Endpoint/Defaults/Eigenverft/` (`schemaVersion` **1.9**); layout matches `<publisherId>/<definitionId>.json`.
@@ -75,7 +77,7 @@ Unknown:
 
 ### 🧩 Options
 
-#### Option A — Ship full skill now with validate placeholder (Implementation Option)
+#### Option A — Ship full skill now with validation command (Implementation Option)
 
 - 🧾 Option Profile
   - 🧭 Resolution: 🟢 Full
@@ -267,7 +269,7 @@ These are **resolved facts** — document them in the skill; do not re-invent in
 | `Verify-PackageDefinitionSignature` | Per-file signature + optional trust (`-RequireTrusted`, `-ErrorOnFailure`) |
 | `Verify-PackageDefinitionCatalog` | Folder/file recursive `*.json` scan; **signature/trust summary only** (`CheckedCount`, `ValidCount`, `TrustedCount`) |
 | `Test-PackageDefinitionCatalog` | Folder/file recursive validate-before-install report: parse, schema, signature/trust, duplicate identity, dependency references |
-| `New-PackageSigningCertificate` + `Import-PackageTrust` | Team catalog trust setup |
+| `New-PackageSigningCertificate` + `Import-PackageTrust` / `Trust-PackageSigningCertificate` | Team catalog trust setup |
 | Endpoint layout `<publisherId>/<definitionId>.json` | Matches shipped defaults under `Endpoint/Defaults/Eigenverft/` |
 | [`PRODUCT-BOUNDARY.md`](PRODUCT-BOUNDARY.md) | Declarative JSON, human review before production install, no script sprawl |
 
@@ -337,7 +339,7 @@ For schema 1.9 policy fields, the skill checklist should say: “If this package
 ## Resolved (for the skill effort)
 
 - This backlog story is **design + future skill**, not “skill already shipped”.
-- **`AgentSkills/`** path is **not present** in the module tree yet (2026-05-30).
+- **`AgentSkills/`** path is **not present** in the module tree yet (2026-06-03).
 - Schema 1.9 embeds **`x-eigenverftAgentHint`** and authoring vs signing guidance in `description`.
 - Signing is a **separate maintainer step** from semantic JSON editing (`Sign-PackageDefinition` / `Resign-PackageDefinition`).
 - `Verify-PackageDefinitionCatalog` helps trust checks but **does not** replace schema/wire validation.

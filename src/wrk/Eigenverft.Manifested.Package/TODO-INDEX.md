@@ -1,6 +1,6 @@
 # Work index — Eigenverft.Manifested.Package
 
-**Source of truth:** one open issue per topic in `TODO-<topic>.md` below. Issue format: [PROJECT-ISSUE-FRAMEWORK.md](PROJECT-ISSUE-FRAMEWORK.md) (V1.6).
+**Source of truth:** one open issue per topic in `TODO-<topic>.md` or `ISSUE-<topic>.md` below. Issue format: [PROJECT-ISSUE-FRAMEWORK.md](PROJECT-ISSUE-FRAMEWORK.md) (V1.6).
 
 **Removed rollup:** `PROJECT-TODO.md` duplicated domain files and listed stale/done work; do not restore it.
 
@@ -30,15 +30,17 @@
 |------|--------|
 | [TODO-SUPPLY-CHAIN.md](TODO-SUPPLY-CHAIN.md) | Vendor release-age policy on version selection |
 | [TODO-DOCUMENTATION.md](TODO-DOCUMENTATION.md) | Hybrid product documentation |
-| [TODO-CATALOG-AGENT.md](TODO-CATALOG-AGENT.md) | `PackageDefinitionAuthoring` agent skill |
+| [ISSUE-CATALOG-AGENT.md](ISSUE-CATALOG-AGENT.md) | `PackageDefinitionAuthoring` agent skill |
 
-**Cross-file duplicates among `TODO-*.md`:** none — each 📌 title appears in exactly one domain file.
+**Cross-file duplicates among open issue files:** none — each 📌 title appears in exactly one domain/issue file.
 
 **Deleted split parent:** `TODO-COMMANDS.md` (state/outcome/search polish shipped — see [DECISIONS.md](DECISIONS.md)).
 
 **Deleted completed dependency track:** the dependency issue and implementation artifacts were removed after the dependency planner and schema 1.9 wire shipped.
 
 **Deleted completed catalog-validation track:** the catalog-validation planning artifacts were removed after `Test-PackageDefinitionCatalog` shipped.
+
+**Replaced reviewed catalog-agent track:** `TODO-CATALOG-AGENT.md` was replaced by reviewed [ISSUE-CATALOG-AGENT.md](ISSUE-CATALOG-AGENT.md).
 
 ---
 
@@ -48,7 +50,7 @@
 |---|------|--------|
 | 2 | [TODO-SUPPLY-CHAIN.md](TODO-SUPPLY-CHAIN.md) | Release-age / cooling window on version selection |
 | 3 | [TODO-DOCUMENTATION.md](TODO-DOCUMENTATION.md) | Hybrid docs (repo → module HTML → command) |
-| 3 | [TODO-CATALOG-AGENT.md](TODO-CATALOG-AGENT.md) | Agent authoring skill |
+| 3 | [ISSUE-CATALOG-AGENT.md](ISSUE-CATALOG-AGENT.md) | Agent authoring skill |
 | 4 | [TODO-OWNERSHIP.md](TODO-OWNERSHIP.md) | Ownership / adoption guide |
 | 5 | [TODO-ENDPOINTS-MANIFEST.md](TODO-ENDPOINTS-MANIFEST.md) | Catalog manifest contract |
 | 5 | [TODO-ENDPOINTS-HTTPS.md](TODO-ENDPOINTS-HTTPS.md) | `httpsCatalog` endpoint kind |
@@ -65,3 +67,7 @@ Agent-written; confirm or edit before treating as binding:
 - [DECISION-SCHEMA-ARTIFACTS-VOCABULARY.md](DECISION-SCHEMA-ARTIFACTS-VOCABULARY.md)
 
 Shipped polish (code): [DECISIONS.md](DECISIONS.md).
+
+## Idea notes (not scheduled issues)
+
+- [IDEA-AGENT-SCALES-PRODUCT.md](IDEA-AGENT-SCALES-PRODUCT.md) — agent scales catalog operations, not machine/fleet mutation.

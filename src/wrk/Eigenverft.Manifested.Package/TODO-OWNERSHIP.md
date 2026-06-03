@@ -12,7 +12,7 @@ Open issues in this file are scheduled here. **No engine changes are implied by 
 |-------|--------|
 | Hybrid documentation (maintainer chapter home) | [TODO-DOCUMENTATION.md](TODO-DOCUMENTATION.md) |
 | Catalog validation warnings | Future `Test-PackageDefinitionCatalog` ownership-policy rules |
-| Agent authoring skill | [TODO-CATALOG-AGENT.md](TODO-CATALOG-AGENT.md) |
+| Agent authoring skill | [ISSUE-CATALOG-AGENT.md](ISSUE-CATALOG-AGENT.md) |
 
 ---
 

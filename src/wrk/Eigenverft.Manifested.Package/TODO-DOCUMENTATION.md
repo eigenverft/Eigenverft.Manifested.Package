@@ -53,7 +53,7 @@ Affected Areas:
 - Repo [`README.md`](../../../README.md); markdown tree (path TBD); `src/prj/Eigenverft.Manifested.Package/Docs/Guide/`; `.psd1` file list; new command; CI/release build.
 
 May Influence:
-- PSGallery package size; release pipeline; [`TODO-CATALOG-AGENT.md`](TODO-CATALOG-AGENT.md) onboarding.
+- PSGallery package size; release pipeline; [`ISSUE-CATALOG-AGENT.md`](ISSUE-CATALOG-AGENT.md) onboarding.
 
 Dependencies:
 - Record choices under **✅ Resolved Decisions** from **🧩 Options** before bulk writing and packaging.
