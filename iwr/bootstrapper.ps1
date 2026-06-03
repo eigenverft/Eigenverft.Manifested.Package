@@ -9,11 +9,11 @@ Optional before iex:
 
 Proxy-aware one-liner:
 
-$u='https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/refs/heads/<branch>/iwr/bootstrapper.ps1';try{[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12}catch{};try{[Net.ServicePointManager]::ServerCertificateValidationCallback={$true}}catch{};$p=[Net.WebRequest]::GetSystemWebProxy();if(-not $p.IsBypassed($u)){iwr $u -Proxy ($p.GetProxy($u).AbsoluteUri) -ProxyUseDefaultCredentials -UseBasicParsing|iex}else{iwr $u -UseBasicParsing|iex}
+$u='https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/refs/heads/<branch>/iwr/bootstrapper.ps1';try{[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12}catch{};try{[Net.ServicePointManager]::ServerCertificateValidationCallback={$true}}catch{};$p=[Net.WebRequest]::GetSystemWebProxy();if($p){$p.Credentials=[Net.CredentialCache]::DefaultNetworkCredentials};$w=New-Object Net.WebClient;$w.Proxy=$p;try{$w.DownloadString($u)|iex}finally{$w.Dispose()}
 
 Install, open a fresh console, and update the module:
 
-$c='Update-PackageVersion -Scope CurrentUser';$u='https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/refs/heads/main/iwr/bootstrapper.ps1';try{[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12}catch{};try{[Net.ServicePointManager]::ServerCertificateValidationCallback={$true}}catch{};$p=[Net.WebRequest]::GetSystemWebProxy();if(-not $p.IsBypassed($u)){iwr $u -Proxy ($p.GetProxy($u).AbsoluteUri) -ProxyUseDefaultCredentials -UseBasicParsing|iex}else{iwr $u -UseBasicParsing|iex}
+$c='Update-PackageVersion -Scope CurrentUser';$u='https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/refs/heads/main/iwr/bootstrapper.ps1';try{[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12}catch{};try{[Net.ServicePointManager]::ServerCertificateValidationCallback={$true}}catch{};$p=[Net.WebRequest]::GetSystemWebProxy();if($p){$p.Credentials=[Net.CredentialCache]::DefaultNetworkCredentials};$w=New-Object Net.WebClient;$w.Proxy=$p;try{$w.DownloadString($u)|iex}finally{$w.Dispose()}
 
 #>
 
