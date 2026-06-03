@@ -27,10 +27,18 @@ and pass the write probe to be selected.
 .PARAMETER EndpointPreference
 When multiple usable targets exist, First selects the lowest searchOrder and Last the highest.
 
+.PARAMETER DraftOnly
+Prepends draft-only mode instructions: keep the definition unsigned, skip signing and trusted verification, and use catalog validation only where helpful.
+
 .EXAMPLE
 Get-PackageDefinitionAuthoringGuide -For 'TotalCommander'
 
 Shows task-specific preface, endpoint target guidance, and the full authoring guide.
+
+.EXAMPLE
+Get-PackageDefinitionAuthoringGuide -For 'TotalCommander' -DraftOnly
+
+Same as above with an explicit draft-only mode block (unsigned JSON, no sign or RequireTrusted steps).
 
 .EXAMPLE
 Get-PackageDefinitionAuthoringGuide -EndpointName moduleDefaults -EndpointPreference First
@@ -44,7 +52,9 @@ Evaluates only moduleDefaults when it is marked as an authoring target.
         [string]$EndpointName,
 
         [ValidateSet('First', 'Last')]
-        [string]$EndpointPreference = 'First'
+        [string]$EndpointPreference = 'First',
+
+        [switch]$DraftOnly
     )
 
     $moduleProjectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
@@ -69,11 +79,27 @@ Evaluates only moduleDefaults when it is marked as an authoring target.
         $lines.Add('') | Out-Null
     }
 
+    if ($DraftOnly) {
+        $lines.Add('## Authoring mode') | Out-Null
+        $lines.Add('') | Out-Null
+        $lines.Add('Mode: **draft-only** (unsigned).') | Out-Null
+        $lines.Add('') | Out-Null
+        $lines.Add('AgentAction: You are in draft-only mode. Author or update JSON under **Selection** when available. Keep `definitionPublication.definitionSignature.kind` as `unsigned`. Do not run `Sign-PackageDefinition`, `Resign-PackageDefinition`, or trusted verification (`-RequireTrusted`, `Verify-PackageDefinitionSignature -RequireTrusted`, and similar) for this task unless the maintainer explicitly ends draft-only.') | Out-Null
+        $lines.Add('') | Out-Null
+        $lines.Add('Validation: `Test-PackageDefinitionCatalog` on the draft file is allowed and encouraged when it helps catch schema issues.') | Out-Null
+        $lines.Add('') | Out-Null
+    }
+
     $lines.Add('## Runtime endpoint status') | Out-Null
     $lines.Add('') | Out-Null
 
     if ($evaluation.SelectedTarget) {
-        $lines.Add('AgentAction: Proceed with **Start Here** step 3 onward; write under Selection path.') | Out-Null
+        if ($DraftOnly) {
+            $lines.Add('AgentAction: **Draft-only mode.** Proceed with **Start Here** step 3 onward; write under Selection path. Do not sign or require trusted verification.') | Out-Null
+        }
+        else {
+            $lines.Add('AgentAction: Proceed with **Start Here** step 3 onward; write under Selection path.') | Out-Null
+        }
     }
     elseif ([string]::Equals($evaluation.TroubleshootingKind, 'NoMarkedTarget', [System.StringComparison]::Ordinal)) {
         $lines.Add('AgentAction: Stop JSON edits. Read **Start Here** step 1 and **Troubleshooting for agents** (NoMarkedTarget).') | Out-Null

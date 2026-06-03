@@ -137,6 +137,20 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
         $text | Should -Match '# PackageDefinitionAuthoring'
     }
 
+    It 'Get-PackageDefinitionAuthoringGuide -DraftOnly prepends draft-only authoring mode' {
+        $null = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
+        $text = Get-PackageDefinitionAuthoringGuide -For 'TestDef' -DraftOnly -WarningAction SilentlyContinue
+
+        $text | Should -Match '## Authoring mode'
+        $text | Should -Match 'Mode: \*\*draft-only\*\* \(unsigned\)\.'
+        $text | Should -Match 'Do not run `Sign-PackageDefinition`'
+        $text | Should -Match '## Runtime endpoint status'
+        $text.IndexOf('## Authoring mode') | Should -BeLessThan ($text.IndexOf('## Runtime endpoint status'))
+        if ($text -match 'Selection: .+ \| Ready \|') {
+            $text | Should -Match '\*\*Draft-only mode\.\*\*'
+        }
+    }
+
     It 'ships endpoint inventory v5 with authoring targets on moduleDefaults and corpPackageEndpoint' {
         $moduleProjectRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'Eigenverft.Manifested.Package'
         $inventoryPath = Join-Path $moduleProjectRoot 'Configuration\Internal\PackageEndpointInventory.json'
@@ -156,26 +170,29 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
         $text = Get-Content -Raw -LiteralPath $skillPath
         $anchors = @(
             'PackageDefinitionAuthoring',
+            'What this text is',
+            "Task: create or update package definition 'TotalCommander'",
+            'definitionId',
+            'publisherId',
             'Required First Step',
             'Before making any JSON edit',
-            'complete task/request instructions',
-            'complete package-definition schema file',
+            'eigenverft-module-package-definition-1.9.schema.json',
+            'x-eigenverftAgentHint',
             'Do not skim',
             'Start Here',
             'Runtime endpoint status',
+            'Authoring mode',
             'Publication finalization',
             'Authoring Targets And Endpoints',
-            'eigenverft-module-package-definition-1.9.schema.json',
-            'x-eigenverftAgentHint',
-            'Endpoint/Defaults/Eigenverft',
+            'Selection',
+            'No Installer Execution During Authoring',
             '$PSVersionTable',
             'powershell.exe',
             'pwsh',
             'Get-Module -ListAvailable Eigenverft.Manifested.Package',
             'Installer Kind Discovery',
-            'search the web first',
-            'official vendor documentation',
-            'Do not start by analyzing the downloaded binary',
+            'search the web and read documentation first',
+            'Never run the installer',
             'Existing Definition Latest Version Update',
             'latest upstream version',
             'independent of the definition''s install-time `versionSelection` policy',
@@ -184,7 +201,6 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'do not edit or re-sign the JSON',
             'Refresh every target artifact',
             'Bump `definitionRevision`',
-            'Publication finalization',
             'Test-PackageDefinitionCatalog -RequireTrusted',
             'Verify-PackageDefinitionSignature -RequireTrusted',
             'git status --short',
@@ -196,7 +212,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             '-KeepSchemaVersion',
             'Verify-PackageDefinitionSignature',
             'Verify-PackageDefinitionCatalog',
-            'human review',
+            'Agent Completion At A Valid Endpoint',
             'definitionSignature.kind = unsigned',
             'signatureValue',
             '.cer',
