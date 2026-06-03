@@ -10,7 +10,7 @@ Issue ratings and definitions follow [PROJECT-ISSUE-FRAMEWORK.md](PROJECT-ISSUE-
 
 Open issues in this file are scheduled here. **No skill file and no engine changes are implied by this document alone.**
 
-**Separate effort:** deterministic validation cmdlets — [`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md). The future skill should **reference** those steps once shipped; validation implementation is not part of writing the skill.
+**Shipped validation:** deterministic validation is available through `Test-PackageDefinitionCatalog`. The future skill should call it before signing or publishing; extending validation rules is separate from writing the skill.
 
 ---
 
@@ -41,7 +41,7 @@ Maintainers want a repeatable **external-agent** workflow for LLM-authored packa
 ### 🧭 Related Context
 
 Related Issues:
-- [`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md) — validate-before-publish command (skill should reference when shipped).
+- `Test-PackageDefinitionCatalog` — shipped validate-before-publish command that the skill should reference.
 - Schema 1.9 dependency policy / [`TODO-SUPPLY-CHAIN.md`](TODO-SUPPLY-CHAIN.md) — policy vocabulary links only in v1 skill.
 - [`TODO-OWNERSHIP.md`](TODO-OWNERSHIP.md) — ownership/adoption guide may feed maintainer chapter text.
 
@@ -49,7 +49,7 @@ Affected Areas:
 - New `src/prj/Eigenverft.Manifested.Package/AgentSkills/PackageDefinitionAuthoring.md`; optional README / onboarding links.
 
 Dependencies:
-- None blocking a v1 skill; validation step can be a placeholder until [`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md) phase 1 lands.
+- None blocking a v1 skill; validation step should call `Test-PackageDefinitionCatalog`.
 
 ### 🎯 Required Outcome
 
@@ -59,12 +59,13 @@ One markdown skill file agents can load: workflow, self-check checklist, pointer
 
 Known:
 - **`AgentSkills/` directory does not exist** in the module project (verified 2026-05-30).
-- Schema: `Schema/PackageDefinition/eigenverft-module-package-definition-1.8.schema.json` with root `description` and **`x-eigenverftAgentHint`** (unsigned draft, sign when stable, layout `<publisherId>/<definitionId>.json`).
-- Runtime wire: `Package.DefinitionSchema.ps1` + `Package.DefinitionSchema.Wire1_8.ps1` (PowerShell asserts; retired names throw with replacement hints).
-- **`Assert-PackageDefinitionSchema`** runs when a definition is loaded for invoke (`Package.Config.Aggregation.ps1`) — not a publish-only validate command.
-- Trust/signing (exported): `Sign-PackageDefinition`, `Resign-PackageDefinition` (`-KeepSchemaVersion`), `Verify-PackageDefinitionSignature`, `Verify-PackageDefinitionCatalog`, `New-PackageSigningCertificate`, `Import-PackageTrust` (`Cmd.PackageTrust.ps1`).
-- **`Verify-PackageDefinitionCatalog`** scans a file or folder (`*.json` recursive) for **signature/trust per file**; it does **not** run full wire/schema asserts ([`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md)).
-- **18** signed examples under `Endpoint/Defaults/Eigenverft/` (`schemaVersion` **1.8**); layout matches `<publisherId>/<definitionId>.json`.
+- Schema: `Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json` with root `description` and **`x-eigenverftAgentHint`** (unsigned draft, sign when stable, layout `<publisherId>/<definitionId>.json`).
+- Runtime wire: `Package.DefinitionSchema.ps1` + `Package.DefinitionSchema.Wire1_9.ps1` (PowerShell asserts; retired names throw with replacement hints).
+- **`Assert-PackageDefinitionSchema`** runs when a definition is loaded for invoke (`Package.Config.Aggregation.ps1`) and is reused by `Test-PackageDefinitionCatalog`.
+- Trust/signing and validation (exported): `Sign-PackageDefinition`, `Resign-PackageDefinition` (`-KeepSchemaVersion`), `Verify-PackageDefinitionSignature`, `Verify-PackageDefinitionCatalog`, `Test-PackageDefinitionCatalog`, `New-PackageSigningCertificate`, `Import-PackageTrust`.
+- **`Verify-PackageDefinitionCatalog`** scans a file or folder (`*.json` recursive) for **signature/trust per file**.
+- **`Test-PackageDefinitionCatalog`** validates a file or folder without install and reports parse, schema, signature/trust, duplicate identity, and static dependency-reference issues.
+- **18** signed examples under `Endpoint/Defaults/Eigenverft/` (`schemaVersion` **1.9**); layout matches `<publisherId>/<definitionId>.json`.
 - [`PRODUCT-BOUNDARY.md`](PRODUCT-BOUNDARY.md) requires declarative JSON, human review before production install.
 
 Unknown:
@@ -87,29 +88,29 @@ Unknown:
   - 🧾 Agent Work: 📝 Writing / Docs
 
 Description:
-Create `AgentSkills/PackageDefinitionAuthoring.md` from the draft outline: workflow, self-check, trust verify steps (`Verify-PackageDefinitionSignature` / catalog), human review gate, policy vocabulary (link to schema 1.9 dependency fields for peer policy). Include explicit **future** step for catalog validate command.
+Create `AgentSkills/PackageDefinitionAuthoring.md` from the draft outline: workflow, self-check, `Test-PackageDefinitionCatalog`, trust verify steps (`Verify-PackageDefinitionSignature` / catalog), human review gate, and policy vocabulary (link to schema 1.9 dependency fields for peer policy).
 
 Current State:
 No module skill file; agents rely on ad hoc schema reading.
 
 Resulting State:
-External agents have one canonical authoring playbook; validation command added to checklist when shipped.
+External agents have one canonical authoring playbook with the shipped validation command in the checklist.
 
 Solves:
-- Closes agent-authoring backlog without waiting on engine validation.
+- Closes agent-authoring backlog using the shipped validation command.
 
 Leaves Open:
-- Checklist gains a real validate step later ([`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md)).
+- Future richer validation-rule descriptions may be added as `Test-PackageDefinitionCatalog` grows.
 
 Risks:
-- Skill may need revision when validate cmdlet lands.
+- Skill may need revision when validation rules grow.
 
 Later Cost:
-- One doc update when validation phase 1 ships.
+- One doc update when validation rules grow beyond current file/folder checks.
 
 ---
 
-#### Option B — Defer skill until validation phase 1 (Defer Option)
+#### Option B — Defer skill despite shipped validation (Defer Option)
 
 - 🧾 Option Profile
   - 🧭 Resolution: ⚪ Defer
@@ -122,25 +123,25 @@ Later Cost:
   - 🧾 Agent Work: 📝 Writing / Docs
 
 Description:
-Wait for [`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md) phase 1 so the skill checklist can call a real validate command on first publish.
+Wait for more validation-rule depth before writing the skill, even though `Test-PackageDefinitionCatalog` already exists.
 
 Current State:
-No skill; validation gap documented only in TODO scratchpads.
+No skill; validation command exists but is not yet woven into an agent authoring playbook.
 
 Resulting State:
-Agents still lack a single module skill until both efforts complete.
+Agents still lack a single module skill while waiting for additional validation-rule depth.
 
 Solves:
 - Avoids publishing a checklist that immediately goes stale.
 
 Leaves Open:
-- No agent playbook during validation implementation.
+- No agent playbook while waiting for additional validation-rule depth.
 
 Risks:
 - Slower adoption of agent-authored definitions.
 
 Later Cost:
-- Skill work bundles with validation delivery.
+- Skill work bundles with future validation-rule expansion.
 
 ---
 
@@ -185,20 +186,20 @@ Later Cost:
 - 🧭 Value Direction: 🚀 Opportunity / Improvement
 - 🧾 Value Mechanism: Gives agents and maintainers one repeatable authoring playbook tied to real module commands and signed examples; reduces malformed JSON and trust mistakes before production `Invoke-Package`.
 - ⚖️ Option Value Summary:
-  - Option A — Ship full skill now with validate placeholder (Implementation Option)
+  - Option A — Ship full skill now with validation command (Implementation Option)
     - 🧭 Resolution: 🟢 Full
     - 🛠 Option Effort: 2/4 Moderate ▰▰▱▱
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
     - 🔮 Future Impact: 🟢 -1 Improves
     - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
-    - 🧾 Decision Note: Unblocks agent authoring now; one checklist update when validate ships.
-  - Option B — Defer skill until validation phase 1 (Defer Option)
+    - 🧾 Decision Note: Unblocks agent authoring now with `Test-PackageDefinitionCatalog` in the checklist.
+  - Option B — Defer skill despite shipped validation (Defer Option)
     - 🧭 Resolution: ⚪ Defer
     - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
     - 🧠 Option Complexity: 1/5 Simple ▰▱▱▱▱
     - 🔮 Future Impact: ⚪ 0 Neutral
     - 🤖 Agent Difficulty: 1/4 Routine ▰▱▱▱
-    - 🧾 Decision Note: Cleaner first checklist but delays all agent onboarding until validation exists.
+    - 🧾 Decision Note: Cleaner once future validation grows, but delays agent onboarding even though the base command exists.
   - Option C — Minimal skill now plus discoverability pack (Combined Path Option)
     - 🧭 Resolution: 🟡 Partial
     - 🛠 Option Effort: 2/4 Moderate ▰▰▱▱
@@ -215,7 +216,7 @@ Later Cost:
 - [2026-05-30 16:00 | Author: Composer | Recommendation: Prefer Option A | Support: 2/3 Reasoned ▰▰▱]
 
 Reasoning:
-Schema hints, examples, and trust commands already exist; waiting for validation (Option B) leaves agents without a playbook. Option C is useful add-on discoverability but does not replace a full skill body. Add a explicit placeholder step for the future validate command and refresh when [`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md) phase 1 ships.
+Schema hints, examples, trust commands, and `Test-PackageDefinitionCatalog` already exist; waiting for more validation rules (Option B) leaves agents without a playbook. Option C is useful add-on discoverability but does not replace a full skill body. Add an explicit validation step that runs `Test-PackageDefinitionCatalog`.
 
 Required Checks:
 - Maintainer sign-off on outline sections and policy vocabulary depth.
@@ -229,7 +230,7 @@ Required Checks:
 
 ### 🚫 Out of Scope
 
-- Implementing validation cmdlets ([`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md)).
+- Extending validation cmdlets beyond the shipped `Test-PackageDefinitionCatalog` rules.
 - Dependency resolver or release-age policy design.
 
 ---
@@ -258,18 +259,19 @@ These are **resolved facts** — document them in the skill; do not re-invent in
 
 | Mechanism | Role for agents |
 |-----------|-----------------|
-| `Schema/PackageDefinition/eigenverft-module-package-definition-1.8.schema.json` | Editor contract; read root `description` and **`x-eigenverftAgentHint`** (unsigned draft, sign when stable, bump `definitionRevision`) |
-| `Package.DefinitionSchema.Wire1_8.ps1` | Runtime wire rules; retired names fail with replacement hints (e.g. `artifactsByTarget` → `targetArtifacts`) |
-| `Assert-PackageDefinitionSchema` | Runs on definition load for invoke (`Package.Config.Aggregation.ps1`) — **not** publish-only validate |
-| `Endpoint/Defaults/Eigenverft/*.json` | **18** signed canonical examples (`schemaVersion` **1.8**) |
+| `Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json` | Editor contract; read root `description` and **`x-eigenverftAgentHint`** (unsigned draft, sign when stable, bump `definitionRevision`) |
+| `Package.DefinitionSchema.Wire1_9.ps1` | Runtime wire rules; retired names fail with replacement hints (e.g. `dependencies` → `dependency.requires`) |
+| `Assert-PackageDefinitionSchema` | Runs on definition load for invoke (`Package.Config.Aggregation.ps1`) and through `Test-PackageDefinitionCatalog` |
+| `Endpoint/Defaults/Eigenverft/*.json` | **18** signed canonical examples (`schemaVersion` **1.9**) |
 | `Sign-PackageDefinition` / `Resign-PackageDefinition` | Signing after content final; `-KeepSchemaVersion` for re-sign without schema bump |
 | `Verify-PackageDefinitionSignature` | Per-file signature + optional trust (`-RequireTrusted`, `-ErrorOnFailure`) |
-| `Verify-PackageDefinitionCatalog` | Folder/file recursive `*.json` scan; **signature/trust summary only** (`CheckedCount`, `ValidCount`, `TrustedCount`) — not wire/schema report |
+| `Verify-PackageDefinitionCatalog` | Folder/file recursive `*.json` scan; **signature/trust summary only** (`CheckedCount`, `ValidCount`, `TrustedCount`) |
+| `Test-PackageDefinitionCatalog` | Folder/file recursive validate-before-install report: parse, schema, signature/trust, duplicate identity, dependency references |
 | `New-PackageSigningCertificate` + `Import-PackageTrust` | Team catalog trust setup |
 | Endpoint layout `<publisherId>/<definitionId>.json` | Matches shipped defaults under `Endpoint/Defaults/Eigenverft/` |
 | [`PRODUCT-BOUNDARY.md`](PRODUCT-BOUNDARY.md) | Declarative JSON, human review before production install, no script sprawl |
 
-**Gap today:** no command that runs **`Assert-PackageDefinitionSchema`** (and folder rules) without install — see [`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md). Future skill checklist should use `Verify-*` for trust today and add validate step when shipped.
+Future skill checklist should call `Test-PackageDefinitionCatalog -RequireTrusted` for strict endpoint validation, then use signing/trust commands as needed.
 
 ---
 
@@ -284,7 +286,7 @@ Sections to consider for `PackageDefinitionAuthoring.md`; order and depth **not 
 5. **Workflow**
    - Author unsigned draft (`definitionSignature.kind = unsigned`; never fabricate crypto fields).
    - Self-check checklist (schema sections, dependencies, artifacts/releases alignment, revision bump, no secrets in JSON).
-   - **Future:** run catalog validation command (validation TODO).
+   - Run `Test-PackageDefinitionCatalog` before signing or publishing.
    - Sign / re-sign (`Sign-PackageDefinition` / `Resign-PackageDefinition`).
    - Verify signature.
    - Human review gate (required before production trust).
@@ -292,21 +294,21 @@ Sections to consider for `PackageDefinitionAuthoring.md`; order and depth **not 
 6. **Common mistakes** — retired properties, hand-edited signatures, bad `vendorDownload` shape, duplicate ids on endpoint.
 7. **Catalog policy vocabulary (author-facing text only)** — see [Catalog policy authors should know](#catalog-policy-authors-should-know); no resolver architecture in the skill.
 8. **Out of scope** — engine changes, fleet manager, npm lock model inside materialized packages.
-9. **Related design** — links to schema 1.9 dependency policy, `TODO-SUPPLY-CHAIN`, and `TODO-CATALOG-VALIDATION`.
+9. **Related design** — links to schema 1.9 dependency policy, `TODO-SUPPLY-CHAIN`, and validation command guidance.
 
 ```mermaid
 flowchart LR
   draft[Author unsigned JSON]
   selfcheck[Self-check checklist]
-  validateFuture[Future validate command]
+  validate[Test-PackageDefinitionCatalog]
   sign[Sign-PackageDefinition]
   verify[Verify signature]
   human[Human review]
   publish[Publish to endpoint]
   optional[Optional test Invoke-Package]
   draft --> selfcheck
-  selfcheck --> validateFuture
-  validateFuture --> sign
+  selfcheck --> validate
+  validate --> sign
   sign --> verify
   verify --> human
   human --> publish
@@ -317,7 +319,7 @@ flowchart LR
 
 ## Catalog policy authors should know
 
-*For the future skill — product language only. Wire names live in schema 1.9 and resolver behavior lives in the shipped dependency planner; static checks are tracked in [`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md).*
+*For the future skill — product language only. Wire names live in schema 1.9 and resolver behavior lives in the shipped dependency planner; static authored-JSON checks run through `Test-PackageDefinitionCatalog`.*
 
 | Idea | What authors should write in catalog JSON |
 |------|-------------------------------------------|
@@ -339,8 +341,9 @@ For schema 1.9 policy fields, the skill checklist should say: “If this package
 - Schema 1.9 embeds **`x-eigenverftAgentHint`** and authoring vs signing guidance in `description`.
 - Signing is a **separate maintainer step** from semantic JSON editing (`Sign-PackageDefinition` / `Resign-PackageDefinition`).
 - `Verify-PackageDefinitionCatalog` helps trust checks but **does not** replace schema/wire validation.
+- `Test-PackageDefinitionCatalog` is the validate-before-install command the skill should call.
 - Human review before production `Invoke-Package` is a product requirement (`PRODUCT-BOUNDARY`).
-- Validation engine work is tracked elsewhere; skill must not duplicate validation design.
+- Skill must not duplicate validation engine design.
 
 ---
 
@@ -350,7 +353,7 @@ For schema 1.9 policy fields, the skill checklist should say: “If this package
 - How much of JSON Schema `description` to repeat vs “read the schema file”.
 - Checklist granularity (per install kind vs one generic list).
 - Whether skill mentions `catalogTrust.policy` / unsigned publisher allowlists explicitly.
-- CI guidance for endpoint PRs (verify-only vs future validate command).
+- CI guidance for endpoint PRs (`Test-PackageDefinitionCatalog -RequireTrusted -ErrorOnFailure` vs lighter draft validation).
 - Discoverability: README, PSGallery notes, Eigenverft online endpoint docs.
 - Symlink / copy strategy for Cursor vs Codex vs CI agents.
 - Re-validation playbook for future schema changes after 1.9.
@@ -367,13 +370,13 @@ Reference only.
 1. Agree outline (section above) with package maintainers.
 2. Draft `AgentSkills/PackageDefinitionAuthoring.md` from outline + resolved facts table.
 3. Cross-link from README or team onboarding (optional).
-4. After [`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md) phase 1: add validation step to skill checklist.
+4. Add `Test-PackageDefinitionCatalog` validation step to the first skill checklist.
 5. Dogfood with one agent-generated definition PR; revise mistakes table.
 
 ---
 
 ## Out of scope
 
-- Implementing validation cmdlets ([`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md)).
+- Extending validation cmdlets beyond the shipped `Test-PackageDefinitionCatalog` rules.
 - Redesigning the shipped dependency planner.
 - Release-age policy ([`TODO-SUPPLY-CHAIN.md`](TODO-SUPPLY-CHAIN.md)).

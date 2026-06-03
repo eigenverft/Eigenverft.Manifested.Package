@@ -28,7 +28,6 @@
 
 | File | Issue |
 |------|--------|
-| [TODO-CATALOG-VALIDATION.md](TODO-CATALOG-VALIDATION.md) | Catalog validation without install |
 | [TODO-SUPPLY-CHAIN.md](TODO-SUPPLY-CHAIN.md) | Vendor release-age policy on version selection |
 | [TODO-DOCUMENTATION.md](TODO-DOCUMENTATION.md) | Hybrid product documentation |
 | [TODO-CATALOG-AGENT.md](TODO-CATALOG-AGENT.md) | `PackageDefinitionAuthoring` agent skill |
@@ -39,13 +38,14 @@
 
 **Deleted completed dependency track:** the dependency issue and implementation artifacts were removed after the dependency planner and schema 1.9 wire shipped.
 
+**Deleted completed catalog-validation track:** the catalog-validation planning artifacts were removed after `Test-PackageDefinitionCatalog` shipped.
+
 ---
 
 ## Open backlog (by priority)
 
 | P | File | Topic |
 |---|------|--------|
-| 2 | [TODO-CATALOG-VALIDATION.md](TODO-CATALOG-VALIDATION.md) | Validate definitions / endpoint folders without install |
 | 2 | [TODO-SUPPLY-CHAIN.md](TODO-SUPPLY-CHAIN.md) | Release-age / cooling window on version selection |
 | 3 | [TODO-DOCUMENTATION.md](TODO-DOCUMENTATION.md) | Hybrid docs (repo → module HTML → command) |
 | 3 | [TODO-CATALOG-AGENT.md](TODO-CATALOG-AGENT.md) | Agent authoring skill |

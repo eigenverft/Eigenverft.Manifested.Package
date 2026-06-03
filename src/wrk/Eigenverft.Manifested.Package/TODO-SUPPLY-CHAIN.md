@@ -4,7 +4,7 @@ Design scratchpad for **delayed auto-update** and **vendor release-age** policy 
 
 Open issues in this file are scheduled here. **No engine, schema, or catalog changes are implied by this file alone.**
 
-**Compose with:** version selection is its own resolver step — keep release-age policy separate from the shipped dependency planner. Authors and agents — [`TODO-CATALOG-AGENT.md`](TODO-CATALOG-AGENT.md). Static policy lint — [`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md).
+**Compose with:** version selection is its own resolver step — keep release-age policy separate from the shipped dependency planner. Authors and agents — [`TODO-CATALOG-AGENT.md`](TODO-CATALOG-AGENT.md). Static policy lint should extend the shipped `Test-PackageDefinitionCatalog` command.
 
 **Product boundary (read narrowly):** [`PRODUCT-BOUNDARY.md`](PRODUCT-BOUNDARY.md) targets *governed, reviewable catalog content* and *explainable release selection* — not “never touch the network.” Depot/offline paths are a **core strength**, and isolated networks must **fail closed** instead of reaching public upstream unexpectedly. The engine **already** calls GitHub during **acquisition** for `githubRelease` sources (`Package.Source.ps1`). Release-age policy should not re-use PRODUCT-BOUNDARY as a blanket ban on GitHub; it should separate **which step** may use the network (authoring vs selection vs acquire).
 
@@ -49,7 +49,7 @@ Affected Areas:
 
 May Influence:
 - Agent authoring workflow ([`TODO-CATALOG-AGENT.md`](TODO-CATALOG-AGENT.md)) — every new `releases[]` row needs `upstreamReleasedAtUtc` when age-aware strategies are used.
-- Catalog validation ([`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md)) — lint missing vendor dates before sign/publish.
+- Catalog validation (`Test-PackageDefinitionCatalog`) — future release-age rules should lint missing vendor dates before sign/publish.
 
 Dependencies:
 - None blocking design; **selection** must use **authored** `upstreamReleasedAtUtc` only (see **Boundary note** below).
@@ -67,11 +67,11 @@ Dependencies:
 Known:
 - **Selection is local to authored candidates** — `Package.VersionSelection.ps1` header states no network “latest” lookup; `Resolve-PackageVersionCandidateSelection` sorts compatible release rows by version string only.
 - **Strategies today (runtime):** `latestByVersion` (highest version), `previousByVersion` (second highest), and **exact** match when selector is a version string or `-PackageVersion` override (`Package.VersionSelection.ps1`).
-- **Strategies today (wire 1.8):** `artifacts.targets[].versionSelection.strategy` enum allows only **`latestByVersion`**; `Wire1_8` throws on any other target strategy (`Package.DefinitionSchema.Wire1_8.ps1`).
+- **Strategies today (wire 1.9):** `artifacts.targets[].versionSelection.strategy` enum allows only **`latestByVersion`**; `Wire1_9` throws on any other target strategy (`Package.DefinitionSchema.Wire1_9.ps1`).
 - **`previousByVersion` today:** usable via **`Invoke-Package -PackageVersion previousByVersion`** (tests in `Package.ConfigAndDefinitions.Tests.ps1`); not authorable on the definition target row.
 - **Global defaults:** `Configuration/Internal/PackageConfig.json` → `selectionDefaults.strategy: latestByVersion`, `releaseTrack: stable`; aggregation copies `strategy` and `releaseTrack` into `PackageConfig` (`Package.Config.Aggregation.ps1`). **No** `minReleaseAge` or cooling field exists.
 - **`Resolve-PackagePackage` guard:** throws if `PackageConfig.SelectionStrategy` is not `latestByVersion` (`Package.Selection.ps1`) — global config cannot be `previousByVersion` even though the version selector function supports it.
-- **Publication vs vendor time:** `definitionPublication.publishedAtUtc` is required on every definition; **`upstreamRelease`** on wire 1.8 has only `sourceId` + `releaseTag` — **no** vendor release timestamp (`eigenverft-module-package-definition-1.8.schema.json`).
+- **Publication vs vendor time:** `definitionPublication.publishedAtUtc` is required on every definition; **`upstreamRelease`** on wire 1.9 has only `sourceId` + `releaseTag` — **no** vendor release timestamp (`eigenverft-module-package-definition-1.9.schema.json`).
 - **GitHub helper:** `Get-GitHubRelease` returns `PublishedAtUtc` from the GitHub API (`ExecutionCore.Upstream.GitHubRelease.ps1`). Used only during **acquisition** URL resolution for `githubRelease` sources (`Package.Source.ps1`) — **not** during version selection.
 - **`githubRelease` sources (shipped):** **3** definitions reference `kind: githubRelease` (GitRuntime, PowerShell7, LlamaCppRuntime). Most other downloads use `vendorDownload` / `packageDepot` with `upstreamRelease.releaseTag` only.
 - **Multi-release catalog (verified):** **9** of **18** shipped definitions have **two** `artifacts.releases[]` version rows (e.g. NodeRuntime **26.2.0** and **24.15.0**); the rest have one. `latestByVersion` immediately picks the highest (e.g. Node **26.2.0**).
@@ -268,7 +268,7 @@ Required Checks:
 - Does `previousByVersion` apply age policy to the “second” slot the same way as `latest`? (**Recommended: yes** — both operate on the age-filtered set.)
 - Exact `minReleaseAge` string syntax and parsing rules.
 - Final offset strategy names (`currentMinusOneWeek` vs `latestReleasedBefore` / similar).
-- Schema **1.8 additive** vs **1.9** break for `upstreamReleasedAtUtc`, extended `versionSelection.strategy` enum, and `selectionDefaults.minReleaseAge`.
+- Schema **1.9 additive** vs next breaking schema version for `upstreamReleasedAtUtc`, extended `versionSelection.strategy` enum, and `selectionDefaults.minReleaseAge`.
 - Whether to wire `previousByVersion` on definition targets (schema) in the same pass as age policy.
 - Agent/maintainer workflow: validation when `upstreamReleasedAtUtc` is missing on a row used with age-aware strategy; CI signing steps.
 - Whether Option C maintain-time GitHub helper ships in v1 or only manual/agent date entry.
@@ -295,7 +295,7 @@ PRODUCT-BOUNDARY does **not** require banning GitHub from the product. It requir
 ### 🌱 Extracted Work
 
 Required:
-- [ ] **Phase 1 — Wire / validation** — `Package.DefinitionSchema.Wire1_8.ps1` (or `_1_9`): `upstreamReleasedAtUtc`, `minReleaseAge`, extended `versionSelection.strategy`; require vendor date when age-aware strategies are used.
+- [ ] **Phase 1 — Wire / validation** — `Package.DefinitionSchema.Wire1_9.ps1`: `upstreamReleasedAtUtc`, `minReleaseAge`, extended `versionSelection.strategy`; require vendor date when age-aware strategies are used.
   Reason: Schema and validation before runtime behavior changes.
 - [ ] **Phase 2 — Version selection engine** — `Package.VersionSelection.ps1`: age filter, strategy extensions, `SkippedCandidates` on selection result; fail-closed messaging.
   Reason: Core policy enforcement.

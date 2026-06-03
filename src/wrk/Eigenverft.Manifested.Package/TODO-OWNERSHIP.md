@@ -11,7 +11,7 @@ Open issues in this file are scheduled here. **No engine changes are implied by 
 | Topic | Where |
 |-------|--------|
 | Hybrid documentation (maintainer chapter home) | [TODO-DOCUMENTATION.md](TODO-DOCUMENTATION.md) |
-| Catalog validation warnings | [TODO-CATALOG-VALIDATION.md](TODO-CATALOG-VALIDATION.md) |
+| Catalog validation warnings | Future `Test-PackageDefinitionCatalog` ownership-policy rules |
 | Agent authoring skill | [TODO-CATALOG-AGENT.md](TODO-CATALOG-AGENT.md) |
 
 ---
@@ -46,11 +46,11 @@ Original report:
 ### 🧭 Related Context
 
 Related Issues:
-- [`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md) (optional warnings for ambiguous `ownershipPolicy` combinations).
+- `Test-PackageDefinitionCatalog` (optional future warnings for ambiguous `ownershipPolicy` combinations).
 - [`TODO-DOCUMENTATION.md`](TODO-DOCUMENTATION.md) (natural home for a maintainer-facing guide).
 
 Affected Areas:
-- `eigenverft-module-package-definition-1.8.schema.json` descriptions; shipped definitions under `Endpoint/Defaults/Eigenverft/`; assign/remove help text.
+- `eigenverft-module-package-definition-1.9.schema.json` descriptions; shipped definitions under `Endpoint/Defaults/Eigenverft/`; assign/remove help text.
 
 May Influence:
 - Future MSI/desktop definitions beyond SevenZip and NotepadPlusPlus (`nsisInstaller`).
@@ -65,7 +65,7 @@ A published guide (plus schema descriptions or examples) explains when `allowAdo
 ### 🔎 Facts
 
 Known:
-- **Wire 1.8** defines `packageOperations.policy.ownershipPolicy` (`allowAdoptExternal`, `upgradeAdoptedInstall`, `requirePackageOwnership`) in `Support/Package/Schema/eigenverft-module-package-definition-1.8.schema.json`.
+- **Wire 1.9** defines `packageOperations.policy.ownershipPolicy` (`allowAdoptExternal`, `upgradeAdoptedInstall`, `requirePackageOwnership`) in `Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json`.
 - **Shipped installer kinds (verified 2026-05-30):** **SevenZip** — `msiInstaller` / `msiUninstaller`; **NotepadPlusPlus** — `nsisInstaller` only. No other shipped definition uses `msiInstaller`.
 - **Adoption policy split (verified):** `allowAdoptExternal: true` on **7** definitions (SevenZip, VSCodeUser, VSCodeRuntime, NotepadPlusPlus, PackageManagement, PowerShellGet, EigenverftManifestedAgent); **false** on the other **11**.
 - **Runtime:** `Resolve-PackageExistingPackageDecision` emits `[DECISION]` reuse/adopt/replace/ignore messages (`Package.Install.Existing.ps1`); MSI/NSIS install engines exist (`Package.Install.InstallerEngine.ps1`).
@@ -98,7 +98,7 @@ Current State:
 Behavior and wire schema exist; documentation does not connect policy fields to runtime messages.
 
 Resulting State:
-Authors and operators have one guide aligned with wire 1.8 and shipped examples; runtime unchanged unless guide finds bugs filed separately.
+Authors and operators have one guide aligned with wire 1.9 and shipped examples; runtime unchanged unless guide finds bugs filed separately.
 
 Solves:
 - Closes the original “obvious rules” ask without risky behavior changes.
@@ -127,10 +127,10 @@ Later Cost:
   - 🧾 Agent Work: 🧠 System Logic
 
 Description:
-Deliver Option A, then add pre-install validation rules (for example `allowAdoptExternal: false` with `existingInstall.enabled: true` and no `requirePackageOwnership`) per [`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md). Catches author mistakes earlier; more implementation than docs alone.
+Deliver Option A, then add pre-install validation rules to `Test-PackageDefinitionCatalog` (for example `allowAdoptExternal: false` with `existingInstall.enabled: true` and no `requirePackageOwnership`). Catches author mistakes earlier; more implementation than docs alone.
 
 Current State:
-Validation covers schema and retired names; ownership combinations are not linted.
+`Test-PackageDefinitionCatalog` covers schema, trust, and static dependency references; ownership combinations are not linted.
 
 Resulting State:
 Guide plus actionable validation messages before `Invoke-Package` mutates the machine.
@@ -179,7 +179,7 @@ Later Cost:
 - [2026-05-30 16:00 | Author: Composer | Recommendation: Choose Option A | Support: 3/3 Well Supported ▰▰▰]
 
 Reasoning:
-Enforcement already exists in install/ownership engines; the gap is author/operator learnability. Option B belongs in [`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md) as follow-up, not as a prerequisite for the guide.
+Enforcement already exists in install/ownership engines; the gap is author/operator learnability. Option B belongs as a later `Test-PackageDefinitionCatalog` rule extension, not as a prerequisite for the guide.
 
 Required Checks:
 - Walk through SevenZip assign with a preinstalled 7-Zip and confirm guide text matches `[DECISION]` and `Assigned.Status` output.
@@ -205,7 +205,7 @@ Required Checks:
 
 Optional:
 - [ ] Catalog validation for ambiguous `ownershipPolicy` combinations
-  Reason: Option B scope; track in [`TODO-CATALOG-VALIDATION.md`](TODO-CATALOG-VALIDATION.md).
+  Reason: Option B scope; implement as future `Test-PackageDefinitionCatalog` rules.
 
 ---
 ---
