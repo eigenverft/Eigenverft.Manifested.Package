@@ -142,6 +142,8 @@ function Get-PackageAuthoringTargetEvaluation {
         [string]$EndpointPreference = 'First'
     )
 
+    $null = Initialize-PackageLocalEnvironment
+
     $documentInfo = Get-PackageEndpointInventoryEditInfo
     $applicationRootDirectory = $null
     try {
