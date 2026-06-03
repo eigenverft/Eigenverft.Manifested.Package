@@ -32,6 +32,7 @@
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DefinitionReference.ps1"
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DefinitionSchema.Wire1_9.ps1"
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DefinitionSchema.ps1"
+. "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DefinitionCatalogValidation.ps1"
 . "$PSScriptRoot\Support\Package\Execution\Eigenverft.Manifested.Package.Package.LocalEnvironment.ps1"
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.Selection.ps1"
 . "$PSScriptRoot\Support\Package\Lifecycle\Eigenverft.Manifested.Package.Package.Dependencies.ps1"
@@ -63,6 +64,7 @@
 . "$PSScriptRoot\Commands\Endpoint\Eigenverft.Manifested.Package.Cmd.PackageEndpoint.ps1"
 . "$PSScriptRoot\Commands\Publisher\Eigenverft.Manifested.Package.Cmd.PackagePublisher.ps1"
 . "$PSScriptRoot\Commands\Trust\Eigenverft.Manifested.Package.Cmd.PackageTrust.ps1"
+. "$PSScriptRoot\Commands\Trust\Eigenverft.Manifested.Package.Cmd.PackageCatalogValidation.ps1"
 . "$PSScriptRoot\Commands\Web\Eigenverft.Manifested.Package.Cmd.InvokeWebRequestEx.ps1"
 . "$PSScriptRoot\Commands\Module\Eigenverft.Manifested.Package.Cmd.Module.ps1"
 

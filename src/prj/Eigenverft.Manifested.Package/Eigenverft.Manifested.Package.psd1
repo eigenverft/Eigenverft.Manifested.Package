@@ -102,6 +102,7 @@ FunctionsToExport = @(
     'Set-PackageEndpoint',
     'Set-PackagePublisher',
     'Sign-PackageDefinition',
+    'Test-PackageDefinitionCatalog',
     'Trust-PackageSigningCertificate',
     'Untrust-PackageSigningCertificate',
     'Update-PackageVersion',

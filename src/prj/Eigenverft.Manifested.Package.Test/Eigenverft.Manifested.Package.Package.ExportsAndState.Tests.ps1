@@ -100,6 +100,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'Set-PackageEndpoint',
             'Set-PackagePublisher',
             'Sign-PackageDefinition',
+            'Test-PackageDefinitionCatalog',
             'Trust-PackageSigningCertificate',
             'Untrust-PackageSigningCertificate',
             'Update-PackageVersion',
@@ -119,6 +120,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Endpoint\Eigenverft.Manifested.Package.Cmd.PackageEndpoint.ps1') -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Publisher\Eigenverft.Manifested.Package.Cmd.PackagePublisher.ps1') -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Trust\Eigenverft.Manifested.Package.Cmd.PackageTrust.ps1') -PathType Leaf | Should -BeTrue
+        Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Trust\Eigenverft.Manifested.Package.Cmd.PackageCatalogValidation.ps1') -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Module\Eigenverft.Manifested.Package.Cmd.Module.ps1') -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Web\Eigenverft.Manifested.Package.Cmd.InvokeWebRequestEx.ps1') -PathType Leaf | Should -BeTrue
     }

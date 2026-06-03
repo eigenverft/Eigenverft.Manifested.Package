@@ -533,6 +533,161 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - catalo
         { Resolve-PackageDefinitionReference -DefinitionId 'VSCodeRuntime' -LocalEndpointRoot (Join-Path $rootPath 'PkgEndpoint') -CatalogTrustPolicy allowUnsigned -CatalogTrustAllowUnsignedPublisherIds @('OtherPublisher') } | Should -Throw '*not listed in catalogTrust.allowUnsignedPublisherIds*'
     }
 
+    It 'validates an unsigned single package definition as a warning by default and an error when trusted definitions are required' {
+        $rootPath = Join-Path $TestDrive 'catalog-validation-unsigned'
+        $definitionPath = Join-Path $rootPath 'VSCodeRuntime.json'
+        $definition = New-TestVSCodeDefinitionDocument -Releases @(
+            New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+        )
+        Write-TestJsonDocument -Path $definitionPath -Document $definition
+
+        $draftReport = Test-PackageDefinitionCatalog -Path $definitionPath
+        $trustedReport = Test-PackageDefinitionCatalog -Path $definitionPath -RequireTrusted
+        $errorRecord = $null
+        try {
+            Test-PackageDefinitionCatalog -Path $definitionPath -RequireTrusted -ErrorOnFailure | Out-Null
+        }
+        catch {
+            $errorRecord = $_
+        }
+
+        $draftReport.Valid | Should -BeTrue
+        $draftReport.WarningCount | Should -Be 1
+        @($draftReport.Issues.Code) | Should -Contain 'PackageDefinitionSignatureUnsigned'
+        $trustedReport.Valid | Should -BeFalse
+        $trustedReport.ErrorCount | Should -Be 1
+        @($trustedReport.Issues.Code) | Should -Contain 'PackageDefinitionSignatureUnsigned'
+        $errorRecord | Should -Not -BeNullOrEmpty
+        $errorRecord.FullyQualifiedErrorId | Should -Match 'PackageDefinitionCatalogValidationFailed'
+        $errorRecord.TargetObject.Valid | Should -BeFalse
+    }
+
+    It 'reports JSON parse and schema failures without running package assignment' {
+        $rootPath = Join-Path $TestDrive 'catalog-validation-bad-json'
+        $invalidJsonPath = Join-Path $rootPath 'Invalid.json'
+        $invalidSchemaPath = Join-Path $rootPath 'InvalidSchema.json'
+        Write-TestTextFile -Path $invalidJsonPath -Content '{ "schemaVersion": '
+        $definition = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -Releases @(
+                New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+            ))
+        $definition.PSObject.Properties.Remove('dependency')
+        Write-TestJsonDocument -Path $invalidSchemaPath -Document $definition
+
+        $parseReport = Test-PackageDefinitionCatalog -Path $invalidJsonPath
+        $schemaReport = Test-PackageDefinitionCatalog -Path $invalidSchemaPath
+
+        $parseReport.Valid | Should -BeFalse
+        @($parseReport.Issues.Code) | Should -Contain 'CatalogJsonParseFailed'
+        $schemaReport.Valid | Should -BeFalse
+        @($schemaReport.Issues.Code) | Should -Contain 'PackageDefinitionSchemaInvalid'
+    }
+
+    It 'reports an endpoint folder with no JSON definitions' {
+        $emptyCatalogRoot = Join-Path $TestDrive 'empty-catalog'
+        $null = New-Item -ItemType Directory -Path $emptyCatalogRoot -Force
+
+        $report = Test-PackageDefinitionCatalog -Path $emptyCatalogRoot
+
+        $report.Valid | Should -BeFalse
+        $report.CheckedCount | Should -Be 0
+        @($report.Issues.Code) | Should -Contain 'CatalogNoJsonFiles'
+    }
+
+    It 'reports valid untrusted signatures as warnings by default and invalid signatures as errors' {
+        $rootPath = Join-Path $TestDrive 'catalog-validation-signatures'
+        $pfxPath = Join-Path $rootPath 'team.catalog-signing.pfx'
+        $certificatePath = Join-Path $rootPath 'team.catalog-signing.cer'
+        $definitionPath = Join-Path $rootPath 'MyPackage.json'
+        $password = ConvertTo-SecureString 'CatalogTrust-Test-Password-123!' -AsPlainText -Force
+        $definition = New-TestVSCodeDefinitionDocument -DefinitionId 'MyPackage' -PublisherId 'My Team' -PublisherName 'My Team' -Releases @(
+            New-TestPackageRelease -Id 'my-package-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+        )
+        Write-TestJsonDocument -Path $definitionPath -Document $definition
+        $null = New-PackageSigningCertificate -PfxPath $pfxPath -CertificatePath $certificatePath -Password $password -Subject 'CN=My Team'
+        $null = Sign-PackageDefinition -Path $definitionPath -Cert $pfxPath -Password $password
+
+        $untrustedReport = Test-PackageDefinitionCatalog -Path $definitionPath
+        $trustedReport = Test-PackageDefinitionCatalog -Path $definitionPath -RequireTrusted
+        $signedInfo = Read-PackageJsonDocument -Path $definitionPath
+        $signedInfo.Document.definitionPublication.definitionSignature.signatureValue = [Convert]::ToBase64String([byte[]](1, 2, 3))
+        Save-PackageJsonDocument -Path $definitionPath -Document $signedInfo.Document
+        $invalidReport = Test-PackageDefinitionCatalog -Path $definitionPath
+
+        $untrustedReport.Valid | Should -BeTrue
+        $untrustedReport.WarningCount | Should -Be 1
+        @($untrustedReport.Issues.Code) | Should -Contain 'PackageDefinitionSignatureUntrusted'
+        $trustedReport.Valid | Should -BeFalse
+        @($trustedReport.Issues.Code) | Should -Contain 'PackageDefinitionSignatureUntrusted'
+        $invalidReport.Valid | Should -BeFalse
+        @($invalidReport.Issues.Code) | Should -Contain 'PackageDefinitionSignatureInvalid'
+    }
+
+    It 'reports folder-level duplicate identity and dependency reference issues' {
+        $rootPath = Join-Path $TestDrive 'catalog-validation-folder-references'
+        $catalogRoot = Join-Path $rootPath 'Catalog'
+        $rootDefinition = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -DefinitionId 'RootA' -Releases @(
+                New-TestPackageRelease -Id 'RootA-win-x64-stable' -Version '1.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+            ))
+        $rootDefinition.dependency.requires = @(
+            [pscustomobject]@{ definitionId = 'MissingRuntime' },
+            [pscustomobject]@{ definitionId = 'RootA' }
+        )
+        $rootDefinition.dependency | Add-Member -MemberType NoteProperty -Name policy -Value ([pscustomobject]@{
+                conflictsWith = @([pscustomobject]@{ definitionId = 'MissingPeer' })
+                requiresAbsent = @([pscustomobject]@{ definitionId = 'RootA' })
+            }) -Force
+        $duplicateDefinition = ConvertTo-TestPsObject $rootDefinition
+        $otherDefinition = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -DefinitionId 'OtherTool' -Releases @(
+                New-TestPackageRelease -Id 'OtherTool-win-x64-stable' -Version '1.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+            ))
+        Write-TestJsonDocument -Path (Join-Path $catalogRoot 'RootA.json') -Document $rootDefinition
+        Write-TestJsonDocument -Path (Join-Path $catalogRoot 'RootA-copy.json') -Document $duplicateDefinition
+        Write-TestJsonDocument -Path (Join-Path $catalogRoot 'OtherTool.json') -Document $otherDefinition
+
+        $report = Test-PackageDefinitionCatalog -Path $catalogRoot
+        $singleFileReport = Test-PackageDefinitionCatalog -Path (Join-Path $catalogRoot 'RootA.json')
+
+        $report.Valid | Should -BeFalse
+        @($report.Issues.Code) | Should -Contain 'CatalogDuplicateDefinitionIdentity'
+        @($report.Issues.Code) | Should -Contain 'CatalogDependencyReferenceMissing'
+        @($report.Issues.Code) | Should -Contain 'CatalogDependencySelfReference'
+        @($report.Issues.Code) | Should -Contain 'CatalogPolicyReferenceMissing'
+        @($report.Issues.Code) | Should -Contain 'CatalogPolicySelfReference'
+        @($singleFileReport.Issues.Code) | Should -Not -Contain 'CatalogDependencyReferenceMissing'
+        @($singleFileReport.Issues.Code) | Should -Not -Contain 'CatalogPolicyReferenceMissing'
+    }
+
+    It 'reports mixed schema versions as warnings by default and errors in strict schema mode' {
+        $rootPath = Join-Path $TestDrive 'catalog-validation-mixed-schema'
+        $catalogRoot = Join-Path $rootPath 'Catalog'
+        $currentDefinition = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -DefinitionId 'CurrentTool' -Releases @(
+                New-TestPackageRelease -Id 'CurrentTool-win-x64-stable' -Version '1.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+            ))
+        $oldDefinition = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -DefinitionId 'OldTool' -Releases @(
+                New-TestPackageRelease -Id 'OldTool-win-x64-stable' -Version '1.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+            ))
+        $oldDefinition.schemaVersion = '1.8'
+        Write-TestJsonDocument -Path (Join-Path $catalogRoot 'CurrentTool.json') -Document $currentDefinition
+        Write-TestJsonDocument -Path (Join-Path $catalogRoot 'OldTool.json') -Document $oldDefinition
+
+        $report = Test-PackageDefinitionCatalog -Path $catalogRoot
+        $strictReport = Test-PackageDefinitionCatalog -Path $catalogRoot -StrictSchemaVersion
+
+        @($report.Issues | Where-Object { [string]$_.Code -eq 'CatalogMixedSchemaVersion' -and [string]$_.Severity -eq 'Warning' }).Count | Should -BeGreaterThan 0
+        @($strictReport.Issues | Where-Object { [string]$_.Code -eq 'CatalogMixedSchemaVersion' -and [string]$_.Severity -eq 'Error' }).Count | Should -BeGreaterThan 0
+    }
+
+    It 'validates the shipped Eigenverft package-definition catalog as trusted' {
+        $definitionRoot = Join-Path (Get-PackageShippedEndpointRoot) 'Defaults\Eigenverft'
+
+        $report = Test-PackageDefinitionCatalog -Path $definitionRoot -RequireTrusted
+
+        $report.Valid | Should -BeTrue
+        $report.ErrorCount | Should -Be 0
+        $report.CheckedCount | Should -Be @(Get-ChildItem -LiteralPath $definitionRoot -Filter '*.json' -File).Count
+        $report.TrustedCount | Should -Be $report.CheckedCount
+    }
+
     It 'enforces package-file payload hash metadata when strict payload verification is enabled' {
         $candidate = [pscustomobject]@{
             kind         = 'vendorDownload'
