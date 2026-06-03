@@ -69,7 +69,9 @@ function Add-PackageEndpoint {
 
         [string]$After,
 
-        [switch]$Disabled
+        [switch]$Disabled,
+
+        [switch]$AuthoringTarget
     )
 
     Assert-PackageEndpointName -EndpointName $EndpointName
@@ -89,7 +91,7 @@ function Add-PackageEndpoint {
         Get-PackageNextEndpointSearchOrder -Document $documentInfo.Document
     }
 
-    $source = New-PackageFilesystemEndpointSource -EndpointName $EndpointName -BasePath $BasePath -SearchOrder $resolvedSearchOrder -Enabled (-not $Disabled.IsPresent)
+    $source = New-PackageFilesystemEndpointSource -EndpointName $EndpointName -BasePath $BasePath -SearchOrder $resolvedSearchOrder -Enabled (-not $Disabled.IsPresent) -AuthoringTarget $AuthoringTarget.IsPresent
 
     if ($PSCmdlet.ShouldProcess($documentInfo.Path, "Add package endpoint '$EndpointName'")) {
         $documentInfo.Document.endpoints = @($documentInfo.Document.endpoints) + $source
@@ -130,7 +132,9 @@ function Add-TeamPackageEndpoint {
 
         [string]$After,
 
-        [switch]$Disabled
+        [switch]$Disabled,
+
+        [switch]$AuthoringTarget
     )
 
     $parameters = @{
@@ -148,6 +152,9 @@ function Add-TeamPackageEndpoint {
     }
     if ($Disabled.IsPresent) {
         $parameters.Disabled = $true
+    }
+    if ($AuthoringTarget.IsPresent) {
+        $parameters.AuthoringTarget = $true
     }
     if ($PSBoundParameters.ContainsKey('WhatIf')) {
         $parameters.WhatIf = [bool]$PSBoundParameters.WhatIf
@@ -172,11 +179,16 @@ function Set-PackageEndpoint {
 
         [switch]$Enable,
 
-        [switch]$Disable
+        [switch]$Disable,
+
+        [switch]$AuthoringTarget,
+
+        [switch]$NoAuthoringTarget
     )
 
     Assert-PackageEndpointName -EndpointName $EndpointName
     if ($Enable.IsPresent -and $Disable.IsPresent) { throw 'Use either -Enable or -Disable, not both.' }
+    if ($AuthoringTarget.IsPresent -and $NoAuthoringTarget.IsPresent) { throw 'Use either -AuthoringTarget or -NoAuthoringTarget, not both.' }
 
     $before = Get-PackageEndpoint -EndpointName $EndpointName
     $documentInfo = Get-PackageEndpointInventoryEditInfo
@@ -195,6 +207,8 @@ function Set-PackageEndpoint {
     if ($PSBoundParameters.ContainsKey('SearchOrder')) { $source | Add-Member -MemberType NoteProperty -Name 'searchOrder' -Value ([int]$SearchOrder.Value) -Force }
     if ($Enable.IsPresent) { $source | Add-Member -MemberType NoteProperty -Name 'enabled' -Value $true -Force }
     if ($Disable.IsPresent) { $source | Add-Member -MemberType NoteProperty -Name 'enabled' -Value $false -Force }
+    if ($AuthoringTarget.IsPresent) { $source | Add-Member -MemberType NoteProperty -Name 'authoringTarget' -Value $true -Force }
+    if ($NoAuthoringTarget.IsPresent) { $source | Add-Member -MemberType NoteProperty -Name 'authoringTarget' -Value $false -Force }
 
     if ($PSCmdlet.ShouldProcess($documentInfo.Path, "Set package endpoint '$EndpointName'")) {
         Save-PackageEndpointInventoryDocument -DocumentInfo $documentInfo

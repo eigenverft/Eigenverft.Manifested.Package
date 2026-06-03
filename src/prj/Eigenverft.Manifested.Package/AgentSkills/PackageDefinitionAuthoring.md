@@ -2,15 +2,88 @@
 
 Use this skill when creating or editing Eigenverft package-definition JSON for an endpoint catalog. This skill is for package-definition artifacts only; it is not for changing the package engine, dependency planner, trust model, schema, or runtime install code.
 
+This file is the agent skill. It is normally shown after a prepended **Runtime endpoint status** section (machine-specific paths and selection). The same file also lives in the git repository for contributors who clone and extend the module.
+
+## Start Here
+
+Read the **Runtime endpoint status** section at the top of this text first (if it is present).
+
+1. If `Selection` is `(none)` or `TroubleshootingKind` is set, read **Troubleshooting for agents** under **Authoring Targets And Endpoints** and explain the endpoint situation to the user. Do not edit package-definition JSON until a usable authoring root exists or the user chooses a different target.
+2. If `Selection` names an endpoint and path, author at `<Selection-path>\<publisherId>\<definitionId>.json` (use the task or maintainer request for `publisherId` and `definitionId`).
+3. Complete **Required First Step** (schema and task inputs) before any JSON edit.
+4. Follow **Authoring Workflow** through validate, sign, verify, and handoff.
+
+If there is no **Runtime endpoint status** section at the top, you are reading the repository copy: use `Get-PackageEndpoint`, or load this skill through the installed module so runtime status is prepended.
+
 ## Required First Step
 
 Before making any JSON edit, read the complete task/request instructions and the complete package-definition schema file:
 
-- `Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json`
+- `Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json` under the installed module root (`(Get-Module Eigenverft.Manifested.Package).ModuleBase`)
 - the schema root `description` and `x-eigenverftAgentHint`
 - every maintainer instruction, issue, or request that defines the package intent
 
 Do not skim these inputs or infer missing rules from nearby JSON alone. If the instructions and schema disagree, or if either cannot be read fully, stop and ask the maintainer before editing.
+
+## Authoring Targets And Endpoints
+
+Package definitions live under endpoint catalog roots. Scanning, trust, and `Invoke-Package` use all enabled endpoints in `PackageEndpointInventory.json`. **Authoring** uses only endpoints marked `authoringTarget: true`. That flag is maintainer intent only; it does not grant trust, bypass signing, or prove the path is writable.
+
+The authoring path is whatever **Runtime endpoint status** shows in `Selection` (or `Get-PackageEndpoint` when the runtime block is absent). Any endpoint with `authoringTarget: true` can be valid when writable—including `moduleDefaults`, which usually resolves to the module's `Endpoint/Defaults` tree, and team `filesystem` shares when those are marked. Do not assume a path without checking `Selection`; do not treat `Endpoint/Defaults` as excluded from authoring when it is the selected target.
+
+### Status values
+
+| Status | Meaning |
+|--------|---------|
+| `Ready` | Marked, writable, enabled, and effective for package scans. Preferred selection. |
+| `DraftOnly` | Marked and writable, but disabled or not effective. Usable for draft storage; `Invoke-Package` will not scan there until enabled. |
+| `Blocked` | Marked but path missing, unreachable, or not writable. Skipped for selection. |
+| `Unsupported` | Marked but kind is not `moduleLocal` or `filesystem` (for example `httpsCatalog` in v1). Skipped for selection. |
+
+Selection prefers `Ready` over `DraftOnly`, then applies `searchOrder` (`First` = lowest order, `Last` = highest). `authoringTarget` is not inferred from writability alone.
+
+### Managing authoring intent
+
+```powershell
+Get-PackageEndpoint
+Add-PackageEndpoint -EndpointName 'teamCatalog' -BasePath '\\share\PackageEndpoint' -AuthoringTarget
+Set-PackageEndpoint -EndpointName 'teamCatalog' -AuthoringTarget
+Set-PackageEndpoint -EndpointName 'teamCatalog' -NoAuthoringTarget
+```
+
+Or set `"authoringTarget": true` on an endpoint object in `PackageEndpointInventory.json`.
+
+### Troubleshooting for agents
+
+Explain endpoint configuration to the user when runtime status shows:
+
+- **NoMarkedTarget** — No endpoint has `authoringTarget: true`. Name the inventory file, summarize configured endpoints from `Get-PackageEndpoint`, and describe how to mark or add an authoring target.
+- **AllMarkedBlocked** — Targets are marked but none are writable or supported. List each skipped endpoint with resolved path (if any) and skip reason; suggest fixing permissions, creating the folder or share, enabling the endpoint, or choosing another marked endpoint.
+
+Do not silently continue as if a usable authoring root exists.
+
+### Definition layout under a target root
+
+`<publisherId>/<definitionId>.json` under the resolved authoring path from **Runtime endpoint status** or `Get-PackageEndpoint`.
+
+### Publication finalization
+
+Before final handoff for definitions intended for trusted catalog use on an enabled scan endpoint:
+
+1. Finish all JSON edits under the selected authoring root using the layout above.
+2. Run `Test-PackageDefinitionCatalog` on the changed file.
+3. Sign or re-sign with the maintainer-approved profile, commonly:
+
+```powershell
+Resign-PackageDefinition -Path '<definition.json>' -Cert Eigenverft -KeepSchemaVersion
+```
+
+4. Run `Test-PackageDefinitionCatalog -RequireTrusted` on the changed file or endpoint folder.
+5. Run `Verify-PackageDefinitionSignature -RequireTrusted` for the file, or `Verify-PackageDefinitionCatalog -RequireTrusted` for the folder.
+6. Check `git status --short` when working in a repository so new JSON files are not forgotten.
+7. In the handoff, state whether validation, signing, and trust verification passed, or name the blocker.
+
+Do not leave a definition unsigned when it is meant for a trusted, enabled scan endpoint, unless the maintainer explicitly asked for draft-only unsigned work. A `DraftOnly` authoring target is for drafts until the endpoint is enabled and effective.
 
 ## When To Use
 
@@ -21,34 +94,16 @@ Do not skim these inputs or infer missing rules from nearby JSON alone. If the i
 
 ## Product Boundary
 
-Read `PRODUCT-BOUNDARY.md` before changing package JSON. Package definitions are declarative, reviewable artifacts. Agents may draft and validate JSON, but production trust/install requires human review and trusted signing or endpoint policy.
+Package definitions are declarative, reviewable artifacts for a Windows-focused local package-assignment engine. Agents may draft and validate JSON, but production trust and install require human review and trusted signing or endpoint policy.
 
-Do not add arbitrary hook systems, engine behavior, fleet orchestration, or resolver design while authoring package JSON. If the requested package cannot be represented declaratively, stop and ask for a maintainer decision.
-
-## Shipped Catalog Finalization
-
-Definitions under `Endpoint/Defaults/Eigenverft` are shipped catalog entries, not disposable drafts. Do not leave a new or changed shipped definition unsigned unless the maintainer explicitly asks for a draft-only change.
-
-Before final handoff for shipped Eigenverft defaults:
-
-1. Finish all JSON edits first.
-2. Run `Test-PackageDefinitionCatalog` on the changed file.
-3. Sign or re-sign the changed definition with the maintainer-approved Eigenverft signing profile, commonly:
-
-```powershell
-Resign-PackageDefinition -Path '<definition.json>' -Cert Eigenverft -KeepSchemaVersion
-```
-
-4. Run `Test-PackageDefinitionCatalog -RequireTrusted` on the changed file or endpoint folder.
-5. Run `Verify-PackageDefinitionSignature -RequireTrusted` for the changed file, or `Verify-PackageDefinitionCatalog -RequireTrusted` for the endpoint folder.
-6. Check `git status --short` so new JSON files are not forgotten as untracked files.
-7. In the final handoff, state whether validation, signing, and trust verification passed. If signing material is unavailable, report that as the blocker instead of calling the work done.
+Do not add arbitrary hook systems, engine behavior, fleet orchestration, or resolver design while authoring package JSON. If the requested package cannot be represented declaratively, stop and ask for a maintainer decision. The module is not a fleet manager, lockfile system, or open-ended script runner.
 
 ## Inputs To Read First
 
-- Shipped examples under `Endpoint/Defaults/Eigenverft`
-- Nearby package definitions from the same publisher or endpoint
-- Existing validation/signing command help when command usage is unclear
+- `Selection` path from **Runtime endpoint status**, or `Get-PackageEndpoint` when the runtime block is absent
+- Nearby definitions under the same `publisherId` at that root
+- Nearby signed examples under `Endpoint/Defaults/Eigenverft` when `Selection` is `moduleDefaults` (same catalog tree as that target root)
+- Command help for validation, signing, or trust when usage is unclear
 
 ## PowerShell Host Check
 
@@ -78,17 +133,18 @@ Run `Test-PackageDefinitionCatalog`, signing, and trust commands in the host whe
 
 ## Authoring Workflow
 
-1. Start from schema 1.9 and a nearby shipped example.
-2. Author drafts as unsigned: `definitionPublication.definitionSignature.kind = unsigned`.
-3. Never fabricate, copy, or hand-edit `signatureValue`.
-4. Keep endpoint layout as `<publisherId>/<definitionId>.json`.
-5. Bump `definitionRevision` for every definition content change.
-6. Keep scripts and acquisition behavior minimal, declarative, and reviewable.
-7. Run `Test-PackageDefinitionCatalog` before signing or publishing.
-8. Sign or re-sign only after content is stable.
-9. Verify signature or catalog trust.
-10. Check `git status --short` before handoff so new JSON files are not accidentally left untracked.
-11. Require human review before production trust, endpoint publication, or production `Invoke-Package`.
+1. Use **Start Here** and **Runtime endpoint status** when present; otherwise obtain paths with `Get-PackageEndpoint` or prepend runtime status via the module authoring guide entry point.
+2. Start from schema 1.9 and a nearby example under the resolved authoring target.
+3. Author drafts as unsigned: `definitionPublication.definitionSignature.kind = unsigned`.
+4. Never fabricate, copy, or hand-edit `signatureValue`.
+5. Keep endpoint layout as `<publisherId>/<definitionId>.json`.
+6. Bump `definitionRevision` for every definition content change.
+7. Keep scripts and acquisition behavior minimal, declarative, and reviewable.
+8. Run `Test-PackageDefinitionCatalog` before signing or publishing.
+9. Sign or re-sign only after content is stable.
+10. Verify signature or catalog trust.
+11. Check `git status --short` before handoff when using git so new JSON files are not accidentally left untracked.
+12. Require human review before production trust, endpoint publication, or production `Invoke-Package`.
 
 ## Installer Kind Discovery
 
@@ -114,7 +170,7 @@ Use this workflow when asked to check or update an existing package definition t
 8. Refresh every target artifact for that release together. Do not update only one architecture when the definition contains multiple stable targets.
 9. Download each upstream artifact through the source model declared in the definition, compute the declared `contentHash`, and verify any declared `publisherSignature`.
 10. Bump `definitionRevision`, refresh `publishedAtUtc`, then sign or re-sign after all semantic JSON edits are finished.
-11. Run the shipped-catalog finalization checks before handoff.
+11. Run **Publication finalization** before handoff.
 
 Stop if the latest version cannot be proven from official sources, an artifact for any required target is missing, a hash cannot be verified, or an expected publisher signature no longer matches.
 
@@ -207,12 +263,13 @@ Only after human review should the definition be published to an endpoint. Optio
 - Forgetting to bump `definitionRevision`.
 - Hand-editing `signatureValue`.
 - Treating `.cer` or `.pem` files as signing certificates.
-- Leaving a shipped `Endpoint/Defaults/Eigenverft` definition unsigned.
+- Authoring under a path without matching **Runtime endpoint status** `Selection` (for example using `Endpoint/Defaults` while a team share is selected, or the reverse).
+- Leaving a definition unsigned when it is meant for a trusted, enabled scan endpoint.
 - Skipping `Test-PackageDefinitionCatalog` or trust verification.
 - Inventing `conflictsWith` pairs without maintainer intent.
 - Trusting unknown signing keys as a shortcut.
 - Embedding secrets or local machine paths in package JSON.
-- Reporting work as done without validation, signing status, and `git status --short`.
+- Reporting work as done without validation, signing status, and `git status --short` when applicable.
 
 ## Out Of Scope
 
@@ -222,4 +279,4 @@ Only after human review should the definition be published to an endpoint. Optio
 - Fleet management or orchestration.
 - Lockfile models inside materialized packages.
 - New signing or trust commands.
-- Shipped Eigenverft catalog JSON changes or re-signing unless explicitly requested.
+- Re-signing or changing Eigenverft's shipped `Endpoint/Defaults` catalog JSON in the module package unless the maintainer explicitly requested that work (authoring there is in scope when it is the selected target).

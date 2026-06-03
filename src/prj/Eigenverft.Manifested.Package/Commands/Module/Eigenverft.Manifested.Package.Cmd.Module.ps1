@@ -1,7 +1,135 @@
 <#
-    Root entry helpers: Get-PackageVersion and Update-PackageVersion.
+    Root entry helpers: Get-PackageVersion, Get-PackageDefinitionAuthoringGuide, and Update-PackageVersion.
     Imported by Eigenverft.Manifested.Package.psm1.
 #>
+
+function Get-PackageDefinitionAuthoringGuide {
+<#
+.SYNOPSIS
+Prints package-definition authoring guidance and authoring target endpoint status.
+
+.DESCRIPTION
+Loads the module-local PackageDefinitionAuthoring.md skill, evaluates endpoints marked with
+authoringTarget in PackageEndpointInventory.json, probes writable filesystem-backed targets,
+selects the best usable target by search order preference, and appends the full authoring guide.
+
+When no usable authoring target exists, the output includes troubleshooting text for the agent
+to explain endpoint configuration to the user. The command does not throw for ordinary blocked
+or unmarked target states.
+
+.PARAMETER For
+Optional package definition id inserted into a short task preface.
+
+.PARAMETER EndpointName
+Restrict evaluation to one named endpoint. The endpoint must still be marked authoringTarget
+and pass the write probe to be selected.
+
+.PARAMETER EndpointPreference
+When multiple usable targets exist, First selects the lowest searchOrder and Last the highest.
+
+.EXAMPLE
+Get-PackageDefinitionAuthoringGuide -For 'TotalCommander'
+
+Shows task-specific preface, endpoint target guidance, and the full authoring guide.
+
+.EXAMPLE
+Get-PackageDefinitionAuthoringGuide -EndpointName moduleDefaults -EndpointPreference First
+
+Evaluates only moduleDefaults when it is marked as an authoring target.
+#>
+    [CmdletBinding()]
+    param(
+        [string]$For,
+
+        [string]$EndpointName,
+
+        [ValidateSet('First', 'Last')]
+        [string]$EndpointPreference = 'First'
+    )
+
+    $moduleProjectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+    $skillPath = Join-Path $moduleProjectRoot 'AgentSkills\PackageDefinitionAuthoring.md'
+    if (-not (Test-Path -LiteralPath $skillPath -PathType Leaf)) {
+        throw "Package definition authoring guide was not found at '$skillPath'."
+    }
+
+    $skillText = Get-Content -LiteralPath $skillPath -Raw
+    $evaluation = Get-PackageAuthoringTargetEvaluation -EndpointName $EndpointName -EndpointPreference $EndpointPreference
+
+    foreach ($warning in @($evaluation.Warnings)) {
+        if (-not [string]::IsNullOrWhiteSpace($warning)) {
+            Write-Warning $warning
+        }
+    }
+
+    $lines = New-Object System.Collections.Generic.List[string]
+
+    if (-not [string]::IsNullOrWhiteSpace($For)) {
+        $lines.Add("Task: create or update package definition '$For'.") | Out-Null
+        $lines.Add('') | Out-Null
+    }
+
+    $lines.Add('## Runtime endpoint status') | Out-Null
+    $lines.Add('') | Out-Null
+
+    if ($evaluation.SelectedTarget) {
+        $lines.Add('AgentAction: Proceed with **Start Here** step 3 onward; write under Selection path.') | Out-Null
+    }
+    elseif ([string]::Equals($evaluation.TroubleshootingKind, 'NoMarkedTarget', [System.StringComparison]::Ordinal)) {
+        $lines.Add('AgentAction: Stop JSON edits. Read **Start Here** step 1 and **Troubleshooting for agents** (NoMarkedTarget).') | Out-Null
+    }
+    elseif ([string]::Equals($evaluation.TroubleshootingKind, 'AllMarkedBlocked', [System.StringComparison]::Ordinal)) {
+        $lines.Add('AgentAction: Stop JSON edits. Read **Start Here** step 1 and **Troubleshooting for agents** (AllMarkedBlocked).') | Out-Null
+    }
+    else {
+        $lines.Add('AgentAction: Read **Start Here** in the guide below before editing JSON.') | Out-Null
+    }
+    $lines.Add('') | Out-Null
+
+    $lines.Add("InventoryPath: $($evaluation.InventoryPath)") | Out-Null
+    if (-not [string]::Equals($evaluation.TroubleshootingKind, 'None', [System.StringComparison]::Ordinal)) {
+        $lines.Add("TroubleshootingKind: $($evaluation.TroubleshootingKind)") | Out-Null
+    }
+
+    if ($evaluation.Candidates.Count -eq 0) {
+        $lines.Add('MarkedCandidates: (none)') | Out-Null
+    }
+    else {
+        $lines.Add('MarkedCandidates:') | Out-Null
+        foreach ($candidate in @($evaluation.Candidates)) {
+            $pathText = if ([string]::IsNullOrWhiteSpace([string]$candidate.ResolvedRootPath)) { '(unresolved)' } else { [string]$candidate.ResolvedRootPath }
+            $skipText = if ([string]::IsNullOrWhiteSpace([string]$candidate.SkipReason)) { '' } else { " skipReason=$($candidate.SkipReason)" }
+            $lines.Add("- $($candidate.EndpointName) | $($candidate.Kind) | order=$($candidate.SearchOrder) | enabled=$($candidate.Enabled) | effective=$($candidate.Effective) | $($candidate.Status) | $pathText$skipText") | Out-Null
+        }
+    }
+
+    if ($evaluation.SelectedTarget) {
+        $selected = $evaluation.SelectedTarget
+        $lines.Add("Selection: $($selected.EndpointName) | $($selected.Status) | $($selected.ResolvedRootPath)") | Out-Null
+    }
+    else {
+        $lines.Add('Selection: (none)') | Out-Null
+    }
+
+    if ($evaluation.Warnings.Count -gt 0) {
+        $lines.Add('') | Out-Null
+        $lines.Add('Warnings:') | Out-Null
+        foreach ($warning in @($evaluation.Warnings)) {
+            if (-not [string]::IsNullOrWhiteSpace($warning)) {
+                $lines.Add("- $warning") | Out-Null
+            }
+        }
+    }
+
+    $lines.Add('') | Out-Null
+    $lines.Add('See **Start Here** and **Authoring Targets And Endpoints** in the guide below.') | Out-Null
+    $lines.Add('') | Out-Null
+    $lines.Add('---') | Out-Null
+    $lines.Add('') | Out-Null
+    $lines.Add($skillText.TrimEnd()) | Out-Null
+
+    return ($lines -join [Environment]::NewLine)
+}
 
 function Get-PackageVersion {
 <#

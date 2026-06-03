@@ -27,6 +27,7 @@
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.Config.ps1"
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DepotInventory.Management.ps1"
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.EndpointInventory.Management.ps1"
+. "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.EndpointAuthoring.ps1"
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.PublisherInventory.Management.ps1"
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.Trust.ps1"
 . "$PSScriptRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DefinitionReference.ps1"

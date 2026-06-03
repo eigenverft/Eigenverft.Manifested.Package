@@ -13,7 +13,7 @@
 RootModule = 'Eigenverft.Manifested.Package.psm1'
 
 # Version number of this module.
-  ModuleVersion = '1.20263.11008'
+  ModuleVersion = '1.20263.10914'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Desktop', 'Core')
@@ -80,6 +80,7 @@ FunctionsToExport = @(
     'Add-TeamPackagePublisher',
     'Block-PackageSigningCertificate',
     'Export-PackageTrust',
+    'Get-PackageDefinitionAuthoringGuide',
     'Get-PackageDepot',
     'Get-PackageEndpoint',
     'Get-PackagePublisher',
@@ -146,7 +147,7 @@ PrivateData = @{
         IconUri = 'https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/main/resources/evt-logo_on_light_border_128x128.png'
 
         # ReleaseNotes of this module
-        ReleaseNotes = 'Renamed the module surface to Eigenverft.Manifested.Package and refreshed package-engine metadata, command names, and local state defaults.'
+        ReleaseNotes = 'Added Get-PackageDefinitionAuthoringGuide for installed-module package-definition authoring discovery. Endpoint inventory supports authoringTarget metadata with Add-PackageEndpoint, Set-PackageEndpoint, and Get-PackageEndpoint AuthoringTarget visibility.'
 
         # Prerelease string of this module
         Prerelease = ''

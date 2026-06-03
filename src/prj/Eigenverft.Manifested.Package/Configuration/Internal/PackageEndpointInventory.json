@@ -1,19 +1,21 @@
 {
-  "inventoryVersion": 4,
+  "inventoryVersion": 5,
   "endpoints": [
     {
       "endpointName": "moduleDefaults",
       "kind": "moduleLocal",
       "enabled": true,
       "searchOrder": 100,
-      "definitionRoot": "Endpoint/Defaults"
+      "definitionRoot": "Endpoint/Defaults",
+      "authoringTarget": true
     },
     {
       "endpointName": "corpPackageEndpoint",
       "kind": "filesystem",
       "enabled": false,
       "searchOrder": 300,
-      "basePath": "\\\\corp-share\\PackageEndpoint"
+      "basePath": "\\\\corp-share\\PackageEndpoint",
+      "authoringTarget": true
     }
   ]
 }

@@ -77,6 +77,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'Add-TeamPackagePublisher',
             'Block-PackageSigningCertificate',
             'Export-PackageTrust',
+            'Get-PackageDefinitionAuthoringGuide',
             'Get-PackageDepot',
             'Get-PackageEndpoint',
             'Get-PackagePublisher',
@@ -125,6 +126,27 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Web\Eigenverft.Manifested.Package.Cmd.InvokeWebRequestEx.ps1') -PathType Leaf | Should -BeTrue
     }
 
+    It 'Get-PackageDefinitionAuthoringGuide includes task preface and authoring skill header' {
+        $null = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
+        $text = Get-PackageDefinitionAuthoringGuide -For 'TestDef' -WarningAction SilentlyContinue
+
+        $text | Should -Match "Task: create or update package definition 'TestDef'."
+        $text | Should -Match '## Runtime endpoint status'
+        $text | Should -Match 'AgentAction:'
+        $text | Should -Match '## Start Here'
+        $text | Should -Match '# PackageDefinitionAuthoring'
+    }
+
+    It 'ships endpoint inventory v5 with authoring targets on moduleDefaults and corpPackageEndpoint' {
+        $moduleProjectRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'Eigenverft.Manifested.Package'
+        $inventoryPath = Join-Path $moduleProjectRoot 'Configuration\Internal\PackageEndpointInventory.json'
+        $documentInfo = Read-PackageJsonDocument -Path $inventoryPath
+
+        $documentInfo.Document.inventoryVersion | Should -Be 5
+        (Get-TestEndpointSource -Document $documentInfo.Document -SourceId 'moduleDefaults').authoringTarget | Should -BeTrue
+        (Get-TestEndpointSource -Document $documentInfo.Document -SourceId 'corpPackageEndpoint').authoringTarget | Should -BeTrue
+    }
+
     It 'ships the package definition authoring agent skill with safety workflow anchors' {
         $moduleProjectRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'Eigenverft.Manifested.Package'
         $skillPath = Join-Path $moduleProjectRoot 'AgentSkills\PackageDefinitionAuthoring.md'
@@ -139,7 +161,10 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'complete task/request instructions',
             'complete package-definition schema file',
             'Do not skim',
-            'PRODUCT-BOUNDARY.md',
+            'Start Here',
+            'Runtime endpoint status',
+            'Publication finalization',
+            'Authoring Targets And Endpoints',
             'eigenverft-module-package-definition-1.9.schema.json',
             'x-eigenverftAgentHint',
             'Endpoint/Defaults/Eigenverft',
@@ -159,8 +184,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'do not edit or re-sign the JSON',
             'Refresh every target artifact',
             'Bump `definitionRevision`',
-            'Shipped Catalog Finalization',
-            'Do not leave a new or changed shipped definition unsigned',
+            'Publication finalization',
             'Test-PackageDefinitionCatalog -RequireTrusted',
             'Verify-PackageDefinitionSignature -RequireTrusted',
             'git status --short',

@@ -262,7 +262,9 @@ function New-PackageFilesystemEndpointSource {
         [Parameter(Mandatory = $true)]
         [int]$SearchOrder,
 
-        [bool]$Enabled = $true
+        [bool]$Enabled = $true,
+
+        [bool]$AuthoringTarget = $false
     )
 
     if ([string]::IsNullOrWhiteSpace($BasePath)) {
@@ -275,6 +277,9 @@ function New-PackageFilesystemEndpointSource {
         enabled     = $Enabled
         searchOrder = $SearchOrder
         basePath    = $BasePath
+    }
+    if ($AuthoringTarget) {
+        $source.authoringTarget = $true
     }
 
     return [pscustomobject]$source
@@ -341,6 +346,10 @@ function Select-PackageEndpointSummary {
 
     $enabled = if ($Source.PSObject.Properties['enabled']) { [bool]$Source.enabled } else { $true }
     $kind = if ($Source.PSObject.Properties['kind']) { [string]$Source.kind } else { $null }
+    $authoringTarget = $false
+    if ($Source.PSObject.Properties['authoringTarget']) {
+        $authoringTarget = [bool]$Source.authoringTarget
+    }
 
     $notes = New-Object System.Collections.Generic.List[string]
     if (-not $enabled) {
@@ -361,6 +370,7 @@ function Select-PackageEndpointSummary {
         DefinitionRoot   = if ($Source.PSObject.Properties['definitionRoot']) { [string]$Source.definitionRoot } else { $null }
         BasePath         = if ($Source.PSObject.Properties['basePath']) { [string]$Source.basePath } else { $null }
         ResolvedRootPath = Resolve-PackageEndpointRootForDisplay -Source $Source -ApplicationRootDirectory $ApplicationRootDirectory
+        AuthoringTarget  = $authoringTarget
         InventoryPath    = $InventoryPath
         Notes            = @($notes.ToArray())
     }

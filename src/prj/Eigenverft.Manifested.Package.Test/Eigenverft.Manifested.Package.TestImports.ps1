@@ -30,6 +30,7 @@ $moduleProjectRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'Eigenverft.Ma
 . "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.Config.ps1"
 . "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DepotInventory.Management.ps1"
 . "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.EndpointInventory.Management.ps1"
+. "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.EndpointAuthoring.ps1"
 . "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.PublisherInventory.Management.ps1"
 . "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.Trust.ps1"
 . "$moduleProjectRoot\Support\Package\Schema\Eigenverft.Manifested.Package.Package.DefinitionReference.ps1"
