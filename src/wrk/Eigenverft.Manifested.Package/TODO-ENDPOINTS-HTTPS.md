@@ -13,6 +13,7 @@ Open issues in this file are scheduled here.
 | Discovery model | [DECISION-ENDPOINT-DISCOVERY-V1.md](DECISION-ENDPOINT-DISCOVERY-V1.md) |
 | Manifest contract | [TODO-ENDPOINTS-MANIFEST.md](TODO-ENDPOINTS-MANIFEST.md) |
 | Search cmdlet | Shipped `Search-Package` local scan — [DECISIONS.md](DECISIONS.md) |
+| Agent authoring target discovery | [ISSUE-AUTHORING-GUIDE-COMMAND.md](ISSUE-AUTHORING-GUIDE-COMMAND.md) |
 
 ---
 
@@ -41,21 +42,26 @@ Sorted by **Priority** (lower number first), then higher **Benefit**, then lower
 
 Inventory already accepts `httpsCatalog` entries (`baseUri`, `catalogPath`), but `Resolve-PackageEndpointRootPath` **throws** and summaries mark them not effective. The draft [DECISION-ENDPOINT-DISCOVERY-V1.md](DECISION-ENDPOINT-DISCOVERY-V1.md) now records that small HTTPS catalogs may use live recursive JSON scan first; manifest-backed discovery is required before relying on HTTPS at large-catalog scale.
 
+This issue is about read-side HTTPS catalog discovery: list/fetch/scan signed package-definition JSON. It does not define the write-side authoring path for creating or updating definitions over HTTP(S). If HTTPS endpoints later support authoring, they need a distinct create/update surface, similar to a POST controller, plus authorization semantics. Filesystem endpoints can probe ACL/path writability; HTTPS endpoints need explicit authorization because a successful GET does not imply permission to create or update catalog content.
+
 ### 🧭 Related Context
 
 Related Issues:
 - [DECISION-ENDPOINT-DISCOVERY-V1.md](DECISION-ENDPOINT-DISCOVERY-V1.md).
 - [`TODO-ENDPOINTS-MANIFEST.md`](TODO-ENDPOINTS-MANIFEST.md).
+- [`ISSUE-AUTHORING-GUIDE-COMMAND.md`](ISSUE-AUTHORING-GUIDE-COMMAND.md) for future agent endpoint selection and troubleshooting.
 
 Affected Areas:
 - `Package.EndpointInventory.Management.ps1`; `Package.DefinitionReference.ps1`; TLS/proxy configuration.
+- Future `Get-PackageDefinitionAuthoringGuide` endpoint checks if HTTPS authoring/create support is added.
 
 Dependencies:
 - Draft [DECISION-ENDPOINT-DISCOVERY-V1.md](DECISION-ENDPOINT-DISCOVERY-V1.md) is recorded; manifest contract is only blocking for large-catalog / at-scale HTTPS.
+- Any HTTPS create/update authoring path depends on a separate authorization design and is not implied by implementing read-side `httpsCatalog`.
 
 ### 🎯 Required Outcome
 
-Enabled `httpsCatalog` endpoints resolve definitions end-to-end with unchanged trust/signing behavior (`PackageTrustInventory.json`, `catalogTrust`). Discovery mechanism follows [DECISION-ENDPOINT-DISCOVERY-V1.md](DECISION-ENDPOINT-DISCOVERY-V1.md): live scan for small catalogs, manifest before large-catalog scale.
+Enabled `httpsCatalog` endpoints resolve definitions end-to-end with unchanged trust/signing behavior (`PackageTrustInventory.json`, `catalogTrust`). Discovery mechanism follows [DECISION-ENDPOINT-DISCOVERY-V1.md](DECISION-ENDPOINT-DISCOVERY-V1.md): live scan for small catalogs, manifest before large-catalog scale. The result must remain read-side unless a separate HTTPS authoring/create issue defines authorization and write behavior.
 
 ### 🔎 Facts
 
@@ -68,6 +74,8 @@ Known:
 Unknown:
 - TLS and corporate proxy constraints for target environments.
 - Exact small-catalog URL listing/fetch shape for `baseUri` + `catalogPath`.
+- Whether HTTPS endpoints will ever support create/update authoring, and if so which authentication and authorization model is acceptable.
+- How `Get-PackageDefinitionAuthoringGuide` should verify HTTPS authoring authorization once such a surface exists.
 
 ---
 
@@ -86,7 +94,7 @@ Unknown:
   - 🧾 Agent Work: 🔌 Integration
 
 Description:
-Implement resolve/fetch for `baseUri` + `catalogPath` and reuse recursive `*.json` discovery over the remote tree, mirroring filesystem behavior. Unblocks small HTTPS catalogs quickly.
+Implement resolve/fetch for `baseUri` + `catalogPath` and reuse recursive `*.json` discovery over the remote tree, mirroring filesystem read behavior. Unblocks small HTTPS catalogs quickly. This remains GET/list/fetch only; it does not create or update definitions.
 
 Current State:
 Inventory validates `httpsCatalog`; resolve throws.
@@ -99,6 +107,8 @@ Solves:
 
 Leaves Open:
 - Large-catalog performance; manifest later.
+- HTTPS authoring/create/update authorization and POST-style behavior.
+- Future `Get-PackageDefinitionAuthoringGuide` selection checks for HTTPS authoring targets.
 
 Risks:
 - May not scale; rework if manifest is adopted.
@@ -121,7 +131,7 @@ Later Cost:
   - 🧾 Agent Work: 🔌 Integration
 
 Description:
-Ship HTTPS endpoint resolution together with manifest fetch/parse so clients never enumerate every definition URL.
+Ship HTTPS endpoint resolution together with manifest fetch/parse so clients never enumerate every definition URL. This still covers read-side discovery; write-side authoring remains a separate controller and authorization problem.
 
 Current State:
 Blocked on manifest contract for large-catalog / at-scale use; not required for a small-catalog v1 scan path.
@@ -134,6 +144,7 @@ Solves:
 
 Leaves Open:
 - Longer lead time; manifest contract must land first for at-scale HTTPS.
+- HTTPS create/update authoring path.
 
 Risks:
 - Schedule coupling between two backlog items.
@@ -169,6 +180,7 @@ Solves:
 
 Leaves Open:
 - No HTTPS catalog access.
+- No HTTPS authoring/create/update model.
 
 Risks:
 - Teams may assume inventory entry implies working endpoint.
@@ -209,6 +221,7 @@ Later Cost:
     - 🤖 Agent Difficulty: 1/4 Routine ▰▱▱▱
     - 🧾 Decision Note: Zero implementation risk; no HTTPS catalog access until A or B is chosen.
 - ✅ Good Result: Enabled HTTPS catalog endpoints resolve signed definitions; discovery matches [DECISION-ENDPOINT-DISCOVERY-V1.md](DECISION-ENDPOINT-DISCOVERY-V1.md).
+- ✅ Boundary Result: HTTPS endpoint implementation does not imply write-side package-definition authoring until a create/update authorization model is defined.
 
 ---
 
@@ -222,6 +235,7 @@ The draft discovery decision now records live scan for small catalogs, while cod
 Required Checks:
 - Confirm TLS/proxy expectations and acceptable scan latency for the first small HTTPS catalog.
 - Keep the ~200-definition / multi-second latency trigger from [DECISION-ENDPOINT-DISCOVERY-V1.md](DECISION-ENDPOINT-DISCOVERY-V1.md) as the point where manifest work becomes blocking.
+- Confirm that any future HTTPS authoring work is tracked separately as create/update plus authorization, and that `Get-PackageDefinitionAuthoringGuide` is updated only when those checks exist.
 
 ### 📬 Stakeholder Success Note
 
@@ -233,8 +247,11 @@ Required Checks:
 
 - Final small-catalog fetch/cache behavior and proxy defaults.
 - Exact large-catalog cutoff beyond the current ~200-definition / multi-second trigger.
+- Whether HTTPS endpoints will ever support package-definition create/update operations.
+- If HTTPS create/update is supported, what authentication/authorization model proves an agent may publish to that endpoint?
 
 ### 🚫 Out of Scope
 
-- Writable or authenticated catalog publishing.
+- HTTPS create/update package-definition authoring.
+- HTTPS authorization for write-side catalog publishing.
 - Changing trust policy.
