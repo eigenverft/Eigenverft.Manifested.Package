@@ -104,13 +104,13 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - endpoi
         $evaluation.SelectedTarget.EndpointName | Should -Be 'readyEndpoint'
     }
 
-    It 'selects DraftOnly when the only writable marked target is disabled' {
-        $draftRoot = Join-Path $TestDrive 'endpoint-authoring-draftonly-root'
+    It 'marks disabled authoring targets Blocked without probing the filesystem' {
+        $draftRoot = Join-Path $TestDrive 'endpoint-authoring-disabled-root'
         New-Item -ItemType Directory -Path $draftRoot -Force | Out-Null
-        $root = Join-Path $TestDrive 'endpoint-authoring-draftonly'
+        $root = Join-Path $TestDrive 'endpoint-authoring-disabled'
         $inventoryPath = Join-Path $root 'Configuration\Internal\PackageEndpointInventory.json'
         $inventory = New-TestEndpointInventoryDocument -EndpointSources @{
-            draftOnlyEndpoint = @{
+            disabledEndpoint = @{
                 kind            = 'filesystem'
                 enabled         = $false
                 searchOrder     = 120
@@ -121,9 +121,14 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - endpoi
         Write-TestJsonDocument -Path $inventoryPath -Document $inventory
         Mock Get-PackageEndpointInventoryPath { $inventoryPath }
 
+        $Error.Clear()
         $evaluation = Get-PackageAuthoringTargetEvaluation -EndpointPreference First
-        $evaluation.SelectedTarget.Status | Should -Be 'DraftOnly'
-        $evaluation.Warnings -join "`n" | Should -Match 'DraftOnly'
+        $Error.Count | Should -Be 0
+        $evaluation.SelectedTarget | Should -BeNullOrEmpty
+        $evaluation.TroubleshootingKind | Should -Be 'AllMarkedBlocked'
+        $evaluation.Candidates[0].Status | Should -Be 'Blocked'
+        $evaluation.Candidates[0].SkipReason | Should -Match 'disabled'
+        $evaluation.Warnings -join "`n" | Should -Match 'disabled'
     }
 
     It 'reports NoMarkedTarget when no endpoint is marked for authoring' {

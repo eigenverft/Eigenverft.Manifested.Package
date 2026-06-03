@@ -2,6 +2,25 @@
     Package endpoint authoring target evaluation for Get-PackageDefinitionAuthoringGuide.
 #>
 
+function Test-PackageEndpointAuthoringPathContainer {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ResolvedRootPath
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ResolvedRootPath)) {
+        return $false
+    }
+
+    try {
+        return Test-Path -LiteralPath $ResolvedRootPath -PathType Container -ErrorAction Stop
+    }
+    catch {
+        return $false
+    }
+}
+
 function Test-PackageEndpointAuthoringWriteAccess {
     [CmdletBinding()]
     param(
@@ -13,7 +32,7 @@ function Test-PackageEndpointAuthoringWriteAccess {
         return $false
     }
 
-    if (-not (Test-Path -LiteralPath $ResolvedRootPath -PathType Container)) {
+    if (-not (Test-PackageEndpointAuthoringPathContainer -ResolvedRootPath $ResolvedRootPath)) {
         return $false
     }
 
@@ -27,12 +46,12 @@ function Test-PackageEndpointAuthoringWriteAccess {
         return $false
     }
     finally {
-        if (Test-Path -LiteralPath $markerPath -PathType Leaf) {
-            try {
+        try {
+            if (Test-Path -LiteralPath $markerPath -PathType Leaf -ErrorAction Stop) {
                 Remove-Item -LiteralPath $markerPath -Force -ErrorAction Stop
             }
-            catch {
-            }
+        }
+        catch {
         }
     }
 }
@@ -88,9 +107,26 @@ function Get-PackageAuthoringTargetCandidate {
         }
     }
 
+    if (-not [bool]$Summary.Enabled) {
+        $skipReason = 'Endpoint is disabled in package endpoint inventory.'
+        return [pscustomobject]@{
+            EndpointName     = [string]$Summary.EndpointName
+            Kind             = $kind
+            SearchOrder      = $Summary.SearchOrder
+            Enabled          = [bool]$Summary.Enabled
+            Effective        = [bool]$Summary.Effective
+            AuthoringTarget  = [bool]$Summary.AuthoringTarget
+            ResolvedRootPath = $resolvedRootPath
+            Status           = $status
+            Writable         = $false
+            Selected         = $false
+            SkipReason       = $skipReason
+        }
+    }
+
     $writable = Test-PackageEndpointAuthoringWriteAccess -ResolvedRootPath $resolvedRootPath
     if (-not $writable) {
-        if (-not (Test-Path -LiteralPath $resolvedRootPath -PathType Container)) {
+        if (-not (Test-PackageEndpointAuthoringPathContainer -ResolvedRootPath $resolvedRootPath)) {
             $skipReason = "Target path does not exist or is not reachable: '$resolvedRootPath'."
         }
         else {
@@ -111,12 +147,7 @@ function Get-PackageAuthoringTargetCandidate {
         }
     }
 
-    if ([bool]$Summary.Enabled -and [bool]$Summary.Effective) {
-        $status = 'Ready'
-    }
-    else {
-        $status = 'DraftOnly'
-    }
+    $status = 'Ready'
 
     return [pscustomobject]@{
         EndpointName     = [string]$Summary.EndpointName
@@ -191,24 +222,16 @@ function Get-PackageAuthoringTargetEvaluation {
         $troubleshootingKind = 'NoMarkedTarget'
     }
 
-    $selectable = @($candidates | Where-Object { $_.Status -in @('Ready', 'DraftOnly') })
+    $selectable = @($candidates | Where-Object { $_.Status -eq 'Ready' })
     $selected = $null
     $warnings = New-Object System.Collections.Generic.List[string]
 
     if ($selectable.Count -gt 0) {
-        $readyCandidates = @($selectable | Where-Object { $_.Status -eq 'Ready' })
-        $pool = if ($readyCandidates.Count -gt 0) { @($readyCandidates) } else { @($selectable) }
-        if ($readyCandidates.Count -eq 0) {
-            $warnings.Add('No enabled/effective authoring target is writable. Selected a DraftOnly endpoint; package commands will not scan it until it is enabled and effective.') | Out-Null
-        }
         if ($EndpointPreference -ieq 'Last') {
-            $selected = @($pool | Sort-Object -Property @{ Expression = { $_.SearchOrder }; Descending = $true } | Select-Object -First 1)[0]
+            $selected = @($selectable | Sort-Object -Property @{ Expression = { $_.SearchOrder }; Descending = $true } | Select-Object -First 1)[0]
         }
         else {
-            $selected = @($pool | Sort-Object -Property SearchOrder | Select-Object -First 1)[0]
-        }
-        if ($selected -and $selected.Status -eq 'DraftOnly') {
-            $warnings.Add("Selected authoring target '$($selected.EndpointName)' is DraftOnly (disabled or not effective for package scans).") | Out-Null
+            $selected = @($selectable | Sort-Object -Property SearchOrder | Select-Object -First 1)[0]
         }
     }
     elseif ($candidates.Count -gt 0) {

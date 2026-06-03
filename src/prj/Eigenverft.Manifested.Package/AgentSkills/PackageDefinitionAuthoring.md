@@ -35,12 +35,11 @@ The authoring path is whatever **Runtime endpoint status** shows in `Selection` 
 
 | Status | Meaning |
 |--------|---------|
-| `Ready` | Marked, writable, enabled, and effective for package scans. Preferred selection. |
-| `DraftOnly` | Marked and writable, but disabled or not effective. Usable for draft storage; `Invoke-Package` will not scan there until enabled. |
-| `Blocked` | Marked but path missing, unreachable, or not writable. Skipped for selection. |
+| `Ready` | Marked, **enabled**, writable, and a supported kind (`moduleLocal` or `filesystem`). This is the only status selected for authoring. For these kinds, enabled also means effective for package scans. |
+| `Blocked` | Marked but not usable: disabled, path missing/unreachable, not writable, or otherwise not ready. Disabled endpoints are listed but not filesystem-probed. Skipped for selection. |
 | `Unsupported` | Marked but kind is not `moduleLocal` or `filesystem` (for example `httpsCatalog` in v1). Skipped for selection. |
 
-Selection prefers `Ready` over `DraftOnly`, then applies `searchOrder` (`First` = lowest order, `Last` = highest). `authoringTarget` is not inferred from writability alone.
+Selection uses only `Ready` targets, then applies `searchOrder` (`First` = lowest order, `Last` = highest). `authoringTarget` is not inferred from writability alone.
 
 ### Managing authoring intent
 
@@ -83,7 +82,7 @@ Resign-PackageDefinition -Path '<definition.json>' -Cert Eigenverft -KeepSchemaV
 6. Check `git status --short` when working in a repository so new JSON files are not forgotten.
 7. In the handoff, state whether validation, signing, and trust verification passed, or name the blocker.
 
-Do not leave a definition unsigned when it is meant for a trusted, enabled scan endpoint, unless the maintainer explicitly asked for draft-only unsigned work. A `DraftOnly` authoring target is for drafts until the endpoint is enabled and effective.
+Do not leave a definition unsigned when it is meant for a trusted, enabled scan endpoint, unless the maintainer explicitly asked for unsigned draft work only.
 
 ## When To Use
 
