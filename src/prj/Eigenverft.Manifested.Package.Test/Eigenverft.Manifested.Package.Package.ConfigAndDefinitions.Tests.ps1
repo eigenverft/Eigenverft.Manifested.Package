@@ -524,6 +524,80 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         Assert-MockCalled Update-PackageInventoryRecord -Times 0
     }
 
+    It 'continues assigned flow after dependency resolution returns the parent result' {
+        $packageResult = [pscustomobject]@{
+            DefinitionPublisherId = 'Eigenverft'
+            DefinitionEndpointName = 'test'
+            DefinitionId           = 'RootA'
+            DesiredState           = 'Assigned'
+            CommandMode            = 'Assigned'
+            Offline                = $false
+            MaterializeOnly        = $false
+            PackageConfig          = [pscustomobject]@{
+                Definition = [pscustomobject]@{
+                    definitionId = 'RootA'
+                }
+            }
+            LocalEnvironment       = [pscustomobject]@{ Status = 'Initialized' }
+            Dependencies           = @()
+            Status                 = 'Pending'
+            ErrorMessage           = $null
+            FailureReason          = $null
+            CurrentStep            = 'Pending'
+        }
+        $stepOrder = New-Object System.Collections.Generic.List[string]
+
+        Mock Resolve-PackagePackage {
+            $stepOrder.Add('ResolvePackage') | Out-Null
+            $PackageResult | Add-Member -MemberType NoteProperty -Name PackageId -Value 'root-a-runtime' -Force
+            $PackageResult | Add-Member -MemberType NoteProperty -Name Package -Value ([pscustomobject]@{ id = 'root-a-runtime' }) -Force
+            $PackageResult
+        }
+        Mock Resolve-PackageDependencies {
+            $stepOrder.Add('ResolveDependencies') | Out-Null
+            $PackageResult.Dependencies = @(
+                [pscustomobject]@{ DefinitionId = 'VisualRuntime'; Status = 'Ready' }
+                [pscustomobject]@{ DefinitionId = 'NodeRuntime'; Status = 'Ready' }
+            )
+            $PackageResult
+        }
+        Mock Resolve-PackagePaths { $stepOrder.Add('ResolvePaths') | Out-Null; $PackageResult }
+        Mock Resolve-PackagePreAssignmentSatisfaction { $stepOrder.Add('ResolvePreAssignmentSatisfaction') | Out-Null; $PackageResult }
+        Mock Build-PackageAcquisitionPlan { $stepOrder.Add('BuildAcquisitionPlan') | Out-Null; $PackageResult }
+        Mock Find-PackageExistingPackage { $stepOrder.Add('FindExistingPackage') | Out-Null; $PackageResult }
+        Mock Set-PackageExistingPackage { $stepOrder.Add('ClassifyExistingPackage') | Out-Null; $PackageResult }
+        Mock Resolve-PackageExistingPackageDecision { $stepOrder.Add('ResolveExistingPackageDecision') | Out-Null; $PackageResult }
+        Mock Resolve-PackageInstallFile { $stepOrder.Add('PreparePackageAssignedFile') | Out-Null; $PackageResult }
+        Mock Invoke-PackageDepotDistribution { $stepOrder.Add('DistributePackageFileToDepots') | Out-Null; $PackageResult }
+        Mock Invoke-PackageNpmMaterialization { $stepOrder.Add('MaterializeNpmPackage') | Out-Null; $PackageResult }
+        Mock Set-PackageAssignedState {
+            $stepOrder.Add('AssignPackage') | Out-Null
+            $PackageResult | Add-Member -MemberType NoteProperty -Name Assigned -Value ([pscustomobject]@{ Status = 'ReusedPackageOwned' }) -Force
+            $PackageResult | Add-Member -MemberType NoteProperty -Name InstallOrigin -Value 'PackageReused' -Force
+            $PackageResult
+        }
+        Mock Test-PackageAssignedReadiness {
+            $stepOrder.Add('CheckAssignedReadiness') | Out-Null
+            $PackageResult | Add-Member -MemberType NoteProperty -Name Readiness -Value ([pscustomobject]@{ Accepted = $true }) -Force
+            $PackageResult
+        }
+        Mock Register-PackagePath { $stepOrder.Add('RegisterPath') | Out-Null; $PackageResult }
+        Mock Remove-PackageReplacedPackageOwnedInstallDirectory { $PackageResult }
+        Mock Resolve-PackageEntryPoints { $stepOrder.Add('ResolveEntryPoints') | Out-Null; $PackageResult }
+        Mock Update-PackageInventoryRecord { $stepOrder.Add('UpdateInventory') | Out-Null; $PackageResult }
+        Mock Clear-PackageWorkDirectories { $stepOrder.Add('ClearPackageWorkDirectories') | Out-Null; $PackageResult }
+        Mock Get-PackageOutcomeSummary { '[OK] test package completed.' }
+
+        $result = Invoke-PackageAssignedFlow -PackageResult $packageResult
+
+        $result.DefinitionId | Should -Be 'RootA'
+        @($result.Dependencies.DefinitionId) | Should -Be @('VisualRuntime', 'NodeRuntime')
+        $stepOrder.IndexOf('ResolveDependencies') | Should -BeLessThan $stepOrder.IndexOf('AssignPackage')
+        $stepOrder.IndexOf('AssignPackage') | Should -BeGreaterThan -1
+        Assert-MockCalled Set-PackageAssignedState -Times 1
+        Assert-MockCalled Update-PackageInventoryRecord -Times 1
+    }
+
     It 'runs Invoke-Package definition id arrays in listed order' {
         Mock Invoke-PackageDefinitionCommandCore {
             [pscustomobject]@{
@@ -784,10 +858,13 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
     It 'ships Eigenverft dependency planner examples for ranges, model runtime dependencies, and command conflicts' {
         $codexPlan = New-PackageDependencyPlan -DefinitionId 'CodexCli'
         $codexNode = @($codexPlan.Nodes | Where-Object DefinitionId -EQ 'CodexCli')[0]
-        $nodeEdge = @(Get-PackageDependencyPlanChildEdges -Plan $codexPlan -NodeKey $codexNode.NodeKey | Where-Object DefinitionId -EQ 'NodeRuntime')[0]
+        $codexEdges = @(Get-PackageDependencyPlanChildEdges -Plan $codexPlan -NodeKey $codexNode.NodeKey)
+        $nodeEdge = @($codexEdges | Where-Object DefinitionId -EQ 'NodeRuntime')[0]
         $nodeRuntime = @($codexPlan.Nodes | Where-Object DefinitionId -EQ 'NodeRuntime')[0]
 
         $codexPlan.Accepted | Should -BeTrue
+        @($codexEdges.DefinitionId) | Should -Be @('VisualCppRedistributable', 'NodeRuntime')
+        @($codexEdges.VersionRange) | Should -Be @('>=14.0 <15.0', '>=16.0.0')
         $nodeEdge.VersionRange | Should -Be '>=16.0.0'
         $nodeRuntime.PackageVersion | Should -Be '26.2.0'
 
@@ -1851,15 +1928,21 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
 
     It 'passes approved dependency plan context through recursive dependency execution' {
         $configs = @{
-            RootA = New-TestDependencyPlannerConfig -DefinitionId 'RootA' -Dependencies @([pscustomobject]@{ definitionId = 'Runtime'; versionRange = '>=1.0.0' }) -InventoryPath (Join-Path $TestDrive 'planner-execution-inventory.json')
-            Runtime = New-TestDependencyPlannerConfig -DefinitionId 'Runtime' -Versions @('1.2.0') -InventoryPath (Join-Path $TestDrive 'planner-execution-inventory.json')
+            RootA = New-TestDependencyPlannerConfig -DefinitionId 'RootA' -Dependencies @(
+                [pscustomobject]@{ definitionId = 'VisualRuntime'; versionRange = '>=1.0.0' }
+                [pscustomobject]@{ definitionId = 'NodeRuntime'; versionRange = '>=2.0.0' }
+            ) -InventoryPath (Join-Path $TestDrive 'planner-execution-inventory.json')
+            VisualRuntime = New-TestDependencyPlannerConfig -DefinitionId 'VisualRuntime' -Versions @('1.2.0') -InventoryPath (Join-Path $TestDrive 'planner-execution-inventory.json')
+            NodeRuntime = New-TestDependencyPlannerConfig -DefinitionId 'NodeRuntime' -Versions @('2.4.0') -InventoryPath (Join-Path $TestDrive 'planner-execution-inventory.json')
         }
         Mock Get-PackageConfig { $configs[$DefinitionId] }
         $plan = New-PackageDependencyPlan -DefinitionId 'RootA'
         $rootNodeKey = Get-PackageDependencyPlanRootNodeKey -Plan $plan -DefinitionId 'RootA'
-        $childEdge = @(Get-PackageDependencyPlanChildEdges -Plan $plan -NodeKey $rootNodeKey)[0]
+        $childEdges = @(Get-PackageDependencyPlanChildEdges -Plan $plan -NodeKey $rootNodeKey)
+        $executedDefinitions = New-Object System.Collections.Generic.List[string]
 
         Mock Invoke-PackageDefinitionCommandCore {
+            $executedDefinitions.Add([string]$DefinitionId) | Out-Null
             [pscustomobject]@{
                 DefinitionPublisherId = 'Eigenverft'
                 DefinitionId          = $DefinitionId
@@ -1867,6 +1950,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
                 Offline               = [bool]$Offline
                 Status                = 'Ready'
                 InstallOrigin         = 'PackageReused'
+                Assigned              = [pscustomobject]@{ Status = 'ReusedPackageOwned' }
             }
         }
         $result = [pscustomobject]@{
@@ -1878,14 +1962,87 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
             Dependencies          = @()
         }
 
-        $resolved = Resolve-PackageDependencies -PackageResult $result
+        $resolvedOutput = @(Resolve-PackageDependencies -PackageResult $result)
+        $resolved = $resolvedOutput[0]
 
+        $resolvedOutput.Count | Should -Be 1
+        $resolved.DefinitionId | Should -Be 'RootA'
+        @($executedDefinitions) | Should -Be @('VisualRuntime', 'NodeRuntime')
         Assert-MockCalled Invoke-PackageDefinitionCommandCore -Times 1 -ParameterFilter {
-            $DefinitionId -eq 'Runtime' -and
+            $DefinitionId -eq 'VisualRuntime' -and
             $DependencyPlan -eq $plan -and
-            $DependencyPlanNodeKey -eq $childEdge.ChildNodeKey
+            $DependencyPlanNodeKey -eq $childEdges[0].ChildNodeKey
         }
-        @($resolved.Dependencies.PlanNodeKey) | Should -Be @($childEdge.ChildNodeKey)
+        Assert-MockCalled Invoke-PackageDefinitionCommandCore -Times 1 -ParameterFilter {
+            $DefinitionId -eq 'NodeRuntime' -and
+            $DependencyPlan -eq $plan -and
+            $DependencyPlanNodeKey -eq $childEdges[1].ChildNodeKey
+        }
+        @($resolved.Dependencies.DefinitionId) | Should -Be @('VisualRuntime', 'NodeRuntime')
+        @($resolved.Dependencies.PlanNodeKey) | Should -Be @($childEdges.ChildNodeKey)
+    }
+
+    It 'executes the assigned install step for every approved dependency before the root package' {
+        $configs = @{
+            RootA = New-TestDependencyPlannerConfig -DefinitionId 'RootA' -Dependencies @(
+                [pscustomobject]@{ definitionId = 'VisualRuntime'; versionRange = '>=1.0.0' }
+                [pscustomobject]@{ definitionId = 'NodeRuntime'; versionRange = '>=2.0.0' }
+            ) -InventoryPath (Join-Path $TestDrive 'planner-install-execution-inventory.json')
+            VisualRuntime = New-TestDependencyPlannerConfig -DefinitionId 'VisualRuntime' -Versions @('1.2.0') -InventoryPath (Join-Path $TestDrive 'planner-install-execution-inventory.json')
+            NodeRuntime = New-TestDependencyPlannerConfig -DefinitionId 'NodeRuntime' -Versions @('2.4.0') -InventoryPath (Join-Path $TestDrive 'planner-install-execution-inventory.json')
+        }
+        Mock Get-PackageConfig { $configs[$DefinitionId] }
+        $plan = New-PackageDependencyPlan -DefinitionId 'RootA'
+        $rootNodeKey = Get-PackageDependencyPlanRootNodeKey -Plan $plan -DefinitionId 'RootA'
+        $installOrder = New-Object System.Collections.Generic.List[string]
+
+        Mock Initialize-PackageCommandLocalEnvironment { [pscustomobject]@{ Status = 'Initialized' } }
+        Mock Resolve-PackagePackage {
+            $planNode = @($plan.Nodes | Where-Object DefinitionId -EQ $PackageResult.DefinitionId)[0]
+            $PackageResult | Add-Member -MemberType NoteProperty -Name PackageId -Value ([string]$PackageResult.DefinitionId) -Force
+            $PackageResult | Add-Member -MemberType NoteProperty -Name PackageVersion -Value ([string]$planNode.PackageVersion) -Force
+            $PackageResult | Add-Member -MemberType NoteProperty -Name Package -Value ([pscustomobject]@{
+                id = [string]$PackageResult.DefinitionId
+                version = [string]$planNode.PackageVersion
+            }) -Force
+            $PackageResult
+        }
+        Mock Resolve-PackagePaths { $PackageResult }
+        Mock Resolve-PackagePreAssignmentSatisfaction { $PackageResult }
+        Mock Build-PackageAcquisitionPlan { $PackageResult }
+        Mock Find-PackageExistingPackage { $PackageResult }
+        Mock Set-PackageExistingPackage { $PackageResult }
+        Mock Resolve-PackageExistingPackageDecision { $PackageResult }
+        Mock Resolve-PackageInstallFile { $PackageResult }
+        Mock Invoke-PackageDepotDistribution { $PackageResult }
+        Mock Invoke-PackageNpmMaterialization { $PackageResult }
+        Mock Set-PackageAssignedState {
+            $installOrder.Add([string]$PackageResult.DefinitionId) | Out-Null
+            $PackageResult | Add-Member -MemberType NoteProperty -Name Assigned -Value ([pscustomobject]@{ Status = 'Installed' }) -Force
+            $PackageResult | Add-Member -MemberType NoteProperty -Name InstallOrigin -Value 'PackageInstalled' -Force
+            $PackageResult
+        }
+        Mock Test-PackageAssignedReadiness {
+            $PackageResult | Add-Member -MemberType NoteProperty -Name Readiness -Value ([pscustomobject]@{ Accepted = $true }) -Force
+            $PackageResult
+        }
+        Mock Register-PackagePath { $PackageResult }
+        Mock Remove-PackageReplacedPackageOwnedInstallDirectory { $PackageResult }
+        Mock Resolve-PackageEntryPoints { $PackageResult }
+        Mock Update-PackageInventoryRecord { $PackageResult }
+        Mock Clear-PackageWorkDirectories { $PackageResult }
+        Mock Get-PackageOutcomeSummary { '[OK] test package completed.' }
+        Mock Add-PackageOperationHistoryRecord {}
+
+        $result = Invoke-PackageDefinitionCommandCore -DefinitionId 'RootA' -DependencyPlan $plan -DependencyPlanNodeKey $rootNodeKey
+
+        @($installOrder) | Should -Be @('VisualRuntime', 'NodeRuntime', 'RootA')
+        $result.Status | Should -Be 'Ready'
+        @($result.Dependencies.DefinitionId) | Should -Be @('VisualRuntime', 'NodeRuntime')
+        @($result.Dependencies.InstallStatus) | Should -Be @('Installed', 'Installed')
+        Assert-MockCalled Set-PackageAssignedState -Times 1 -ParameterFilter { $PackageResult.DefinitionId -eq 'VisualRuntime' }
+        Assert-MockCalled Set-PackageAssignedState -Times 1 -ParameterFilter { $PackageResult.DefinitionId -eq 'NodeRuntime' }
+        Assert-MockCalled Set-PackageAssignedState -Times 1 -ParameterFilter { $PackageResult.DefinitionId -eq 'RootA' }
     }
 
     It 'accepts dependency versionRange and dependency.policy schema additions' {
