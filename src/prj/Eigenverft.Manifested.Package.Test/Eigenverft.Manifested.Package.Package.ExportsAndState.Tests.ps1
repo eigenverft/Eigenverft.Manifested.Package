@@ -125,6 +125,37 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Web\Eigenverft.Manifested.Package.Cmd.InvokeWebRequestEx.ps1') -PathType Leaf | Should -BeTrue
     }
 
+    It 'ships the package definition authoring agent skill with safety workflow anchors' {
+        $moduleProjectRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'Eigenverft.Manifested.Package'
+        $skillPath = Join-Path $moduleProjectRoot 'AgentSkills\PackageDefinitionAuthoring.md'
+
+        Test-Path -LiteralPath $skillPath -PathType Leaf | Should -BeTrue
+
+        $text = Get-Content -Raw -LiteralPath $skillPath
+        $anchors = @(
+            'PackageDefinitionAuthoring',
+            'PRODUCT-BOUNDARY.md',
+            'eigenverft-module-package-definition-1.9.schema.json',
+            'Endpoint/Defaults/Eigenverft',
+            'Test-PackageDefinitionCatalog',
+            'Get-PackageSigningProfile',
+            'Sign-PackageDefinition',
+            'Resign-PackageDefinition',
+            '-KeepSchemaVersion',
+            'Verify-PackageDefinitionSignature',
+            'Verify-PackageDefinitionCatalog',
+            'human review',
+            'definitionSignature.kind = unsigned',
+            'signatureValue',
+            '.cer',
+            '.pem'
+        )
+
+        foreach ($anchor in $anchors) {
+            $text | Should -Match ([regex]::Escape($anchor))
+        }
+    }
+
     It 'returns an empty package state when durable inventory/history files and local directories are absent' {
         $root = Join-Path $TestDrive 'empty-package-state'
         $config = [pscustomobject]@{
