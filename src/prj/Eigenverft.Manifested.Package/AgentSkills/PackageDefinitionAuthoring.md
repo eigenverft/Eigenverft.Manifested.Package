@@ -8,8 +8,8 @@ You are authoring **package-definition JSON** for **Eigenverft.Manifested.Packag
 
 The user gives you one block of text. Above this heading you should already see, in order when present:
 
-1. **Task** - e.g. `Task: create or update package definition 'TotalCommander'.` That line is the `**definitionId`** unless the user says otherwise.
-2. **Authoring mode** (optional) - e.g. `draft-only`: keep the file unsignepublisherIdd and skip signing/trust steps described below.
+1. **Task** - e.g. `Task: create or update package definition 'TotalCommander'.` That line names the **`definitionId`** unless the user says otherwise.
+2. **Authoring mode** (optional) - e.g. `draft-only`: keep the file unsigned and skip signing/trust steps described below.
 3. **Runtime endpoint status** - machine paths, `Selection`, `MarkedCandidates`, `AgentAction`, and optional `TroubleshootingKind`.
 
 Everything from this heading downward is the skill. Read the prepended sections first, then follow this document.
@@ -31,7 +31,7 @@ When `Selection` shows `Ready` and a folder path, create or edit JSON **under th
 3. If `Selection` is `Ready` with a path, complete **Required First Step**, then **Authoring Workflow** (validate; sign and verify trust only when not in draft-only mode).
 4. Do not run vendor installers or `Invoke-Package` while writing JSON (**No Installer Execution During Authoring**).
 
-If **Runtime endpoint status** is missing above this text, run `Get-PackageEndpoint` in a shell where the module is installed, report what you find, and ask the user how to proceed.
+If **Runtime endpoint status** is missing above this text, run `Get-PackageEndpoint` in a shell where the module is installed, report what you find, and ask the user how to proceed. Do not guess the authoring folder.
 
 If **Authoring mode** shows `draft-only`, obey that block for signing and trust even when other sections describe full publication finalization.
 
@@ -50,6 +50,7 @@ For normal authoring, these inputs are enough: the skill explains workflow, endp
 **Read only when needed:**
 
 - Other `*.json` package definitions under the same **Selection** catalog root (same or sibling `publisherId` folders). Use them for structure and convention; they illustrate the schema and do not override it.
+- Shipped example definitions under the installed module folder, for example `<ModuleBase>\Endpoint\Defaults\Eigenverft`, when the selected authoring root has no useful examples. Resolve `<ModuleBase>` with `Get-Module`; do not guess a source repository path.
 - The target definition file itself when the task is an update, version bump, or review of existing JSON.
 
 **Do not read by default:**
@@ -111,7 +112,11 @@ Flat files directly under the endpoint root can also be valid when that is the e
 
 Skip this subsection when **Authoring mode** is `draft-only` (unsigned JSON and non-trusted validation only).
 
-Before final handoff for definitions intended for trusted catalog use on an enabled scan endpoint:
+A package definition is a trusted-catalog or shipped-catalog change when the user asks for a publishable definition, the selected endpoint is an enabled scan endpoint, or **Selection** points at the module's shipped defaults such as `Endpoint/Defaults/Eigenverft` under the installed module folder. These are not disposable drafts. Do not leave a new or changed definition unsigned unless **Authoring mode** is `draft-only` or the user explicitly requested unsigned draft work.
+
+The selected path from **Runtime endpoint status** is authoritative. Do not guess a repository path or edit a different copy of `Endpoint/Defaults/Eigenverft`. If **Selection** points into an installed module folder and the path is not writable, stop and explain the endpoint/write-access problem to the user instead of editing another file.
+
+Before final handoff for definitions intended for trusted or shipped catalog use:
 
 1. Finish all JSON edits under the selected authoring root using the layout above.
 2. Run `Test-PackageDefinitionCatalog` on the changed file.
@@ -121,12 +126,10 @@ Before final handoff for definitions intended for trusted catalog use on an enab
 Resign-PackageDefinition -Path '<definition.json>' -Cert Eigenverft -KeepSchemaVersion
 ```
 
-1. Run `Test-PackageDefinitionCatalog -RequireTrusted` on the changed file or endpoint folder.
-2. Run `Verify-PackageDefinitionSignature -RequireTrusted` for the file, or `Verify-PackageDefinitionCatalog -RequireTrusted` for the folder.
-3. Check `git status --short` when working in a repository so new JSON files are not forgotten.
-4. In the handoff, state whether validation, signing, and trust verification passed, or name the blocker.
-
-Do not leave a definition unsigned when the user expects a trusted catalog entry, unless **Authoring mode** is `draft-only` or the user asked for unsigned draft work only.
+4. Run `Test-PackageDefinitionCatalog -RequireTrusted` on the changed file or endpoint folder.
+5. Run `Verify-PackageDefinitionSignature -RequireTrusted` for the file, or `Verify-PackageDefinitionCatalog -RequireTrusted` for the folder.
+6. Check `git status --short` when working in a repository so new JSON files are not forgotten.
+7. In the handoff, state whether validation, signing, and trust verification passed, or name the blocker.
 
 ## Product Boundary
 
@@ -203,7 +206,7 @@ Run `Test-PackageDefinitionCatalog`, signing, and trust commands in the host whe
 ## Authoring Workflow
 
 1. Use **Start Here** and the sections above this document when present; otherwise obtain paths with `Get-PackageEndpoint`.
-2. Start from schema 1.9 and a nearby example under the resolved authoring target.
+2. Start from schema 1.9 and a nearby example under the resolved authoring target. If the target is empty, use shipped examples under the installed module's `<ModuleBase>\Endpoint\Defaults\Eigenverft` as examples only.
 3. Author drafts as unsigned: `definitionPublication.definitionSignature.kind = unsigned`.
 4. Never fabricate, copy, or hand-edit `signatureValue`.
 5. Write under **Selection**. Prefer `<publisherId>/<definitionId>.json` unless the endpoint already uses flat files or the user requested a flat layout.
@@ -363,4 +366,3 @@ Success means the JSON exists on the catalog root with validation (and signing/t
 - New signing or trust commands.
 - Editing built-in sample catalog JSON shipped inside the module install unless the user explicitly asked for that and **Selection** points there.
 - Executing upstream installers or `Invoke-Package` on the authoring machine to probe behavior; use documentation, examples, and **No Installer Execution During Authoring** instead.
-
