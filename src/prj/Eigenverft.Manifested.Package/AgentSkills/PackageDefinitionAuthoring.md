@@ -150,8 +150,11 @@ Use a compact table or bullet list with one row per relevant check:
 - `Generic installer kind corroboration`
 - `Vendor installer switch evidence`
 - `Generic installer switch corroboration`
+- `Resolved acquisition URL verification`
 - `Artifact hash verification`
 - `Publisher signature verification`
+- `Target/readiness consistency`
+- `Known runtime blocker status`
 - `Raw JSON schema validation`
 - `Test-PackageDefinitionCatalog`
 - `Signing or re-signing`
@@ -161,6 +164,8 @@ Use a compact table or bullet list with one row per relevant check:
 Each row must include `Status`, `Evidence`, and `Command/source`. Valid statuses are `Passed`, `Failed`, `Not run`, and `Not applicable`.
 
 For installer-backed definitions, the installer evidence rows are required and must cite the exact JSON behavior they justify: `packageOperations.assigned.install.kind`, any `installerKind`, `commandArguments`, target-directory argument/property behavior, force/update semantics, shortcut or registry side effects when relevant, and elevation assumptions. Use `Not applicable` only for definitions with no installer command surface to validate, such as pure archive extraction, file placement, or PowerShell module installs.
+
+The resolved acquisition URL row must show the exact final URL or path after `baseUri`, `sourcePath`, `urlTemplate`, `{version}`, and `{releaseTag}` resolution for every target artifact. Do not count a hash check as passed if the JSON would resolve to a different URL or path than the one actually downloaded.
 
 Use `Passed` only when the command was actually executed or the source was actually opened/read during the current task. Do not mark a check as passed because it is planned, recommended, inferred from prior conversation, or expected to pass. If a required check is `Failed` or `Not run`, do not call the package complete; report the blocker or explain why the task is draft-only/incomplete. If no vendor installer documentation or no generic corroborating source was found for installer kind or switches, mark the relevant row `Failed` and stop instead of guessing.
 
@@ -263,6 +268,8 @@ Carry the discovered installer evidence into the final `Check Result`; the hando
 
 Discover whether the vendor ships multiple artifact kinds for the same product, such as portable archives, user installers, machine/admin installers, MSI packages, app-store packages, or architecture-specific builds. Prefer a vendor-published portable archive when it fits the package intent. Otherwise prefer a user-scoped installer over a machine/admin installer. Use admin or machine-wide installers only when the user's intent and documentation explicitly require that scope - not because an elevated trial install was run.
 
+Treat machine/admin installers as installer-owned default-location installs unless vendor documentation explicitly says a custom target directory is the normal supported deployment path for that installer. Do not force package-managed `installDirectory` into an admin installer just because the package engine likes package-owned directories. For machine/admin installers, prefer the vendor default location plus registry/existing-install discovery and installer-backed removal when available; use `targetKind: machinePrerequisite` or stop for a schema/runtime decision when the current schema cannot represent the desired installer-owned application state. Package-managed install directories are a better fit for portable archives, file placement, user installers that document per-user target selection, and installer adapters whose schema explicitly owns `installDirectory`.
+
 Choose the install operation shape from the schema, not from a guessed product-specific label. Prefer the dedicated schema adapters when they fit (`nsisInstaller`, `innoSetupInstaller`, `msiInstaller`, `powershellModuleInstaller`, `expandArchive`, and so on). Use generic `runInstaller` only when the schema's `assignRunInstaller` shape exactly fits the package. `runInstaller.installerKind` is descriptive metadata for logging; it does not create a new adapter and it does not permit extra properties outside the schema. If a custom installer needs a target-directory property that the selected schema shape does not allow, stop and ask for a schema/runtime decision instead of adding an unsupported property.
 
 Do not mix artifact kinds by accident. If the existing definition is for a user installer, update from the user-installer source. If it is for a portable/runtime package, update from the matching portable/runtime source. If intent is unclear, stop and ask the user before switching installer kind.
@@ -281,9 +288,10 @@ Use this workflow when asked to check or update an existing package definition t
 6. If the definition already contains the latest stable version and all hashes still match the upstream artifacts, do not edit or re-sign the JSON. Report that it is current.
 7. If a newer stable version exists, update the release entry or add a new release following the existing file's retention pattern. If retention is unclear, add the new release and leave older releases unchanged.
 8. Refresh every target artifact for that release together. Do not update only one architecture when the definition contains multiple stable targets.
-9. Download each upstream artifact through the source model declared in the definition, compute the declared `contentHash`, and verify any declared `publisherSignature`. Do not run or install the downloaded artifact; see **No Installer Execution During Authoring**.
-10. Bump `definitionRevision`, refresh `publishedAtUtc`, then sign or re-sign after all semantic JSON edits are finished.
-11. Run **Publication finalization** before handoff.
+9. Resolve the exact artifact URL or path from the definition's own source model before downloading. Verify that this exact resolved location works for every target; do not download from a corrected/manual URL while leaving a broken `baseUri`/`sourcePath`/`urlTemplate` in JSON.
+10. Download each upstream artifact through the source model declared in the definition, compute the declared `contentHash`, and verify any declared `publisherSignature`. Do not run or install the downloaded artifact; see **No Installer Execution During Authoring**.
+11. Bump `definitionRevision`, refresh `publishedAtUtc`, then sign or re-sign after all semantic JSON edits are finished and no known runtime blocker remains.
+12. Run **Publication finalization** before handoff.
 
 Stop if the latest version cannot be proven from official sources, an artifact for any required target is missing, a hash cannot be verified, or an expected publisher signature no longer matches.
 
@@ -295,7 +303,10 @@ Stop if the latest version cannot be proven from official sources, an artifact f
 - Dependencies use `dependency.requires[]`.
 - Coexistence policy uses `dependency.policy.conflictsWith[]` or `dependency.policy.requiresAbsent[]` only when the user's intent is explicit.
 - Download URLs, checksums, installer arguments, and materialization paths are reviewable.
+- Every `vendorDownload` candidate resolves to the exact artifact location that was checked for existence, hash, and publisher signature.
 - `packageOperations.assigned.install` uses one exact schema-defined operation shape; no extra fields are added to make a custom installer work.
+- `discovery.presence` and `readyStateCheck.require` can succeed for every selectable artifact target. If separate x64/x86 targets install different executable names, use an artifact that satisfies one shared readiness model or stop for a schema/runtime decision.
+- Do not sign or publish JSON with a known acquisition, readiness, or install-time blocker unless the user explicitly requested a signed blocked artifact for testing.
 - No credentials, tokens, local private paths, or machine-specific secrets are embedded.
 - `definitionSignature.kind` is `unsigned` only while drafting or when explicitly requested.
 
