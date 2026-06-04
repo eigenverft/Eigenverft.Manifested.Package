@@ -336,6 +336,170 @@ function Add-PackageDefinitionCatalogValidationReferenceIssue {
     Add-PackageDefinitionCatalogValidationIssue -Issues $Entry.Issues -Issue (New-PackageDefinitionCatalogValidationIssue -Severity Error -Code $code -Path ([string]$Entry.Path) -PublisherId ([string]$Entry.PublisherId) -DefinitionId ([string]$Entry.DefinitionId) -JsonPath $JsonPath -Concept $concept -Message $message -SuggestedFix $fix) | Out-Null
 }
 
+function Add-PackageDefinitionCatalogSemanticWarning {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$Entry,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Code,
+
+        [Parameter(Mandatory = $true)]
+        [string]$JsonPath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Concept,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Message,
+
+        [Parameter(Mandatory = $true)]
+        [string]$SuggestedFix
+    )
+
+    Add-PackageDefinitionCatalogValidationIssue -Issues $Entry.Issues -Issue (New-PackageDefinitionCatalogValidationIssue -Severity Warning -Code $Code -Path ([string]$Entry.Path) -PublisherId ([string]$Entry.PublisherId) -DefinitionId ([string]$Entry.DefinitionId) -JsonPath $JsonPath -Concept $Concept -Message $Message -SuggestedFix $SuggestedFix) | Out-Null
+}
+
+function Get-PackageDefinitionCatalogRequiredPresenceNames {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [psobject]$Require = $null
+    )
+
+    if (-not $Require) {
+        return @()
+    }
+
+    return @(
+        foreach ($name in @('files', 'directories', 'commands', 'apps', 'metadataFiles', 'signatures', 'fileDetails', 'registry', 'powerShellModules')) {
+            if ($Require.PSObject.Properties[$name] -and [bool]$Require.$name) {
+                $name
+            }
+        }
+    )
+}
+
+function Test-PackageDefinitionCatalogSemanticWarnings {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [object[]]$Entries
+    )
+
+    $schemaValidEntries = @($Entries | Where-Object { [bool]$_.SchemaValid })
+    foreach ($entry in @($schemaValidEntries)) {
+        $definition = $entry.Document
+        if (-not $definition -or -not $definition.PSObject.Properties['packageOperations']) {
+            continue
+        }
+
+        $assigned = $definition.packageOperations.assigned
+        $install = if ($assigned -and $assigned.PSObject.Properties['install']) { $assigned.install } else { $null }
+        if (-not $install) {
+            continue
+        }
+
+        $installKind = if ($install.PSObject.Properties['kind']) { [string]$install.kind } else { $null }
+        $targetKind = if ($install.PSObject.Properties['targetKind'] -and -not [string]::IsNullOrWhiteSpace([string]$install.targetKind)) {
+            [string]$install.targetKind
+        }
+        else {
+            'directory'
+        }
+        $hasInstallDirectory = $install.PSObject.Properties['installDirectory'] -and -not [string]::IsNullOrWhiteSpace([string]$install.installDirectory)
+        $isMachinePrerequisite = [string]::Equals($targetKind, 'machinePrerequisite', [System.StringComparison]::OrdinalIgnoreCase)
+        $installDirectoryOptionalKinds = @('reuseExisting', 'powershellModuleInstaller')
+        $installKindAllowsMissingDirectory = @($installDirectoryOptionalKinds | Where-Object { [string]::Equals($_, $installKind, [System.StringComparison]::OrdinalIgnoreCase) }).Count -gt 0
+
+        if (-not $hasInstallDirectory -and -not $isMachinePrerequisite -and -not $installKindAllowsMissingDirectory) {
+            Add-PackageDefinitionCatalogSemanticWarning -Entry $entry -Code PackageDefinitionInstallTargetMissing -JsonPath 'packageOperations.assigned.install' -Concept 'install.targetPath' -Message ("Package definition '$($entry.DefinitionId)' uses assigned install kind '$installKind' without installDirectory and without targetKind='machinePrerequisite'. Runtime path resolution usually requires an install target path for this operation.") -SuggestedFix "Add packageOperations.assigned.install.installDirectory, change targetKind to machinePrerequisite only when readiness is install-root-free, or choose a schema operation that does not require a package-owned install directory."
+        }
+
+        $argumentsWithInstallDirectory = @(
+            foreach ($argument in @($install.commandArguments)) {
+                if ($null -ne $argument -and [string]$argument -match '\{installDirectory\}') {
+                    [string]$argument
+                }
+            }
+        )
+        if ($argumentsWithInstallDirectory.Count -gt 0 -and (-not $hasInstallDirectory -or $isMachinePrerequisite)) {
+            Add-PackageDefinitionCatalogSemanticWarning -Entry $entry -Code PackageDefinitionInstallDirectoryArgumentWithoutTarget -JsonPath 'packageOperations.assigned.install.commandArguments' -Concept 'install.arguments.installDirectory' -Message ("Package definition '$($entry.DefinitionId)' passes {installDirectory} in installer arguments, but the install operation does not own an installDirectory usable by that argument.") -SuggestedFix 'Remove the custom install-directory argument, add a real schema installDirectory only for package-managed installs, or stop if the installer-owned default location cannot be represented safely.'
+        }
+
+        $readyRequire = if ($assigned.PSObject.Properties['readyStateCheck'] -and $assigned.readyStateCheck.PSObject.Properties['require']) {
+            $assigned.readyStateCheck.require
+        }
+        else {
+            $null
+        }
+        $readyRequired = @(Get-PackageDefinitionCatalogRequiredPresenceNames -Require $readyRequire)
+        $installRootReadinessNames = @($readyRequired | Where-Object { $_ -in @('files', 'directories', 'commands', 'apps', 'metadataFiles', 'signatures', 'fileDetails') })
+        $installRootFree = $isMachinePrerequisite -or (-not $hasInstallDirectory -and -not $installKindAllowsMissingDirectory)
+        if ($installRootFree -and $installRootReadinessNames.Count -gt 0) {
+            Add-PackageDefinitionCatalogSemanticWarning -Entry $entry -Code PackageDefinitionInstallRootReadinessWithoutInstallRoot -JsonPath 'packageOperations.assigned.readyStateCheck.require' -Concept 'readiness.installRoot' -Message ("Package definition '$($entry.DefinitionId)' requires install-root readiness checks ($($installRootReadinessNames -join ', ')) but the install operation is install-root-free.") -SuggestedFix 'Use only registry, PowerShell module, or other install-root-free readiness signals, or stop until the schema/runtime can discover the installer-owned install root.'
+        }
+
+        $targets = if ($definition.PSObject.Properties['artifacts'] -and $definition.artifacts.PSObject.Properties['targets']) { @($definition.artifacts.targets) } else { @() }
+        $cpuValues = @(
+            foreach ($target in @($targets)) {
+                if ($target.PSObject.Properties['constraints'] -and $target.constraints.PSObject.Properties['cpu']) {
+                    foreach ($cpu in @($target.constraints.cpu)) {
+                        if (-not [string]::IsNullOrWhiteSpace([string]$cpu)) {
+                            [string]$cpu
+                        }
+                    }
+                }
+            }
+        ) | Sort-Object -Unique
+        $architectureSpecificReadinessPaths = @()
+        if ($cpuValues.Count -gt 1 -and $installRootReadinessNames.Count -gt 0 -and $definition.PSObject.Properties['discovery'] -and $definition.discovery.PSObject.Properties['presence']) {
+            $presence = $definition.discovery.presence
+            $readinessPathCandidates = New-Object System.Collections.Generic.List[string]
+            foreach ($pathText in @($presence.files) + @($presence.directories)) {
+                if (-not [string]::IsNullOrWhiteSpace([string]$pathText)) {
+                    $readinessPathCandidates.Add([string]$pathText) | Out-Null
+                }
+            }
+            foreach ($entryPoint in @($presence.commands) + @($presence.apps) + @($presence.signatures) + @($presence.fileDetails) + @($presence.metadataFiles)) {
+                if ($entryPoint -and $entryPoint.PSObject.Properties['relativePath'] -and -not [string]::IsNullOrWhiteSpace([string]$entryPoint.relativePath)) {
+                    $readinessPathCandidates.Add([string]$entryPoint.relativePath) | Out-Null
+                }
+            }
+            $architectureSpecificReadinessPaths = @(
+                $readinessPathCandidates.ToArray() |
+                    Where-Object { [regex]::IsMatch([string]$_, '(?i)(x64|x86|amd64|arm64|aarch64|win64|win32|64(?=\.|_|-|$)|32(?=\.|_|-|$))') } |
+                    Sort-Object -Unique
+            )
+        }
+        if ($cpuValues.Count -gt 1 -and $architectureSpecificReadinessPaths.Count -gt 0) {
+            Add-PackageDefinitionCatalogSemanticWarning -Entry $entry -Code PackageDefinitionSharedReadinessAcrossArchitectures -JsonPath 'discovery.presence' -Concept 'readiness.targetArchitecture' -Message ("Package definition '$($entry.DefinitionId)' has multiple CPU targets ($($cpuValues -join ', ')) but shared readiness contains architecture-specific install-root paths: $($architectureSpecificReadinessPaths -join ', '). A shared readiness model must be valid for every selectable target.") -SuggestedFix 'Use an artifact that satisfies one shared readiness model, make readiness target-independent, or stop for a schema/runtime decision before mixing architecture-specific executable/file expectations.'
+        }
+
+        $removed = if ($definition.packageOperations.PSObject.Properties['removed']) { $definition.packageOperations.removed } else { $null }
+        if ($removed) {
+            $operation = if ($removed.PSObject.Properties['operation']) { $removed.operation } else { $null }
+            $operationKind = if ($operation -and $operation.PSObject.Properties['kind']) { [string]$operation.kind } else { $null }
+            $absenceRequire = if ($removed.PSObject.Properties['absenceVerification'] -and $removed.absenceVerification.PSObject.Properties['require']) {
+                $removed.absenceVerification.require
+            }
+            else {
+                $null
+            }
+            $absenceRequired = @(Get-PackageDefinitionCatalogRequiredPresenceNames -Require $absenceRequire)
+            if ([string]::Equals($operationKind, 'none', [System.StringComparison]::OrdinalIgnoreCase) -and $absenceRequired.Count -gt 0) {
+                Add-PackageDefinitionCatalogSemanticWarning -Entry $entry -Code PackageDefinitionNoOpRemovalRequiresAbsence -JsonPath 'packageOperations.removed.absenceVerification.require' -Concept 'removed.noopAbsence' -Message ("Package definition '$($entry.DefinitionId)' uses removed.operation.kind='none' but still requires absence signals after removal: $($absenceRequired -join ', '). A no-op removal cannot make those signals absent.") -SuggestedFix 'Use a schema-supported uninstaller/removal operation, disable absence requirements that the no-op cannot change, or stop if removed state cannot be represented.'
+            }
+        }
+
+        if ($isMachinePrerequisite -and -not $hasInstallDirectory) {
+            Add-PackageDefinitionCatalogSemanticWarning -Entry $entry -Code PackageDefinitionMachinePrerequisiteRemovalInventoryRisk -JsonPath 'packageOperations.assigned.install.targetKind' -Concept 'removed.inventoryInstallDirectory' -Message ("Package definition '$($entry.DefinitionId)' is a machinePrerequisite without installDirectory. Assignment can create a PackageApplied inventory record without installDirectory, while removal flows currently require inventory.installDirectory before executing removed.operation.") -SuggestedFix 'Prove removed-state handling does not require inventory.installDirectory, avoid claiming removed-state support, or add schema/runtime support for machine-prerequisite forget/removal semantics.'
+        }
+    }
+}
+
 function Test-PackageDefinitionCatalogStaticReferences {
     [CmdletBinding()]
     param(
@@ -514,6 +678,7 @@ function Invoke-PackageDefinitionCatalogValidation {
             Add-PackageDefinitionCatalogMixedSchemaVersionIssues -Entries @($entries.ToArray()) -StrictSchemaVersion:$StrictSchemaVersion
             Test-PackageDefinitionCatalogStaticReferences -Entries @($entries.ToArray())
         }
+        Test-PackageDefinitionCatalogSemanticWarnings -Entries @($entries.ToArray())
     }
     finally {
         if ($certificate) {

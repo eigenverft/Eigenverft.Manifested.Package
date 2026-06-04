@@ -156,9 +156,11 @@ Use a compact table or bullet list with one row per relevant check:
 - `Publisher signature verification`
 - `Target/readiness consistency`
 - `Install-root-free readiness compatibility`
+- `Removed-state operation/absence compatibility`
 - `Known runtime blocker status`
 - `Raw JSON schema validation`
 - `Test-PackageDefinitionCatalog`
+- `Catalog warning review`
 - `Signing or re-signing`
 - `Trusted signature/catalog verification`
 - `Repository status` (local Git working tree only)
@@ -170,6 +172,10 @@ For installer-backed definitions, the installer evidence rows are required and m
 For machine/admin installers, the default-location decision row must say whether custom install-directory arguments were omitted. If they were not omitted, cite the user request or vendor documentation that explicitly requires a custom target directory for normal deployment.
 
 If the install operation has no schema `installDirectory`, or `assigned.install.targetKind` is `machinePrerequisite`, the install-root-free readiness row is required. It must say which readiness and removal checks were reviewed and whether any install-relative checks remain.
+
+The removed-state operation/absence row must say whether `packageOperations.removed.operation` can actually make every required `absenceVerification` signal absent. If it cannot, mark the row `Failed` and stop instead of signing or publishing.
+
+The catalog warning review row must report `WarningCount` and list or summarize every warning from `Test-PackageDefinitionCatalog.Issues`. A package is not complete when warnings are unexplained; either fix them, mark them as intentionally acceptable with evidence, or stop.
 
 The resolved acquisition URL row must show the exact final URL or path after `baseUri`, `sourcePath`, `urlTemplate`, `{version}`, and `{releaseTag}` resolution for every target artifact. Do not count a hash check as passed if the JSON would resolve to a different URL or path than the one actually downloaded.
 
@@ -286,7 +292,9 @@ For machine/admin installers, prefer the vendor default location plus registry/e
 
 Install-root-free means no install-relative runtime checks. When `assigned.install.targetKind` is `machinePrerequisite`, or when the selected install operation has no schema `installDirectory`, do not use readiness `files`, `directories`, `commandChecks`, `metadataFiles`, `signatures`, or `fileDetails`, and do not define app/file probes that depend on an installed-directory-relative path. Use only registry, PowerShell module, or other machine-level signals that the runtime can evaluate without `InstallDirectory`. If the intended package needs installed files, app launchers, signatures, or file details to prove readiness, stop for a schema/runtime decision.
 
-Apply the same compatibility rule to removal. If `packageOperations.removed.operation.kind` is `none`, do not require absence checks that depend on install-relative files, directories, apps, signatures, file details, metadata files, or command checks. Use only absence signals that the runtime can evaluate without an uninstall action and without an install directory, or stop and report that removed-state verification cannot be represented.
+Removed-state checks must match the removed operation. If `packageOperations.removed.operation.kind` is `none`, absence verification may only require checks that are already expected to be absent before removal. Do not require registry, file, directory, app, command, signature, file-detail, metadata-file, or PowerShell-module absence after a no-op removal. If the package should actually uninstall software, use a schema-supported uninstaller operation or stop.
+
+For `machinePrerequisite` installs with no `installDirectory`, removed-state support is runtime-sensitive. Do not publish a definition that can create a `PackageApplied` inventory record without an install directory unless removed-state handling is proven not to require `inventory.installDirectory`. If that cannot be proven from runtime code or an executed non-destructive validation command, stop and report the blocker.
 
 Sanity check before signing: if `assigned.install.commandArguments` contains `{installDirectory}`, the selected install operation must have a real schema `installDirectory` property and the artifact branch above must be package-managed. Otherwise remove the custom directory argument or stop.
 
@@ -329,7 +337,8 @@ Stop if the latest version cannot be proven from official sources, an artifact f
 - `packageOperations.assigned.install` uses one exact schema-defined operation shape; no extra fields are added to make a custom installer work.
 - Machine/admin installer command arguments omit custom install-directory values unless explicitly required by the user or vendor documentation.
 - If `assigned.install.targetKind` is `machinePrerequisite`, or the install operation has no schema `installDirectory`, readiness is install-root-free: no readiness `files`, `directories`, `commandChecks`, `metadataFiles`, `signatures`, `fileDetails`, or app/file probes that depend on an install-relative path.
-- If `packageOperations.removed.operation.kind` is `none`, absence verification does not require install-relative files, directories, apps, signatures, file details, metadata files, or command checks.
+- If `packageOperations.removed.operation.kind` is `none`, absence verification does not require registry, files, directories, commands, apps, signatures, file details, metadata files, or PowerShell modules unless those signals are already expected to be absent before removal.
+- If `assigned.install.targetKind` is `machinePrerequisite` and the install operation has no schema `installDirectory`, removed-state handling is proven not to require `inventory.installDirectory`; otherwise removed state is blocked.
 - `discovery.presence` and `readyStateCheck.require` can succeed for every selectable artifact target. If separate x64/x86 targets install different executable names, use an artifact that satisfies one shared readiness model or stop for a schema/runtime decision.
 - Do not sign or publish JSON with a known acquisition, readiness, or install-time blocker unless the user explicitly requested a signed blocked artifact for testing.
 - No credentials, tokens, local private paths, or machine-specific secrets are embedded.
@@ -349,7 +358,7 @@ Validate an endpoint folder before publication:
 Test-PackageDefinitionCatalog -Path '<endpoint-root>' -RequireTrusted -ErrorOnFailure
 ```
 
-Treat validation issues as blockers until the user says otherwise. Do not use `Verify-PackageDefinitionCatalog` as a replacement for schema and reference validation; it checks signature and trust summary, while `Test-PackageDefinitionCatalog` checks parse, schema, signature/trust status, duplicate identities, and static dependency references.
+Treat validation errors as blockers until the user says otherwise. Treat validation warnings as review blockers until each warning is fixed or explicitly justified in the `Check Result`. Do not rely only on `Valid = true`; inspect `ErrorCount`, `WarningCount`, and `Issues`. Do not use `Verify-PackageDefinitionCatalog` as a replacement for schema and reference validation; it checks signature and trust summary, while `Test-PackageDefinitionCatalog` checks parse, schema, signature/trust status, duplicate identities, and static dependency references.
 
 Also run raw JSON Schema validation when the current host supports `Test-Json`; PowerShell 7 usually does. This catches schema-shape errors before signing:
 

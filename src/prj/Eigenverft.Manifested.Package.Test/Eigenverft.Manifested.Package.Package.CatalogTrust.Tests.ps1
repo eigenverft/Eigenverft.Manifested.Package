@@ -677,6 +677,67 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - catalo
         @($strictReport.Issues | Where-Object { [string]$_.Code -eq 'CatalogMixedSchemaVersion' -and [string]$_.Severity -eq 'Error' }).Count | Should -BeGreaterThan 0
     }
 
+    It 'reports semantic warnings for installer, readiness, removal, and architecture-risk shapes' {
+        $rootPath = Join-Path $TestDrive 'catalog-validation-semantic-warnings'
+        $catalogRoot = Join-Path $rootPath 'Catalog'
+
+        $missingTargetDefinition = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -DefinitionId 'MissingInstallTarget' -Releases @(
+                New-TestPackageRelease -Id 'missing-target-win-x64-stable' -Version '1.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+            ))
+        $missingTargetDefinition.packageOperations.assigned.install = [pscustomobject]@{
+            kind             = 'runInstaller'
+            targetKind       = 'directory'
+            installerKind    = 'customExe'
+            uiMode           = 'silent'
+            elevation        = 'required'
+            timeoutSec       = 60
+            commandArguments = @('/S')
+            successExitCodes = @(0)
+            restartExitCodes = @()
+        }
+
+        $machinePrerequisiteDefinition = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -DefinitionId 'MachinePrerequisiteRisk' -Releases @(
+                New-TestPackageRelease -Id 'machine-prereq-win-x64-stable' -Version '1.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+            ))
+        $machinePrerequisiteDefinition.packageOperations.assigned.install = [pscustomobject]@{
+            kind             = 'runInstaller'
+            targetKind       = 'machinePrerequisite'
+            installerKind    = 'customExe'
+            uiMode           = 'silent'
+            elevation        = 'required'
+            timeoutSec       = 60
+            commandArguments = @('/S', '{installDirectory}')
+            successExitCodes = @(0)
+            restartExitCodes = @()
+        }
+        $machinePrerequisiteDefinition.packageOperations.removed.operation = [pscustomobject]@{
+            kind = 'none'
+        }
+        $machinePrerequisiteDefinition.packageOperations.removed.absenceVerification.require.registry = $true
+
+        $multiArchDefinition = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -DefinitionId 'SharedReadinessMultiArch' -Releases @(
+                New-TestPackageRelease -Id 'multi-arch-win-x64-stable' -Version '1.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+                New-TestPackageRelease -Id 'multi-arch-win-x86-stable' -Version '1.0.0' -Architecture 'x86' -ArtifactDistributionVariant 'win32-x86'
+            ))
+        $multiArchDefinition.discovery.presence.files = @('TOTALCMD64.EXE', 'TOTALCMD.EXE')
+        $multiArchDefinition.packageOperations.assigned.readyStateCheck.require.files = $true
+
+        Write-TestJsonDocument -Path (Join-Path $catalogRoot 'MissingInstallTarget.json') -Document $missingTargetDefinition
+        Write-TestJsonDocument -Path (Join-Path $catalogRoot 'MachinePrerequisiteRisk.json') -Document $machinePrerequisiteDefinition
+        Write-TestJsonDocument -Path (Join-Path $catalogRoot 'SharedReadinessMultiArch.json') -Document $multiArchDefinition
+
+        $report = Test-PackageDefinitionCatalog -Path $catalogRoot
+        $codes = @($report.Issues | Where-Object { [string]$_.Severity -eq 'Warning' } | ForEach-Object { [string]$_.Code })
+
+        $report.Valid | Should -BeTrue
+        $codes | Should -Contain 'PackageDefinitionInstallTargetMissing'
+        $codes | Should -Contain 'PackageDefinitionInstallDirectoryArgumentWithoutTarget'
+        $codes | Should -Contain 'PackageDefinitionInstallRootReadinessWithoutInstallRoot'
+        $codes | Should -Contain 'PackageDefinitionNoOpRemovalRequiresAbsence'
+        $codes | Should -Contain 'PackageDefinitionMachinePrerequisiteRemovalInventoryRisk'
+        $codes | Should -Contain 'PackageDefinitionSharedReadinessAcrossArchitectures'
+    }
+
     It 'validates the shipped Eigenverft package-definition catalog as trusted' {
         $definitionRoot = Join-Path (Get-PackageShippedEndpointRoot) 'Defaults\Eigenverft'
 
