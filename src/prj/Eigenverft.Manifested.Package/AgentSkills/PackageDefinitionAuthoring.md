@@ -150,6 +150,7 @@ Use a compact table or bullet list with one row per relevant check:
 - `Generic installer kind corroboration`
 - `Vendor installer switch evidence`
 - `Generic installer switch corroboration`
+- `Installer-owned default-location decision`
 - `Resolved acquisition URL verification`
 - `Artifact hash verification`
 - `Publisher signature verification`
@@ -164,6 +165,8 @@ Use a compact table or bullet list with one row per relevant check:
 Each row must include `Status`, `Evidence`, and `Command/source`. Valid statuses are `Passed`, `Failed`, `Not run`, and `Not applicable`.
 
 For installer-backed definitions, the installer evidence rows are required and must cite the exact JSON behavior they justify: `packageOperations.assigned.install.kind`, any `installerKind`, `commandArguments`, target-directory argument/property behavior, force/update semantics, shortcut or registry side effects when relevant, and elevation assumptions. Use `Not applicable` only for definitions with no installer command surface to validate, such as pure archive extraction, file placement, or PowerShell module installs.
+
+For machine/admin installers, the default-location decision row must say whether custom install-directory arguments were omitted. If they were not omitted, cite the user request or vendor documentation that explicitly requires a custom target directory for normal deployment.
 
 The resolved acquisition URL row must show the exact final URL or path after `baseUri`, `sourcePath`, `urlTemplate`, `{version}`, and `{releaseTag}` resolution for every target artifact. Do not count a hash check as passed if the JSON would resolve to a different URL or path than the one actually downloaded.
 
@@ -268,9 +271,11 @@ Carry the discovered installer evidence into the final `Check Result`; the hando
 
 Discover whether the vendor ships multiple artifact kinds for the same product, such as portable archives, user installers, machine/admin installers, MSI packages, app-store packages, or architecture-specific builds. Prefer a vendor-published portable archive when it fits the package intent. Otherwise prefer a user-scoped installer over a machine/admin installer. Use admin or machine-wide installers only when the user's intent and documentation explicitly require that scope - not because an elevated trial install was run.
 
-Treat machine/admin installers as installer-owned default-location installs unless vendor documentation explicitly says a custom target directory is the normal supported deployment path for that installer. Do not force package-managed `installDirectory` into an admin installer just because the package engine likes package-owned directories. For machine/admin installers, prefer the vendor default location plus registry/existing-install discovery and installer-backed removal when available; use `targetKind: machinePrerequisite` or stop for a schema/runtime decision when the current schema cannot represent the desired installer-owned application state. Package-managed install directories are a better fit for portable archives, file placement, user installers that document per-user target selection, and installer adapters whose schema explicitly owns `installDirectory`.
+**Hard stop for admin installers:** omit custom install-directory arguments unless the user explicitly asked for a non-default location or vendor documentation says custom target directories are the normal deployment path. Do not pass `{installDirectory}` or invent a package-owned install path for machine/admin installers.
 
-Choose the install operation shape from the schema, not from a guessed product-specific label. Prefer the dedicated schema adapters when they fit (`nsisInstaller`, `innoSetupInstaller`, `msiInstaller`, `powershellModuleInstaller`, `expandArchive`, and so on). Use generic `runInstaller` only when the schema's `assignRunInstaller` shape exactly fits the package. `runInstaller.installerKind` is descriptive metadata for logging; it does not create a new adapter and it does not permit extra properties outside the schema. If a custom installer needs a target-directory property that the selected schema shape does not allow, stop and ask for a schema/runtime decision instead of adding an unsupported property.
+Treat machine/admin installers as installer-owned default-location installs. Do not force package-managed `installDirectory` into an admin installer just because the package engine likes package-owned directories. For machine/admin installers, prefer the vendor default location plus registry/existing-install discovery and installer-backed removal when available; use `targetKind: machinePrerequisite` or stop for a schema/runtime decision when the current schema cannot represent the desired installer-owned application state. Package-managed install directories are a better fit for portable archives, file placement, user installers that document per-user target selection, and installer adapters whose schema explicitly owns `installDirectory`.
+
+Choose the install operation shape from the schema, not from a guessed product-specific label. Prefer the dedicated schema adapters when they fit (`nsisInstaller`, `innoSetupInstaller`, `msiInstaller`, `powershellModuleInstaller`, `expandArchive`, and so on). Dedicated adapters are allowed only when vendor documentation or static evidence identifies the installer as that technology; do not use `nsisInstaller` or `innoSetupInstaller` as a workaround to gain `installDirectory` handling for a custom EXE. Use generic `runInstaller` only when the schema's `assignRunInstaller` shape exactly fits the package. `runInstaller.installerKind` is descriptive metadata for logging; it does not create a new adapter and it does not permit extra properties outside the schema. If a custom installer needs a target-directory property that the selected schema shape does not allow, stop and ask for a schema/runtime decision instead of adding an unsupported property.
 
 Do not mix artifact kinds by accident. If the existing definition is for a user installer, update from the user-installer source. If it is for a portable/runtime package, update from the matching portable/runtime source. If intent is unclear, stop and ask the user before switching installer kind.
 
@@ -305,6 +310,7 @@ Stop if the latest version cannot be proven from official sources, an artifact f
 - Download URLs, checksums, installer arguments, and materialization paths are reviewable.
 - Every `vendorDownload` candidate resolves to the exact artifact location that was checked for existence, hash, and publisher signature.
 - `packageOperations.assigned.install` uses one exact schema-defined operation shape; no extra fields are added to make a custom installer work.
+- Machine/admin installer command arguments omit custom install-directory values unless explicitly required by the user or vendor documentation.
 - `discovery.presence` and `readyStateCheck.require` can succeed for every selectable artifact target. If separate x64/x86 targets install different executable names, use an artifact that satisfies one shared readiness model or stop for a schema/runtime decision.
 - Do not sign or publish JSON with a known acquisition, readiness, or install-time blocker unless the user explicitly requested a signed blocked artifact for testing.
 - No credentials, tokens, local private paths, or machine-specific secrets are embedded.
