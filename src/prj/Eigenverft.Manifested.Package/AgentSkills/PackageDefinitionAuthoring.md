@@ -155,6 +155,7 @@ Use a compact table or bullet list with one row per relevant check:
 - `Artifact hash verification`
 - `Publisher signature verification`
 - `Target/readiness consistency`
+- `Install-root-free readiness compatibility`
 - `Known runtime blocker status`
 - `Raw JSON schema validation`
 - `Test-PackageDefinitionCatalog`
@@ -167,6 +168,8 @@ Each row must include `Status`, `Evidence`, and `Command/source`. Valid statuses
 For installer-backed definitions, the installer evidence rows are required and must cite the exact JSON behavior they justify: `packageOperations.assigned.install.kind`, any `installerKind`, `commandArguments`, target-directory argument/property behavior, force/update semantics, shortcut or registry side effects when relevant, and elevation assumptions. Use `Not applicable` only for definitions with no installer command surface to validate, such as pure archive extraction, file placement, or PowerShell module installs.
 
 For machine/admin installers, the default-location decision row must say whether custom install-directory arguments were omitted. If they were not omitted, cite the user request or vendor documentation that explicitly requires a custom target directory for normal deployment.
+
+If the install operation has no schema `installDirectory`, or `assigned.install.targetKind` is `machinePrerequisite`, the install-root-free readiness row is required. It must say which readiness and removal checks were reviewed and whether any install-relative checks remain.
 
 The resolved acquisition URL row must show the exact final URL or path after `baseUri`, `sourcePath`, `urlTemplate`, `{version}`, and `{releaseTag}` resolution for every target artifact. Do not count a hash check as passed if the JSON would resolve to a different URL or path than the one actually downloaded.
 
@@ -281,6 +284,10 @@ Before writing `packageOperations.assigned.install`, classify the artifact in th
 
 For machine/admin installers, prefer the vendor default location plus registry/existing-install discovery and installer-backed removal when available. If using `runInstaller`, `targetKind: machinePrerequisite` is acceptable only when readiness can be proven without an install-directory root, such as registry checks or another machine-level signal. If the package must expose app files, shims, or relative file probes but the schema cannot discover the installer-owned directory after install, stop instead of inventing a package-owned install path.
 
+Install-root-free means no install-relative runtime checks. When `assigned.install.targetKind` is `machinePrerequisite`, or when the selected install operation has no schema `installDirectory`, do not use readiness `files`, `directories`, `commandChecks`, `metadataFiles`, `signatures`, or `fileDetails`, and do not define app/file probes that depend on an installed-directory-relative path. Use only registry, PowerShell module, or other machine-level signals that the runtime can evaluate without `InstallDirectory`. If the intended package needs installed files, app launchers, signatures, or file details to prove readiness, stop for a schema/runtime decision.
+
+Apply the same compatibility rule to removal. If `packageOperations.removed.operation.kind` is `none`, do not require absence checks that depend on install-relative files, directories, apps, signatures, file details, metadata files, or command checks. Use only absence signals that the runtime can evaluate without an uninstall action and without an install directory, or stop and report that removed-state verification cannot be represented.
+
 Sanity check before signing: if `assigned.install.commandArguments` contains `{installDirectory}`, the selected install operation must have a real schema `installDirectory` property and the artifact branch above must be package-managed. Otherwise remove the custom directory argument or stop.
 
 Total Commander-style example: a vendor custom EXE admin installer is not NSIS or Inno just because it accepts silent switches and an install folder. Do not model it as `nsisInstaller` or `innoSetupInstaller`, and do not pass `{installDirectory}` unless the user explicitly asked for a custom location.
@@ -321,6 +328,8 @@ Stop if the latest version cannot be proven from official sources, an artifact f
 - Every `vendorDownload` candidate resolves to the exact artifact location that was checked for existence, hash, and publisher signature.
 - `packageOperations.assigned.install` uses one exact schema-defined operation shape; no extra fields are added to make a custom installer work.
 - Machine/admin installer command arguments omit custom install-directory values unless explicitly required by the user or vendor documentation.
+- If `assigned.install.targetKind` is `machinePrerequisite`, or the install operation has no schema `installDirectory`, readiness is install-root-free: no readiness `files`, `directories`, `commandChecks`, `metadataFiles`, `signatures`, `fileDetails`, or app/file probes that depend on an install-relative path.
+- If `packageOperations.removed.operation.kind` is `none`, absence verification does not require install-relative files, directories, apps, signatures, file details, metadata files, or command checks.
 - `discovery.presence` and `readyStateCheck.require` can succeed for every selectable artifact target. If separate x64/x86 targets install different executable names, use an artifact that satisfies one shared readiness model or stop for a schema/runtime decision.
 - Do not sign or publish JSON with a known acquisition, readiness, or install-time blocker unless the user explicitly requested a signed blocked artifact for testing.
 - No credentials, tokens, local private paths, or machine-specific secrets are embedded.
