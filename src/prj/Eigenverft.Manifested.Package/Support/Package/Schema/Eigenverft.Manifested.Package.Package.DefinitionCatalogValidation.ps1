@@ -381,6 +381,112 @@ function Get-PackageDefinitionCatalogRequiredPresenceNames {
     )
 }
 
+function Get-PackageDefinitionCatalogEmptyRequiredPresenceNames {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [psobject]$Definition = $null,
+
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [string[]]$RequiredNames
+    )
+
+    $presence = if ($Definition -and
+        $Definition.PSObject.Properties['discovery'] -and
+        $Definition.discovery.PSObject.Properties['presence']) {
+        $Definition.discovery.presence
+    }
+    else {
+        $null
+    }
+
+    return @(
+        foreach ($name in @($RequiredNames)) {
+            $entryCount = if ($presence -and $presence.PSObject.Properties[$name]) {
+                @($presence.$name).Count
+            }
+            else {
+                0
+            }
+
+            if ($entryCount -eq 0) {
+                $name
+            }
+        }
+    )
+}
+
+function Test-PackageDefinitionCatalogMachinePrerequisiteForgetOnlyRemoval {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$Definition
+    )
+
+    $assigned = if ($Definition.PSObject.Properties['packageOperations'] -and $Definition.packageOperations.PSObject.Properties['assigned']) {
+        $Definition.packageOperations.assigned
+    }
+    else { $null }
+    $removed = if ($Definition.PSObject.Properties['packageOperations'] -and $Definition.packageOperations.PSObject.Properties['removed']) {
+        $Definition.packageOperations.removed
+    }
+    else { $null }
+
+    if (-not $assigned -or -not $removed) {
+        return $false
+    }
+
+    $operation = if ($removed.PSObject.Properties['operation']) { $removed.operation } else { $null }
+    $operationKind = if ($operation -and $operation.PSObject.Properties['kind']) { [string]$operation.kind } else { $null }
+    if (-not [string]::Equals($operationKind, 'none', [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $false
+    }
+
+    $absenceRequire = if ($removed.PSObject.Properties['absenceVerification'] -and $removed.absenceVerification.PSObject.Properties['require']) {
+        $removed.absenceVerification.require
+    }
+    else {
+        $null
+    }
+    if (@(Get-PackageDefinitionCatalogRequiredPresenceNames -Require $absenceRequire).Count -gt 0) {
+        return $false
+    }
+
+    $policy = if ($removed.PSObject.Properties['policy']) { $removed.policy } else { $null }
+    $allowedKinds = if ($policy -and $policy.PSObject.Properties['allowedInventoryOwnershipKinds']) {
+        @($policy.allowedInventoryOwnershipKinds | ForEach-Object { [string]$_ })
+    }
+    else {
+        @()
+    }
+    $allowsPackageApplied = @($allowedKinds | Where-Object { [string]::Equals($_, 'PackageApplied', [System.StringComparison]::OrdinalIgnoreCase) }).Count -gt 0
+    if (-not $allowsPackageApplied) {
+        return $false
+    }
+
+    $pathRegistration = if ($assigned.PSObject.Properties['pathRegistration']) { $assigned.pathRegistration } else { $null }
+    $pathMode = if ($pathRegistration -and $pathRegistration.PSObject.Properties['mode'] -and -not [string]::IsNullOrWhiteSpace([string]$pathRegistration.mode)) {
+        [string]$pathRegistration.mode
+    }
+    else {
+        'none'
+    }
+    if (-not [string]::Equals($pathMode, 'none', [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $false
+    }
+
+    $cleanup = if ($removed.PSObject.Properties['postRemoveCleanup']) { $removed.postRemoveCleanup } else { $null }
+    if (-not $cleanup -or
+        -not ($cleanup.PSObject.Properties['packageInventoryRecord'] -and [bool]$cleanup.packageInventoryRecord) -or
+        ($cleanup.PSObject.Properties['generatedShims'] -and [bool]$cleanup.generatedShims) -or
+        ($cleanup.PSObject.Properties['pathEntries'] -and [bool]$cleanup.pathEntries)) {
+        return $false
+    }
+
+    return $true
+}
+
 function Test-PackageDefinitionCatalogSemanticWarnings {
     [CmdletBinding()]
     param(
@@ -436,6 +542,11 @@ function Test-PackageDefinitionCatalogSemanticWarnings {
             $null
         }
         $readyRequired = @(Get-PackageDefinitionCatalogRequiredPresenceNames -Require $readyRequire)
+        $emptyReadyRequired = @(Get-PackageDefinitionCatalogEmptyRequiredPresenceNames -Definition $definition -RequiredNames $readyRequired)
+        if ($emptyReadyRequired.Count -gt 0) {
+            Add-PackageDefinitionCatalogSemanticWarning -Entry $entry -Code PackageDefinitionReadinessRequiresEmptyPresenceCategory -JsonPath 'packageOperations.assigned.readyStateCheck.require' -Concept 'readiness.emptyPresenceCategory' -Message ("Package definition '$($entry.DefinitionId)' requires readiness categories with no matching discovery.presence entries: $($emptyReadyRequired -join ', '). The readiness check can become vacuous and report success without testing those categories.") -SuggestedFix 'Add at least one discovery.presence probe for every required readiness category, or set unused require flags to false.'
+        }
+
         $installRootReadinessNames = @($readyRequired | Where-Object { $_ -in @('files', 'directories', 'commands', 'apps', 'metadataFiles', 'signatures', 'fileDetails') })
         $installRootFree = $isMachinePrerequisite -or (-not $hasInstallDirectory -and -not $installKindAllowsMissingDirectory)
         if ($installRootFree -and $installRootReadinessNames.Count -gt 0) {
@@ -489,12 +600,17 @@ function Test-PackageDefinitionCatalogSemanticWarnings {
                 $null
             }
             $absenceRequired = @(Get-PackageDefinitionCatalogRequiredPresenceNames -Require $absenceRequire)
+            $emptyAbsenceRequired = @(Get-PackageDefinitionCatalogEmptyRequiredPresenceNames -Definition $definition -RequiredNames $absenceRequired)
+            if ($emptyAbsenceRequired.Count -gt 0) {
+                Add-PackageDefinitionCatalogSemanticWarning -Entry $entry -Code PackageDefinitionAbsenceRequiresEmptyPresenceCategory -JsonPath 'packageOperations.removed.absenceVerification.require' -Concept 'removed.emptyPresenceCategory' -Message ("Package definition '$($entry.DefinitionId)' requires absence categories with no matching discovery.presence entries: $($emptyAbsenceRequired -join ', '). Absence verification can become vacuous and report success without testing those categories.") -SuggestedFix 'Add at least one discovery.presence probe for every required absence category, or set unused absence require flags to false.'
+            }
+
             if ([string]::Equals($operationKind, 'none', [System.StringComparison]::OrdinalIgnoreCase) -and $absenceRequired.Count -gt 0) {
                 Add-PackageDefinitionCatalogSemanticWarning -Entry $entry -Code PackageDefinitionNoOpRemovalRequiresAbsence -JsonPath 'packageOperations.removed.absenceVerification.require' -Concept 'removed.noopAbsence' -Message ("Package definition '$($entry.DefinitionId)' uses removed.operation.kind='none' but still requires absence signals after removal: $($absenceRequired -join ', '). A no-op removal cannot make those signals absent.") -SuggestedFix 'Use a schema-supported uninstaller/removal operation, disable absence requirements that the no-op cannot change, or stop if removed state cannot be represented.'
             }
         }
 
-        if ($isMachinePrerequisite -and -not $hasInstallDirectory) {
+        if ($isMachinePrerequisite -and -not $hasInstallDirectory -and -not (Test-PackageDefinitionCatalogMachinePrerequisiteForgetOnlyRemoval -Definition $definition)) {
             Add-PackageDefinitionCatalogSemanticWarning -Entry $entry -Code PackageDefinitionMachinePrerequisiteRemovalInventoryRisk -JsonPath 'packageOperations.assigned.install.targetKind' -Concept 'removed.inventoryInstallDirectory' -Message ("Package definition '$($entry.DefinitionId)' is a machinePrerequisite without installDirectory. Assignment can create a PackageApplied inventory record without installDirectory, while removal flows currently require inventory.installDirectory before executing removed.operation.") -SuggestedFix 'Prove removed-state handling does not require inventory.installDirectory, avoid claiming removed-state support, or add schema/runtime support for machine-prerequisite forget/removal semantics.'
         }
     }

@@ -1053,6 +1053,84 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $result.ErrorMessage | Should -Match 'removeDependencies'
     }
 
+    It 'forgets machine prerequisite inventory without installDirectory when removal is no-op and absence-free' {
+        $rootPath = Join-Path $TestDrive 'removed-machine-prerequisite-forget-only'
+        $globalDocument = New-TestPackageGlobalDocument -ApplicationRootDirectory (Join-Path $rootPath 'AppRoot')
+        $definitionDocument = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -DefinitionId 'MachinePrereqRuntime' -Releases @(
+                New-TestPackageRelease -Id 'machine-prereq-win-x64-stable' -Version '1.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64' -FileName 'machine-prereq.exe' -AcquisitionCandidates @(
+                    @{
+                        kind        = 'packageDepot'
+                        searchOrder = 10
+                    }
+                )
+            ))
+        $definitionDocument.packageOperations.assigned.install = [pscustomobject]@{
+            kind             = 'runInstaller'
+            targetKind       = 'machinePrerequisite'
+            installerKind    = 'customExe'
+            uiMode           = 'quiet'
+            elevation        = 'required'
+            timeoutSec       = 300
+            commandArguments = @('/quiet')
+            successExitCodes = @(0)
+            restartExitCodes = @()
+        }
+        $definitionDocument.packageOperations.assigned.pathRegistration = [pscustomobject]@{
+            mode = 'none'
+        }
+        foreach ($flag in @('files', 'directories', 'commands', 'apps', 'metadataFiles', 'signatures', 'fileDetails', 'registry', 'powerShellModules')) {
+            $definitionDocument.packageOperations.assigned.readyStateCheck.require.$flag = $false
+            $definitionDocument.packageOperations.removed.absenceVerification.require.$flag = $false
+        }
+        $definitionDocument.packageOperations.removed.policy.allowedInventoryOwnershipKinds = @('PackageApplied')
+        $definitionDocument.packageOperations.removed.operation = [pscustomobject]@{
+            kind = 'none'
+        }
+        $definitionDocument.packageOperations.removed.postRemoveCleanup.generatedShims = $false
+        $definitionDocument.packageOperations.removed.postRemoveCleanup.pathEntries = $false
+
+        $documents = Write-TestPackageDocuments -RootPath $rootPath -GlobalDocument $globalDocument -DefinitionDocument $definitionDocument
+        $appRoot = Join-Path $rootPath 'AppRoot'
+        $inventoryPath = Join-Path $appRoot 'State\PackageAssignmentInventory.json'
+        $null = New-Item -ItemType Directory -Path (Split-Path -Parent $inventoryPath) -Force
+        $assignedSnapshotPath = Join-Path $appRoot 'PkgEndpoint\Assigned\Eigenverft\MachinePrereqRuntime.json'
+        Write-TestJsonDocument -Path $assignedSnapshotPath -Document $definitionDocument
+        $record = @{
+            installSlotId       = 'MachinePrereqRuntime:stable:win32-x64'
+            definitionId        = 'MachinePrereqRuntime'
+            definitionPublisherId = 'Eigenverft'
+            definitionPublisherName = 'Eigenverft'
+            definitionRevision = 1
+            definitionPublishedAtUtc = '2026-05-13T00:00:00Z'
+            definitionEndpointName = 'moduleDefaults'
+            definitionSourceKind = 'filesystem'
+            definitionSourcePath = $documents.DefinitionPath
+            definitionSourceHash = (Get-PackageFileSha256 -Path $documents.DefinitionPath)
+            definitionAssignedSnapshotPath = $assignedSnapshotPath
+            definitionAssignedSnapshotHash = (Get-PackageFileSha256 -Path $assignedSnapshotPath)
+            releaseTrack        = 'stable'
+            artifactDistributionVariant = 'win32-x64'
+            currentReleaseId    = 'machine-prereq-win-x64-stable'
+            currentVersion      = '1.0.0'
+            installDirectory    = $null
+            ownershipKind       = 'PackageApplied'
+            pathRegistration    = $null
+            updatedAtUtc        = [DateTime]::UtcNow.ToString('o')
+        }
+        Write-TestJsonDocument -Path $inventoryPath -Document @{ schemaVersion = 1; records = @($record) }
+        Mock Get-PackageConfigPath { $documents.GlobalConfigPath }
+        Mock Get-PackageDepotInventoryPath { $documents.DepotInventoryPath }
+        Mock Get-PackageDefinitionPath { param($DefinitionId) $documents.DefinitionPath }
+
+        $result = Invoke-Package -DefinitionId 'MachinePrereqRuntime' -DesiredState Removed
+
+        $result.Status | Should -Be 'Ready'
+        $result.InstallDirectory | Should -BeNullOrEmpty
+        $result.Removed.Accepted | Should -Be $true
+        $invAfter = Get-Content -LiteralPath $inventoryPath -Raw | ConvertFrom-Json
+        @($invAfter.records).Count | Should -Be 0
+    }
+
     It 'removes install directory and inventory when removed flow runs with matching inventory record' {
         $rootPath = Join-Path $TestDrive 'removed-delete-success'
         $globalDocument = New-TestPackageGlobalDocument -ApplicationRootDirectory (Join-Path $rootPath 'AppRoot')

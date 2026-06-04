@@ -238,6 +238,65 @@ function ConvertFrom-PackageAssignmentInventoryPathRegistrationRecord {
     }
 }
 
+function Get-PackageRemovalRequiredAbsenceNames {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$Definition
+    )
+
+    $absence = if ($Definition.PSObject.Properties['packageOperations'] -and
+        $Definition.packageOperations.PSObject.Properties['removed'] -and
+        $Definition.packageOperations.removed.PSObject.Properties['absenceVerification']) {
+        $Definition.packageOperations.removed.absenceVerification
+    }
+    else {
+        $null
+    }
+
+    $require = if ($absence -and $absence.PSObject.Properties['require']) {
+        $absence.require
+    }
+    else {
+        $null
+    }
+
+    if (-not $require) {
+        return @()
+    }
+
+    return @(
+        foreach ($name in @('files', 'directories', 'commands', 'apps', 'metadataFiles', 'signatures', 'fileDetails', 'registry', 'powerShellModules')) {
+            if ($require.PSObject.Properties[$name] -and [bool]$require.$name) {
+                $name
+            }
+        }
+    )
+}
+
+function Test-PackageRemovalAllowsInstallDirectorylessInventoryContext {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$Definition
+    )
+
+    $removed = if ($Definition.PSObject.Properties['packageOperations'] -and $Definition.packageOperations.PSObject.Properties['removed']) {
+        $Definition.packageOperations.removed
+    }
+    else {
+        $null
+    }
+    $operation = if ($removed -and $removed.PSObject.Properties['operation']) { $removed.operation } else { $null }
+    $operationKind = if ($operation -and $operation.PSObject.Properties['kind']) { [string]$operation.kind } else { $null }
+    if (-not [string]::Equals($operationKind, 'none', [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $false
+    }
+
+    $requiredAbsenceNames = @(Get-PackageRemovalRequiredAbsenceNames -Definition $Definition)
+    return ($requiredAbsenceNames.Count -eq 0)
+}
+
 function Resolve-PackageRemovalInstallContext {
     [CmdletBinding()]
     param(
@@ -271,7 +330,54 @@ function Resolve-PackageRemovalInstallContext {
 
     $PackageResult | Add-Member -Force -MemberType NoteProperty -Name 'InventoryRemovalSkipped' -Value $false
 
+    $definition = $PackageResult.PackageConfig.Definition
     if ([string]::IsNullOrWhiteSpace([string]$record.installDirectory)) {
+        if (Test-PackageRemovalAllowsInstallDirectorylessInventoryContext -Definition $definition) {
+            $ownershipKind = if ($record.PSObject.Properties['ownershipKind']) { [string]$record.ownershipKind } else { $null }
+            $installOrigin = switch -Exact ($ownershipKind) {
+                'PackageInstalled' { 'PackageInstalled'; break }
+                'PackageApplied' { 'PackageApplied'; break }
+                'AdoptedExternal' { 'AdoptedExternal'; break }
+                default { $ownershipKind }
+            }
+            $PackageResult.InstallDirectory = $null
+            $PackageResult.InstallOrigin = $installOrigin
+            $PackageResult.Ownership = [pscustomobject]@{
+                InventoryPath   = $index.Path
+                InstallSlotId   = $installSlotId
+                Classification  = 'PackageTarget'
+                OwnershipRecord = $record
+            }
+            $PackageResult.ExistingPackage = [pscustomobject]@{
+                SearchKind       = 'packageTargetInstallPath'
+                CandidatePath    = $null
+                InstallDirectory = $null
+                Decision         = 'Pending'
+                Readiness        = $null
+                Classification   = 'PackageTarget'
+                OwnershipRecord  = $record
+            }
+
+            $pathRegistration = if ($record.PSObject.Properties['pathRegistration'] -and $null -ne $record.pathRegistration) {
+                ConvertFrom-PackageAssignmentInventoryPathRegistrationRecord -PathRegistrationRecord $record.pathRegistration
+            }
+            else {
+                $null
+            }
+
+            if ($pathRegistration) {
+                if ($PackageResult.PSObject.Properties['PathRegistration']) {
+                    $PackageResult.PathRegistration = $pathRegistration
+                }
+                else {
+                    $PackageResult | Add-Member -MemberType NoteProperty -Name PathRegistration -Value $pathRegistration
+                }
+            }
+
+            Write-PackageExecutionMessage -Message ("[STATE] Removal inventory context: installSlotId='{0}', installDirectory='<none>', ownershipKind='{1}', operation='none'." -f $installSlotId, $ownershipKind)
+            return $PackageResult
+        }
+
         throw "Package removal failed for '$($PackageResult.DefinitionId)': inventory record is missing installDirectory."
     }
 

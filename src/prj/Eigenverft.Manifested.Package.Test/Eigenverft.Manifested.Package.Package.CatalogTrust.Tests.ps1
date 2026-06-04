@@ -722,9 +722,21 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - catalo
         $multiArchDefinition.discovery.presence.files = @('TOTALCMD64.EXE', 'TOTALCMD.EXE')
         $multiArchDefinition.packageOperations.assigned.readyStateCheck.require.files = $true
 
+        $emptyRequiredPresenceDefinition = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -DefinitionId 'EmptyRequiredPresence' -Releases @(
+                New-TestPackageRelease -Id 'empty-required-presence-win-x64-stable' -Version '1.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+            ))
+        $emptyRequiredPresenceDefinition.discovery.presence.files = @()
+        $emptyRequiredPresenceDefinition.discovery.presence.commands = @()
+        $emptyRequiredPresenceDefinition.packageOperations.assigned.pathRegistration = [pscustomobject]@{
+            mode = 'none'
+        }
+        $emptyRequiredPresenceDefinition.packageOperations.assigned.readyStateCheck.require.files = $true
+        $emptyRequiredPresenceDefinition.packageOperations.removed.absenceVerification.require.commands = $true
+
         Write-TestJsonDocument -Path (Join-Path $catalogRoot 'MissingInstallTarget.json') -Document $missingTargetDefinition
         Write-TestJsonDocument -Path (Join-Path $catalogRoot 'MachinePrerequisiteRisk.json') -Document $machinePrerequisiteDefinition
         Write-TestJsonDocument -Path (Join-Path $catalogRoot 'SharedReadinessMultiArch.json') -Document $multiArchDefinition
+        Write-TestJsonDocument -Path (Join-Path $catalogRoot 'EmptyRequiredPresence.json') -Document $emptyRequiredPresenceDefinition
 
         $report = Test-PackageDefinitionCatalog -Path $catalogRoot
         $codes = @($report.Issues | Where-Object { [string]$_.Severity -eq 'Warning' } | ForEach-Object { [string]$_.Code })
@@ -736,6 +748,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - catalo
         $codes | Should -Contain 'PackageDefinitionNoOpRemovalRequiresAbsence'
         $codes | Should -Contain 'PackageDefinitionMachinePrerequisiteRemovalInventoryRisk'
         $codes | Should -Contain 'PackageDefinitionSharedReadinessAcrossArchitectures'
+        $codes | Should -Contain 'PackageDefinitionReadinessRequiresEmptyPresenceCategory'
+        $codes | Should -Contain 'PackageDefinitionAbsenceRequiresEmptyPresenceCategory'
     }
 
     It 'validates the shipped Eigenverft package-definition catalog as trusted' {
