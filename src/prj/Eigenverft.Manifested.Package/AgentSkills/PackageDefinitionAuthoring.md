@@ -1,5 +1,11 @@
 # PackageDefinitionAuthoring
 
+## Mandatory Preflight
+
+Before executing any other package-authoring operation, fully read this document from top to bottom and fully read the active package-definition schema. The only actions allowed before this preflight is complete are locating/opening this guide and locating/opening the schema file.
+
+Read the complete schema file for the active `schemaVersion`, currently `Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json`, including root descriptions, `x-eigenverftAgentHint`, nested `description` fields, and `$comment` fields for every object shape you may edit. If either this document or the schema cannot be read fully, stop and ask the user before searching, editing, validating, signing, or writing package JSON.
+
 ## What this text is
 
 You are authoring **package-definition JSON** for **Eigenverft.Manifested.Package**, a Windows PowerShell module that catalogs declarative install recipes and applies them later with `Invoke-Package`. Your job here is only the JSON catalog file - not module source code, not running vendor installers, and not `Invoke-Package` while you write JSON.
@@ -130,8 +136,33 @@ Resign-PackageDefinition -Path '<definition.json>' -Cert Eigenverft -KeepSchemaV
 
 4. Run `Test-PackageDefinitionCatalog -RequireTrusted` on the changed file or endpoint folder.
 5. Run `Verify-PackageDefinitionSignature -RequireTrusted` for the file, or `Verify-PackageDefinitionCatalog -RequireTrusted` for the folder.
-6. Check `git status --short` when working in a repository so new JSON files are not forgotten.
-7. In the handoff, state whether validation, signing, and trust verification passed, or name the blocker.
+6. If the selected authoring root is inside a local Git working tree, check repository tracking/status so new JSON files are not forgotten. For remote endpoints or non-repository paths, skip repository commands and mark the repository-status check `Not applicable`.
+7. In the handoff, include **Required handoff check result** so executed validation, signing, trust verification, source research, and blockers are explicit.
+
+### Required handoff check result
+
+Before the final user handoff, include a section named `Check Result`. This is mandatory for every package-definition authoring or update task, including draft-only work.
+
+Use a compact table or bullet list with one row per relevant check:
+
+- `Definition path`
+- `Vendor installer kind evidence`
+- `Generic installer kind corroboration`
+- `Vendor installer switch evidence`
+- `Generic installer switch corroboration`
+- `Artifact hash verification`
+- `Publisher signature verification`
+- `Raw JSON schema validation`
+- `Test-PackageDefinitionCatalog`
+- `Signing or re-signing`
+- `Trusted signature/catalog verification`
+- `Repository status` (local Git working tree only)
+
+Each row must include `Status`, `Evidence`, and `Command/source`. Valid statuses are `Passed`, `Failed`, `Not run`, and `Not applicable`.
+
+For installer-backed definitions, the installer evidence rows are required and must cite the exact JSON behavior they justify: `packageOperations.assigned.install.kind`, any `installerKind`, `commandArguments`, target-directory argument/property behavior, force/update semantics, shortcut or registry side effects when relevant, and elevation assumptions. Use `Not applicable` only for definitions with no installer command surface to validate, such as pure archive extraction, file placement, or PowerShell module installs.
+
+Use `Passed` only when the command was actually executed or the source was actually opened/read during the current task. Do not mark a check as passed because it is planned, recommended, inferred from prior conversation, or expected to pass. If a required check is `Failed` or `Not run`, do not call the package complete; report the blocker or explain why the task is draft-only/incomplete. If no vendor installer documentation or no generic corroborating source was found for installer kind or switches, mark the relevant row `Failed` and stop instead of guessing.
 
 ## Product Boundary
 
@@ -217,12 +248,16 @@ Run `Test-PackageDefinitionCatalog`, signing, and trust commands in the host whe
 8. Run `Test-PackageDefinitionCatalog` before signing or publishing.
 9. Sign or re-sign only after content is stable.
 10. Verify signature or catalog trust.
-11. Check `git status --short` before handoff when using git so new JSON files are not accidentally left untracked.
+11. Check repository tracking/status before handoff only when the selected authoring root is inside a local Git working tree. For remote endpoints or non-repository paths, do not run repository commands.
 12. When `Selection` is `Ready`, write the JSON under that path and run **Publication finalization** (or draft-only validation only when **Authoring mode** requires it).
 
 ## Installer Kind Discovery
 
 When the installer kind, silent arguments, extraction behavior, or package format is unclear, **search the web and read documentation first**. Prefer official vendor documentation, release notes, package manager manifests, installer docs, and existing trusted package definitions.
+
+For installer kind and installer switches, do a vendor-focused web search first and identify the vendor-documented installer technology, package format, silent-mode syntax, target-directory syntax, update/force behavior, shortcut creation, registry/uninstall behavior, and elevation expectations. Then confirm the installer kind and switch usage against at least one broader generic source, such as a reputable package-manager manifest, deployment guide, enterprise software catalog, or community packaging recipe. Treat generic results as corroboration only; if they disagree with the vendor documentation, if they omit a risky detail such as installer kind or target-directory force/update semantics, or if the vendor documentation is not found, stop and report the ambiguity instead of guessing.
+
+Carry the discovered installer evidence into the final `Check Result`; the handoff must show the vendor source and generic corroborating source that justify the exact installer kind and switches written into JSON.
 
 **Never run the installer to discover this information.** That includes administrative installs, quiet `msiexec` trials, or any "test install" while editing JSON. Those steps are forbidden under **No Installer Execution During Authoring**.
 
@@ -340,7 +375,7 @@ When **Runtime endpoint status** shows `Selection` with status `Ready`:
 3. Run raw JSON Schema validation with `Test-Json` when available, or state clearly that raw schema validation could not be run.
 4. Unless **Authoring mode** is `draft-only`, complete **Publication finalization** (sign with an approved profile when appropriate, then verify signature and trust).
 
-Success means the JSON exists on the catalog root with catalog validation, raw schema validation when available, and signing/trust when required. Proof is validation/signature output - not installing the product.
+Success means the JSON exists on the catalog root with catalog validation, raw schema validation when available, signing/trust when required, and a final `Check Result` that records the executed evidence. Proof is validation/signature/source output - not installing the product.
 
 **Draft-only:** when **Authoring mode** shows `draft-only`, stop after unsigned JSON and schema validation; skip signing and `-RequireTrusted` steps.
 
@@ -366,7 +401,7 @@ Success means the JSON exists on the catalog root with catalog validation, raw s
 - Inventing `conflictsWith` pairs without clear user intent.
 - Trusting unknown signing keys as a shortcut.
 - Embedding secrets or local machine paths in package JSON.
-- Reporting work as done without validation, signing status, and `git status --short` when applicable.
+- Reporting work as done without the required final `Check Result`, validation, signing status, and repository-status check when the selected authoring root is inside a local Git working tree.
 - Reading module or engine source when the schema, this guide, and example definitions were sufficient.
 - Running vendor installers (including administrative or quiet "test" installs) to discover silent switches or install paths.
 - Calling `Invoke-Package` during authoring instead of using catalog validation and documentation.
