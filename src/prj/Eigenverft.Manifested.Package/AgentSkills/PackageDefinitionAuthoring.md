@@ -41,11 +41,11 @@ Before making any JSON edit, ground the work in the user's task, the prepended r
 
 **Read fully (required):**
 
-- The prepended **Task**, **Authoring mode**, and **Runtime endpoint status** (when present), plus this guide
-- `Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json` on the machine where the module is installed. Resolve the folder with `(Get-Module Eigenverft.Manifested.Package).ModuleBase` after import, or `Get-Module -ListAvailable Eigenverft.Manifested.Package` if import fails. Read the complete schema, including the root `description` and `x-eigenverftAgentHint`.
+- The prepended **Task**, **Authoring mode**, and **Runtime endpoint status** (when present), plus this guide from top to bottom.
+- `Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json` on the machine where the module is installed. Resolve the folder with `(Get-Module Eigenverft.Manifested.Package).ModuleBase` after import, or `Get-Module -ListAvailable Eigenverft.Manifested.Package` if import fails. Read the complete schema, including the root `description`, `x-eigenverftAgentHint`, and the relevant nested `description` and `$comment` fields for every object shape you edit.
 - Any extra instructions the user gave in chat (publisher, scope, installer kind, draft vs signed, and so on)
 
-For normal authoring, these inputs are enough: the skill explains workflow, endpoints, validation, and signing; the schema defines shape, acquisition, dependencies, and materialization. Follow the schema first.
+For normal authoring, these inputs are enough: the skill explains workflow, endpoints, validation, and signing; the schema defines shape, acquisition, dependencies, and materialization. Follow the schema first. Treat schema `description` and `$comment` text as authoring instructions, not decoration.
 
 **Read only when needed:**
 
@@ -57,7 +57,9 @@ For normal authoring, these inputs are enough: the skill explains workflow, endp
 
 - PowerShell module source, engine implementation, dependency planner, trust model, or installer runtime code. Authoring is declarative JSON work.
 
-Do not skim the required inputs or infer missing rules from example JSON alone. If the user's task, schema, and an example disagree - or if the schema cannot be read fully - stop and ask the user before editing.
+Do not skim the required inputs or infer missing rules from example JSON alone. If the user's task, this guide, schema comments/descriptions, and an example disagree - or if this guide or the schema cannot be read fully - stop and ask the user before editing.
+
+Every property you write must be allowed by the JSON Schema for the selected object shape. Do not add "helpful" extra properties because they seem useful to the engine or appear in a guessed installer command. If the schema cannot express the package behavior, stop and report the schema/authoring mismatch instead of forcing JSON through a looser validator.
 
 ## Authoring Targets And Endpoints
 
@@ -226,6 +228,8 @@ When the installer kind, silent arguments, extraction behavior, or package forma
 
 Discover whether the vendor ships multiple artifact kinds for the same product, such as portable archives, user installers, machine/admin installers, MSI packages, app-store packages, or architecture-specific builds. Prefer a vendor-published portable archive when it fits the package intent. Otherwise prefer a user-scoped installer over a machine/admin installer. Use admin or machine-wide installers only when the user's intent and documentation explicitly require that scope - not because an elevated trial install was run.
 
+Choose the install operation shape from the schema, not from a guessed product-specific label. Prefer the dedicated schema adapters when they fit (`nsisInstaller`, `innoSetupInstaller`, `msiInstaller`, `powershellModuleInstaller`, `expandArchive`, and so on). Use generic `runInstaller` only when the schema's `assignRunInstaller` shape exactly fits the package. `runInstaller.installerKind` is descriptive metadata for logging; it does not create a new adapter and it does not permit extra properties outside the schema. If a custom installer needs a target-directory property that the selected schema shape does not allow, stop and ask for a schema/runtime decision instead of adding an unsupported property.
+
 Do not mix artifact kinds by accident. If the existing definition is for a user installer, update from the user-installer source. If it is for a portable/runtime package, update from the matching portable/runtime source. If intent is unclear, stop and ask the user before switching installer kind.
 
 Non-executing inspection of a downloaded file (for example format identification from headers or static metadata) is a last resort after documentation and examples, and must not launch or install the payload. If the installer format or silent switches still cannot be established confidently, stop and ask the user instead of guessing or installing.
@@ -256,6 +260,7 @@ Stop if the latest version cannot be proven from official sources, an artifact f
 - Dependencies use `dependency.requires[]`.
 - Coexistence policy uses `dependency.policy.conflictsWith[]` or `dependency.policy.requiresAbsent[]` only when the user's intent is explicit.
 - Download URLs, checksums, installer arguments, and materialization paths are reviewable.
+- `packageOperations.assigned.install` uses one exact schema-defined operation shape; no extra fields are added to make a custom installer work.
 - No credentials, tokens, local private paths, or machine-specific secrets are embedded.
 - `definitionSignature.kind` is `unsigned` only while drafting or when explicitly requested.
 
@@ -274,6 +279,16 @@ Test-PackageDefinitionCatalog -Path '<endpoint-root>' -RequireTrusted -ErrorOnFa
 ```
 
 Treat validation issues as blockers until the user says otherwise. Do not use `Verify-PackageDefinitionCatalog` as a replacement for schema and reference validation; it checks signature and trust summary, while `Test-PackageDefinitionCatalog` checks parse, schema, signature/trust status, duplicate identities, and static dependency references.
+
+Also run raw JSON Schema validation when the current host supports `Test-Json`; PowerShell 7 usually does. This catches schema-shape errors before signing:
+
+```powershell
+$moduleBase = (Get-Module Eigenverft.Manifested.Package).ModuleBase
+$schemaPath = Join-Path $moduleBase 'Schema\PackageDefinition\eigenverft-module-package-definition-1.9.schema.json'
+Test-Json -Json (Get-Content -Raw -LiteralPath '<definition.json>') -Schema (Get-Content -Raw -LiteralPath $schemaPath) -ErrorAction Stop
+```
+
+If `Test-Json` is unavailable in the current shell, try the other PowerShell host described in **PowerShell Host Check**. If raw schema validation cannot be run, say so in the handoff; do not claim that schema-file validation passed. If `Test-PackageDefinitionCatalog` passes but raw schema validation fails, treat the raw schema failure as a blocker and fix the JSON or ask for a schema/runtime decision.
 
 ## Signing And Signing-Profile Discovery
 
@@ -322,9 +337,10 @@ When **Runtime endpoint status** shows `Selection` with status `Ready`:
 
 1. Write the JSON under the **Selection** path (`definitionId` usually from the **Task** line). Prefer `<publisherId>\<definitionId>.json`; use `<definitionId>.json` directly under **Selection** when that matches the endpoint convention or user instruction.
 2. Run `Test-PackageDefinitionCatalog` on that file.
-3. Unless **Authoring mode** is `draft-only`, complete **Publication finalization** (sign with an approved profile when appropriate, then verify signature and trust).
+3. Run raw JSON Schema validation with `Test-Json` when available, or state clearly that raw schema validation could not be run.
+4. Unless **Authoring mode** is `draft-only`, complete **Publication finalization** (sign with an approved profile when appropriate, then verify signature and trust).
 
-Success means the JSON exists on the catalog root with validation (and signing/trust when required). Proof is catalog commands - not installing the product.
+Success means the JSON exists on the catalog root with catalog validation, raw schema validation when available, and signing/trust when required. Proof is validation/signature output - not installing the product.
 
 **Draft-only:** when **Authoring mode** shows `draft-only`, stop after unsigned JSON and schema validation; skip signing and `-RequireTrusted` steps.
 

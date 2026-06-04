@@ -178,6 +178,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'Before making any JSON edit',
             'eigenverft-module-package-definition-1.9.schema.json',
             'x-eigenverftAgentHint',
+            'nested `description` and `$comment` fields',
+            'Treat schema `description` and `$comment` text as authoring instructions',
             'Do not skim',
             'Start Here',
             'Runtime endpoint status',
@@ -206,6 +208,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'git status --short',
             'validation, signing, and trust verification',
             'Test-PackageDefinitionCatalog',
+            'raw JSON Schema validation',
+            'Test-Json',
             'Get-PackageSigningProfile',
             'Sign-PackageDefinition',
             'Resign-PackageDefinition',
@@ -215,6 +219,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'Agent Completion At A Valid Endpoint',
             'definitionSignature.kind = unsigned',
             'signatureValue',
+            'installerKind` is descriptive metadata',
             '.cer',
             '.pem'
         )
