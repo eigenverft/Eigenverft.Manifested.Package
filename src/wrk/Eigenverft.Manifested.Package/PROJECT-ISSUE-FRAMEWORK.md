@@ -1,12 +1,12 @@
-# Project Issue Framework V1.6
+# Project Issue Framework V1.8
 
-Version: V1.6
+Version: V1.8
 Purpose: A readable Markdown framework for defining, rating, comparing, assessing value, deciding, and communicating project issues.
 
 This framework has two layers:
 
-1. Issue Rating — classifies the issue as it currently exists.
-2. Issue Definition — describes the issue, related context, required outcome, known facts, possible options, value assessment, recommendation, stakeholder success note, decisions, and scope.
+1. Issue Rating - classifies the issue as it currently exists.
+2. Issue Definition - describes the issue, related context, required outcome, known facts, possible options, value assessment, recommendation, stakeholder success note, decisions, and scope.
 
 The issue rating answers: What kind of issue is this right now?
 The issue definition answers: What do we know, what is connected, what must be true, what options exist, what value do the options offer, which option do we recommend, what can be communicated, what is decided, and what is excluded?
@@ -169,28 +169,80 @@ Use one icon per stakeholder-success field:
 
 ---
 
+## 1.5 Plain Punctuation
+
+Use plain punctuation in framework-authored issue documents.
+
+Rules:
+
+* Use the plain hyphen-minus character `-` for separators and option headings.
+* Use straight double quotes `"`.
+* Do not use typographic dash characters or smart quotes.
+* Option headings use `Option A - <short option name>`.
+* Tables use a `Rationale` column instead of a punctuation separator.
+
+This keeps issue text copyable, searchable, and easy for validation scripts to scan.
+
+---
+
 # 2. Issue Rating Legend
 
-Use one readable vertical rating block for every issue.
+Use one readable rating table for every issue.
 
 Do not write the whole rating in one long line inside normal issue definitions. Long one-line ratings become hard to scan and hard to edit.
 
-Use this vertical format:
+Use this table format:
 
 ```markdown
 - 🏷 Rating
-  - 🚦 Priority: 5/7 High ▰▰▰▰▰▱▱
-  - 🛠 Effort: 2/4 Moderate ▰▰▱▱
-  - 🧠 Complexity: 3/5 Complex ▰▰▰▱▱
-  - 🌍 Benefit: 3/4 Team ▰▰▰▱
-  - 📦 Shape: 1/4 Focused ▰▱▱▱
-  - 🎯 Quality: 🧭 Usability
-  - 🚧 Readiness: 🟢 Ready
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🚦 Priority | 5/7 High | ▰▰▰▰▰▱▱ | delay increases trust risk soon |
+| 🛠 Effort | 2/4 Moderate | ▰▰▱▱ | one subsystem plus focused tests |
+| 🧠 Complexity | 3/5 Complex | ▰▰▰▱▱ | policy tradeoffs need careful review |
+| 🌍 Benefit | 3/4 Team | ▰▰▰▱ | shared workflow improves for one team |
+| 📦 Shape | 1/4 Focused | ▰▱▱▱ | one clear outcome with small steps |
+| 🎯 Quality | 🧭 Usability | - | makes operator choices easier to see |
+| 🚧 Readiness | 🟢 Ready | - | enough facts exist to start safely |
 ```
 
-The number is the source of truth. The meter is only a visual aid. Unordered dimensions such as Quality, Readiness, Value Type, Value Direction, Option Kind, and Agent Work do not use meters.
+The number is the source of truth. The meter is only a visual aid. Unordered dimensions such as Quality, Readiness, Resolution, Integration, Value Type, Value Direction, Option Kind, and Agent Work do not use meters.
+
+Ordered non-numeric dimensions use meters when the scale has a clear strength, burden, or difficulty direction. In the option profile, Future Impact and Reversibility use meters even though their labels are chip-based.
 
 Do not use short codes like `P2`, `E2`, `C3`, or `Q:U` in normal issue text.
+
+Each reviewable assessment row must include a short rationale in the `Rationale` column.
+
+Rationale rules:
+
+* Explain why that rating was chosen, not what the label means.
+* Use simple words and keep it about 40-60 characters when possible.
+* Prefer one concrete reason over a broad justification.
+* Do not repeat the section name, for example avoid `Priority because...`.
+* If the rating is uncertain, say what fact is missing.
+* Apply this to Issue Rating and Option Profile tables.
+* In Option Value Summary, either carry the same rationale or rely on the Decision Note when repeating every rationale would make the summary noisy.
+
+Rationale scope:
+
+* Required: Issue Rating fields, including Priority, Effort, Complexity, Benefit, Shape, Quality, and Readiness.
+* Required: Option Profile fields, including Resolution, Option Effort, Option Complexity, Future Impact, Reversibility, Integration, Agent Difficulty, and Agent Work.
+* Optional: Value Type, Value Direction, Stakeholder Role, and Communication Lens when the following prose already explains the choice.
+* Not required: Statement, Facts, Value Mechanism, Decision Note, Success Note, Required Checks, and other prose fields because they are already explanations.
+
+Good:
+
+```markdown
+| 🧬 Integration | 🟢 Compatible | - | fits current schema without changing contracts |
+```
+
+Bad:
+
+```markdown
+| 🧬 Integration | 🟢 Compatible | - | good |
+```
 
 ---
 
@@ -214,13 +266,13 @@ Priority measures consequence of delay. Higher number means more urgent. The num
 
 ```text
 🚦 Priority:
-7/7 Blocker  ▰▰▰▰▰▰▰
+7/7 Blocker ▰▰▰▰▰▰▰
 6/7 Critical ▰▰▰▰▰▰▱
-5/7 High     ▰▰▰▰▰▱▱
-4/7 Normal   ▰▰▰▰▱▱▱
-3/7 Low      ▰▰▰▱▱▱▱
-2/7 Backlog  ▰▰▱▱▱▱▱
-1/7 Polish   ▰▱▱▱▱▱▱
+5/7 High ▰▰▰▰▰▱▱
+4/7 Normal ▰▰▰▰▱▱▱
+3/7 Low ▰▰▰▱▱▱▱
+2/7 Backlog ▰▰▱▱▱▱▱
+1/7 Polish ▰▱▱▱▱▱▱
 ```
 
 Use 7/7 Blocker when work, release, build, migration, deployment, or production use cannot continue.
@@ -239,10 +291,10 @@ Effort measures delivery load. Higher number means more delivery work.
 
 ```text
 🛠 Effort:
-1/4 Trivial     ▰▱▱▱
-2/4 Moderate    ▰▰▱▱
+1/4 Trivial ▰▱▱▱
+2/4 Moderate ▰▰▱▱
 3/4 Substantial ▰▰▰▱
-4/4 Major       ▰▰▰▰
+4/4 Major ▰▰▰▰
 ```
 
 Use 1/4 Trivial for hours of work, narrow changes, and low regression risk.
@@ -260,10 +312,10 @@ Complexity measures inherent problem difficulty. Higher number means harder reas
 
 ```text
 🧠 Complexity:
-1/5 Simple  ▰▱▱▱▱
-2/5 Normal  ▰▰▱▱▱
+1/5 Simple ▰▱▱▱▱
+2/5 Normal ▰▰▱▱▱
 3/5 Complex ▰▰▰▱▱
-4/5 Hard    ▰▰▰▰▱
+4/5 Hard ▰▰▰▰▱
 5/5 Extreme ▰▰▰▰▰
 ```
 
@@ -273,7 +325,7 @@ Use 3/5 Complex when deep system understanding or careful tradeoffs are needed.
 Use 4/5 Hard when design, research, prototyping, or expert review may be needed.
 Use 5/5 Extreme for foundational, open-ended, research-level, or system-defining work.
 
-Complexity is not Effort. A race condition fix can be low effort but high complexity. “Create a new operating system” can be clearly stated but still extreme.
+Complexity is not Effort. A race condition fix can be low effort but high complexity. "Create a new operating system" can be clearly stated but still extreme.
 
 ---
 
@@ -283,10 +335,10 @@ Benefit measures who benefits if this ships. Higher number means broader reach.
 
 ```text
 🌍 Benefit:
-0/4 Internal     ▱▱▱▱
-1/4 Producer     ▰▱▱▱
-2/4 Individual   ▰▰▱▱
-3/4 Team         ▰▰▰▱
+0/4 Internal ▱▱▱▱
+1/4 Producer ▰▱▱▱
+2/4 Individual ▰▰▱▱
+3/4 Team ▰▰▰▱
 4/4 Organization ▰▰▰▰
 ```
 
@@ -306,10 +358,10 @@ Shape measures whether the issue is actually shaped like one implementable issue
 
 ```text
 📦 Shape:
-0/4 Atomic           ▱▱▱▱
-1/4 Focused          ▰▱▱▱
-2/4 Composite        ▰▰▱▱
-3/4 Epic / Theme     ▰▰▰▱
+0/4 Atomic ▱▱▱▱
+1/4 Focused ▰▱▱▱
+2/4 Composite ▰▰▱▱
+3/4 Epic / Theme ▰▰▰▱
 4/4 Dump / Catch-all ▰▰▰▰
 ```
 
@@ -406,13 +458,13 @@ Recommended layout:
 
 ### 🧩 Options
 
-#### Option A — First path (Implementation Option)
+#### Option A - First path (Implementation Option)
 
 ...
 
 ---
 
-#### Option B — Second path (Reframed Implementation Option)
+#### Option B - Second path (Reframed Implementation Option)
 
 ...
 
@@ -443,13 +495,16 @@ Use compact issue cards when listing many open issues at the end of a project fi
 ### 📌 Installer adoption and removal rules are unclear (MSI and similar)
 
 - 🏷 Rating
-  - 🚦 Priority: 3/7 Low ▰▰▰▱▱▱▱
-  - 🛠 Effort: 2/4 Moderate ▰▰▱▱
-  - 🧠 Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🌍 Benefit: 0/4 Internal ▱▱▱▱
-  - 📦 Shape: 2/4 Composite ▰▰▱▱
-  - 🎯 Quality: 🧱 Maintainability
-  - 🚧 Readiness: 🟠 Needs Refinement
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🚦 Priority | 3/7 Low | ▰▰▰▱▱▱▱ | runtime exists; guide can wait safely |
+| 🛠 Effort | 2/4 Moderate | ▰▰▱▱ | guide and schema text, no engine rewrite |
+| 🧠 Complexity | 2/5 Normal | ▰▰▱▱▱ | known behavior needs careful wording |
+| 🌍 Benefit | 0/4 Internal | ▱▱▱▱ | mainly helps the maintaining team |
+| 📦 Shape | 2/4 Composite | ▰▰▱▱ | policy guide plus examples are bundled |
+| 🎯 Quality | 🧱 Maintainability | - | reduces future policy confusion |
+| 🚧 Readiness | 🟠 Needs Refinement | - | needs option choice before writing |
 ```
 
 Use 📌 for normal issue entries.
@@ -470,13 +525,16 @@ Use this structure:
 ## 📌 <Issue Title>
 
 - 🏷 Rating
-  - 🚦 Priority: 3/7 Low ▰▰▰▱▱▱▱
-  - 🛠 Effort: 2/4 Moderate ▰▰▱▱
-  - 🧠 Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🌍 Benefit: 0/4 Internal ▱▱▱▱
-  - 📦 Shape: 2/4 Composite ▰▰▱▱
-  - 🎯 Quality: 🧱 Maintainability
-  - 🚧 Readiness: 🟠 Needs Refinement
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🚦 Priority | 3/7 Low | ▰▰▰▱▱▱▱ | runtime exists; guide can wait safely |
+| 🛠 Effort | 2/4 Moderate | ▰▰▱▱ | guide and schema text, no engine rewrite |
+| 🧠 Complexity | 2/5 Normal | ▰▰▱▱▱ | known behavior needs careful wording |
+| 🌍 Benefit | 0/4 Internal | ▱▱▱▱ | mainly helps the maintaining team |
+| 📦 Shape | 2/4 Composite | ▰▰▱▱ | policy guide plus examples are bundled |
+| 🎯 Quality | 🧱 Maintainability | - | reduces future policy confusion |
+| 🚧 Readiness | 🟠 Needs Refinement | - | needs option choice before writing |
 
 ### 📝 Statement
 
@@ -502,17 +560,20 @@ Unknown:
 
 ### 🧩 Options
 
-#### Option A — <Short option name> (<Option Kind>)
+#### Option A - <Short option name> (<Option Kind>)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: <resolution>
-  - 🛠 Option Effort: <option effort>
-  - 🧠 Option Complexity: <option complexity>
-  - 🔮 Future Impact: <future impact>
-  - ↩️ Reversibility: <reversibility>
-  - 🧬 Integration: <integration>
-  - 🤖 Agent Difficulty: <agent difficulty>
-  - 🧾 Agent Work: <agent work>
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | <resolution> | - | <40-60 char reason this path resolves enough> |
+| 🛠 Option Effort | <option effort> | <meter> | <40-60 char reason for delivery load> |
+| 🧠 Option Complexity | <option complexity> | <meter> | <40-60 char reason for reasoning load> |
+| 🔮 Future Impact | <future impact> | <meter> | <40-60 char reason for later cost> |
+| ↩️ Reversibility | <reversibility> | <meter> | <40-60 char reason for undo cost> |
+| 🧬 Integration | <integration> | - | <40-60 char reason for design fit> |
+| 🤖 Agent Difficulty | <agent difficulty> | <meter> | <40-60 char reason for review need> |
+| 🧾 Agent Work | <agent work> | - | <40-60 char reason for task type> |
 
 Description:
 <Explain the option in plain language. Say what this option does, why someone might choose it, and what tradeoff it makes. This should be a short paragraph of 3 to 6 sentences, not a slogan. The option must be independently selectable; it must describe one coherent path that could be recommended on its own.>
@@ -573,7 +634,7 @@ Preserve the original report when the raw wording carries useful intent:
 ```markdown
 ### 📝 Statement
 
-The current resolver error handling is difficult to maintain because message construction is spread across several code paths. The original report asked to “clean up resolver errors,” but the underlying issue appears to mix duplicated formatting logic, inconsistent wording, and missing tests.
+The current resolver error handling is difficult to maintain because message construction is spread across several code paths. The original report asked to "clean up resolver errors," but the underlying issue appears to mix duplicated formatting logic, inconsistent wording, and missing tests.
 
 Original report:
 
@@ -672,13 +733,13 @@ The option heading must include the option kind.
 Use this heading format:
 
 ```markdown
-#### Option A — <Short option name> (<Option Kind>)
+#### Option A - <Short option name> (<Option Kind>)
 ```
 
 Example:
 
 ```markdown
-#### Option B — Define supported installer behavior instead of automating every removal path (Reframed Implementation Option)
+#### Option B - Define supported installer behavior instead of automating every removal path (Reframed Implementation Option)
 ```
 
 The option title must describe the concrete path. The option kind classifies the path. The Resolution field classifies what the path achieves.
@@ -718,10 +779,13 @@ Typical resolutions:
 Example:
 
 ```markdown
-#### Option A — Introduce a shared resolver error model (Implementation Option)
+#### Option A - Introduce a shared resolver error model (Implementation Option)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: 🟢 Full
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | 🟢 Full | - | addresses the whole stated outcome |
 ```
 
 Implementation options should describe what will be built, changed, removed, or corrected.
@@ -745,16 +809,19 @@ Typical resolutions:
 Example:
 
 ```markdown
-#### Option B — Define supported installer behavior instead of automating every removal path (Reframed Implementation Option)
+#### Option B - Define supported installer behavior instead of automating every removal path (Reframed Implementation Option)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: 🟡 Partial
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | 🟡 Partial | - | preserves value but narrows scope |
 ```
 
 The description should make the reframe explicit:
 
 ```text
-Reframe the issue from “support every installer removal path automatically” to “make supported and unsupported removal behavior explicit.”
+Reframe the issue from "support every installer removal path automatically" to "make supported and unsupported removal behavior explicit."
 ```
 
 A reframed implementation option must explain:
@@ -782,10 +849,13 @@ Resolution:
 Example:
 
 ```markdown
-#### Option C — Map current resolver error ownership first (Discovery Option)
+#### Option C - Map current resolver error ownership first (Discovery Option)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: 🔵 Discovery
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | 🔵 Discovery | - | produces facts before choosing work |
 ```
 
 A Discovery option must say what facts, map, prototype, or evidence it will produce, and what later decision it enables.
@@ -805,10 +875,13 @@ Resolution:
 Example:
 
 ```markdown
-#### Option D — Decide whether machine-readable errors are in scope (Decision Option)
+#### Option D - Decide whether machine-readable errors are in scope (Decision Option)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: 🟣 Decision
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | 🟣 Decision | - | settles the blocking product choice |
 ```
 
 A Decision option must say which decision will be made, why it blocks a responsible implementation choice, and which role or decision authority is expected to decide.
@@ -828,10 +901,13 @@ Resolution:
 Example:
 
 ```markdown
-#### Option E — Separate wording cleanup from internal error modeling (Split Option)
+#### Option E - Separate wording cleanup from internal error modeling (Split Option)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: 🧩 Split
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | 🧩 Split | - | separates work into cleaner issues |
 ```
 
 A Split option must say what stays in the current issue and what becomes separate work.
@@ -853,10 +929,13 @@ Typical resolutions:
 Example:
 
 ```markdown
-#### Option F — Improve visible wording now and prepare shared model later (Combined Path Option)
+#### Option F - Improve visible wording now and prepare shared model later (Combined Path Option)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: 🟡 Partial
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | 🟡 Partial | - | solves near-term need and defers depth |
 ```
 
 A Combined Path option is not a bundle of unrelated tasks. It must be one coherent, independently selectable path.
@@ -884,10 +963,13 @@ Resolution:
 Example:
 
 ```markdown
-#### Option G — Defer until resolver diagnostics become release-blocking (Defer Option)
+#### Option G - Defer until resolver diagnostics become release-blocking (Defer Option)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: ⚪ Defer
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | ⚪ Defer | - | waits for a clearer trigger |
 ```
 
 A Defer option must say why now is not the right time and what condition should cause the issue to be revisited.
@@ -907,10 +989,13 @@ Resolution:
 Example:
 
 ```markdown
-#### Option H — Reject because the behavior is intentional (Reject Option)
+#### Option H - Reject because the behavior is intentional (Reject Option)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: 🔴 Reject
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | 🔴 Reject | - | issue conflicts with intended behavior |
 ```
 
 A Reject option must explain why the issue should not be pursued.
@@ -958,19 +1043,19 @@ Options must be framed so one recommendation can be chosen at the end.
 Good option structure:
 
 ```text
-Option A — Minimal wording cleanup (Implementation Option)
-Option B — Shared resolver error model (Implementation Option)
-Option C — Discovery map before implementation (Discovery Option)
-Option D — Define supported behavior instead of full automation (Reframed Implementation Option)
+Option A - Minimal wording cleanup (Implementation Option)
+Option B - Shared resolver error model (Implementation Option)
+Option C - Discovery map before implementation (Discovery Option)
+Option D - Define supported behavior instead of full automation (Reframed Implementation Option)
 ```
 
 Bad option structure:
 
 ```text
-Option A — Rename messages
-Option C — Add tests
-Option E — Add docs
-Option G — Review config
+Option A - Rename messages
+Option C - Add tests
+Option E - Add docs
+Option G - Review config
 ```
 
 This often leads to bad recommendations like:
@@ -1001,7 +1086,7 @@ Resulting State:
 ```
 
 Description explains the idea and tradeoff.
-Current State grounds the option in today’s reality.
+Current State grounds the option in today's reality.
 Resulting State paints the future picture after implementation.
 
 Do not merge these fields into one vague paragraph when the option is important.
@@ -1036,10 +1121,10 @@ Option Effort measures delivery load for this option, not for the original issue
 
 ```text
 🛠 Option Effort:
-1/4 Trivial     ▰▱▱▱
-2/4 Moderate    ▰▰▱▱
+1/4 Trivial ▰▱▱▱
+2/4 Moderate ▰▰▱▱
 3/4 Substantial ▰▰▰▱
-4/4 Major       ▰▰▰▰
+4/4 Major ▰▰▰▰
 ```
 
 A partial option may be cheap even when the full issue is large.
@@ -1052,14 +1137,14 @@ Option Complexity measures reasoning difficulty for this option, not for the ori
 
 ```text
 🧠 Option Complexity:
-1/5 Simple  ▰▱▱▱▱
-2/5 Normal  ▰▰▱▱▱
+1/5 Simple ▰▱▱▱▱
+2/5 Normal ▰▰▱▱▱
 3/5 Complex ▰▰▰▱▱
-4/5 Hard    ▰▰▰▰▱
+4/5 Hard ▰▰▰▰▱
 5/5 Extreme ▰▰▰▰▰
 ```
 
-An option can make today’s work simpler while leaving harder work for later. That should be made visible through Future Impact and Later Cost.
+An option can make today's work simpler while leaving harder work for later. That should be made visible through Future Impact and Later Cost.
 
 ---
 
@@ -1069,12 +1154,14 @@ Future Impact describes what choosing this option does to future work.
 
 ```text
 🔮 Future Impact:
-🟢 -2 Simplifies
-🟢 -1 Improves
-⚪  0 Neutral
-🟠 +1 Adds Debt
-🔴 +2 Rewrite Risk
+🟢 -2 Simplifies   ▰▱▱▱▱
+🟢 -1 Improves     ▰▰▱▱▱
+⚪ 0 Neutral       ▰▰▰▱▱
+🟠 +1 Adds Debt    ▰▰▰▰▱
+🔴 +2 Rewrite Risk ▰▰▰▰▰
 ```
+
+The meter represents future burden / rework risk, not desirability. More filled means more future cost or rewrite risk.
 
 Use 🟢 -2 Simplifies when the option strongly reduces future complexity, coupling, or migration cost.
 Use 🟢 -1 Improves when the option slightly improves future work.
@@ -1092,11 +1179,13 @@ Reversibility describes how easy it is to undo or replace the option later.
 
 ```text
 ↩️ Reversibility:
-🟢 Easy
-🟡 Moderate
-🟠 Hard
-🔴 Irreversible
+🟢 Easy         ▰▱▱▱
+🟡 Moderate     ▰▰▱▱
+🟠 Hard         ▰▰▰▱
+🔴 Irreversible ▰▰▰▰
 ```
+
+The meter represents undo cost. More filled means harder to reverse.
 
 Use 🟢 Easy when the option can be changed later with little cost.
 Use 🟡 Moderate when change is possible but requires planned cleanup.
@@ -1134,9 +1223,9 @@ Agent Difficulty estimates how suitable this option is for a coding agent.
 
 ```text
 🤖 Agent Difficulty:
-1/4 Routine   ▰▱▱▱
-2/4 Guided    ▰▰▱▱
-3/4 Strong    ▰▰▰▱
+1/4 Routine ▰▱▱▱
+2/4 Guided ▰▰▱▱
+3/4 Strong ▰▰▰▱
 4/4 Human-Led ▰▰▰▰
 ```
 
@@ -1202,19 +1291,19 @@ Use this format:
 - 🧭 Value Direction: <value direction>
 - 🧾 Value Mechanism: <how the issue creates value, avoids waste, reduces risk, or enables upside>
 - ⚖️ Option Value Summary:
-  - Option A — <short option name> (<option kind>)
+  - Option A - <short option name> (<option kind>)
     - 🧭 Resolution: <resolution>
-    - 🛠 Option Effort: <option effort>
-    - 🧠 Option Complexity: <option complexity>
-    - 🔮 Future Impact: <future impact>
-    - 🤖 Agent Difficulty: <agent difficulty>
+    - 🛠 Option Effort: <option effort, including meter>
+    - 🧠 Option Complexity: <option complexity, including meter>
+    - 🔮 Future Impact: <future impact, including meter>
+    - 🤖 Agent Difficulty: <agent difficulty, including meter>
     - 🧾 Decision Note: <short value and effort judgement>
-  - Option B — <short option name> (<option kind>)
+  - Option B - <short option name> (<option kind>)
     - 🧭 Resolution: <resolution>
-    - 🛠 Option Effort: <option effort>
-    - 🧠 Option Complexity: <option complexity>
-    - 🔮 Future Impact: <future impact>
-    - 🤖 Agent Difficulty: <agent difficulty>
+    - 🛠 Option Effort: <option effort, including meter>
+    - 🧠 Option Complexity: <option complexity, including meter>
+    - 🔮 Future Impact: <future impact, including meter>
+    - 🤖 Agent Difficulty: <agent difficulty, including meter>
     - 🧾 Decision Note: <short value and effort judgement>
 - ✅ Good Result: <what would make the issue worthwhile across the acceptable option paths>
 ```
@@ -1328,13 +1417,13 @@ Each option summary should use a compact multi-line block. Do not force all fiel
 Default format:
 
 ```markdown
-- Option A — <short option name> (<option kind>)
-  - 🧭 Resolution: <resolution>
-  - 🛠 Option Effort: <option effort>
-  - 🧠 Option Complexity: <option complexity>
-  - 🔮 Future Impact: <future impact>
-  - 🤖 Agent Difficulty: <agent difficulty>
-  - 🧾 Decision Note: <short value and effort judgement>
+- Option A - <short option name> (<option kind>)
+    - 🧭 Resolution: <resolution>
+    - 🛠 Option Effort: <option effort, including meter>
+    - 🧠 Option Complexity: <option complexity, including meter>
+    - 🔮 Future Impact: <future impact, including meter>
+    - 🤖 Agent Difficulty: <agent difficulty, including meter>
+    - 🧾 Decision Note: <short value and effort judgement>
 ```
 
 Default fields:
@@ -1359,31 +1448,33 @@ Optional fields may be added only when they are decision-relevant:
 
 Use optional fields when they change the decision. For example, include Reversibility when an option is hard to undo, include Integration when an option is strategic or conflicting, and include Agent Work when delegation type matters.
 
+When Reversibility is included in Option Value Summary, include its meter. Integration and Agent Work remain meterless because they are categories.
+
 Good example:
 
 ```markdown
 ⚖️ Option Value Summary:
-- Option A — Improve visible wording only (Implementation Option)
-  - 🧭 Resolution: 🟡 Partial
-  - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
-  - 🧠 Option Complexity: 1/5 Simple ▰▱▱▱▱
-  - 🔮 Future Impact: 🟠 +1 Adds Debt
-  - 🤖 Agent Difficulty: 1/4 Routine ▰▱▱▱
-  - 🧾 Decision Note: Fast visible improvement, but weak long-term value because the internal structure remains duplicated.
-- Option B — Introduce a shared resolver error model (Implementation Option)
-  - 🧭 Resolution: 🟢 Full
-  - 🛠 Option Effort: 3/4 Substantial ▰▰▰▱
-  - 🧠 Option Complexity: 3/5 Complex ▰▰▰▱▱
-  - 🔮 Future Impact: 🟢 -2 Simplifies
-  - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
-  - 🧾 Decision Note: Higher effort, but strongest long-term value because it reduces maintenance effort and repeated rework.
-- Option C — Map current ownership first (Discovery Option)
-  - 🧭 Resolution: 🔵 Discovery
-  - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
-  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🔮 Future Impact: 🟢 -1 Improves
-  - 🤖 Agent Difficulty: 1/4 Routine ▰▱▱▱
-  - 🧾 Decision Note: Good when facts are weak; improves decision quality but delays visible improvement.
+- Option A - Improve visible wording only (Implementation Option)
+    - 🧭 Resolution: 🟡 Partial
+    - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
+    - 🧠 Option Complexity: 1/5 Simple ▰▱▱▱▱
+    - 🔮 Future Impact: 🟠 +1 Adds Debt ▰▰▰▰▱
+    - 🤖 Agent Difficulty: 1/4 Routine ▰▱▱▱
+    - 🧾 Decision Note: Fast visible improvement, but weak long-term value because the internal structure remains duplicated.
+- Option B - Introduce a shared resolver error model (Implementation Option)
+    - 🧭 Resolution: 🟢 Full
+    - 🛠 Option Effort: 3/4 Substantial ▰▰▰▱
+    - 🧠 Option Complexity: 3/5 Complex ▰▰▰▱▱
+    - 🔮 Future Impact: 🟢 -2 Simplifies ▰▱▱▱▱
+    - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
+    - 🧾 Decision Note: Higher effort, but strongest long-term value because it reduces maintenance effort and repeated rework.
+- Option C - Map current ownership first (Discovery Option)
+    - 🧭 Resolution: 🔵 Discovery
+    - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
+    - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
+    - 🔮 Future Impact: 🟢 -1 Improves ▰▰▱▱▱
+    - 🤖 Agent Difficulty: 1/4 Routine ▰▱▱▱
+    - 🧾 Decision Note: Good when facts are weak; improves decision quality but delays visible improvement.
 ```
 
 Bad example:
@@ -1576,8 +1667,8 @@ Support describes how well the recommendation is backed by facts, checked assump
 
 ```text
 Support:
-1/3 Thin           ▰▱▱
-2/3 Reasoned       ▰▰▱
+1/3 Thin ▰▱▱
+2/3 Reasoned ▰▰▱
 3/3 Well Supported ▰▰▰
 ```
 
@@ -1636,7 +1727,7 @@ Stakeholder Success Note answers:
 ```text
 Who should be told when this is solved?
 In what language should it be explained?
-What 3–4 line message can be reused in mail, chat, release notes, or project updates?
+What 3-4 line message can be reused in mail, chat, release notes, or project updates?
 ```
 
 Use this format:
@@ -1646,7 +1737,7 @@ Use this format:
 
 - 👥 Stakeholder Role: <role or group to inform when this is solved>
 - 🗣 Communication Lens: <business, product, support, release, trust, or technical summary>
-- 📬 Success Note: <3–4 lines that can be reused in mail, chat, release notes, or a project update>
+- 📬 Success Note: <3-4 lines that can be reused in mail, chat, release notes, or a project update>
 ```
 
 Stakeholder Success Note must not bias the Value Assessment. It is written for communication after a path is recommended or completed.
@@ -1724,7 +1815,7 @@ Use 🔧 Technical Summary when the message should focus on engineering quality,
 
 Success Note is a short message that can be reused when the issue is solved.
 
-It should be 3–4 lines, plain-language, and written for the Stakeholder Role.
+It should be 3-4 lines, plain-language, and written for the Stakeholder Role.
 
 It should explain:
 
@@ -1753,7 +1844,7 @@ Another example:
 ```text
 The workflow can now be completed directly inside the product.
 This removes a manual workaround and makes the product easier to adopt for users who need this capability.
-The improvement strengthens the product’s practical value in day-to-day use.
+The improvement strengthens the product's practical value in day-to-day use.
 ```
 
 Another example:
@@ -1829,9 +1920,9 @@ If an out-of-scope item is important enough to preserve, put it under Extracted 
 
 # 14. Extracted Work
 
-Extracted Work replaces generic “follow-up issues.”
+Extracted Work replaces generic "follow-up issues."
 
-Do not add this section just because a template expects “next steps.” Most issues should not produce extracted work.
+Do not add this section just because a template expects "next steps." Most issues should not produce extracted work.
 
 Use Extracted Work only when a real separate issue should exist because of a split, chosen option, rejected option, partial resolution, or explicit out-of-scope boundary.
 
@@ -1845,7 +1936,7 @@ Only add extracted work when all of these are true:
 2. It has a different owner, scope, option path, or acceptance condition.
 3. It can receive its own issue rating.
 4. It should not be silently forgotten.
-5. It is not already covered by the current issue’s Required Outcome.
+5. It is not already covered by the current issue's Required Outcome.
 
 If these conditions are not met, do not list it.
 
@@ -1888,13 +1979,16 @@ None.
 ## 📌 <Issue Title>
 
 - 🏷 Rating
-  - 🚦 Priority: 3/7 Low ▰▰▰▱▱▱▱
-  - 🛠 Effort: 2/4 Moderate ▰▰▱▱
-  - 🧠 Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🌍 Benefit: 0/4 Internal ▱▱▱▱
-  - 📦 Shape: 2/4 Composite ▰▰▱▱
-  - 🎯 Quality: 🧱 Maintainability
-  - 🚧 Readiness: 🟠 Needs Refinement
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🚦 Priority | 3/7 Low | ▰▰▰▱▱▱▱ | <40-60 char reason delay is acceptable> |
+| 🛠 Effort | 2/4 Moderate | ▰▰▱▱ | <40-60 char reason for delivery load> |
+| 🧠 Complexity | 2/5 Normal | ▰▰▱▱▱ | <40-60 char reason for reasoning load> |
+| 🌍 Benefit | 0/4 Internal | ▱▱▱▱ | <40-60 char reason for beneficiary scope> |
+| 📦 Shape | 2/4 Composite | ▰▰▱▱ | <40-60 char reason for issue shape> |
+| 🎯 Quality | 🧱 Maintainability | - | <40-60 char reason for quality type> |
+| 🚧 Readiness | 🟠 Needs Refinement | - | <40-60 char reason work is not ready> |
 
 ### 📝 Statement
 
@@ -1936,17 +2030,20 @@ Unknown:
 
 ### 🧩 Options
 
-#### Option A — <Short option name> (<Option Kind>)
+#### Option A - <Short option name> (<Option Kind>)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: <resolution>
-  - 🛠 Option Effort: <option effort>
-  - 🧠 Option Complexity: <option complexity>
-  - 🔮 Future Impact: <future impact>
-  - ↩️ Reversibility: <reversibility>
-  - 🧬 Integration: <integration>
-  - 🤖 Agent Difficulty: <agent difficulty>
-  - 🧾 Agent Work: <agent work>
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | <resolution> | - | <40-60 char reason this path resolves enough> |
+| 🛠 Option Effort | <option effort> | <meter> | <40-60 char reason for delivery load> |
+| 🧠 Option Complexity | <option complexity> | <meter> | <40-60 char reason for reasoning load> |
+| 🔮 Future Impact | <future impact> | <meter> | <40-60 char reason for later cost> |
+| ↩️ Reversibility | <reversibility> | <meter> | <40-60 char reason for undo cost> |
+| 🧬 Integration | <integration> | - | <40-60 char reason for design fit> |
+| 🤖 Agent Difficulty | <agent difficulty> | <meter> | <40-60 char reason for review need> |
+| 🧾 Agent Work | <agent work> | - | <40-60 char reason for task type> |
 
 Description:
 <Explain the option in plain language. Say what this option does, why someone might choose it, and what tradeoff it makes. This should be a short paragraph of 3 to 6 sentences, not a slogan. The option must be independently selectable; it must describe one coherent path that could be recommended on its own.>
@@ -1971,17 +2068,20 @@ Later Cost:
 
 ---
 
-#### Option B — <Short option name> (<Option Kind>)
+#### Option B - <Short option name> (<Option Kind>)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: <resolution>
-  - 🛠 Option Effort: <option effort>
-  - 🧠 Option Complexity: <option complexity>
-  - 🔮 Future Impact: <future impact>
-  - ↩️ Reversibility: <reversibility>
-  - 🧬 Integration: <integration>
-  - 🤖 Agent Difficulty: <agent difficulty>
-  - 🧾 Agent Work: <agent work>
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | <resolution> | - | <40-60 char reason this path resolves enough> |
+| 🛠 Option Effort | <option effort> | <meter> | <40-60 char reason for delivery load> |
+| 🧠 Option Complexity | <option complexity> | <meter> | <40-60 char reason for reasoning load> |
+| 🔮 Future Impact | <future impact> | <meter> | <40-60 char reason for later cost> |
+| ↩️ Reversibility | <reversibility> | <meter> | <40-60 char reason for undo cost> |
+| 🧬 Integration | <integration> | - | <40-60 char reason for design fit> |
+| 🤖 Agent Difficulty | <agent difficulty> | <meter> | <40-60 char reason for review need> |
+| 🧾 Agent Work | <agent work> | - | <40-60 char reason for task type> |
 
 Description:
 <Explain the option in plain language.>
@@ -2012,19 +2112,19 @@ Later Cost:
 - 🧭 Value Direction: <cost, risk, opportunity, or decision>
 - 🧾 Value Mechanism: <how the issue creates value, avoids waste, reduces risk, or enables upside>
 - ⚖️ Option Value Summary:
-  - Option A — <short option name> (<option kind>)
+  - Option A - <short option name> (<option kind>)
     - 🧭 Resolution: <resolution>
-    - 🛠 Option Effort: <option effort>
-    - 🧠 Option Complexity: <option complexity>
-    - 🔮 Future Impact: <future impact>
-    - 🤖 Agent Difficulty: <agent difficulty>
+    - 🛠 Option Effort: <option effort, including meter>
+    - 🧠 Option Complexity: <option complexity, including meter>
+    - 🔮 Future Impact: <future impact, including meter>
+    - 🤖 Agent Difficulty: <agent difficulty, including meter>
     - 🧾 Decision Note: <short value and effort judgement>
-  - Option B — <short option name> (<option kind>)
+  - Option B - <short option name> (<option kind>)
     - 🧭 Resolution: <resolution>
-    - 🛠 Option Effort: <option effort>
-    - 🧠 Option Complexity: <option complexity>
-    - 🔮 Future Impact: <future impact>
-    - 🤖 Agent Difficulty: <agent difficulty>
+    - 🛠 Option Effort: <option effort, including meter>
+    - 🧠 Option Complexity: <option complexity, including meter>
+    - 🔮 Future Impact: <future impact, including meter>
+    - 🤖 Agent Difficulty: <agent difficulty, including meter>
     - 🧾 Decision Note: <short value and effort judgement>
 - ✅ Good Result: <what would make the issue worthwhile across the acceptable option paths>
 
@@ -2044,7 +2144,7 @@ Required Checks:
 
 - 👥 Stakeholder Role: <role or group to inform when this is solved>
 - 🗣 Communication Lens: <business, product, support, release, trust, or technical summary>
-- 📬 Success Note: <3–4 lines that can be reused in mail, chat, release notes, or a project update>
+- 📬 Success Note: <3-4 lines that can be reused in mail, chat, release notes, or a project update>
 
 ### ✅ Resolved Decisions
 
@@ -2086,13 +2186,16 @@ Use this only when the issue is simple, ready, and does not need option analysis
 ## 📌 <Issue Title>
 
 - 🏷 Rating
-  - 🚦 Priority: 4/7 Normal ▰▰▰▰▱▱▱
-  - 🛠 Effort: 1/4 Trivial ▰▱▱▱
-  - 🧠 Complexity: 1/5 Simple ▰▱▱▱▱
-  - 🌍 Benefit: 2/4 Individual ▰▰▱▱
-  - 📦 Shape: 0/4 Atomic ▱▱▱▱
-  - 🎯 Quality: 🧭 Usability
-  - 🚧 Readiness: 🟢 Ready
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🚦 Priority | 4/7 Normal | ▰▰▰▰▱▱▱ | <40-60 char reason this is planned work> |
+| 🛠 Effort | 1/4 Trivial | ▰▱▱▱ | <40-60 char reason for small delivery> |
+| 🧠 Complexity | 1/5 Simple | ▰▱▱▱▱ | <40-60 char reason the path is clear> |
+| 🌍 Benefit | 2/4 Individual | ▰▰▱▱ | <40-60 char reason for beneficiary scope> |
+| 📦 Shape | 0/4 Atomic | ▱▱▱▱ | <40-60 char reason this is one change> |
+| 🎯 Quality | 🧭 Usability | - | <40-60 char reason for quality type> |
+| 🚧 Readiness | 🟢 Ready | - | <40-60 char reason work can start> |
 
 ### 📝 Statement
 
@@ -2120,12 +2223,12 @@ Unknown:
 - 🧭 Value Direction: <cost, risk, opportunity, or decision>
 - 🧾 Value Mechanism: <how the issue creates value, avoids waste, reduces risk, or enables upside>
 - ⚖️ Option Value Summary:
-  - Direct Fix — <short fix name> (Implementation Option)
+  - Direct Fix - <short fix name> (Implementation Option)
     - 🧭 Resolution: 🟢 Full
-    - 🛠 Option Effort: <effort>
-    - 🧠 Option Complexity: <complexity>
-    - 🔮 Future Impact: <future impact>
-    - 🤖 Agent Difficulty: <agent difficulty>
+    - 🛠 Option Effort: <effort, including meter>
+    - 🧠 Option Complexity: <complexity, including meter>
+    - 🔮 Future Impact: <future impact, including meter>
+    - 🤖 Agent Difficulty: <agent difficulty, including meter>
     - 🧾 Decision Note: <short value and effort judgement>
 - ✅ Good Result: <what would make the issue worthwhile>
 
@@ -2143,7 +2246,7 @@ Required Checks:
 
 - 👥 Stakeholder Role: <role or group to inform when this is solved>
 - 🗣 Communication Lens: <business, product, support, release, trust, or technical summary>
-- 📬 Success Note: <3–4 lines that can be reused in mail, chat, release notes, or a project update>
+- 📬 Success Note: <3-4 lines that can be reused in mail, chat, release notes, or a project update>
 
 ### 🚫 Out of Scope
 
@@ -2222,7 +2325,7 @@ If a decision is made, put it in Resolved Decisions. Do not leave it hidden in d
 
 If there is no real extracted work, omit Extracted Work or write None.
 
-If an LLM writes a recommendation, the LLM must be named as the author. Do not write `Author: —`.
+If an LLM writes a recommendation, the LLM must be named as the author. Do not write `Author: <name missing>`.
 
 Use `YYYY-MM-DD HH:mm` in recommendation lines. Recommendations age and should be timestamped.
 
@@ -2241,7 +2344,7 @@ Keep chip meanings consistent. For example, use `🟢 -2 Simplifies` and `🟢 -
 # 18. Final Rule
 
 The rating classifies the issue.
-The vertical rating layout keeps ratings readable.
+The rating table layout keeps ratings readable.
 The visual meters make ordered ratings easier to scan.
 The semantic chips make states, categories, value direction, and risks easier to read.
 The section icons make issue documents easier to navigate.
@@ -2262,6 +2365,7 @@ The value assessment must remain neutral and must not be written as stakeholder 
 The recommendation chooses one option.
 The stakeholder success note packages the result for communication after recommendation or completion.
 The option profile shows the cost, risk, future impact, and agent suitability of each path.
+The rating rationale after each profile value explains why that rating was chosen.
 The option description explains the idea and tradeoff.
 The current state shows the world before the option.
 The resulting state shows the world after the option.

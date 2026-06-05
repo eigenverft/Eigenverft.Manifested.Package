@@ -1,8 +1,8 @@
 # TODO OWNERSHIP
 
-Design scratchpad for the **ownership and installer adoption guide** — learnability for `ownershipPolicy`, existing-install discovery, and log-line mapping for **Eigenverft.Manifested.Package**.
+Design scratchpad for the **ownership and installer adoption guide** - learnability for `ownershipPolicy`, existing-install discovery, and log-line mapping for **Eigenverft.Manifested.Package**.
 
-Issue ratings and definitions follow [PROJECT-ISSUE-FRAMEWORK.md](PROJECT-ISSUE-FRAMEWORK.md) (V1.6): vertical ratings; **Option Kind** in each option heading; **Value Assessment** after Options with **Good Result**; **Stakeholder Success Note** after Recommendation; one **Prefer/Choose Option X** per issue with required author and `YYYY-MM-DD HH:mm`. Facts re-verified against the repo on **2026-05-30**.
+Issue ratings and definitions follow [PROJECT-ISSUE-FRAMEWORK.md](PROJECT-ISSUE-FRAMEWORK.md) (V1.8): rating and option-profile tables with short rationales; **Option Kind** in each option heading; **💶 Value Assessment** after Options with **✅ Good Result**; **📬 Stakeholder Success Note** after Recommendation; one **Prefer/Choose Option X** per issue with required author and `YYYY-MM-DD HH:mm`. Facts re-verified against the repo on **2026-05-30**.
 
 Open issues in this file are scheduled here. **No engine changes are implied by this file alone** unless an issue states otherwise.
 
@@ -20,20 +20,23 @@ Open issues in this file are scheduled here. **No engine changes are implied by 
 
 Sorted by **Priority** (higher urgency first), then higher **Benefit**, then lower **Effort** within the same priority.
 
-**Priority 3/7 — Low**
+**Priority 3/7 - Low**
 
 ---
 ---
 ## 📌 Publish ownership and installer adoption guide (runtime already exists)
 
 - 🏷 Rating
-  - 🚦 Priority: 3/7 Low ▰▰▰▱▱▱▱
-  - 🛠 Effort: 2/4 Moderate ▰▰▱▱
-  - 🧠 Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🌍 Benefit: 1/4 Producer ▰▱▱▱
-  - 📦 Shape: 1/4 Focused ▰▱▱▱
-  - 🎯 Quality: 🧭 Usability
-  - 🚧 Readiness: 🟢 Ready
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🚦 Priority | 3/7 Low | ▰▰▰▱▱▱▱ | learnability issue can wait safely |
+| 🛠 Effort | 2/4 Moderate | ▰▰▱▱ | guide and schema text, no engine rewrite |
+| 🧠 Complexity | 2/5 Normal | ▰▰▱▱▱ | policy matrix needs careful wording |
+| 🌍 Benefit | 1/4 Producer | ▰▱▱▱ | mainly authors and maintainers benefit |
+| 📦 Shape | 1/4 Focused | ▰▱▱▱ | one guide plus examples |
+| 🎯 Quality | 🧭 Usability | - | makes ownership rules easier to use |
+| 🚧 Readiness | 🟢 Ready | - | runtime facts are verified |
 
 ### 📝 Statement
 
@@ -66,30 +69,33 @@ A published guide (plus schema descriptions or examples) explains when `allowAdo
 
 Known:
 - **Wire 1.9** defines `packageOperations.policy.ownershipPolicy` (`allowAdoptExternal`, `upgradeAdoptedInstall`, `requirePackageOwnership`) in `Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json`.
-- **Shipped installer kinds (verified 2026-05-30):** **SevenZip** — `msiInstaller` / `msiUninstaller`; **NotepadPlusPlus** — `nsisInstaller` only. No other shipped definition uses `msiInstaller`.
+- **Shipped installer kinds (verified 2026-05-30):** **SevenZip** - `msiInstaller` / `msiUninstaller`; **NotepadPlusPlus** - `nsisInstaller` only. No other shipped definition uses `msiInstaller`.
 - **Adoption policy split (verified):** `allowAdoptExternal: true` on **7** definitions (SevenZip, VSCodeUser, VSCodeRuntime, NotepadPlusPlus, PackageManagement, PowerShellGet, EigenverftManifestedAgent); **false** on the other **11**.
 - **Runtime:** `Resolve-PackageExistingPackageDecision` emits `[DECISION]` reuse/adopt/replace/ignore messages (`Package.Install.Existing.ps1`); MSI/NSIS install engines exist (`Package.Install.InstallerEngine.ps1`).
 - **Tests:** `Package.ConfigAndDefinitions.Tests.ps1` (SevenZip MSI shape); `Package.AcquisitionAndOwnership.Tests.ps1` (adopt/reuse/replace decisions).
 
 Unknown:
-- Author-facing schema descriptions vs JSON property names — whether agents/operators get enough guidance without reading tests and shipped JSON.
+- Author-facing schema descriptions vs JSON property names - whether agents/operators get enough guidance without reading tests and shipped JSON.
 - Per-kind policy matrix for future MSI/desktop packages beyond SevenZip.
 
 ---
 
 ### 🧩 Options
 
-#### Option A — Guide + schema descriptions (no engine change) (Implementation Option)
+#### Option A - Guide + schema descriptions (no engine change) (Implementation Option)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: 🟢 Full
-  - 🛠 Option Effort: 2/4 Moderate ▰▰▱▱
-  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🔮 Future Impact: 🟢 -1 Improves
-  - ↩️ Reversibility: 🟢 Easy
-  - 🧬 Integration: 🟢 Compatible
-  - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
-  - 🧾 Agent Work: 📝 Writing / Docs
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | 🟢 Full | - | closes the documentation gap |
+| 🛠 Option Effort | 2/4 Moderate | ▰▰▱▱ | guide, schema descriptions, examples |
+| 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | known runtime behavior needs mapping |
+| 🔮 Future Impact | 🟢 -1 Improves | ▰▰▱▱▱ | improves author policy choices later |
+| ↩️ Reversibility | 🟢 Easy | ▰▱▱▱ | docs can be revised |
+| 🧬 Integration | 🟢 Compatible | - | matches existing runtime |
+| 🤖 Agent Difficulty | 2/4 Guided | ▰▰▱▱ | docs need source-backed wording |
+| 🧾 Agent Work | 📝 Writing / Docs | - | guide and schema descriptions |
 
 Description:
 Add a maintainer guide (likely in `TODO-DOCUMENTATION.md` or wrk docs) with a scenario table: preinstalled 7-Zip, VS Code adopt, MSI install/remove, `requirePackageOwnership`, version replace. Extend JSON schema descriptions for `ownershipPolicy` and point SevenZip/VSCodeUser as canonical examples. Matches current code; no assign/remove rewrite.
@@ -101,7 +107,7 @@ Resulting State:
 Authors and operators have one guide aligned with wire 1.9 and shipped examples; runtime unchanged unless guide finds bugs filed separately.
 
 Solves:
-- Closes the original “obvious rules” ask without risky behavior changes.
+- Closes the original "obvious rules" ask without risky behavior changes.
 
 Leaves Open:
 - Ambiguous definitions still install until validation issue adds warnings.
@@ -114,17 +120,20 @@ Later Cost:
 
 ---
 
-#### Option B — Guide plus catalog validation warnings (Implementation Option)
+#### Option B - Guide plus catalog validation warnings (Implementation Option)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: 🟢 Full
-  - 🛠 Option Effort: 3/4 Substantial ▰▰▰▱
-  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🔮 Future Impact: 🟢 -1 Improves
-  - ↩️ Reversibility: 🟢 Easy
-  - 🧬 Integration: 🟢 Compatible
-  - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
-  - 🧾 Agent Work: 🧠 System Logic
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | 🟢 Full | - | adds automated mistake checks |
+| 🛠 Option Effort | 3/4 Substantial | ▰▰▰▱ | guide plus catalog linting rules |
+| 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | rules across definitions need tuning |
+| 🔮 Future Impact | 🟢 -1 Improves | ▰▰▱▱▱ | catches mistakes before install |
+| ↩️ Reversibility | 🟢 Easy | ▰▱▱▱ | warnings can be tuned |
+| 🧬 Integration | 🟢 Compatible | - | extends existing catalog test |
+| 🤖 Agent Difficulty | 2/4 Guided | ▰▰▱▱ | validation rules need review |
+| 🧾 Agent Work | 🧠 System Logic | - | lints ownership policy choices |
 
 Description:
 Deliver Option A, then add pre-install validation rules to `Test-PackageDefinitionCatalog` (for example `allowAdoptExternal: false` with `existingInstall.enabled: true` and no `requirePackageOwnership`). Catches author mistakes earlier; more implementation than docs alone.
@@ -155,18 +164,18 @@ Later Cost:
 - 🧭 Value Direction: 🚀 Opportunity / Improvement
 - 🧾 Value Mechanism: Connects existing runtime behavior to learnable policy guidance for **18** heterogeneous definitions; reduces mistaken policies and support threads without changing assign/remove engines.
 - ⚖️ Option Value Summary:
-  - Option A — Guide + schema descriptions (no engine change) (Implementation Option)
+  - Option A - Guide + schema descriptions (no engine change) (Implementation Option)
     - 🧭 Resolution: 🟢 Full
     - 🛠 Option Effort: 2/4 Moderate ▰▰▱▱
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-    - 🔮 Future Impact: 🟢 -1 Improves
+    - 🔮 Future Impact: 🟢 -1 Improves ▰▰▱▱▱
     - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
     - 🧾 Decision Note: Closes learnability gap without engine risk; leaves ambiguous definitions without automated warnings.
-  - Option B — Guide plus catalog validation warnings (Implementation Option)
+  - Option B - Guide plus catalog validation warnings (Implementation Option)
     - 🧭 Resolution: 🟢 Full
     - 🛠 Option Effort: 3/4 Substantial ▰▰▰▱
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-    - 🔮 Future Impact: 🟢 -1 Improves
+    - 🔮 Future Impact: 🟢 -1 Improves ▰▰▱▱▱
     - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
     - 🧾 Agent Work: 🧠 System Logic
     - 🧾 Decision Note: Best mistake prevention with substantial effort; primary home is catalog-validation work.

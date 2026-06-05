@@ -2,7 +2,7 @@
 
 Design scratchpad for **filesystem depot layout hygiene validation**.
 
-Issue ratings and definitions follow [PROJECT-ISSUE-FRAMEWORK.md](PROJECT-ISSUE-FRAMEWORK.md) (V1.6): vertical ratings; **Option Kind** in each option heading; **💶 Value Assessment** after Options with **✅ Good Result**; **📬 Stakeholder Success Note** after Recommendation; one **Prefer/Choose Option X** per issue with required author and `YYYY-MM-DD HH:mm`. Facts re-verified against the repo on **2026-05-30**.
+Issue ratings and definitions follow [PROJECT-ISSUE-FRAMEWORK.md](PROJECT-ISSUE-FRAMEWORK.md) (V1.8): rating and option-profile tables with short rationales; **Option Kind** in each option heading; **💶 Value Assessment** after Options with **✅ Good Result**; **📬 Stakeholder Success Note** after Recommendation; one **Prefer/Choose Option X** per issue with required author and `YYYY-MM-DD HH:mm`. Facts re-verified against the repo on **2026-05-30**.
 
 Open issues in this file are scheduled here.
 
@@ -19,7 +19,7 @@ Open issues in this file are scheduled here.
 
 Sorted by **Priority** (higher urgency first), then higher **Benefit**, then lower **Effort** within the same priority.
 
-**Priority 2/7 — Backlog**
+**Priority 2/7 - Backlog**
 
 *Context: **endpoints** discover signed package-definition JSON; **depots** supply artifact bytes. File-share channels exist; HTTP/HTTPS variants are backlog.*
 
@@ -29,13 +29,16 @@ Sorted by **Priority** (higher urgency first), then higher **Benefit**, then low
 ## 📌 Add depot layout hygiene validation (filesystem depots)
 
 - 🏷 Rating
-  - 🚦 Priority: 2/7 Backlog ▰▰▱▱▱▱▱
-  - 🛠 Effort: 2/4 Moderate ▰▰▱▱
-  - 🧠 Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🌍 Benefit: 1/4 Producer ▰▱▱▱
-  - 📦 Shape: 1/4 Focused ▰▱▱▱
-  - 🎯 Quality: 📡 Operability
-  - 🚧 Readiness: 🟢 Ready
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🚦 Priority | 2/7 Backlog | ▰▰▱▱▱▱▱ | useful cleanup, safely deferrable |
+| 🛠 Effort | 2/4 Moderate | ▰▰▱▱ | one cmdlet or warning path plus tests |
+| 🧠 Complexity | 2/5 Normal | ▰▰▱▱▱ | mirror behavior is understandable |
+| 🌍 Benefit | 1/4 Producer | ▰▱▱▱ | mainly maintainers and support benefit |
+| 📦 Shape | 1/4 Focused | ▰▱▱▱ | one depot hygiene outcome |
+| 🎯 Quality | 📡 Operability | - | improves troubleshooting and operations |
+| 🚧 Readiness | 🟢 Ready | - | enough facts exist to start validator |
 
 ### 📝 Statement
 
@@ -61,7 +64,7 @@ Validation or maintenance tooling flags depot layout problems before ambiguous a
 Known:
 - **Depot management commands** exist (`Cmd.PackageDepot.ps1`).
 - **Mirror step in assign flow:** `[STEP] Reconciling package file depot mirrors` → `Invoke-PackageDepotDistribution` (copies verified artifacts to writable mirror targets).
-- **`Test-PackageDepotDistributionFileMatches`** exists for mirror byte/compare during distribution (`Package.Source.ps1`) — not a layout or orphan-file validator.
+- **`Test-PackageDepotDistributionFileMatches`** exists for mirror byte/compare during distribution (`Package.Source.ps1`) - not a layout or orphan-file validator.
 - **No depot layout hygiene command** (no `Test-PackageDepotLayout`, incomplete-download detection, or stray sidecar rules).
 - Default depot path pattern: `{applicationRootDirectory}/PkgDepot` (`PackageDepotInventory.json`).
 
@@ -72,17 +75,20 @@ Unknown:
 
 ### 🧩 Options
 
-#### Option A — `Test-PackageDepot` maintainer cmdlet (Implementation Option)
+#### Option A - `Test-PackageDepot` maintainer cmdlet (Implementation Option)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: 🟢 Full
-  - 🛠 Option Effort: 2/4 Moderate ▰▰▱▱
-  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🔮 Future Impact: 🟢 -1 Improves
-  - ↩️ Reversibility: 🟢 Easy
-  - 🧬 Integration: 🟢 Compatible
-  - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
-  - 🧾 Agent Work: 💻 Local Code
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | 🟢 Full | - | gives standalone hygiene audit |
+| 🛠 Option Effort | 2/4 Moderate | ▰▰▱▱ | cmdlet, rules, messages, and tests |
+| 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | rules need real depot layouts |
+| 🔮 Future Impact | 🟢 -1 Improves | ▰▰▱▱▱ | support path improves without assign noise |
+| ↩️ Reversibility | 🟢 Easy | ▰▱▱▱ | command can evolve safely |
+| 🧬 Integration | 🟢 Compatible | - | fits depot management commands |
+| 🤖 Agent Difficulty | 2/4 Guided | ▰▰▱▱ | local code with testable rules |
+| 🧾 Agent Work | 💻 Local Code | - | bounded validation behavior |
 
 Description:
 Add an on-demand validator (orphan files, incomplete temp names, expected mirror layout) operators run before troubleshooting acquisition.
@@ -107,17 +113,20 @@ Later Cost:
 
 ---
 
-#### Option B — Warnings during `Invoke-PackageDepotDistribution` (Implementation Option)
+#### Option B - Warnings during `Invoke-PackageDepotDistribution` (Implementation Option)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: 🟡 Partial
-  - 🛠 Option Effort: 2/4 Moderate ▰▰▱▱
-  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🔮 Future Impact: ⚪ 0 Neutral
-  - ↩️ Reversibility: 🟢 Easy
-  - 🧬 Integration: 🔵 Local
-  - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
-  - 🧾 Agent Work: 💻 Local Code
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | 🟡 Partial | - | no standalone audit path |
+| 🛠 Option Effort | 2/4 Moderate | ▰▰▱▱ | mirror warnings and rule tuning |
+| 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | warning timing needs care |
+| 🔮 Future Impact | ⚪ 0 Neutral | ▰▰▰▱▱ | no major design shift |
+| ↩️ Reversibility | 🟢 Easy | ▰▱▱▱ | warnings can be adjusted |
+| 🧬 Integration | 🔵 Local | - | only affects mirror reconcile |
+| 🤖 Agent Difficulty | 2/4 Guided | ▰▰▱▱ | warning noise needs review |
+| 🧾 Agent Work | 💻 Local Code | - | bounded mirror warnings |
 
 Description:
 Emit warnings when mirror reconcile detects suspicious files; no separate command.
@@ -142,17 +151,20 @@ Later Cost:
 
 ---
 
-#### Option C — Maintainer doc only (defer code) (Defer Option)
+#### Option C - Maintainer doc only (defer code) (Defer Option)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: ⚪ Defer
-  - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
-  - 🧠 Option Complexity: 1/5 Simple ▰▱▱▱▱
-  - 🔮 Future Impact: 🟠 +1 Adds Debt
-  - ↩️ Reversibility: 🟢 Easy
-  - 🧬 Integration: 🔵 Local
-  - 🤖 Agent Difficulty: 1/4 Routine ▰▱▱▱
-  - 🧾 Agent Work: 📝 Writing / Docs
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | ⚪ Defer | - | only documents manual cleanup |
+| 🛠 Option Effort | 1/4 Trivial | ▰▱▱▱ | small documentation update |
+| 🧠 Option Complexity | 1/5 Simple | ▰▱▱▱▱ | no behavior change |
+| 🔮 Future Impact | 🟠 +1 Adds Debt | ▰▰▰▰▱ | failures remain opaque |
+| ↩️ Reversibility | 🟢 Easy | ▰▱▱▱ | docs can be replaced by code |
+| 🧬 Integration | 🔵 Local | - | no runtime contract change |
+| 🤖 Agent Difficulty | 1/4 Routine | ▰▱▱▱ | simple writing task |
+| 🧾 Agent Work | 📝 Writing / Docs | - | manual guidance only |
 
 Description:
 Document expected depot folder layout and manual cleanup; no automated checks.
@@ -183,25 +195,25 @@ Later Cost:
 - 🧭 Value Direction: 💰 Cost / Efficiency · 🛡 Risk / Protection
 - 🧾 Value Mechanism: Surfaces orphan and incomplete depot files before assign or mirror fails opaquely; reduces diagnosis time for maintainers and support.
 - ⚖️ Option Value Summary:
-  - Option A — `Test-PackageDepot` maintainer cmdlet (Implementation Option)
+  - Option A - `Test-PackageDepot` maintainer cmdlet (Implementation Option)
     - 🧭 Resolution: 🟢 Full
     - 🛠 Option Effort: 2/4 Moderate ▰▰▱▱
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-    - 🔮 Future Impact: 🟢 -1 Improves
+    - 🔮 Future Impact: 🟢 -1 Improves ▰▰▱▱▱
     - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
     - 🧾 Decision Note: Best support and maintenance value without warning noise on every assign; no auto-repair.
-  - Option B — Warnings during `Invoke-PackageDepotDistribution` (Implementation Option)
+  - Option B - Warnings during `Invoke-PackageDepotDistribution` (Implementation Option)
     - 🧭 Resolution: 🟡 Partial
     - 🛠 Option Effort: 2/4 Moderate ▰▰▱▱
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-    - 🔮 Future Impact: ⚪ 0 Neutral
+    - 🔮 Future Impact: ⚪ 0 Neutral ▰▰▰▱▱
     - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
     - 🧾 Decision Note: Surfaces problems in common assign flow; warning-noise risk; no standalone audit path.
-  - Option C — Maintainer doc only (defer code) (Defer Option)
+  - Option C - Maintainer doc only (defer code) (Defer Option)
     - 🧭 Resolution: ⚪ Defer
     - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
     - 🧠 Option Complexity: 1/5 Simple ▰▱▱▱▱
-    - 🔮 Future Impact: 🟠 +1 Adds Debt
+    - 🔮 Future Impact: 🟠 +1 Adds Debt ▰▰▰▰▱
     - 🤖 Agent Difficulty: 1/4 Routine ▰▱▱▱
     - 🧾 Decision Note: Fast zero-risk guidance; ambiguous failures remain until code lands.
 - ✅ Good Result: Maintainers detect layout problems with explicit pass/fail or warnings before acquisition errors.

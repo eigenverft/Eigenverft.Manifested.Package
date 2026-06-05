@@ -1,6 +1,6 @@
-# Work index — Eigenverft.Manifested.Package
+# Work index - Eigenverft.Manifested.Package
 
-**Source of truth:** one open issue per topic in `TODO-<topic>.md` or `ISSUE-<topic>.md` below. Issue format: [PROJECT-ISSUE-FRAMEWORK.md](PROJECT-ISSUE-FRAMEWORK.md) (V1.6).
+**Source of truth:** one open issue per topic in `TODO-<topic>.md` or `ISSUE-<topic>.md` below. Issue format: [PROJECT-ISSUE-FRAMEWORK.md](PROJECT-ISSUE-FRAMEWORK.md) (V1.8).
 
 **Removed rollup:** `PROJECT-TODO.md` duplicated domain files and listed stale/done work; do not restore it.
 
@@ -14,15 +14,15 @@
 
 | Issue in `PROJECT-TODO.md` | Authoritative location | Status |
 |----------------------------|------------------------|--------|
-| Publish ownership / adoption guide | [TODO-OWNERSHIP.md](TODO-OWNERSHIP.md) | **Duplicate** — keep domain file |
-| Keep `artifacts` / `targetArtifacts` | [DECISION-SCHEMA-ARTIFACTS-VOCABULARY.md](DECISION-SCHEMA-ARTIFACTS-VOCABULARY.md) | **Draft decision only** — not a TODO; needs your sign-off |
+| Publish ownership / adoption guide | [TODO-OWNERSHIP.md](TODO-OWNERSHIP.md) | **Duplicate** - keep domain file |
+| Keep `artifacts` / `targetArtifacts` | [DECISION-SCHEMA-ARTIFACTS-VOCABULARY.md](DECISION-SCHEMA-ARTIFACTS-VOCABULARY.md) | **Draft decision only** - not a TODO; needs your sign-off |
 | Define catalog manifest contract | [TODO-ENDPOINTS-MANIFEST.md](TODO-ENDPOINTS-MANIFEST.md) | **Duplicate** |
 | Implement `httpsCatalog` | [TODO-ENDPOINTS-HTTPS.md](TODO-ENDPOINTS-HTTPS.md) | **Duplicate** |
 | Read-only HTTP/HTTPS depots | [TODO-DEPOTS-HTTP.md](TODO-DEPOTS-HTTP.md) | **Duplicate** |
 | Depot layout hygiene | [TODO-DEPOTS-HYGIENE.md](TODO-DEPOTS-HYGIENE.md) | **Duplicate** |
-| ExecutionCore header comments | [DECISIONS.md](DECISIONS.md) (shipped) | **Stale** — done in code |
-| Scannability / help / state / catalog docs | [TODO-DOCUMENTATION.md](TODO-DOCUMENTATION.md) + shipped state/outcome | **Stale / split** — use documentation TODO; state/outcome shipped |
-| `[OUTCOME]` version-change story | [DECISIONS.md](DECISIONS.md) (shipped) | **Stale** — done in code |
+| ExecutionCore header comments | [DECISIONS.md](DECISIONS.md) (shipped) | **Stale** - done in code |
+| Scannability / help / state / catalog docs | [TODO-DOCUMENTATION.md](TODO-DOCUMENTATION.md) + shipped state/outcome | **Stale / split** - use documentation TODO; state/outcome shipped |
+| `[OUTCOME]` version-change story | [DECISIONS.md](DECISIONS.md) (shipped) | **Stale** - done in code |
 
 **Only in domain files (missing from `PROJECT-TODO.md` rollup):**
 
@@ -32,9 +32,9 @@
 | [TODO-DOCUMENTATION.md](TODO-DOCUMENTATION.md) | Hybrid product documentation |
 | Agent authoring skill | Shipped `Get-PackageDefinitionAuthoringGuide` / `PackageDefinitionAuthoring.md` |
 
-**Cross-file duplicates among open issue files:** none — each 📌 title appears in exactly one domain/issue file.
+**Cross-file duplicates among open issue files:** none - each 📌 title appears in exactly one domain/issue file.
 
-**Deleted split parent:** `TODO-COMMANDS.md` (state/outcome/search polish shipped — see [DECISIONS.md](DECISIONS.md)).
+**Deleted split parent:** `TODO-COMMANDS.md` (state/outcome/search polish shipped - see [DECISIONS.md](DECISIONS.md)).
 
 **Deleted completed dependency track:** the dependency issue and implementation artifacts were removed after the dependency planner and schema 1.9 wire shipped.
 
@@ -69,4 +69,4 @@ Shipped polish (code): [DECISIONS.md](DECISIONS.md).
 
 ## Idea notes (not scheduled issues)
 
-- [IDEA-AGENT-SCALES-PRODUCT.md](IDEA-AGENT-SCALES-PRODUCT.md) — agent scales catalog operations, not machine/fleet mutation.
+- [IDEA-AGENT-SCALES-PRODUCT.md](IDEA-AGENT-SCALES-PRODUCT.md) - agent scales catalog operations, not machine/fleet mutation.

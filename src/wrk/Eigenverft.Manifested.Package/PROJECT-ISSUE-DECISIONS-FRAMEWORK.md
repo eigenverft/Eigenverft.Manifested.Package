@@ -1,6 +1,6 @@
-# PROJECT-ISSUE-DECISIONS-FRAMEWORK V0.1
+# PROJECT-ISSUE-DECISIONS-FRAMEWORK V0.2
 
-Version: V0.1
+Version: V0.2
 Purpose: A readable Markdown framework for creating a durable issue decision record from a materialized project issue document.
 
 Scope: Issue-level decision recording and handoff preparation.
@@ -77,7 +77,7 @@ The selected option may come from:
 
 If an explicit selected option is provided, use that option.
 
-If no explicit selected option is provided, use the issue document’s Recommendation.
+If no explicit selected option is provided, use the issue document's Recommendation.
 
 If the issue document has no selected option and no recommendation, create a decision document with:
 
@@ -172,6 +172,11 @@ The Decision Justification section is where the selected option is justified.
 
 Use the same visual style as the issue framework.
 
+Plain punctuation:
+- Use the plain hyphen-minus character `-` for separators and option headings.
+- Use straight double quotes `"`.
+- Do not use typographic dash characters or smart quotes.
+
 ```text
 ▰ filled meter segment
 ▱ empty meter segment
@@ -185,6 +190,11 @@ Examples:
 3/4 ▰▰▰▱
 4/4 ▰▰▰▰
 ```
+
+Carry-forward meter rule:
+- Preserve meters for source and option fields that use ordered scales.
+- Include meters for Priority, Effort, Complexity, Benefit, Shape, Option Effort, Option Complexity, Future Impact, Reversibility, Agent Difficulty, Source Support, and Discovery Depth.
+- Do not invent meters for categorical or state fields such as Decision State, Option Resolution, Quality, Readiness, Handoff Readiness, Integration, or Agent Work.
 
 Semantic chips:
 
@@ -231,10 +241,10 @@ Use this rating block in every issue decision document.
   - 📚 Source Support: 2/3 Reasoned ▰▰▱
   - 🔎 Discovery Depth: 1/4 Local Scan ▰▱▱▱
   - 🧩 Option Resolution: <carried from selected option>
-  - 🛠 Option Effort: <carried from selected option>
-  - 🧠 Option Complexity: <carried from selected option>
-  - 🔮 Future Impact: <carried from selected option>
-  - 🤖 Agent Difficulty: <carried from selected option>
+  - 🛠 Option Effort: <carried from selected option, including meter>
+  - 🧠 Option Complexity: <carried from selected option, including meter>
+  - 🔮 Future Impact: <carried from selected option, including meter>
+  - 🤖 Agent Difficulty: <carried from selected option, including meter>
   - 🚧 Handoff Readiness: 🟠 Needs Checks
 ```
 
@@ -386,12 +396,12 @@ Template:
 ---
 ---
 
-# 📌 Project Issue Decision — <Issue Title>
+# 📌 Project Issue Decision - <Issue Title>
 
 Source Issue:
 - Title: <issue title>
 - Issue File: <relative path or identifier>
-- Selected Option: <Option X — option title>
+- Selected Option: <Option X - option title>
 - Decision Document: PROJECT-ISSUE-DECISIONS-<issue-slug>.md
 
 Decision Scope:
@@ -405,10 +415,10 @@ Decision Scope:
   - 📚 Source Support: <support>
   - 🔎 Discovery Depth: <discovery depth>
   - 🧩 Option Resolution: <carried from selected option>
-  - 🛠 Option Effort: <carried from selected option>
-  - 🧠 Option Complexity: <carried from selected option>
-  - 🔮 Future Impact: <carried from selected option>
-  - 🤖 Agent Difficulty: <carried from selected option>
+  - 🛠 Option Effort: <carried from selected option, including meter>
+  - 🧠 Option Complexity: <carried from selected option, including meter>
+  - 🔮 Future Impact: <carried from selected option, including meter>
+  - 🤖 Agent Difficulty: <carried from selected option, including meter>
   - 🚧 Handoff Readiness: <handoff readiness>
 
 ### 📝 Decision Statement
@@ -421,11 +431,11 @@ Selection Source:
 ### 📄 Source Issue Summary
 
 Issue Rating:
-- 🚦 Priority: <value>
-- 🛠 Effort: <value>
-- 🧠 Complexity: <value>
-- 🌍 Benefit: <value>
-- 📦 Shape: <value>
+- 🚦 Priority: <value, including meter>
+- 🛠 Effort: <value, including meter>
+- 🧠 Complexity: <value, including meter>
+- 🌍 Benefit: <value, including meter>
+- 📦 Shape: <value, including meter>
 - 🎯 Quality: <value>
 - 🚧 Readiness: <value>
 
@@ -444,22 +454,22 @@ Unknown Facts:
 Related Context:
 - <Relevant context, dependencies, affected areas, or related issues.>
 
-### 🧩 Selected Option — Carried Forward
+### 🧩 Selected Option - Carried Forward
 
 Option:
-- <Option X — option title>
+- <Option X - option title>
 
 Option Kind:
 - <Option kind from the issue document>
 
 Option Profile:
 - 🧭 Resolution: <value>
-- 🛠 Option Effort: <value>
-- 🧠 Option Complexity: <value>
-- 🔮 Future Impact: <value>
-- ↩️ Reversibility: <value>
+- 🛠 Option Effort: <value, including meter>
+- 🧠 Option Complexity: <value, including meter>
+- 🔮 Future Impact: <value, including meter>
+- ↩️ Reversibility: <value, including meter>
 - 🧬 Integration: <value>
-- 🤖 Agent Difficulty: <value>
+- 🤖 Agent Difficulty: <value, including meter>
 - 🧾 Agent Work: <value>
 
 Description:
@@ -495,7 +505,7 @@ Decision Meaning:
 - <Explain what choosing this option means for scope, tradeoff, value, and future work.>
 
 Good Result:
-- <Carry forward or restate the issue’s good result in decision-facing language.>
+- <Carry forward or restate the issue's good result in decision-facing language.>
 
 ### 🧭 Decision Discovery
 
@@ -606,7 +616,7 @@ These checks must be completed before implementation planning if they affect pla
 ### ✅ Decision Justification
 
 Decision:
-- <Choose / Prefer / Defer / Block / Need Decision for> <Option X — option title>
+- <Choose / Prefer / Defer / Block / Need Decision for> <Option X - option title>
 
 Support:
 - <1/3 Thin / 2/3 Reasoned / 3/3 Well Supported>
@@ -702,12 +712,12 @@ Template:
 ---
 ---
 
-# 📌 Project Issue Decision — <Issue Title>
+# 📌 Project Issue Decision - <Issue Title>
 
 Source Issue:
 - Title: <issue title>
 - Issue File: <relative path or identifier>
-- Selected Option: <Option X — option title>
+- Selected Option: <Option X - option title>
 - Decision Document: PROJECT-ISSUE-DECISIONS-<issue-slug>.md
 
 - 🏷 Decision Rating
@@ -715,10 +725,10 @@ Source Issue:
   - 📚 Source Support: <support>
   - 🔎 Discovery Depth: 0/4 None ▱▱▱▱
   - 🧩 Option Resolution: <carried from selected option>
-  - 🛠 Option Effort: <carried from selected option>
-  - 🧠 Option Complexity: <carried from selected option>
-  - 🔮 Future Impact: <carried from selected option>
-  - 🤖 Agent Difficulty: <carried from selected option>
+  - 🛠 Option Effort: <carried from selected option, including meter>
+  - 🧠 Option Complexity: <carried from selected option, including meter>
+  - 🔮 Future Impact: <carried from selected option, including meter>
+  - 🤖 Agent Difficulty: <carried from selected option, including meter>
   - 🚧 Handoff Readiness: 🟢 Ready for Implementation Framework
 
 ### 📝 Decision Statement
@@ -728,7 +738,7 @@ Source Issue:
 ### 🧩 Selected Option Summary
 
 Option:
-- <Option X — option title>
+- <Option X - option title>
 
 Option Kind:
 - <Option kind>
@@ -748,7 +758,7 @@ Risks:
 ### ✅ Decision Justification
 
 Decision:
-- <Choose / Prefer> <Option X — option title>
+- <Choose / Prefer> <Option X - option title>
 
 Support:
 - <1/3 Thin / 2/3 Reasoned / 3/3 Well Supported>

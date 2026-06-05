@@ -2,7 +2,7 @@
 
 Design scratchpad for **read-only HTTP/HTTPS package depots** (artifact byte hosting).
 
-Issue ratings and definitions follow [PROJECT-ISSUE-FRAMEWORK.md](PROJECT-ISSUE-FRAMEWORK.md) (V1.6): vertical ratings; **Option Kind** in each option heading; **💶 Value Assessment** after Options with **✅ Good Result**; **📬 Stakeholder Success Note** after Recommendation; one **Prefer/Choose Option X** per issue with required author and `YYYY-MM-DD HH:mm`. Facts re-verified against the repo on **2026-05-30**.
+Issue ratings and definitions follow [PROJECT-ISSUE-FRAMEWORK.md](PROJECT-ISSUE-FRAMEWORK.md) (V1.8): rating and option-profile tables with short rationales; **Option Kind** in each option heading; **💶 Value Assessment** after Options with **✅ Good Result**; **📬 Stakeholder Success Note** after Recommendation; one **Prefer/Choose Option X** per issue with required author and `YYYY-MM-DD HH:mm`. Facts re-verified against the repo on **2026-05-30**.
 
 Open issues in this file are scheduled here.
 
@@ -20,7 +20,7 @@ Open issues in this file are scheduled here.
 
 Sorted by **Priority** (higher urgency first), then higher **Benefit**, then lower **Effort** within the same priority.
 
-**Priority 2/7 — Backlog**
+**Priority 2/7 - Backlog**
 
 *Context: **endpoints** discover signed package-definition JSON; **depots** supply artifact bytes. File-share channels exist; HTTP/HTTPS variants are backlog.*
 
@@ -30,17 +30,20 @@ Sorted by **Priority** (higher urgency first), then higher **Benefit**, then low
 ## 📌 Read-only HTTP/HTTPS package depots (not started)
 
 - 🏷 Rating
-  - 🚦 Priority: 2/7 Backlog ▰▰▱▱▱▱▱
-  - 🛠 Effort: 3/4 Substantial ▰▰▰▱
-  - 🧠 Complexity: 3/5 Complex ▰▰▰▱▱
-  - 🌍 Benefit: 3/4 Team ▰▰▰▱
-  - 📦 Shape: 1/4 Focused ▰▱▱▱
-  - 🎯 Quality: ✨ Functionality
-  - 🚧 Readiness: 🟠 Needs Refinement
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🚦 Priority | 2/7 Backlog | ▰▰▱▱▱▱▱ | future depot transport visible, not planned yet |
+| 🛠 Effort | 3/4 Substantial | ▰▰▰▱ | new inventory kind and acquisition path |
+| 🧠 Complexity | 3/5 Complex | ▰▰▰▱▱ | HTTP fetch rules and verification fit |
+| 🌍 Benefit | 3/4 Team | ▰▰▰▱ | teams can host artifacts without shares |
+| 📦 Shape | 1/4 Focused | ▰▱▱▱ | one read-only depot transport |
+| 🎯 Quality | ✨ Functionality | - | adds missing artifact-hosting capability |
+| 🚧 Readiness | 🟠 Needs Refinement | - | first consumer fetch needs are unknown |
 
 ### 📝 Statement
 
-Central teams should host artifact bytes on HTTP(S) and have machines acquire them through depot inventory — distinct from per-definition `vendorDownload`. Today **only `kind: filesystem`** depots exist; `New-PackageFilesystemDepotSource` cannot create HTTP depots and there is no reserved stub like `httpsCatalog`.
+Central teams should host artifact bytes on HTTP(S) and have machines acquire them through depot inventory - distinct from per-definition `vendorDownload`. Today **only `kind: filesystem`** depots exist; `New-PackageFilesystemDepotSource` cannot create HTTP depots and there is no reserved stub like `httpsCatalog`.
 
 ### 🧭 Related Context
 
@@ -65,7 +68,7 @@ New read-only HTTP/HTTPS depot kind(s) in inventory schema and acquisition path:
 Known:
 - **Depot inventory today:** shipped `PackageDepotInventory.json` defines only **`kind: filesystem`** sources (`defaultPackageDepot`, optional site/corp paths).
 - **Depot commands:** `Get-PackageDepot`, `Add-PackageDepot`, `Set-PackageDepot`, `Remove-PackageDepot`; `New-PackageFilesystemDepotSource` always writes `kind: filesystem`.
-- **No HTTP/HTTPS depot kind** in code (unlike endpoints, there is no reserved `httpDepot` stub — non-filesystem depot kinds are not implemented).
+- **No HTTP/HTTPS depot kind** in code (unlike endpoints, there is no reserved `httpDepot` stub - non-filesystem depot kinds are not implemented).
 - Assign/materialize flow can **mirror** verified files via `Invoke-PackageDepotDistribution` (filesystem paths only).
 - Writable or authenticated mirroring remains out of scope for this issue.
 
@@ -76,17 +79,20 @@ Unknown:
 
 ### 🧩 Options
 
-#### Option A — v1: full-file GET only (HTTPS, no auth) (Implementation Option)
+#### Option A - v1: full-file GET only (HTTPS, no auth) (Implementation Option)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: 🟡 Partial
-  - 🛠 Option Effort: 3/4 Substantial ▰▰▰▱
-  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🔮 Future Impact: 🟠 +1 Adds Debt
-  - ↩️ Reversibility: 🟡 Moderate
-  - 🧬 Integration: 🟢 Compatible
-  - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
-  - 🧾 Agent Work: 🔌 Integration
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | 🟡 Partial | - | no auth, range, or cache guarantees |
+| 🛠 Option Effort | 3/4 Substantial | ▰▰▰▱ | new URL depot and staging flow |
+| 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | full-file GET reuses verification |
+| 🔮 Future Impact | 🟠 +1 Adds Debt | ▰▰▰▰▱ | auth or range may reshape v1 |
+| ↩️ Reversibility | 🟡 Moderate | ▰▰▱▱ | inventory shape may need changes |
+| 🧬 Integration | 🟢 Compatible | - | reuses existing verification model |
+| 🤖 Agent Difficulty | 3/4 Strong | ▰▰▰▱ | acquisition integration needs review |
+| 🧾 Agent Work | 🔌 Integration | - | HTTP fetch meets depot flow |
 
 Description:
 Add `httpsDepot` (or similar) with anonymous GET of whole artifact files into staging/depot layout. Matches simplest internal mirror hosting; defer etag/range/auth.
@@ -111,17 +117,20 @@ Later Cost:
 
 ---
 
-#### Option B — Spike fetch requirements first (Discovery Option)
+#### Option B - Spike fetch requirements first (Discovery Option)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: 🔵 Discovery
-  - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
-  - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-  - 🔮 Future Impact: 🟢 -1 Improves
-  - ↩️ Reversibility: 🟢 Easy
-  - 🧬 Integration: 🔵 Local
-  - 🤖 Agent Difficulty: 1/4 Routine ▰▱▱▱
-  - 🧾 Agent Work: 🔎 Research / Mapping
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | 🔵 Discovery | - | writes fetch requirements first |
+| 🛠 Option Effort | 1/4 Trivial | ▰▱▱▱ | short research note and v1 contract |
+| 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | consumer constraints matter |
+| 🔮 Future Impact | 🟢 -1 Improves | ▰▰▱▱▱ | improves before transport design |
+| ↩️ Reversibility | 🟢 Easy | ▰▱▱▱ | findings can feed Option A |
+| 🧬 Integration | 🔵 Local | - | facts only, no product contract |
+| 🤖 Agent Difficulty | 1/4 Routine | ▰▱▱▱ | mapping, no code change |
+| 🧾 Agent Work | 🔎 Research / Mapping | - | consumer and transport facts |
 
 Description:
 Interview first consumer (largest artifacts, proxy rules, auth) and document v1 minimum before choosing Option A scope or a richer v1.
@@ -152,21 +161,21 @@ Later Cost:
 - 🧭 Value Direction: 🚀 Opportunity / Improvement
 - 🧾 Value Mechanism: Extends depot acquisition beyond filesystem mirrors while reusing hash and signature verification so central teams can host artifact bytes on HTTP(S).
 - ⚖️ Option Value Summary:
-  - Option A — v1: full-file GET only (HTTPS, no auth) (Implementation Option)
+  - Option A - v1: full-file GET only (HTTPS, no auth) (Implementation Option)
     - 🧭 Resolution: 🟡 Partial
     - 🛠 Option Effort: 3/4 Substantial ▰▰▰▱
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-    - 🔮 Future Impact: 🟠 +1 Adds Debt
+    - 🔮 Future Impact: 🟠 +1 Adds Debt ▰▰▰▰▱
     - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
     - 🧾 Decision Note: Unblocks internal HTTPS mirrors quickly; defers etag, range, and auth.
-  - Option B — Spike fetch requirements first (Discovery Option)
+  - Option B - Spike fetch requirements first (Discovery Option)
     - 🧭 Resolution: 🔵 Discovery
     - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-    - 🔮 Future Impact: 🟢 -1 Improves
+    - 🔮 Future Impact: 🟢 -1 Improves ▰▰▱▱▱
     - 🤖 Agent Difficulty: 1/4 Routine ▰▱▱▱
     - 🧾 Decision Note: Best decision value before greenfield transport; defers product capability until requirements are explicit.
-- ✅ Good Result: Read-only HTTP(S) depots materialize verified artifacts like today’s filesystem depots.
+- ✅ Good Result: Read-only HTTP(S) depots materialize verified artifacts like today's filesystem depots.
 
 ---
 

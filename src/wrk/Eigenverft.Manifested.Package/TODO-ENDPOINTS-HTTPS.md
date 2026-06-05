@@ -2,7 +2,7 @@
 
 Design scratchpad for implementing the **httpsCatalog** endpoint kind.
 
-Issue ratings and definitions follow [PROJECT-ISSUE-FRAMEWORK.md](PROJECT-ISSUE-FRAMEWORK.md) (V1.6): vertical ratings; **Option Kind** in each option heading; **💶 Value Assessment** after Options with **✅ Good Result**; **📬 Stakeholder Success Note** after Recommendation; one **Prefer/Choose Option X** per issue with required author and `YYYY-MM-DD HH:mm`. Facts re-verified against `src/prj/Eigenverft.Manifested.Package` on **2026-06-01**.
+Issue ratings and definitions follow [PROJECT-ISSUE-FRAMEWORK.md](PROJECT-ISSUE-FRAMEWORK.md) (V1.8): rating and option-profile tables with short rationales; **Option Kind** in each option heading; **💶 Value Assessment** after Options with **✅ Good Result**; **📬 Stakeholder Success Note** after Recommendation; one **Prefer/Choose Option X** per issue with required author and `YYYY-MM-DD HH:mm`. Facts re-verified against `src/prj/Eigenverft.Manifested.Package` on **2026-06-01**.
 
 Open issues in this file are scheduled here.
 
@@ -12,7 +12,7 @@ Open issues in this file are scheduled here.
 |-------|--------|
 | Discovery model | [DECISION-ENDPOINT-DISCOVERY-V1.md](DECISION-ENDPOINT-DISCOVERY-V1.md) |
 | Manifest contract | [TODO-ENDPOINTS-MANIFEST.md](TODO-ENDPOINTS-MANIFEST.md) |
-| Search cmdlet | Shipped `Search-Package` local scan — [DECISIONS.md](DECISIONS.md) |
+| Search cmdlet | Shipped `Search-Package` local scan - [DECISIONS.md](DECISIONS.md) |
 | Agent authoring target discovery | Shipped `Get-PackageDefinitionAuthoringGuide`; future HTTPS authoring authorization remains separate |
 
 ---
@@ -21,7 +21,7 @@ Open issues in this file are scheduled here.
 
 Sorted by **Priority** (higher urgency first), then higher **Benefit**, then lower **Effort** within the same priority.
 
-**Priority 2/7 — Backlog**
+**Priority 2/7 - Backlog**
 
 *Context: **endpoints** discover signed package-definition JSON; **depots** supply artifact bytes.*
 
@@ -30,13 +30,16 @@ Sorted by **Priority** (higher urgency first), then higher **Benefit**, then low
 ## 📌 Implement `httpsCatalog` endpoint kind (small-catalog v1)
 
 - 🏷 Rating
-  - 🚦 Priority: 2/7 Backlog ▰▰▱▱▱▱▱
-  - 🛠 Effort: 3/4 Substantial ▰▰▰▱
-  - 🧠 Complexity: 3/5 Complex ▰▰▰▱▱
-  - 🌍 Benefit: 3/4 Team ▰▰▰▱
-  - 📦 Shape: 1/4 Focused ▰▱▱▱
-  - 🎯 Quality: ✨ Functionality
-  - 🚧 Readiness: 🟠 Needs Refinement
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🚦 Priority | 2/7 Backlog | ▰▰▱▱▱▱▱ | future endpoint work visible, not planned yet |
+| 🛠 Effort | 3/4 Substantial | ▰▰▰▱ | transport, scan, cache, and tests change |
+| 🧠 Complexity | 3/5 Complex | ▰▰▰▱▱ | remote discovery and trust sequencing |
+| 🌍 Benefit | 3/4 Team | ▰▰▰▱ | team catalogs can move beyond shares |
+| 📦 Shape | 1/4 Focused | ▰▱▱▱ | one read-side endpoint kind |
+| 🎯 Quality | ✨ Functionality | - | adds missing endpoint capability |
+| 🚧 Readiness | 🟠 Needs Refinement | - | TLS, proxy, and latency facts are missing |
 
 ### 📝 Statement
 
@@ -69,7 +72,7 @@ Known:
 - Same **`httpsCatalog` not implemented** behavior as manifest issue (`Resolve-PackageEndpointRootPath` throw; endpoint summary `Effective = false`).
 - Inventory schema expects `baseUri` + `catalogPath` on `httpsCatalog` entries (`Package.EndpointInventory.Management.ps1`).
 - **Trust/signing** for definitions is implemented (shipped 2026-05-27): signed JSON, `PackageTrustInventory.json`, `catalogTrust` policy.
-- **Today’s catalog path** is `moduleLocal` + recursive JSON scan, not HTTPS.
+- **Today's catalog path** is `moduleLocal` + recursive JSON scan, not HTTPS.
 
 Unknown:
 - TLS and corporate proxy constraints for target environments.
@@ -81,17 +84,20 @@ Unknown:
 
 ### 🧩 Options
 
-#### Option A — `httpsCatalog` v1 with live JSON scan (no manifest) (Implementation Option)
+#### Option A - `httpsCatalog` v1 with live JSON scan (no manifest) (Implementation Option)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: 🟡 Partial
-  - 🛠 Option Effort: 3/4 Substantial ▰▰▰▱
-  - 🧠 Option Complexity: 3/5 Complex ▰▰▰▱▱
-  - 🔮 Future Impact: 🟠 +1 Adds Debt
-  - ↩️ Reversibility: 🟡 Moderate
-  - 🧬 Integration: 🟡 Temporary
-  - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
-  - 🧾 Agent Work: 🔌 Integration
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | 🟡 Partial | - | scan works but does not scale well |
+| 🛠 Option Effort | 3/4 Substantial | ▰▰▰▱ | remote fetch, scan, and trust flow |
+| 🧠 Option Complexity | 3/5 Complex | ▰▰▰▱▱ | live remote tree scan has edge cases |
+| 🔮 Future Impact | 🟠 +1 Adds Debt | ▰▰▰▰▱ | manifest may replace scan path later |
+| ↩️ Reversibility | 🟡 Moderate | ▰▰▱▱ | scan path can be swapped later |
+| 🧬 Integration | 🟡 Temporary | - | small-catalog bridge to manifest model |
+| 🤖 Agent Difficulty | 3/4 Strong | ▰▰▰▱ | remote transport and tests need review |
+| 🧾 Agent Work | 🔌 Integration | - | endpoint fetch meets trust code |
 
 Description:
 Implement resolve/fetch for `baseUri` + `catalogPath` and reuse recursive `*.json` discovery over the remote tree, mirroring filesystem read behavior. Unblocks small HTTPS catalogs quickly. This remains GET/list/fetch only; it does not create or update definitions.
@@ -118,17 +124,20 @@ Later Cost:
 
 ---
 
-#### Option B — `httpsCatalog` after manifest contract for large catalogs (Implementation Option)
+#### Option B - `httpsCatalog` after manifest contract for large catalogs (Implementation Option)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: 🟢 Full
-  - 🛠 Option Effort: 3/4 Substantial ▰▰▰▱
-  - 🧠 Option Complexity: 3/5 Complex ▰▰▰▱▱
-  - 🔮 Future Impact: 🟢 -1 Improves
-  - ↩️ Reversibility: 🟠 Hard
-  - 🧬 Integration: 🟣 Strategic
-  - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
-  - 🧾 Agent Work: 🔌 Integration
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | 🟢 Full | - | covers large-catalog read-side needs |
+| 🛠 Option Effort | 3/4 Substantial | ▰▰▰▱ | manifest and HTTPS land together |
+| 🧠 Option Complexity | 3/5 Complex | ▰▰▰▱▱ | two backlog concepts must align |
+| 🔮 Future Impact | 🟢 -1 Improves | ▰▰▱▱▱ | scale path defined before rollout |
+| ↩️ Reversibility | 🟠 Hard | ▰▰▰▱ | contract affects endpoint clients |
+| 🧬 Integration | 🟣 Strategic | - | aligns remote discovery at scale |
+| 🤖 Agent Difficulty | 3/4 Strong | ▰▰▰▱ | contract and transport need review |
+| 🧾 Agent Work | 🔌 Integration | - | manifest, endpoint, and trust boundary |
 
 Description:
 Ship HTTPS endpoint resolution together with manifest fetch/parse so clients never enumerate every definition URL. This still covers read-side discovery; write-side authoring remains a separate controller and authorization problem.
@@ -154,17 +163,20 @@ Later Cost:
 
 ---
 
-#### Option C — Keep stub; document inventory-only until decisions land (Defer Option)
+#### Option C - Keep stub; document inventory-only until decisions land (Defer Option)
 
 - 🧾 Option Profile
-  - 🧭 Resolution: ⚪ Defer
-  - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
-  - 🧠 Option Complexity: 1/5 Simple ▰▱▱▱▱
-  - 🔮 Future Impact: ⚪ 0 Neutral
-  - ↩️ Reversibility: 🟢 Easy
-  - 🧬 Integration: 🟢 Compatible
-  - 🤖 Agent Difficulty: 1/4 Routine ▰▱▱▱
-  - 🧾 Agent Work: 📝 Writing / Docs
+
+| Field | Rating | Meter | Rationale |
+| --- | --- | --- | --- |
+| 🧭 Resolution | ⚪ Defer | - | keeps stub intentionally inactive |
+| 🛠 Option Effort | 1/4 Trivial | ▰▱▱▱ | documentation-only expectation update |
+| 🧠 Option Complexity | 1/5 Simple | ▰▱▱▱▱ | no runtime behavior changes |
+| 🔮 Future Impact | ⚪ 0 Neutral | ▰▰▰▱▱ | no new path or new debt |
+| ↩️ Reversibility | 🟢 Easy | ▰▱▱▱ | implementation can start later |
+| 🧬 Integration | 🟢 Compatible | - | preserves existing reserved kind |
+| 🤖 Agent Difficulty | 1/4 Routine | ▰▱▱▱ | doc-only cleanup is straightforward |
+| 🧾 Agent Work | 📝 Writing / Docs | - | expectation setting only |
 
 Description:
 Leave runtime throw in place; update wrk docs so authors know `httpsCatalog` is schema-reserved only.
@@ -196,28 +208,28 @@ Later Cost:
 - 🧭 Value Direction: 🚀 Opportunity / Improvement
 - 🧾 Value Mechanism: Turns inventory-reserved `httpsCatalog` into an effective endpoint kind with the existing trust model so team catalogs can live on HTTPS instead of SMB shares.
 - ⚖️ Option Value Summary:
-  - Option A — `httpsCatalog` v1 with live JSON scan (no manifest) (Implementation Option)
+  - Option A - `httpsCatalog` v1 with live JSON scan (no manifest) (Implementation Option)
     - 🧭 Resolution: 🟡 Partial
     - 🛠 Option Effort: 3/4 Substantial ▰▰▰▱
     - 🧠 Option Complexity: 3/5 Complex ▰▰▰▱▱
-    - 🔮 Future Impact: 🟠 +1 Adds Debt
+    - 🔮 Future Impact: 🟠 +1 Adds Debt ▰▰▰▰▱
     - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
     - 🧬 Integration: 🟡 Temporary
     - 🧾 Decision Note: Earliest HTTPS access; may not scale without later manifest work.
-  - Option B — `httpsCatalog` after manifest contract for large catalogs (Implementation Option)
+  - Option B - `httpsCatalog` after manifest contract for large catalogs (Implementation Option)
     - 🧭 Resolution: 🟢 Full
     - 🛠 Option Effort: 3/4 Substantial ▰▰▰▱
     - 🧠 Option Complexity: 3/5 Complex ▰▰▰▱▱
-    - 🔮 Future Impact: 🟢 -1 Improves
+    - 🔮 Future Impact: 🟢 -1 Improves ▰▰▱▱▱
     - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
     - 🧬 Integration: 🟣 Strategic
-    - ↩️ Reversibility: 🟠 Hard
+    - ↩️ Reversibility: 🟠 Hard ▰▰▰▱
     - 🧾 Decision Note: One discovery model at scale; coupled to manifest contract.
-  - Option C — Keep stub; document inventory-only until decisions land (Defer Option)
+  - Option C - Keep stub; document inventory-only until decisions land (Defer Option)
     - 🧭 Resolution: ⚪ Defer
     - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
     - 🧠 Option Complexity: 1/5 Simple ▰▱▱▱▱
-    - 🔮 Future Impact: ⚪ 0 Neutral
+    - 🔮 Future Impact: ⚪ 0 Neutral ▰▰▰▱▱
     - 🤖 Agent Difficulty: 1/4 Routine ▰▱▱▱
     - 🧾 Decision Note: Zero implementation risk; no HTTPS catalog access until A or B is chosen.
 - ✅ Good Result: Enabled HTTPS catalog endpoints resolve signed definitions; discovery matches [DECISION-ENDPOINT-DISCOVERY-V1.md](DECISION-ENDPOINT-DISCOVERY-V1.md).
