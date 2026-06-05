@@ -179,7 +179,7 @@ Use this vertical format:
 
 ```markdown
 - 🏷 Rating
-  - 🚦 Priority: 2/6 High ▰▰▰▰▰▱▱
+  - 🚦 Priority: 5/7 High ▰▰▰▰▰▱▱
   - 🛠 Effort: 2/4 Moderate ▰▰▱▱
   - 🧠 Complexity: 3/5 Complex ▰▰▰▱▱
   - 🌍 Benefit: 3/4 Team ▰▰▰▱
@@ -210,26 +210,26 @@ Do not add the numbers together. They are ratings, not a score.
 
 ## 2.2 🚦 Priority
 
-Priority measures consequence of delay. Lower number means more urgent. The meter shows urgency strength.
+Priority measures consequence of delay. Higher number means more urgent. The number and meter use the same urgency-strength scale.
 
 ```text
 🚦 Priority:
-0/6 Blocker  ▰▰▰▰▰▰▰
-1/6 Critical ▰▰▰▰▰▰▱
-2/6 High     ▰▰▰▰▰▱▱
-3/6 Normal   ▰▰▰▰▱▱▱
-4/6 Low      ▰▰▰▱▱▱▱
-5/6 Backlog  ▰▰▱▱▱▱▱
-6/6 Polish   ▰▱▱▱▱▱▱
+7/7 Blocker  ▰▰▰▰▰▰▰
+6/7 Critical ▰▰▰▰▰▰▱
+5/7 High     ▰▰▰▰▰▱▱
+4/7 Normal   ▰▰▰▰▱▱▱
+3/7 Low      ▰▰▰▱▱▱▱
+2/7 Backlog  ▰▰▱▱▱▱▱
+1/7 Polish   ▰▱▱▱▱▱▱
 ```
 
-Use 0/6 Blocker when work, release, build, migration, deployment, or production use cannot continue.
-Use 1/6 Critical for serious correctness, security, trust, data-loss, compliance, or rollout risk.
-Use 2/6 High for important work that should be scheduled soon.
-Use 3/6 Normal for useful planned work with no immediate pressure.
-Use 4/6 Low for worthwhile but safely deferrable work.
-Use 5/6 Backlog for possible future work that should stay visible but not be planned yet.
-Use 6/6 Polish for optional refinement, visual cleanup, consistency, or taste-level improvement.
+Use 7/7 Blocker when work, release, build, migration, deployment, or production use cannot continue.
+Use 6/7 Critical for serious correctness, security, trust, data-loss, compliance, or rollout risk.
+Use 5/7 High for important work that should be scheduled soon.
+Use 4/7 Normal for useful planned work with no immediate pressure.
+Use 3/7 Low for worthwhile but safely deferrable work.
+Use 2/7 Backlog for possible future work that should stay visible but not be planned yet.
+Use 1/7 Polish for optional refinement, visual cleanup, consistency, or taste-level improvement.
 
 ---
 
@@ -443,7 +443,7 @@ Use compact issue cards when listing many open issues at the end of a project fi
 ### 📌 Installer adoption and removal rules are unclear (MSI and similar)
 
 - 🏷 Rating
-  - 🚦 Priority: 4/6 Low ▰▰▰▱▱▱▱
+  - 🚦 Priority: 3/7 Low ▰▰▰▱▱▱▱
   - 🛠 Effort: 2/4 Moderate ▰▰▱▱
   - 🧠 Complexity: 2/5 Normal ▰▰▱▱▱
   - 🌍 Benefit: 0/4 Internal ▱▱▱▱
@@ -470,7 +470,7 @@ Use this structure:
 ## 📌 <Issue Title>
 
 - 🏷 Rating
-  - 🚦 Priority: 4/6 Low ▰▰▰▱▱▱▱
+  - 🚦 Priority: 3/7 Low ▰▰▰▱▱▱▱
   - 🛠 Effort: 2/4 Moderate ▰▰▱▱
   - 🧠 Complexity: 2/5 Normal ▰▰▱▱▱
   - 🌍 Benefit: 0/4 Internal ▱▱▱▱
@@ -1888,7 +1888,7 @@ None.
 ## 📌 <Issue Title>
 
 - 🏷 Rating
-  - 🚦 Priority: 4/6 Low ▰▰▰▱▱▱▱
+  - 🚦 Priority: 3/7 Low ▰▰▰▱▱▱▱
   - 🛠 Effort: 2/4 Moderate ▰▰▱▱
   - 🧠 Complexity: 2/5 Normal ▰▰▱▱▱
   - 🌍 Benefit: 0/4 Internal ▱▱▱▱
@@ -2086,7 +2086,7 @@ Use this only when the issue is simple, ready, and does not need option analysis
 ## 📌 <Issue Title>
 
 - 🏷 Rating
-  - 🚦 Priority: 3/6 Normal ▰▰▰▰▱▱▱
+  - 🚦 Priority: 4/7 Normal ▰▰▰▰▱▱▱
   - 🛠 Effort: 1/4 Trivial ▰▱▱▱
   - 🧠 Complexity: 1/5 Simple ▰▱▱▱▱
   - 🌍 Benefit: 2/4 Individual ▰▰▱▱

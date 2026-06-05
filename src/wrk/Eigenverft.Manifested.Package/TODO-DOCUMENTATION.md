@@ -10,9 +10,9 @@ Open issues in this file are scheduled here. Scheduling implies **markdown sourc
 
 ## Open Issues
 
-Sorted by **Priority** (lower number first), then higher **Benefit**, then lower **Effort** within the same priority.
+Sorted by **Priority** (higher urgency first), then higher **Benefit**, then lower **Effort** within the same priority.
 
-**Priority 3/6 — Normal**
+**Priority 4/7 — Normal**
 
 ---
 ---
@@ -20,7 +20,7 @@ Sorted by **Priority** (lower number first), then higher **Benefit**, then lower
 ## 📌 Deliver hybrid product documentation (repo markdown → module HTML → open command)
 
 - 🏷 Rating
-  - 🚦 Priority: 3/6 Normal ▰▰▰▰▱▱▱
+  - 🚦 Priority: 4/7 Normal ▰▰▰▰▱▱▱
   - 🛠 Effort: 4/4 Major ▰▰▰▰
   - 🧠 Complexity: 2/5 Normal ▰▰▱▱▱
   - 🌍 Benefit: 3/4 Team ▰▰▰▱
@@ -53,7 +53,7 @@ Affected Areas:
 - Repo [`README.md`](../../../README.md); markdown tree (path TBD); `src/prj/Eigenverft.Manifested.Package/Docs/Guide/`; `.psd1` file list; new command; CI/release build.
 
 May Influence:
-- PSGallery package size; release pipeline; [`ISSUE-CATALOG-AGENT.md`](ISSUE-CATALOG-AGENT.md) onboarding.
+- PSGallery package size; release pipeline; `Get-PackageDefinitionAuthoringGuide` / `PackageDefinitionAuthoring.md` onboarding.
 
 Dependencies:
 - Record choices under **✅ Resolved Decisions** from **🧩 Options** before bulk writing and packaging.

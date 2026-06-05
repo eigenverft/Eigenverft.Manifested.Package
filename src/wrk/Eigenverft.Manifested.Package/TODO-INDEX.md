@@ -30,7 +30,7 @@
 |------|--------|
 | [TODO-SUPPLY-CHAIN.md](TODO-SUPPLY-CHAIN.md) | Vendor release-age policy on version selection |
 | [TODO-DOCUMENTATION.md](TODO-DOCUMENTATION.md) | Hybrid product documentation |
-| [ISSUE-CATALOG-AGENT.md](ISSUE-CATALOG-AGENT.md) | `PackageDefinitionAuthoring` agent skill |
+| Agent authoring skill | Shipped `Get-PackageDefinitionAuthoringGuide` / `PackageDefinitionAuthoring.md` |
 
 **Cross-file duplicates among open issue files:** none — each 📌 title appears in exactly one domain/issue file.
 
@@ -40,7 +40,7 @@
 
 **Deleted completed catalog-validation track:** the catalog-validation planning artifacts were removed after `Test-PackageDefinitionCatalog` shipped.
 
-**Replaced reviewed catalog-agent track:** `TODO-CATALOG-AGENT.md` was replaced by reviewed [ISSUE-CATALOG-AGENT.md](ISSUE-CATALOG-AGENT.md).
+**Completed catalog-agent track:** the old catalog-agent planning files were removed after `Get-PackageDefinitionAuthoringGuide` and `PackageDefinitionAuthoring.md` shipped.
 
 ---
 
@@ -48,14 +48,13 @@
 
 | P | File | Topic |
 |---|------|--------|
-| 2 | [TODO-SUPPLY-CHAIN.md](TODO-SUPPLY-CHAIN.md) | Release-age / cooling window on version selection |
-| 3 | [TODO-DOCUMENTATION.md](TODO-DOCUMENTATION.md) | Hybrid docs (repo → module HTML → command) |
-| 3 | [ISSUE-CATALOG-AGENT.md](ISSUE-CATALOG-AGENT.md) | Agent authoring skill |
-| 4 | [TODO-OWNERSHIP.md](TODO-OWNERSHIP.md) | Ownership / adoption guide |
-| 5 | [TODO-ENDPOINTS-MANIFEST.md](TODO-ENDPOINTS-MANIFEST.md) | Catalog manifest contract |
-| 5 | [TODO-ENDPOINTS-HTTPS.md](TODO-ENDPOINTS-HTTPS.md) | `httpsCatalog` endpoint kind |
-| 5 | [TODO-DEPOTS-HTTP.md](TODO-DEPOTS-HTTP.md) | HTTP(S) depot fetch |
-| 5 | [TODO-DEPOTS-HYGIENE.md](TODO-DEPOTS-HYGIENE.md) | Depot layout hygiene |
+| 5 | [TODO-SUPPLY-CHAIN.md](TODO-SUPPLY-CHAIN.md) | Release-age / cooling window on version selection |
+| 4 | [TODO-DOCUMENTATION.md](TODO-DOCUMENTATION.md) | Hybrid docs (repo → module HTML → command) |
+| 3 | [TODO-OWNERSHIP.md](TODO-OWNERSHIP.md) | Ownership / adoption guide |
+| 2 | [TODO-ENDPOINTS-MANIFEST.md](TODO-ENDPOINTS-MANIFEST.md) | Catalog manifest contract |
+| 2 | [TODO-ENDPOINTS-HTTPS.md](TODO-ENDPOINTS-HTTPS.md) | `httpsCatalog` endpoint kind |
+| 2 | [TODO-DEPOTS-HTTP.md](TODO-DEPOTS-HTTP.md) | HTTP(S) depot fetch |
+| 2 | [TODO-DEPOTS-HYGIENE.md](TODO-DEPOTS-HYGIENE.md) | Depot layout hygiene |
 
 ---
 

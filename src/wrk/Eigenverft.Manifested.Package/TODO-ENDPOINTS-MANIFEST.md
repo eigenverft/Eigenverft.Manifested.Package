@@ -13,15 +13,15 @@ Open issues in this file are scheduled here.
 | Discovery model | [DECISION-ENDPOINT-DISCOVERY-V1.md](DECISION-ENDPOINT-DISCOVERY-V1.md) |
 | `httpsCatalog` implementation | [TODO-ENDPOINTS-HTTPS.md](TODO-ENDPOINTS-HTTPS.md) |
 | Search cmdlet | Shipped `Search-Package` local scan — [DECISIONS.md](DECISIONS.md) |
-| Agent authoring target discovery | [ISSUE-AUTHORING-GUIDE-COMMAND.md](ISSUE-AUTHORING-GUIDE-COMMAND.md) |
+| Agent authoring target discovery | Shipped `Get-PackageDefinitionAuthoringGuide`; future HTTPS authoring authorization remains separate |
 
 ---
 
 ## Open Issues
 
-Sorted by **Priority** (lower number first), then higher **Benefit**, then lower **Effort** within the same priority.
+Sorted by **Priority** (higher urgency first), then higher **Benefit**, then lower **Effort** within the same priority.
 
-**Priority 5/6 — Backlog**
+**Priority 2/7 — Backlog**
 
 *Context: **endpoints** discover signed package-definition JSON; **depots** supply artifact bytes.*
 
@@ -30,7 +30,7 @@ Sorted by **Priority** (lower number first), then higher **Benefit**, then lower
 ## 📌 Define catalog manifest contract (large-catalog path)
 
 - 🏷 Rating
-  - 🚦 Priority: 5/6 Backlog ▰▰▱▱▱▱▱
+  - 🚦 Priority: 2/7 Backlog ▰▰▱▱▱▱▱
   - 🛠 Effort: 2/4 Moderate ▰▰▱▱
   - 🧠 Complexity: 3/5 Complex ▰▰▰▱▱
   - 🌍 Benefit: 3/4 Team ▰▰▰▱
@@ -49,7 +49,7 @@ This manifest issue is about read-side discovery metadata: what definitions exis
 Related Issues:
 - [DECISION-ENDPOINT-DISCOVERY-V1.md](DECISION-ENDPOINT-DISCOVERY-V1.md) (recorded; large-catalog manifest still required at scale).
 - [`TODO-ENDPOINTS-HTTPS.md`](TODO-ENDPOINTS-HTTPS.md).
-- [`ISSUE-AUTHORING-GUIDE-COMMAND.md`](ISSUE-AUTHORING-GUIDE-COMMAND.md), which must not select HTTPS authoring targets until HTTPS create/update authorization checks exist.
+- Shipped `Get-PackageDefinitionAuthoringGuide`, which must not select HTTPS authoring targets until HTTPS create/update authorization checks exist.
 
 Affected Areas:
 - Future manifest document; endpoint discovery sequencing; trust order with signed definitions.

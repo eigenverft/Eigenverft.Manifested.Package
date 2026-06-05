@@ -17,9 +17,9 @@ Open issues in this file are scheduled here.
 
 ## Open Issues
 
-Sorted by **Priority** (lower number first), then higher **Benefit**, then lower **Effort** within the same priority.
+Sorted by **Priority** (higher urgency first), then higher **Benefit**, then lower **Effort** within the same priority.
 
-**Priority 5/6 — Backlog**
+**Priority 2/7 — Backlog**
 
 *Context: **endpoints** discover signed package-definition JSON; **depots** supply artifact bytes. File-share channels exist; HTTP/HTTPS variants are backlog.*
 
@@ -29,7 +29,7 @@ Sorted by **Priority** (lower number first), then higher **Benefit**, then lower
 ## 📌 Add depot layout hygiene validation (filesystem depots)
 
 - 🏷 Rating
-  - 🚦 Priority: 5/6 Backlog ▰▰▱▱▱▱▱
+  - 🚦 Priority: 2/7 Backlog ▰▰▱▱▱▱▱
   - 🛠 Effort: 2/4 Moderate ▰▰▱▱
   - 🧠 Complexity: 2/5 Normal ▰▰▱▱▱
   - 🌍 Benefit: 1/4 Producer ▰▱▱▱

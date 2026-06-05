@@ -20,7 +20,7 @@ Short formula:
 - `PRODUCT-BOUNDARY.md` already says package JSON should be maintainable by agents, then validated and reviewed before it becomes trusted catalog content.
 - The module already centers reviewable package-definition JSON, signed definitions, trust inventory, endpoints, depots, local state, and operation history.
 - `Test-PackageDefinitionCatalog` now gives agents a deterministic pre-install validation command.
-- `ISSUE-CATALOG-AGENT.md` already captures the first concrete slice: publish a `PackageDefinitionAuthoring` skill for external agents.
+- Shipped `Get-PackageDefinitionAuthoringGuide` and `PackageDefinitionAuthoring.md` capture the first concrete slice for external package-definition agents.
 
 ## Useful Product Principle
 
@@ -47,11 +47,12 @@ Bad fit:
 
 ### 1. Package Definition Authoring
 
-This is the immediate good task and already has an issue:
+This immediate task has shipped:
 
-- `ISSUE-CATALOG-AGENT.md`
+- `Get-PackageDefinitionAuthoringGuide`
+- `PackageDefinitionAuthoring.md`
 
-The agent skill should guide unsigned draft -> validate -> sign -> verify -> human review -> publish.
+The agent skill guides unsigned draft -> validate -> sign -> verify -> human review -> publish.
 
 ### 2. Catalog Maintenance Workbench
 
@@ -130,6 +131,6 @@ Possible future command name, not a commitment:
 
 Keep the first implementation small:
 
-1. Implement `ISSUE-CATALOG-AGENT.md` by shipping `AgentSkills/PackageDefinitionAuthoring.md`.
-2. Dogfood it with one package-definition change.
+1. Keep dogfooding `PackageDefinitionAuthoring.md` with real package-definition changes.
+2. Capture recurring agent-catalog maintenance pain as concrete TODOs.
 3. Only then decide whether "Catalog Maintenance Workbench" deserves a formal issue.

@@ -13,15 +13,15 @@ Open issues in this file are scheduled here.
 | Discovery model | [DECISION-ENDPOINT-DISCOVERY-V1.md](DECISION-ENDPOINT-DISCOVERY-V1.md) |
 | Manifest contract | [TODO-ENDPOINTS-MANIFEST.md](TODO-ENDPOINTS-MANIFEST.md) |
 | Search cmdlet | Shipped `Search-Package` local scan — [DECISIONS.md](DECISIONS.md) |
-| Agent authoring target discovery | [ISSUE-AUTHORING-GUIDE-COMMAND.md](ISSUE-AUTHORING-GUIDE-COMMAND.md) |
+| Agent authoring target discovery | Shipped `Get-PackageDefinitionAuthoringGuide`; future HTTPS authoring authorization remains separate |
 
 ---
 
 ## Open Issues
 
-Sorted by **Priority** (lower number first), then higher **Benefit**, then lower **Effort** within the same priority.
+Sorted by **Priority** (higher urgency first), then higher **Benefit**, then lower **Effort** within the same priority.
 
-**Priority 5/6 — Backlog**
+**Priority 2/7 — Backlog**
 
 *Context: **endpoints** discover signed package-definition JSON; **depots** supply artifact bytes.*
 
@@ -30,7 +30,7 @@ Sorted by **Priority** (lower number first), then higher **Benefit**, then lower
 ## 📌 Implement `httpsCatalog` endpoint kind (small-catalog v1)
 
 - 🏷 Rating
-  - 🚦 Priority: 5/6 Backlog ▰▰▱▱▱▱▱
+  - 🚦 Priority: 2/7 Backlog ▰▰▱▱▱▱▱
   - 🛠 Effort: 3/4 Substantial ▰▰▰▱
   - 🧠 Complexity: 3/5 Complex ▰▰▰▱▱
   - 🌍 Benefit: 3/4 Team ▰▰▰▱
@@ -49,7 +49,7 @@ This issue is about read-side HTTPS catalog discovery: list/fetch/scan signed pa
 Related Issues:
 - [DECISION-ENDPOINT-DISCOVERY-V1.md](DECISION-ENDPOINT-DISCOVERY-V1.md).
 - [`TODO-ENDPOINTS-MANIFEST.md`](TODO-ENDPOINTS-MANIFEST.md).
-- [`ISSUE-AUTHORING-GUIDE-COMMAND.md`](ISSUE-AUTHORING-GUIDE-COMMAND.md) for future agent endpoint selection and troubleshooting.
+- Shipped `Get-PackageDefinitionAuthoringGuide`; future HTTPS authoring selection needs separate create/update authorization checks.
 
 Affected Areas:
 - `Package.EndpointInventory.Management.ps1`; `Package.DefinitionReference.ps1`; TLS/proxy configuration.

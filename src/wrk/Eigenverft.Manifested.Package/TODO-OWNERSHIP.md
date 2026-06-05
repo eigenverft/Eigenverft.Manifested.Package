@@ -12,22 +12,22 @@ Open issues in this file are scheduled here. **No engine changes are implied by 
 |-------|--------|
 | Hybrid documentation (maintainer chapter home) | [TODO-DOCUMENTATION.md](TODO-DOCUMENTATION.md) |
 | Catalog validation warnings | Future `Test-PackageDefinitionCatalog` ownership-policy rules |
-| Agent authoring skill | [ISSUE-CATALOG-AGENT.md](ISSUE-CATALOG-AGENT.md) |
+| Agent authoring skill | Shipped `Get-PackageDefinitionAuthoringGuide` / `PackageDefinitionAuthoring.md` |
 
 ---
 
 ## Open Issues
 
-Sorted by **Priority** (lower number first), then higher **Benefit**, then lower **Effort** within the same priority.
+Sorted by **Priority** (higher urgency first), then higher **Benefit**, then lower **Effort** within the same priority.
 
-**Priority 4/6 — Low**
+**Priority 3/7 — Low**
 
 ---
 ---
 ## 📌 Publish ownership and installer adoption guide (runtime already exists)
 
 - 🏷 Rating
-  - 🚦 Priority: 4/6 Low ▰▰▰▱▱▱▱
+  - 🚦 Priority: 3/7 Low ▰▰▰▱▱▱▱
   - 🛠 Effort: 2/4 Moderate ▰▰▱▱
   - 🧠 Complexity: 2/5 Normal ▰▰▱▱▱
   - 🌍 Benefit: 1/4 Producer ▰▱▱▱

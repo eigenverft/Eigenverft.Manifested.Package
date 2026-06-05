@@ -30,7 +30,7 @@
 | Work | Depends on |
 |------|------------|
 | `Search-Package` local scan | Shipped 2026-06-01 (see [DECISIONS.md](DECISIONS.md)) |
-| `httpsCatalog` small-catalog v1 | Priority 3/6 decision (this doc); trust inventory already prepared |
+| `httpsCatalog` small-catalog v1 | Priority 4/7 decision (this doc); trust inventory already prepared |
 | Manifest contract + parser | Large-catalog / HTTPS-at-scale path |
 | Search at scale (optional manifest-backed) | Manifest contract when trigger met |
 | HTTPS create/update authoring surface | Separate authorization and write API decision; not implied by read-side `httpsCatalog` |

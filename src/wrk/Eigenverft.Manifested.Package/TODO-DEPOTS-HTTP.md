@@ -18,9 +18,9 @@ Open issues in this file are scheduled here.
 
 ## Open Issues
 
-Sorted by **Priority** (lower number first), then higher **Benefit**, then lower **Effort** within the same priority.
+Sorted by **Priority** (higher urgency first), then higher **Benefit**, then lower **Effort** within the same priority.
 
-**Priority 5/6 — Backlog**
+**Priority 2/7 — Backlog**
 
 *Context: **endpoints** discover signed package-definition JSON; **depots** supply artifact bytes. File-share channels exist; HTTP/HTTPS variants are backlog.*
 
@@ -30,7 +30,7 @@ Sorted by **Priority** (lower number first), then higher **Benefit**, then lower
 ## 📌 Read-only HTTP/HTTPS package depots (not started)
 
 - 🏷 Rating
-  - 🚦 Priority: 5/6 Backlog ▰▰▱▱▱▱▱
+  - 🚦 Priority: 2/7 Backlog ▰▰▱▱▱▱▱
   - 🛠 Effort: 3/4 Substantial ▰▰▰▱
   - 🧠 Complexity: 3/5 Complex ▰▰▰▱▱
   - 🌍 Benefit: 3/4 Team ▰▰▰▱
