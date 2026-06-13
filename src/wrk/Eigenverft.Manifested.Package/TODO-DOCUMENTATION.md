@@ -100,7 +100,7 @@ Unknown:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🟢 Full | - | ships all three hybrid documentation legs |
+| 🧭 Resolution | 🟢 Full | ▰▰▰▰▰ | ships all three hybrid documentation legs |
 | 🛠 Option Effort | 4/4 Major | ▰▰▰▰ | full content, build, bundle, and command |
 | 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | build choices known but need review |
 | 🔮 Future Impact | 🟢 -1 Improves | ▰▰▱▱▱ | improves source of truth and offline guide |
@@ -138,7 +138,7 @@ Later Cost:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🟢 Full | - | same hybrid result with local source path |
+| 🧭 Resolution | 🟢 Full | ▰▰▰▰▰ | same hybrid result with local source path |
 | 🛠 Option Effort | 4/4 Major | ▰▰▰▰ | same work, only source location differs |
 | 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | path choice is normal project tradeoff |
 | 🔮 Future Impact | ⚪ 0 Neutral | ▰▰▰▱▱ | content model stays the same |
@@ -176,7 +176,7 @@ Later Cost:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🟡 Partial | - | render risk remains inside the bundle |
+| 🧭 Resolution | 🟡 Partial | ▰▰▰▰▱ | render risk remains inside the bundle |
 | 🛠 Option Effort | 4/4 Major | ▰▰▰▰ | same docs plus vendored client renderer |
 | 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | file URL renderer behavior needs review |
 | 🔮 Future Impact | 🟠 +1 Adds Debt | ▰▰▰▰▱ | adds client renderer debt to package |
@@ -214,7 +214,7 @@ Later Cost:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🟢 Full | - | full hybrid docs plus public mirror |
+| 🧭 Resolution | 🟢 Full | ▰▰▰▰▰ | full hybrid docs plus public mirror |
 | 🛠 Option Effort | 4/4 Major | ▰▰▰▰ | full hybrid stack plus Pages deploy |
 | 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | same core docs with extra CI target |
 | 🔮 Future Impact | ⚪ 0 Neutral | ▰▰▰▱▱ | neutral if the same artifact is reused |
@@ -253,7 +253,7 @@ Later Cost:
 - 🧾 Value Mechanism: Gives git contributors and Gallery-only installers the same structured product guide (repo markdown + offline bundled HTML + open command); reduces evaluation friction, support threads, and README-only onboarding without duplicating PRODUCT-BOUNDARY as normative scope text.
 - ⚖️ Option Value Summary:
   - Option A - v1 default stack (repo `docs/`, CI static HTML, link-only boundary, `Show-PackageDocumentation`) (Implementation Option)
-    - 🧭 Resolution: 🟢 Full
+    - 🧭 Resolution: 🟢 Full ▰▰▰▰▰
     - 🛠 Option Effort: 4/4 Major ▰▰▰▰
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
     - 🔮 Future Impact: 🟢 -1 Improves ▰▰▱▱▱
@@ -261,21 +261,21 @@ Later Cost:
     - 🧬 Integration: 🟣 Strategic
     - 🧾 Decision Note: Strongest v1 fit: common repo layout, smaller Gallery package via pre-render, boundary link-only, cmdlet naming aligned with existing surface.
   - Option B - v1 stack with project-local markdown sources (Implementation Option)
-    - 🧭 Resolution: 🟢 Full
+    - 🧭 Resolution: 🟢 Full ▰▰▰▰▰
     - 🛠 Option Effort: 4/4 Major ▰▰▰▰
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
     - 🔮 Future Impact: ⚪ 0 Neutral ▰▰▰▱▱
     - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
     - 🧾 Decision Note: Same hybrid outcomes as A with weaker repo-root discoverability; may relocate sources later.
   - Option C - v1 stack with client-side markdown in the bundle (Reframed Implementation Option)
-    - 🧭 Resolution: 🟡 Partial
+    - 🧭 Resolution: 🟡 Partial ▰▰▰▰▱
     - 🛠 Option Effort: 4/4 Major ▰▰▰▰
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
     - 🔮 Future Impact: 🟠 +1 Adds Debt ▰▰▰▰▱
     - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
     - 🧾 Decision Note: Defers CI renderer choice but adds vendored JS, `file://` risk, and likely pre-render migration later.
   - Option D - v1 default stack plus GitHub Pages from the same build (Combined Path Option)
-    - 🧭 Resolution: 🟢 Full
+    - 🧭 Resolution: 🟢 Full ▰▰▰▰▰
     - 🛠 Option Effort: 4/4 Major ▰▰▰▰
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
     - 🔮 Future Impact: ⚪ 0 Neutral ▰▰▰▱▱

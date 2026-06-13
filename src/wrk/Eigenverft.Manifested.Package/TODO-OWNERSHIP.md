@@ -88,7 +88,7 @@ Unknown:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🟢 Full | - | closes the documentation gap |
+| 🧭 Resolution | 🟢 Full | ▰▰▰▰▰ | closes the documentation gap |
 | 🛠 Option Effort | 2/4 Moderate | ▰▰▱▱ | guide, schema descriptions, examples |
 | 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | known runtime behavior needs mapping |
 | 🔮 Future Impact | 🟢 -1 Improves | ▰▰▱▱▱ | improves author policy choices later |
@@ -126,7 +126,7 @@ Later Cost:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🟢 Full | - | adds automated mistake checks |
+| 🧭 Resolution | 🟢 Full | ▰▰▰▰▰ | adds automated mistake checks |
 | 🛠 Option Effort | 3/4 Substantial | ▰▰▰▱ | guide plus catalog linting rules |
 | 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | rules across definitions need tuning |
 | 🔮 Future Impact | 🟢 -1 Improves | ▰▰▱▱▱ | catches mistakes before install |
@@ -165,14 +165,14 @@ Later Cost:
 - 🧾 Value Mechanism: Connects existing runtime behavior to learnable policy guidance for **18** heterogeneous definitions; reduces mistaken policies and support threads without changing assign/remove engines.
 - ⚖️ Option Value Summary:
   - Option A - Guide + schema descriptions (no engine change) (Implementation Option)
-    - 🧭 Resolution: 🟢 Full
+    - 🧭 Resolution: 🟢 Full ▰▰▰▰▰
     - 🛠 Option Effort: 2/4 Moderate ▰▰▱▱
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
     - 🔮 Future Impact: 🟢 -1 Improves ▰▰▱▱▱
     - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
     - 🧾 Decision Note: Closes learnability gap without engine risk; leaves ambiguous definitions without automated warnings.
   - Option B - Guide plus catalog validation warnings (Implementation Option)
-    - 🧭 Resolution: 🟢 Full
+    - 🧭 Resolution: 🟢 Full ▰▰▰▰▰
     - 🛠 Option Effort: 3/4 Substantial ▰▰▰▱
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
     - 🔮 Future Impact: 🟢 -1 Improves ▰▰▱▱▱

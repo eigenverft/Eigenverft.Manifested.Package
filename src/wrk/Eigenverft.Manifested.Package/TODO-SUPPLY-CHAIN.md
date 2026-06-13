@@ -100,7 +100,7 @@ Unknown:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🟢 Full | - | covers every source kind with signed dates |
+| 🧭 Resolution | 🟢 Full | ▰▰▰▰▰ | covers every source kind with signed dates |
 | 🛠 Option Effort | 3/4 Substantial | ▰▰▰▱ | schema, runtime, catalog, and tests change |
 | 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | local selection model stays intact |
 | 🔮 Future Impact | 🟢 -1 Improves | ▰▰▱▱▱ | keeps policy reviewable in catalog data |
@@ -140,7 +140,7 @@ Later Cost:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🟡 Partial | - | only GitHub rows get live vendor dates |
+| 🧭 Resolution | 🟡 Partial | ▰▰▰▰▱ | only GitHub rows get live vendor dates |
 | 🛠 Option Effort | 3/4 Substantial | ▰▰▰▱ | network path and fallback rules are needed |
 | 🧠 Option Complexity | 3/5 Complex | ▰▰▰▱▱ | mixes source resolution with selection policy |
 | 🔮 Future Impact | 🟠 +1 Adds Debt | ▰▰▰▰▱ | splits policy clocks across source kinds |
@@ -181,7 +181,7 @@ Later Cost:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🟡 Partial | - | helps authors but not policy by itself |
+| 🧭 Resolution | 🟡 Partial | ▰▰▰▰▱ | helps authors but not policy by itself |
 | 🛠 Option Effort | 1/4 Trivial | ▰▱▱▱ | small helper around existing GitHub lookup |
 | 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | authoring flow and dates still need care |
 | 🔮 Future Impact | ⚪ 0 Neutral | ▰▰▰▱▱ | optional tool does not change runtime |
@@ -220,7 +220,7 @@ Later Cost:
 - 🧾 Value Mechanism: Adds a reviewable cooling window before automatic version selection picks a newly authored row; keeps policy in signed catalog content and explainable logs instead of silent "highest version wins" on the next assign.
 - ⚖️ Option Value Summary:
   - Option A - Authored vendor release date at selection time (Implementation Option)
-    - 🧭 Resolution: 🟢 Full
+    - 🧭 Resolution: 🟢 Full ▰▰▰▰▰
     - 🛠 Option Effort: 3/4 Substantial ▰▰▰▱
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
     - 🔮 Future Impact: 🟢 -1 Improves ▰▰▱▱▱
@@ -228,7 +228,7 @@ Later Cost:
     - 🧬 Integration: 🟢 Compatible
     - 🧾 Decision Note: Matches `Package.VersionSelection.ps1` (no network at selection); vendor dates are signed, validatable catalog facts for all source kinds.
   - Option B - Runtime GitHub enrichment at selection time (Implementation Option)
-    - 🧭 Resolution: 🟡 Partial
+    - 🧭 Resolution: 🟡 Partial ▰▰▰▰▱
     - 🛠 Option Effort: 3/4 Substantial ▰▰▰▱
     - 🧠 Option Complexity: 3/5 Complex ▰▰▰▱▱
     - 🔮 Future Impact: 🟠 +1 Adds Debt ▰▰▰▰▱
@@ -236,7 +236,7 @@ Later Cost:
     - 🧬 Integration: 🟡 Temporary
     - 🧾 Decision Note: Less authoring work for three `githubRelease` packages only; splits policy clocks and breaks selection-from-signed-catalog model.
   - Option C - Optional maintain-time GitHub assist (authoring only) (Implementation Option)
-    - 🧭 Resolution: 🟡 Partial
+    - 🧭 Resolution: 🟡 Partial ▰▰▰▰▱
     - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
     - 🔮 Future Impact: ⚪ 0 Neutral ▰▰▰▱▱

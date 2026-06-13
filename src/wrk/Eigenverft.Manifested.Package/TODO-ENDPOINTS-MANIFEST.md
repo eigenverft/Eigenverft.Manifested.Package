@@ -91,7 +91,7 @@ Unknown:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🟡 Partial | - | parser remains follow-up work |
+| 🧭 Resolution | 🟡 Partial | ▰▰▰▰▱ | parser remains follow-up work |
 | 🛠 Option Effort | 2/4 Moderate | ▰▰▱▱ | contract design and metadata choices |
 | 🧠 Option Complexity | 3/5 Complex | ▰▰▰▱▱ | search, trust, and HTTPS must align |
 | 🔮 Future Impact | 🟢 -1 Improves | ▰▰▱▱▱ | scale path defined before code |
@@ -131,7 +131,7 @@ Later Cost:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🟡 Partial | - | minimal path index only |
+| 🧭 Resolution | 🟡 Partial | ▰▰▰▰▱ | minimal path index only |
 | 🛠 Option Effort | 1/4 Trivial | ▰▱▱▱ | thin contract can be written quickly |
 | 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | rich metadata is deferred |
 | 🔮 Future Impact | 🟠 +1 Adds Debt | ▰▰▰▰▱ | search may need more fields later |
@@ -170,7 +170,7 @@ Later Cost:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | ⚪ Defer | - | waits for real scale pain |
+| 🧭 Resolution | ⚪ Defer | ▰▱▱▱▱ | waits for real scale pain |
 | 🛠 Option Effort | 1/4 Trivial | ▰▱▱▱ | decision note and docs cleanup |
 | 🧠 Option Complexity | 1/5 Simple | ▰▱▱▱▱ | no format design yet |
 | 🔮 Future Impact | 🟠 +1 Adds Debt | ▰▰▰▰▱ | HTTPS may ship before manifest |
@@ -209,7 +209,7 @@ Later Cost:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🔵 Discovery | - | decision record already exists |
+| 🧭 Resolution | 🔵 Discovery | ▰▰▱▱▱ | decision record already exists |
 | 🛠 Option Effort | 1/4 Trivial | ▰▱▱▱ | record already exists |
 | 🧠 Option Complexity | 1/5 Simple | ▰▱▱▱▱ | no remaining investigation here |
 | 🔮 Future Impact | 🟢 -1 Improves | ▰▰▱▱▱ | improves sequencing after decision |
@@ -248,7 +248,7 @@ Later Cost:
 - 🧾 Value Mechanism: Defines an index contract aligned with trust and signing before manifest parser and HTTPS catalog implementation; enables large-catalog discovery without per-definition fetch storms.
 - ⚖️ Option Value Summary:
   - Option A - Full manifest contract before large HTTPS/search use (Implementation Option)
-    - 🧭 Resolution: 🟡 Partial
+    - 🧭 Resolution: 🟡 Partial ▰▰▰▰▱
     - 🛠 Option Effort: 2/4 Moderate ▰▰▱▱
     - 🧠 Option Complexity: 3/5 Complex ▰▰▰▱▱
     - 🔮 Future Impact: 🟢 -1 Improves ▰▰▱▱▱
@@ -256,7 +256,7 @@ Later Cost:
     - 🧬 Integration: 🟣 Strategic
     - 🧾 Decision Note: Best long-term HTTPS and search alignment once a large-catalog target exists.
   - Option B - Minimal index stub for HTTPS v1 only (Implementation Option)
-    - 🧭 Resolution: 🟡 Partial
+    - 🧭 Resolution: 🟡 Partial ▰▰▰▰▱
     - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
     - 🔮 Future Impact: 🟠 +1 Adds Debt ▰▰▰▰▱
@@ -264,14 +264,14 @@ Later Cost:
     - 🧬 Integration: 🟡 Temporary
     - 🧾 Decision Note: Faster HTTPS bootstrap; may need manifest revision when search ships.
   - Option C - No manifest; defer contract until scale pain (Defer Option)
-    - 🧭 Resolution: ⚪ Defer
+    - 🧭 Resolution: ⚪ Defer ▰▱▱▱▱
     - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
     - 🧠 Option Complexity: 1/5 Simple ▰▱▱▱▱
     - 🔮 Future Impact: 🟠 +1 Adds Debt ▰▰▰▰▱
     - 🤖 Agent Difficulty: 1/4 Routine ▰▱▱▱
     - 🧾 Decision Note: Avoids premature design; leaves large-catalog and HTTPS performance risk.
   - Option D - Already resolved: wait for discovery record (Closed Discovery Option)
-    - 🧭 Resolution: 🔵 Discovery
+    - 🧭 Resolution: 🔵 Discovery ▰▰▱▱▱
     - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
     - 🧠 Option Complexity: 1/5 Simple ▰▱▱▱▱
     - 🔮 Future Impact: 🟢 -1 Improves ▰▰▱▱▱

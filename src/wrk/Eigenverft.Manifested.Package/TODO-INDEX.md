@@ -50,7 +50,10 @@
 |---|------|--------|
 | 5 | [TODO-SUPPLY-CHAIN.md](TODO-SUPPLY-CHAIN.md) | Release-age / cooling window on version selection |
 | 4 | [TODO-DOCUMENTATION.md](TODO-DOCUMENTATION.md) | Hybrid docs (repo → module HTML → command) |
+| 4 | [ISSUE-ASSIGNMENT-PREFLIGHT.md](ISSUE-ASSIGNMENT-PREFLIGHT.md) | Read-only assignment plan before mutation |
 | 3 | [TODO-OWNERSHIP.md](TODO-OWNERSHIP.md) | Ownership / adoption guide |
+| 3 | [ISSUE-ONBOARDING-PROFILES.md](ISSUE-ONBOARDING-PROFILES.md) | Role-based onboarding profiles (DefinitionId bundles) |
+| 3 | [ISSUE-AGENT-OPERABILITY.md](ISSUE-AGENT-OPERABILITY.md) | Execution logs, operability guide cmd, failure recovery (agent operability) |
 | 2 | [TODO-ENDPOINTS-MANIFEST.md](TODO-ENDPOINTS-MANIFEST.md) | Catalog manifest contract |
 | 2 | [TODO-ENDPOINTS-HTTPS.md](TODO-ENDPOINTS-HTTPS.md) | `httpsCatalog` endpoint kind |
 | 2 | [TODO-DEPOTS-HTTP.md](TODO-DEPOTS-HTTP.md) | HTTP(S) depot fetch |
@@ -69,4 +72,4 @@ Shipped polish (code): [DECISIONS.md](DECISIONS.md).
 
 ## Idea notes (not scheduled issues)
 
-- [IDEA-AGENT-SCALES-PRODUCT.md](IDEA-AGENT-SCALES-PRODUCT.md) - agent scales catalog operations, not machine/fleet mutation.
+- [IDEA-AGENT-SCALES-PRODUCT.md](IDEA-AGENT-SCALES-PRODUCT.md) - agent scales catalog operations, not machine/fleet mutation. Onboarding profiles → [ISSUE-ONBOARDING-PROFILES.md](ISSUE-ONBOARDING-PROFILES.md). Operability / diagnosis → [ISSUE-AGENT-OPERABILITY.md](ISSUE-AGENT-OPERABILITY.md).

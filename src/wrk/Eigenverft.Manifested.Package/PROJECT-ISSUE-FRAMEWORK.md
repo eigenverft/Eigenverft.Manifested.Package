@@ -207,9 +207,9 @@ Use this table format:
 | 🚧 Readiness | 🟢 Ready | - | enough facts exist to start safely |
 ```
 
-The number is the source of truth. The meter is only a visual aid. Unordered dimensions such as Quality, Readiness, Resolution, Integration, Value Type, Value Direction, Option Kind, and Agent Work do not use meters.
+The number is the source of truth. The meter is only a visual aid. Unordered dimensions such as Quality, Readiness, Integration, Value Type, Value Direction, Option Kind, and Agent Work do not use meters.
 
-Ordered non-numeric dimensions use meters when the scale has a clear strength, burden, or difficulty direction. In the option profile, Future Impact and Reversibility use meters even though their labels are chip-based.
+Ordered non-numeric dimensions use meters when the scale has a clear strength, burden, or difficulty direction. In the option profile, Resolution, Future Impact, and Reversibility use meters even though their labels are chip-based.
 
 Do not use short codes like `P2`, `E2`, `C3`, or `Q:U` in normal issue text.
 
@@ -566,7 +566,7 @@ Unknown:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | <resolution> | - | <40-60 char reason this path resolves enough> |
+| 🧭 Resolution | <resolution> | <meter> | <40-60 char reason this path resolves enough> |
 | 🛠 Option Effort | <option effort> | <meter> | <40-60 char reason for delivery load> |
 | 🧠 Option Complexity | <option complexity> | <meter> | <40-60 char reason for reasoning load> |
 | 🔮 Future Impact | <future impact> | <meter> | <40-60 char reason for later cost> |
@@ -785,7 +785,7 @@ Example:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🟢 Full | - | addresses the whole stated outcome |
+| 🧭 Resolution | 🟢 Full | ▰▰▰▰▰ | addresses the whole stated outcome |
 ```
 
 Implementation options should describe what will be built, changed, removed, or corrected.
@@ -815,7 +815,7 @@ Example:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🟡 Partial | - | preserves value but narrows scope |
+| 🧭 Resolution | 🟡 Partial | ▰▰▰▰▱ | preserves value but narrows scope |
 ```
 
 The description should make the reframe explicit:
@@ -855,7 +855,7 @@ Example:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🔵 Discovery | - | produces facts before choosing work |
+| 🧭 Resolution | 🔵 Discovery | ▰▰▱▱▱ | produces facts before choosing work |
 ```
 
 A Discovery option must say what facts, map, prototype, or evidence it will produce, and what later decision it enables.
@@ -881,7 +881,7 @@ Example:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🟣 Decision | - | settles the blocking product choice |
+| 🧭 Resolution | 🟣 Decision | ▰▰▱▱▱ | settles the blocking product choice |
 ```
 
 A Decision option must say which decision will be made, why it blocks a responsible implementation choice, and which role or decision authority is expected to decide.
@@ -907,7 +907,7 @@ Example:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🧩 Split | - | separates work into cleaner issues |
+| 🧭 Resolution | 🧩 Split | ▰▰▱▱▱ | separates work into cleaner issues |
 ```
 
 A Split option must say what stays in the current issue and what becomes separate work.
@@ -935,7 +935,7 @@ Example:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🟡 Partial | - | solves near-term need and defers depth |
+| 🧭 Resolution | 🟡 Partial | ▰▰▰▰▱ | solves near-term need and defers depth |
 ```
 
 A Combined Path option is not a bundle of unrelated tasks. It must be one coherent, independently selectable path.
@@ -969,7 +969,7 @@ Example:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | ⚪ Defer | - | waits for a clearer trigger |
+| 🧭 Resolution | ⚪ Defer | ▰▱▱▱▱ | waits for a clearer trigger |
 ```
 
 A Defer option must say why now is not the right time and what condition should cause the issue to be revisited.
@@ -995,7 +995,7 @@ Example:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🔴 Reject | - | issue conflicts with intended behavior |
+| 🧭 Resolution | 🔴 Reject | ▱▱▱▱▱ | issue conflicts with intended behavior |
 ```
 
 A Reject option must explain why the issue should not be pursued.
@@ -1008,15 +1008,17 @@ Resolution describes what the option achieves.
 
 ```text
 🧭 Resolution:
-🟢 Full
-🟡 Partial
-🟠 Mitigation
-🔵 Discovery
-🟣 Decision
-🧩 Split
-⚪ Defer
-🔴 Reject
+🟢 Full ▰▰▰▰▰
+🟡 Partial ▰▰▰▰▱
+🟠 Mitigation ▰▰▰▱▱
+🔵 Discovery ▰▰▱▱▱
+🟣 Decision ▰▰▱▱▱
+🧩 Split ▰▰▱▱▱
+⚪ Defer ▰▱▱▱▱
+🔴 Reject ▱▱▱▱▱
 ```
+
+The meter represents direct resolution strength against the stated required outcome, not whether the option is recommended. More filled means the option handles more of the issue directly now. Reject can be correct, but its meter is empty because it intentionally delivers none of the stated outcome.
 
 Use 🟢 Full when the option resolves the required outcome.
 
@@ -1292,14 +1294,14 @@ Use this format:
 - 🧾 Value Mechanism: <how the issue creates value, avoids waste, reduces risk, or enables upside>
 - ⚖️ Option Value Summary:
   - Option A - <short option name> (<option kind>)
-    - 🧭 Resolution: <resolution>
+    - 🧭 Resolution: <resolution, including meter>
     - 🛠 Option Effort: <option effort, including meter>
     - 🧠 Option Complexity: <option complexity, including meter>
     - 🔮 Future Impact: <future impact, including meter>
     - 🤖 Agent Difficulty: <agent difficulty, including meter>
     - 🧾 Decision Note: <short value and effort judgement>
   - Option B - <short option name> (<option kind>)
-    - 🧭 Resolution: <resolution>
+    - 🧭 Resolution: <resolution, including meter>
     - 🛠 Option Effort: <option effort, including meter>
     - 🧠 Option Complexity: <option complexity, including meter>
     - 🔮 Future Impact: <future impact, including meter>
@@ -1418,7 +1420,7 @@ Default format:
 
 ```markdown
 - Option A - <short option name> (<option kind>)
-    - 🧭 Resolution: <resolution>
+    - 🧭 Resolution: <resolution, including meter>
     - 🛠 Option Effort: <option effort, including meter>
     - 🧠 Option Complexity: <option complexity, including meter>
     - 🔮 Future Impact: <future impact, including meter>
@@ -1448,28 +1450,28 @@ Optional fields may be added only when they are decision-relevant:
 
 Use optional fields when they change the decision. For example, include Reversibility when an option is hard to undo, include Integration when an option is strategic or conflicting, and include Agent Work when delegation type matters.
 
-When Reversibility is included in Option Value Summary, include its meter. Integration and Agent Work remain meterless because they are categories.
+Resolution, Option Effort, Option Complexity, Future Impact, and Agent Difficulty always include their meters in Option Value Summary. When Reversibility is included in Option Value Summary, include its meter. Integration and Agent Work remain meterless because they are categories.
 
 Good example:
 
 ```markdown
 ⚖️ Option Value Summary:
 - Option A - Improve visible wording only (Implementation Option)
-    - 🧭 Resolution: 🟡 Partial
+    - 🧭 Resolution: 🟡 Partial ▰▰▰▰▱
     - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
     - 🧠 Option Complexity: 1/5 Simple ▰▱▱▱▱
     - 🔮 Future Impact: 🟠 +1 Adds Debt ▰▰▰▰▱
     - 🤖 Agent Difficulty: 1/4 Routine ▰▱▱▱
     - 🧾 Decision Note: Fast visible improvement, but weak long-term value because the internal structure remains duplicated.
 - Option B - Introduce a shared resolver error model (Implementation Option)
-    - 🧭 Resolution: 🟢 Full
+    - 🧭 Resolution: 🟢 Full ▰▰▰▰▰
     - 🛠 Option Effort: 3/4 Substantial ▰▰▰▱
     - 🧠 Option Complexity: 3/5 Complex ▰▰▰▱▱
     - 🔮 Future Impact: 🟢 -2 Simplifies ▰▱▱▱▱
     - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
     - 🧾 Decision Note: Higher effort, but strongest long-term value because it reduces maintenance effort and repeated rework.
 - Option C - Map current ownership first (Discovery Option)
-    - 🧭 Resolution: 🔵 Discovery
+    - 🧭 Resolution: 🔵 Discovery ▰▰▱▱▱
     - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
     - 🔮 Future Impact: 🟢 -1 Improves ▰▰▱▱▱
@@ -2036,7 +2038,7 @@ Unknown:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | <resolution> | - | <40-60 char reason this path resolves enough> |
+| 🧭 Resolution | <resolution> | <meter> | <40-60 char reason this path resolves enough> |
 | 🛠 Option Effort | <option effort> | <meter> | <40-60 char reason for delivery load> |
 | 🧠 Option Complexity | <option complexity> | <meter> | <40-60 char reason for reasoning load> |
 | 🔮 Future Impact | <future impact> | <meter> | <40-60 char reason for later cost> |
@@ -2074,7 +2076,7 @@ Later Cost:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | <resolution> | - | <40-60 char reason this path resolves enough> |
+| 🧭 Resolution | <resolution> | <meter> | <40-60 char reason this path resolves enough> |
 | 🛠 Option Effort | <option effort> | <meter> | <40-60 char reason for delivery load> |
 | 🧠 Option Complexity | <option complexity> | <meter> | <40-60 char reason for reasoning load> |
 | 🔮 Future Impact | <future impact> | <meter> | <40-60 char reason for later cost> |
@@ -2113,14 +2115,14 @@ Later Cost:
 - 🧾 Value Mechanism: <how the issue creates value, avoids waste, reduces risk, or enables upside>
 - ⚖️ Option Value Summary:
   - Option A - <short option name> (<option kind>)
-    - 🧭 Resolution: <resolution>
+    - 🧭 Resolution: <resolution, including meter>
     - 🛠 Option Effort: <option effort, including meter>
     - 🧠 Option Complexity: <option complexity, including meter>
     - 🔮 Future Impact: <future impact, including meter>
     - 🤖 Agent Difficulty: <agent difficulty, including meter>
     - 🧾 Decision Note: <short value and effort judgement>
   - Option B - <short option name> (<option kind>)
-    - 🧭 Resolution: <resolution>
+    - 🧭 Resolution: <resolution, including meter>
     - 🛠 Option Effort: <option effort, including meter>
     - 🧠 Option Complexity: <option complexity, including meter>
     - 🔮 Future Impact: <future impact, including meter>
@@ -2224,7 +2226,7 @@ Unknown:
 - 🧾 Value Mechanism: <how the issue creates value, avoids waste, reduces risk, or enables upside>
 - ⚖️ Option Value Summary:
   - Direct Fix - <short fix name> (Implementation Option)
-    - 🧭 Resolution: 🟢 Full
+    - 🧭 Resolution: 🟢 Full ▰▰▰▰▰
     - 🛠 Option Effort: <effort, including meter>
     - 🧠 Option Complexity: <complexity, including meter>
     - 🔮 Future Impact: <future impact, including meter>

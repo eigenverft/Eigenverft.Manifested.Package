@@ -90,7 +90,7 @@ Unknown:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🟡 Partial | - | scan works but does not scale well |
+| 🧭 Resolution | 🟡 Partial | ▰▰▰▰▱ | scan works but does not scale well |
 | 🛠 Option Effort | 3/4 Substantial | ▰▰▰▱ | remote fetch, scan, and trust flow |
 | 🧠 Option Complexity | 3/5 Complex | ▰▰▰▱▱ | live remote tree scan has edge cases |
 | 🔮 Future Impact | 🟠 +1 Adds Debt | ▰▰▰▰▱ | manifest may replace scan path later |
@@ -130,7 +130,7 @@ Later Cost:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🟢 Full | - | covers large-catalog read-side needs |
+| 🧭 Resolution | 🟢 Full | ▰▰▰▰▰ | covers large-catalog read-side needs |
 | 🛠 Option Effort | 3/4 Substantial | ▰▰▰▱ | manifest and HTTPS land together |
 | 🧠 Option Complexity | 3/5 Complex | ▰▰▰▱▱ | two backlog concepts must align |
 | 🔮 Future Impact | 🟢 -1 Improves | ▰▰▱▱▱ | scale path defined before rollout |
@@ -169,7 +169,7 @@ Later Cost:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | ⚪ Defer | - | keeps stub intentionally inactive |
+| 🧭 Resolution | ⚪ Defer | ▰▱▱▱▱ | keeps stub intentionally inactive |
 | 🛠 Option Effort | 1/4 Trivial | ▰▱▱▱ | documentation-only expectation update |
 | 🧠 Option Complexity | 1/5 Simple | ▰▱▱▱▱ | no runtime behavior changes |
 | 🔮 Future Impact | ⚪ 0 Neutral | ▰▰▰▱▱ | no new path or new debt |
@@ -209,7 +209,7 @@ Later Cost:
 - 🧾 Value Mechanism: Turns inventory-reserved `httpsCatalog` into an effective endpoint kind with the existing trust model so team catalogs can live on HTTPS instead of SMB shares.
 - ⚖️ Option Value Summary:
   - Option A - `httpsCatalog` v1 with live JSON scan (no manifest) (Implementation Option)
-    - 🧭 Resolution: 🟡 Partial
+    - 🧭 Resolution: 🟡 Partial ▰▰▰▰▱
     - 🛠 Option Effort: 3/4 Substantial ▰▰▰▱
     - 🧠 Option Complexity: 3/5 Complex ▰▰▰▱▱
     - 🔮 Future Impact: 🟠 +1 Adds Debt ▰▰▰▰▱
@@ -217,7 +217,7 @@ Later Cost:
     - 🧬 Integration: 🟡 Temporary
     - 🧾 Decision Note: Earliest HTTPS access; may not scale without later manifest work.
   - Option B - `httpsCatalog` after manifest contract for large catalogs (Implementation Option)
-    - 🧭 Resolution: 🟢 Full
+    - 🧭 Resolution: 🟢 Full ▰▰▰▰▰
     - 🛠 Option Effort: 3/4 Substantial ▰▰▰▱
     - 🧠 Option Complexity: 3/5 Complex ▰▰▰▱▱
     - 🔮 Future Impact: 🟢 -1 Improves ▰▰▱▱▱
@@ -226,7 +226,7 @@ Later Cost:
     - ↩️ Reversibility: 🟠 Hard ▰▰▰▱
     - 🧾 Decision Note: One discovery model at scale; coupled to manifest contract.
   - Option C - Keep stub; document inventory-only until decisions land (Defer Option)
-    - 🧭 Resolution: ⚪ Defer
+    - 🧭 Resolution: ⚪ Defer ▰▱▱▱▱
     - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
     - 🧠 Option Complexity: 1/5 Simple ▰▱▱▱▱
     - 🔮 Future Impact: ⚪ 0 Neutral ▰▰▰▱▱

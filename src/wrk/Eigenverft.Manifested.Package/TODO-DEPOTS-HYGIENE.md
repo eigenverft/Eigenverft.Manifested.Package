@@ -81,7 +81,7 @@ Unknown:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🟢 Full | - | gives standalone hygiene audit |
+| 🧭 Resolution | 🟢 Full | ▰▰▰▰▰ | gives standalone hygiene audit |
 | 🛠 Option Effort | 2/4 Moderate | ▰▰▱▱ | cmdlet, rules, messages, and tests |
 | 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | rules need real depot layouts |
 | 🔮 Future Impact | 🟢 -1 Improves | ▰▰▱▱▱ | support path improves without assign noise |
@@ -119,7 +119,7 @@ Later Cost:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🟡 Partial | - | no standalone audit path |
+| 🧭 Resolution | 🟡 Partial | ▰▰▰▰▱ | no standalone audit path |
 | 🛠 Option Effort | 2/4 Moderate | ▰▰▱▱ | mirror warnings and rule tuning |
 | 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | warning timing needs care |
 | 🔮 Future Impact | ⚪ 0 Neutral | ▰▰▰▱▱ | no major design shift |
@@ -157,7 +157,7 @@ Later Cost:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | ⚪ Defer | - | only documents manual cleanup |
+| 🧭 Resolution | ⚪ Defer | ▰▱▱▱▱ | only documents manual cleanup |
 | 🛠 Option Effort | 1/4 Trivial | ▰▱▱▱ | small documentation update |
 | 🧠 Option Complexity | 1/5 Simple | ▰▱▱▱▱ | no behavior change |
 | 🔮 Future Impact | 🟠 +1 Adds Debt | ▰▰▰▰▱ | failures remain opaque |
@@ -196,21 +196,21 @@ Later Cost:
 - 🧾 Value Mechanism: Surfaces orphan and incomplete depot files before assign or mirror fails opaquely; reduces diagnosis time for maintainers and support.
 - ⚖️ Option Value Summary:
   - Option A - `Test-PackageDepot` maintainer cmdlet (Implementation Option)
-    - 🧭 Resolution: 🟢 Full
+    - 🧭 Resolution: 🟢 Full ▰▰▰▰▰
     - 🛠 Option Effort: 2/4 Moderate ▰▰▱▱
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
     - 🔮 Future Impact: 🟢 -1 Improves ▰▰▱▱▱
     - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
     - 🧾 Decision Note: Best support and maintenance value without warning noise on every assign; no auto-repair.
   - Option B - Warnings during `Invoke-PackageDepotDistribution` (Implementation Option)
-    - 🧭 Resolution: 🟡 Partial
+    - 🧭 Resolution: 🟡 Partial ▰▰▰▰▱
     - 🛠 Option Effort: 2/4 Moderate ▰▰▱▱
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
     - 🔮 Future Impact: ⚪ 0 Neutral ▰▰▰▱▱
     - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
     - 🧾 Decision Note: Surfaces problems in common assign flow; warning-noise risk; no standalone audit path.
   - Option C - Maintainer doc only (defer code) (Defer Option)
-    - 🧭 Resolution: ⚪ Defer
+    - 🧭 Resolution: ⚪ Defer ▰▱▱▱▱
     - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
     - 🧠 Option Complexity: 1/5 Simple ▰▱▱▱▱
     - 🔮 Future Impact: 🟠 +1 Adds Debt ▰▰▰▰▱

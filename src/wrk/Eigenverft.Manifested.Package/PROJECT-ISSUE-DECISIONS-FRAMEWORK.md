@@ -193,8 +193,8 @@ Examples:
 
 Carry-forward meter rule:
 - Preserve meters for source and option fields that use ordered scales.
-- Include meters for Priority, Effort, Complexity, Benefit, Shape, Option Effort, Option Complexity, Future Impact, Reversibility, Agent Difficulty, Source Support, and Discovery Depth.
-- Do not invent meters for categorical or state fields such as Decision State, Option Resolution, Quality, Readiness, Handoff Readiness, Integration, or Agent Work.
+- Include meters for Priority, Effort, Complexity, Benefit, Shape, Option Resolution, Option Effort, Option Complexity, Future Impact, Reversibility, Agent Difficulty, Source Support, and Discovery Depth.
+- Do not invent meters for categorical or state fields such as Decision State, Quality, Readiness, Handoff Readiness, Integration, or Agent Work.
 
 Semantic chips:
 
@@ -240,7 +240,7 @@ Use this rating block in every issue decision document.
   - 🧭 Decision State: 🟢 Selected
   - 📚 Source Support: 2/3 Reasoned ▰▰▱
   - 🔎 Discovery Depth: 1/4 Local Scan ▰▱▱▱
-  - 🧩 Option Resolution: <carried from selected option>
+  - 🧩 Option Resolution: <carried from selected option, including meter>
   - 🛠 Option Effort: <carried from selected option, including meter>
   - 🧠 Option Complexity: <carried from selected option, including meter>
   - 🔮 Future Impact: <carried from selected option, including meter>
@@ -414,7 +414,7 @@ Decision Scope:
   - 🧭 Decision State: <state>
   - 📚 Source Support: <support>
   - 🔎 Discovery Depth: <discovery depth>
-  - 🧩 Option Resolution: <carried from selected option>
+  - 🧩 Option Resolution: <carried from selected option, including meter>
   - 🛠 Option Effort: <carried from selected option, including meter>
   - 🧠 Option Complexity: <carried from selected option, including meter>
   - 🔮 Future Impact: <carried from selected option, including meter>
@@ -463,7 +463,7 @@ Option Kind:
 - <Option kind from the issue document>
 
 Option Profile:
-- 🧭 Resolution: <value>
+- 🧭 Resolution: <value, including meter>
 - 🛠 Option Effort: <value, including meter>
 - 🧠 Option Complexity: <value, including meter>
 - 🔮 Future Impact: <value, including meter>
@@ -724,7 +724,7 @@ Source Issue:
   - 🧭 Decision State: 🟢 Selected
   - 📚 Source Support: <support>
   - 🔎 Discovery Depth: 0/4 None ▱▱▱▱
-  - 🧩 Option Resolution: <carried from selected option>
+  - 🧩 Option Resolution: <carried from selected option, including meter>
   - 🛠 Option Effort: <carried from selected option, including meter>
   - 🧠 Option Complexity: <carried from selected option, including meter>
   - 🔮 Future Impact: <carried from selected option, including meter>

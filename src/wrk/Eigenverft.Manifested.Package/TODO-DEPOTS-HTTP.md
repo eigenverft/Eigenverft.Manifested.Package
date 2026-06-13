@@ -85,7 +85,7 @@ Unknown:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🟡 Partial | - | no auth, range, or cache guarantees |
+| 🧭 Resolution | 🟡 Partial | ▰▰▰▰▱ | no auth, range, or cache guarantees |
 | 🛠 Option Effort | 3/4 Substantial | ▰▰▰▱ | new URL depot and staging flow |
 | 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | full-file GET reuses verification |
 | 🔮 Future Impact | 🟠 +1 Adds Debt | ▰▰▰▰▱ | auth or range may reshape v1 |
@@ -123,7 +123,7 @@ Later Cost:
 
 | Field | Rating | Meter | Rationale |
 | --- | --- | --- | --- |
-| 🧭 Resolution | 🔵 Discovery | - | writes fetch requirements first |
+| 🧭 Resolution | 🔵 Discovery | ▰▰▱▱▱ | writes fetch requirements first |
 | 🛠 Option Effort | 1/4 Trivial | ▰▱▱▱ | short research note and v1 contract |
 | 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | consumer constraints matter |
 | 🔮 Future Impact | 🟢 -1 Improves | ▰▰▱▱▱ | improves before transport design |
@@ -162,14 +162,14 @@ Later Cost:
 - 🧾 Value Mechanism: Extends depot acquisition beyond filesystem mirrors while reusing hash and signature verification so central teams can host artifact bytes on HTTP(S).
 - ⚖️ Option Value Summary:
   - Option A - v1: full-file GET only (HTTPS, no auth) (Implementation Option)
-    - 🧭 Resolution: 🟡 Partial
+    - 🧭 Resolution: 🟡 Partial ▰▰▰▰▱
     - 🛠 Option Effort: 3/4 Substantial ▰▰▰▱
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
     - 🔮 Future Impact: 🟠 +1 Adds Debt ▰▰▰▰▱
     - 🤖 Agent Difficulty: 3/4 Strong ▰▰▰▱
     - 🧾 Decision Note: Unblocks internal HTTPS mirrors quickly; defers etag, range, and auth.
   - Option B - Spike fetch requirements first (Discovery Option)
-    - 🧭 Resolution: 🔵 Discovery
+    - 🧭 Resolution: 🔵 Discovery ▰▰▱▱▱
     - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
     - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
     - 🔮 Future Impact: 🟢 -1 Improves ▰▰▱▱▱

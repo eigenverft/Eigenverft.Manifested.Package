@@ -1,7 +1,7 @@
 # IDEA: Agent Scales The Product By Scaling The Catalog
 
 Source: external AI conversation reviewed on 2026-06-03.
-Status: idea note, not a scheduled issue.
+Status: idea note. Onboarding → [ISSUE-ONBOARDING-PROFILES.md](ISSUE-ONBOARDING-PROFILES.md). Operability → [ISSUE-AGENT-OPERABILITY.md](ISSUE-AGENT-OPERABILITY.md).
 
 ## Take
 
@@ -91,7 +91,9 @@ Possible future command name, not a commitment:
 
 ### 4. State And Drift Explanation
 
-The module already has local state and operation history. An agent can explain that state without changing it.
+**Scheduled:** [ISSUE-AGENT-OPERABILITY.md](ISSUE-AGENT-OPERABILITY.md) — persisted execution log + `Get-PackageAssignmentOperabilityGuide` / `Get-PackageExecutionLog` before optional `Explain-PackageState`.
+
+The module already has local state and operation history. An agent can explain that state without changing it. Today the **step narrative** lives only on the console (`Write-PackageExecutionMessage`); operation history is a **summary row** per run — not enough for reliable agent diagnosis.
 
 Useful questions:
 
@@ -107,7 +109,9 @@ Possible future command name, not a commitment:
 
 ### 5. Repair Planning
 
-The agent can propose a repair plan from state, validation, and endpoint facts.
+**Depends on** execution log + operability guide (feature track above). Repair planning without a durable log forces console scrollback or engine source — not product-grade.
+
+The agent can propose a repair plan from state, validation, endpoint facts, and **execution log entries**.
 
 Important boundary:
 
