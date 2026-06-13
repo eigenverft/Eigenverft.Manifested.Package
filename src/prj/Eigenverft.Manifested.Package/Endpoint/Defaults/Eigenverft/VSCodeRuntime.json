@@ -5,8 +5,8 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "VSCodeRuntime",
-    "definitionRevision": 6,
-    "publishedAtUtc": "2026-06-04T21:02:31.3838631Z",
+    "definitionRevision": 7,
+    "publishedAtUtc": "2026-06-13T15:41:16.395Z",
     "definitionSignature": {
       "kind": "signed",
       "format": "embedded-json-rsa-sha256-v1",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-06-04T21:03:33.1985390Z",
-      "signatureValue": "GVjQZs4swkTu5RfM8AW3N8sIfodx+/yzo1S80GLa4QiXRc/ZIcVIRh1mStflVq11amd0BtVJ08NUaRpU1UsJx6ZPabwhO61+b6cITXWKcnn9L/gkmMnDPuGPZmuYu1lkGjTrWes02sMC4//8GScfQ6PtswF6416Sw+6NOafPn9+iMmEwirxzASKBnlmfYTIrvMeGSpMIBEZsgOBofikni5QPCoBp4lMMhFacImKPjaaWFsgQvl5fL0uNevlS3QVt0uHGRIKB2LeXUavsfcV4ZJCgHkKcJtcTj4lw2eiP6YlUyv7MANU6BEdK3566rsp4rcJk2cjO8wla87ttKwjrRjNrAgFXBMvHNFscwRCxLOyVyjpwF+V1kFc0KViTRvgQQgQgeLitHPqdzN1Y7k4RWnmvUmXoX+zkfzD9ubD5l11ijIuifC5xYr/+78hmaF4sRqLIRkb/wm5Lh7MJmJBSdEkhMt96+fMnMaSYQD7him70bFzgYLyux1wUikr104eQ"
+      "signedAtUtc": "2026-06-13T15:41:54.8797442Z",
+      "signatureValue": "vLYh6nS1BwA7YJyrdqUG/On4fVRsJvi564p2wih8/HCQy2ibDEKZCqlDfXulUViCQOPxA/jzzBYPX1uM0doOWnAF/TNn4nXPQlS/H4JnB0KYcTNKOw6dtAJ/7H1IwzGIP5LCNBlGSkTR39TWCLSDvjKROpxK8TUqTfSkmLCxN0T1EsE/tQFBztEtCs4oidYcfe7rJstin0lBnyHschKhyrFBwuP2IfhU6aW1OvhAUFi57SbrXGGcctghECRuhoSPK0Y7iD4jrYkLDdsj/q+WY7Ne6ss2UzK4ERnPXiF21eoaxAMZP/vFxnp0+A7yemZIqvAqpjGcS03vMoR+a8KnUsNfaSgzBTlHw5xkhsHYVwm4cWzMCToj75cfzNw5P7D5S3AGqVqNJ6FUkA3eTQHVRLo7+PBsenzdGwEaftzpIYctJZMN7phzO2sAivzmgLYflDJH/tBSBueKH1ayXKUqxIaUcC8mk9C+ki3IwbqKzaQmuOFhdQFElTOMNmprn3+/"
     }
   },
   "display": {
@@ -114,6 +114,28 @@
       }
     ],
     "releases": [
+      {
+        "version": "1.124.2",
+        "releaseTracks": [
+          "stable"
+        ],
+        "targetArtifacts": {
+          "VSCodeRuntime-win32-x64-stable": {
+            "artifactId": "vsCode-win-x64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "eab37733d5374ec9081ca87ba7b504add854df704951dfadef387920bb24ab32"
+            }
+          },
+          "VSCodeRuntime-win32-arm64-stable": {
+            "artifactId": "vsCode-win-arm64-stable",
+            "contentHash": {
+              "algorithm": "sha256",
+              "value": "1911dd09c58803da6e892c19938bcea3dbf70199e4bdfa7f8adca0e4b129d408"
+            }
+          }
+        }
+      },
       {
         "version": "1.121.0",
         "releaseTracks": [

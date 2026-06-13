@@ -866,7 +866,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         @($codexEdges.DefinitionId) | Should -Be @('VisualCppRedistributable', 'NodeRuntime')
         @($codexEdges.VersionRange) | Should -Be @('>=14.0 <15.0', '>=16.0.0')
         $nodeEdge.VersionRange | Should -Be '>=16.0.0'
-        $nodeRuntime.PackageVersion | Should -Be '26.2.0'
+        $nodeRuntime.PackageVersion | Should -Be '26.3.0'
 
         $qwenPlan = New-PackageDependencyPlan -DefinitionId 'Qwen35_9B_Q6_K_Model'
         $qwenNode = @($qwenPlan.Nodes | Where-Object DefinitionId -EQ 'Qwen35_9B_Q6_K_Model')[0]
@@ -1457,9 +1457,9 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $sourceDefinition.GitHubOwner | Should -Be 'ggml-org'
         $sourceDefinition.GitHubRepository | Should -Be 'llama.cpp'
         $result.PackageId | Should -Be 'llama-cpp-win-cpu-x64-stable'
-        $result.Package.version | Should -Be '9279'
-        $result.Package.releaseTag | Should -Be 'b9279'
-        $result.Package.packageFile.fileName | Should -Be 'llama-b9279-bin-win-cpu-x64.zip'
+        $result.Package.version | Should -Be '9622'
+        $result.Package.releaseTag | Should -Be 'b9622'
+        $result.Package.packageFile.fileName | Should -Be 'llama-b9622-bin-win-cpu-x64.zip'
         $result.Package.assigned.pathRegistration.source.kind | Should -Be 'shim'
         $result.Package.assigned.pathRegistration.source.use | Should -Be 'discovery.presence.commands'
         @($config.Definition.discovery.presence.commands.name) | Should -Be @('llama-cli', 'llama-server', 'llama-quantize', 'llama-bench', 'llama-tokenize')
@@ -1506,22 +1506,22 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $config -SourceRef ([pscustomobject]@{ scope = 'definition'; id = 'notepadPlusPlusGitHubRelease' })
 
         $expectedFileName = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            'npp.8.9.6.Installer.arm64.exe'
+            'npp.8.9.6.4.Installer.arm64.exe'
         }
         else {
-            'npp.8.9.6.Installer.x64.exe'
+            'npp.8.9.6.4.Installer.x64.exe'
         }
         $expectedSha256 = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            '75ac9c66ee33d673ac3f7185386d2559547bb8ee9acb62adac9815445042ea3c'
+            'c318d51a5777bf3488ca10198f338d3bd92cb5768f49b5350a774c7767035aca'
         }
         else {
-            '2ff794611c96ebbeb116ecd1ca4b97183435287bf7c24eef96c4fe2b11e5b8a0'
+            'cb902f8a9628324dbe5233b5202e716ea469720c9a1ac968007df2288e4ed2ea'
         }
 
         $config.DefinitionId | Should -Be 'NotepadPlusPlus'
         $sourceDefinition.Kind | Should -Be 'download'
         $sourceDefinition.BaseUri | Should -Be 'https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/'
-        $result.Package.version | Should -Be '8.9.6'
+        $result.Package.version | Should -Be '8.9.6.4'
         $result.Package.assigned.install.kind | Should -Be 'nsisInstaller'
         $result.Package.assigned.install.targetDirectoryArgument.prefix | Should -Be '/D='
         $result.Package.discovery.existingInstall.searchLocations[0].kind | Should -Be 'windowsUninstallRegistryKey'
@@ -1583,23 +1583,23 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $config -SourceRef ([pscustomobject]@{ scope = 'definition'; id = 'nodeJsRelease' })
 
         $expectedFileName = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            'node-v26.2.0-win-arm64.zip'
+            'node-v26.3.0-win-arm64.zip'
         }
         else {
-            'node-v26.2.0-win-x64.zip'
+            'node-v26.3.0-win-x64.zip'
         }
         $expectedSha256 = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            '131efa8bd858f8ad000a1a0436d8bb1320c638291c779a921fb20e5702a1cc0a'
+            '18c5014722e1debdb3e693501043a087485e6f1277b20c79c5ec86bce6027ee0'
         }
         else {
-            '371071a4f7e2c8a5dd280730049c685911feecc59f50ebc488d675dc1087c69c'
+            'ec6d0f6b056c89498a9b26c4d5c77a31fd0b7fe45ba8a45fa87d26f66c3ebce4'
         }
 
         $config.DefinitionId | Should -Be 'NodeRuntime'
         $sourceDefinition.Kind | Should -Be 'download'
         $sourceDefinition.BaseUri | Should -Be 'https://nodejs.org/dist/'
-        $result.Package.version | Should -Be '26.2.0'
-        $result.Package.releaseTag | Should -Be 'v26.2.0'
+        $result.Package.version | Should -Be '26.3.0'
+        $result.Package.releaseTag | Should -Be 'v26.3.0'
         $result.Package.packageFile.fileName | Should -Be $expectedFileName
         $result.Package.packageFile.contentHash.value | Should -Be $expectedSha256
         $result.Package.assigned.pathRegistration.source.kind | Should -Be 'shim'
@@ -1615,23 +1615,23 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $config -SourceRef ([pscustomobject]@{ scope = 'definition'; id = 'dotNetBuilds' })
 
         $expectedFileName = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            'dotnet-sdk-10.0.300-win-arm64.zip'
+            'dotnet-sdk-10.0.301-win-arm64.zip'
         }
         else {
-            'dotnet-sdk-10.0.300-win-x64.zip'
+            'dotnet-sdk-10.0.301-win-x64.zip'
         }
         $expectedSha512 = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            '86a6ab513ba16b6dfbe8497c5eb8ee9791819c6a0d8dfffc8eee6c7d6387718f9e486010da24c354e1f4be5f99286e78a799848ee806a67b8b9fec6e4bf773cd'
+            'cd2aabcf089d76c6f904e2b77ed06b9f397e105f8a9b8fb425ce6b8ab01413a01d59a1c298c58c627db3e8d197280825d7c2cfc8b8345a149ed5b86457cf5c5b'
         }
         else {
-            '32446eddffc5a485f58f9d79cdab3a1a9adab4adc2ef0e4c787cfbb2465020d50beaadc54d40f0850e2e0089edd09864d12d6c19c526319819d57a4c00d38518'
+            '38456e992c4df0ff0ac9fc5f28ff09a88543c0fc4e4deedffda9c4ebaf852c4519addacf28814ea77ea42ce2d37db812fae5ba1fe25f06364ca5a6027036387f'
         }
 
         $config.DefinitionId | Should -Be 'DotNetSdk10'
         $sourceDefinition.Kind | Should -Be 'download'
         $sourceDefinition.BaseUri | Should -Be 'https://builds.dotnet.microsoft.com/dotnet/'
-        $result.Package.version | Should -Be '10.0.300'
-        $result.Package.releaseTag | Should -Be '10.0.8'
+        $result.Package.version | Should -Be '10.0.301'
+        $result.Package.releaseTag | Should -Be '10.0.9'
         $result.Package.packageFile.fileName | Should -Be $expectedFileName
         $result.Package.packageFile.contentHash.algorithm | Should -Be 'sha512'
         $result.Package.packageFile.contentHash.value | Should -Be $expectedSha512
@@ -1679,8 +1679,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
     It 'loads the shipped materialized npm definitions without authored package-file acquisition' {
 
         $cases = @(
-            [pscustomobject]@{ DefinitionId = 'CodexCli'; PackageSpec = '@openai/codex@{version}'; Version = '0.133.0'; Command = 'codex'; RelativePath = 'codex.cmd'; Dependencies = @('VisualCppRedistributable', 'NodeRuntime') }
-            [pscustomobject]@{ DefinitionId = 'OpenCodeCli'; PackageSpec = 'opencode-ai@{version}'; Version = '1.15.7'; Command = 'opencode'; RelativePath = 'opencode.cmd'; Dependencies = @('NodeRuntime') }
+            [pscustomobject]@{ DefinitionId = 'CodexCli'; PackageSpec = '@openai/codex@{version}'; Version = '0.139.0'; Command = 'codex'; RelativePath = 'codex.cmd'; Dependencies = @('VisualCppRedistributable', 'NodeRuntime') }
+            [pscustomobject]@{ DefinitionId = 'OpenCodeCli'; PackageSpec = 'opencode-ai@{version}'; Version = '1.17.4'; Command = 'opencode'; RelativePath = 'opencode.cmd'; Dependencies = @('NodeRuntime') }
         )
 
         foreach ($case in $cases) {
@@ -1721,19 +1721,19 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $latest.PackageVersionSelectionSource | Should -Be 'definition'
         $latest.PackageVersionSelector | Should -Be 'latestByVersion'
         $latest.PackageVersionOrderingKind | Should -Be 'normalVersion'
-        $latest.Package.version | Should -Be '1.15.7'
+        $latest.Package.version | Should -Be '1.17.4'
 
         $explicitLatest = New-PackageResult -PackageConfig $config -PackageVersionSelector 'latestByVersion'
         $explicitLatest = Resolve-PackagePackage -PackageResult $explicitLatest
         $explicitLatest.PackageVersionSelectionSource | Should -Be 'command'
         $explicitLatest.PackageVersionSelector | Should -Be 'latestByVersion'
-        $explicitLatest.Package.version | Should -Be '1.15.7'
+        $explicitLatest.Package.version | Should -Be '1.17.4'
 
         $previous = New-PackageResult -PackageConfig $config -PackageVersionSelector 'previousByVersion'
         $previous = Resolve-PackagePackage -PackageResult $previous
         $previous.PackageVersionSelectionSource | Should -Be 'command'
         $previous.PackageVersionSelector | Should -Be 'previousByVersion'
-        $previous.Package.version | Should -Be '1.14.46'
+        $previous.Package.version | Should -Be '1.15.7'
 
         $pinned = New-PackageResult -PackageConfig $config -PackageVersionSelector '1.14.46'
         $pinned = Resolve-PackagePackage -PackageResult $pinned
@@ -2187,23 +2187,23 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $config -SourceRef ([pscustomobject]@{ scope = 'definition'; id = 'pythonNuGetPackage' })
 
         $expectedFileName = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            'pythonarm64.3.14.5.nupkg'
+            'pythonarm64.3.14.6.nupkg'
         }
         else {
-            'python.3.14.5.nupkg'
+            'python.3.14.6.nupkg'
         }
         $expectedSha256 = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            'ff4558830622fb904923dd8b68132a1971b6cd688b04d28623c9f3953079409a'
+            'b31a716b6e3570c725c1d5f849f8c9427655760a139054d3837ba653fdd80347'
         }
         else {
-            '03ad5810986afd8273a34a28c15cb594300ba7f4749f24362d69206fa1b6ac15'
+            '77271b5958f88608884998c27df6f8dd2fa59faf72614bc1e2ffd1d72a3336c3'
         }
 
         $config.DefinitionId | Should -Be 'PythonRuntime'
         $sourceDefinition.Kind | Should -Be 'download'
         $sourceDefinition.BaseUri | Should -Be 'https://api.nuget.org/v3-flatcontainer/'
-        $result.Package.version | Should -Be '3.14.5'
-        $result.Package.releaseTag | Should -Be '3.14.5'
+        $result.Package.version | Should -Be '3.14.6'
+        $result.Package.releaseTag | Should -Be '3.14.6'
         $result.Package.packageFile.fileName | Should -Be $expectedFileName
         $result.Package.packageFile.contentHash.value | Should -Be $expectedSha256
         $result.Package.assigned.install.expandedRoot | Should -Be 'tools'
