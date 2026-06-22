@@ -85,6 +85,13 @@ if (-not [string]::IsNullOrWhiteSpace($NuGetGitHubPush))
     Test-VariableValue -Variable { $GitHubSourceUri } -ExitIfNullOrEmpty
 }
 
+$GitHubSourceCredential = $null
+if (-not [string]::IsNullOrWhiteSpace($NuGetGitHubPush))
+{
+    $GitHubSourceSecureToken = ConvertTo-SecureString -String "$NuGetGitHubPush" -AsPlainText -Force
+    $GitHubSourceCredential = [pscredential]::new("$GitHubPackagesUser", $GitHubSourceSecureToken)
+}
+
 # Generate deployment info based on the current branch name
 $deploymentInfo = Convert-BranchToDeploymentInfo -BranchName "$gitCurrentBranch"
 
@@ -163,9 +170,9 @@ if ($pushToGitHubSource -eq $true)
 
         Unregister-LocalNuGetDotNetPackageSource -SourceName "$GitHubSourceName"
         Invoke-ProcessTyped -Executable "dotnet" -Arguments @("nuget", "add", "source", "--username", "$GitHubPackagesUser", "--password", "$NuGetGitHubPush", "--store-password-in-clear-text", "--name", "$GitHubSourceName", "$GitHubSourceUri") -CaptureOutput $false -CaptureOutputDump $false -HideValues @($NuGetGitHubPush)
-        Register-PSRepository @GitHubSourceRegistration -ErrorAction Stop | Out-Null
+        Register-PSRepository @GitHubSourceRegistration -Credential $GitHubSourceCredential -ErrorAction Stop | Out-Null
         Write-Host "===> Publishing module to GitHub source '$GitHubSourceName'" -ForegroundColor Cyan
-        Publish-Module -Path $($manifestFile.DirectoryName) -Repository "$GitHubSourceName" -NuGetApiKey "$NuGetGitHubPush"
+        Publish-Module -Path $($manifestFile.DirectoryName) -Repository "$GitHubSourceName" -NuGetApiKey "$NuGetGitHubPush" -Credential $GitHubSourceCredential
     }
     finally
     {
