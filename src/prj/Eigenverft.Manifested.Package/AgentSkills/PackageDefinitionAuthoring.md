@@ -136,8 +136,8 @@ Resign-PackageDefinition -Path '<definition.json>' -Cert Eigenverft -KeepSchemaV
 
 4. Run `Test-PackageDefinitionCatalog -RequireTrusted` on the changed file or endpoint folder.
 5. Run `Verify-PackageDefinitionSignature -RequireTrusted` for the file, or `Verify-PackageDefinitionCatalog -RequireTrusted` for the folder.
-6. If the selected authoring root is inside a local Git working tree, check repository tracking/status so new JSON files are not forgotten. For remote endpoints or non-repository paths, skip repository commands and mark the repository-status check `Not applicable`.
-7. In the handoff, include **Required handoff check result** so executed validation, signing, trust verification, source research, and blockers are explicit.
+6. If the selected authoring root is inside a local Git working tree, check repository tracking/status with `git status --short` so new JSON files are not forgotten. For remote endpoints or non-repository paths, skip repository commands and mark the repository-status check `Not applicable`.
+7. In the handoff, include **Required handoff check result** so executed validation, signing, and trust verification, plus source research and blockers, are explicit.
 
 ### Required handoff check result
 
@@ -265,7 +265,7 @@ Run `Test-PackageDefinitionCatalog`, signing, and trust commands in the host whe
 8. Run `Test-PackageDefinitionCatalog` before signing or publishing.
 9. Sign or re-sign only after content is stable.
 10. Verify signature or catalog trust.
-11. Check repository tracking/status before handoff only when the selected authoring root is inside a local Git working tree. For remote endpoints or non-repository paths, do not run repository commands.
+11. Check repository tracking/status with `git status --short` before handoff only when the selected authoring root is inside a local Git working tree. For remote endpoints or non-repository paths, do not run repository commands.
 12. When `Selection` is `Ready`, write the JSON under that path and run **Publication finalization** (or draft-only validation only when **Authoring mode** requires it).
 
 ## Installer Kind Discovery
