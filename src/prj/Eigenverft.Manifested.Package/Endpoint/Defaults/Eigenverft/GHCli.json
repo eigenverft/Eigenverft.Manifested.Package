@@ -4,8 +4,8 @@
   "definitionPublication": {
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
-    "definitionId": "GitRuntime",
-    "definitionRevision": 4,
+    "definitionId": "GHCli",
+    "definitionRevision": 1,
     "publishedAtUtc": "2026-07-09T03:44:41.3928142Z",
     "definitionSignature": {
       "kind": "signed",
@@ -15,16 +15,16 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-09T03:47:37.5327900Z",
-      "signatureValue": "jeaAg6MMTqby33kzL8CCA5WkpB4rYimGbqpAsKdhURQaMZASM1VoIZqtOc+qp0OrpSLk1qm9vfhz20JtYmwJ083WfbndKft7vngnTI6qri7SncwBbQcEU0ZhWYa7d62G/2nE5Dvem00+bFC31AoidqjgFYmu4qcf7LTm3SnVMmSurJJfRSkNiznp14dB+pYDQlUe8okAlItkQ9Pgix8YeExe8uNvn7XZO7wDVgFIfof4QAkGovaAwG93dbMqHOxpSk+SpYoREas/rIX51KhMWqRavEQaAm0raTrCZSlEnTva9atO4jnBYDdoPd7RLYCJEW11OZthrcw3gO0pKScPUUMRQnPKgLi8MMxwJiDej1zUZtyYQzg0SfgeH9Z+Zw/H3xNwwzdNTtxdC0pPytem71furrdpjnmcvFfcVwUHPAowoDFovX3n9lTmjgVTqSAXVe9I6/kRKJIOKYK4zLkD+BOWD1VrXm0BBWc9j7zEnP+t9I/VJ1oDi8B6USylumqG"
+      "signedAtUtc": "2026-07-09T03:47:37.3431341Z",
+      "signatureValue": "cfjDOAEHjSPl19WzhACdhjJvIEbzlIfLERwEPPswPBoD98lAbt0u89d6p8kpFWTSO3lZMjfxJtfXU/adAAE38H85EY7mIiWqMkvpLo6ZYkTHhYZ6jyGmUgHC+YnHlBUaZSkWWJWaCDYmukeOBGDy8lJdWmzbi5PuoDLCZgz27fqXkY/fcZXMA0r2i5rhGucUTCSz4XL12XMEdgNKeWlO4dY5MQgtwPugKZ4rsE8AHJlKy61lqTu1mH7SKUySN7on6y0KGdxw2iAQ8Grqq9aTYRGbrUHhSzDxABbTNrieU+5IqQCK8wu933On4N/CHdmmu1AlvZ9Mm//qiT+ZI75K3k7xmASQvLFqzLVhhecRD9tGnnHCfy83nQ2AgQ8mBNEPHCCDFvx4bBhGi/XlHyOc3/xQQQLmnVQp5asycJtrs6nIwwnEwaRicnvXcfa1VIagg0/tTqLdGFd1wTw9aWMZLO4TadBb1chPdE3cdsdrK3NY6mUEWoHX83wqE+v1k7QA"
     }
   },
   "display": {
     "default": {
-      "name": "Git for Windows",
-      "publisher": "git-for-windows",
-      "corporation": "git-for-windows",
-      "summary": "Portable MinGit runtime"
+      "name": "GitHub CLI",
+      "publisher": "GitHub",
+      "corporation": "GitHub, Inc.",
+      "summary": "Portable GitHub CLI runtime"
     }
   },
   "dependency": {
@@ -33,9 +33,9 @@
   "artifacts": {
     "targets": [
       {
-        "id": "GitRuntime-64-bit-stable",
+        "id": "GHCli-windows_amd64-stable",
         "releaseTrack": "stable",
-        "artifactDistributionVariant": "64-bit",
+        "artifactDistributionVariant": "windows_amd64",
         "constraints": {
           "os": [
             "windows"
@@ -48,7 +48,7 @@
           "strategy": "latestByVersion",
           "allowPrerelease": false
         },
-        "fileNameTemplate": "MinGit-{version}-64-bit.zip",
+        "fileNameTemplate": "gh_{version}_{artifactDistributionVariant}.zip",
         "acquisitionCandidates": [
           {
             "kind": "packageDepot",
@@ -59,7 +59,7 @@
           },
           {
             "kind": "vendorDownload",
-            "sourceId": "gitForWindowsGitHub",
+            "sourceId": "gitHubCliGitHub",
             "searchOrder": 900,
             "verification": {
               "mode": "required"
@@ -68,9 +68,9 @@
         ]
       },
       {
-        "id": "GitRuntime-arm64-stable",
+        "id": "GHCli-windows_arm64-stable",
         "releaseTrack": "stable",
-        "artifactDistributionVariant": "arm64",
+        "artifactDistributionVariant": "windows_arm64",
         "constraints": {
           "os": [
             "windows"
@@ -83,7 +83,7 @@
           "strategy": "latestByVersion",
           "allowPrerelease": false
         },
-        "fileNameTemplate": "MinGit-{version}-arm64.zip",
+        "fileNameTemplate": "gh_{version}_{artifactDistributionVariant}.zip",
         "acquisitionCandidates": [
           {
             "kind": "packageDepot",
@@ -94,7 +94,7 @@
           },
           {
             "kind": "vendorDownload",
-            "sourceId": "gitForWindowsGitHub",
+            "sourceId": "gitHubCliGitHub",
             "searchOrder": 900,
             "verification": {
               "mode": "required"
@@ -105,80 +105,52 @@
     ],
     "releases": [
       {
-        "version": "2.55.0",
+        "version": "2.96.0",
         "releaseTracks": [
           "stable"
         ],
         "upstreamRelease": {
-          "sourceId": "gitForWindowsGitHub",
-          "releaseTag": "v2.55.0.windows.2"
+          "sourceId": "gitHubCliGitHub",
+          "releaseTag": "v2.96.0"
         },
         "targetArtifacts": {
-          "GitRuntime-64-bit-stable": {
-            "artifactId": "git-runtime-win-x64-stable",
-            "fileName": "MinGit-2.55.0.2-64-bit.zip",
+          "GHCli-windows_amd64-stable": {
+            "artifactId": "github-cli-windows-amd64-stable",
             "contentHash": {
               "algorithm": "sha256",
-              "value": "e3ea2944cea4b3fabcd69c7c1669ef69b1b66c05ac7806d81224d0abad2dec31"
+              "value": "c2d6acc935cd2f00e2144d7e036d5cd82e6b6bd5594e8c75aa75ef2a4ed6aac3"
             }
           },
-          "GitRuntime-arm64-stable": {
-            "artifactId": "git-runtime-win-arm64-stable",
-            "fileName": "MinGit-2.55.0.2-arm64.zip",
+          "GHCli-windows_arm64-stable": {
+            "artifactId": "github-cli-windows-arm64-stable",
             "contentHash": {
               "algorithm": "sha256",
-              "value": "0b2b81fdce284efd174cbb51b886ccea2fd271679c4b5c21f07d9e03bae51413"
-            }
-          }
-        }
-      },
-      {
-        "version": "2.54.0",
-        "releaseTracks": [
-          "stable"
-        ],
-        "upstreamRelease": {
-          "sourceId": "gitForWindowsGitHub",
-          "releaseTag": "v2.54.0.windows.1"
-        },
-        "targetArtifacts": {
-          "GitRuntime-64-bit-stable": {
-            "artifactId": "git-runtime-win-x64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "04f937e1f0918b17b9be6f2294cb2bb66e96e1d9832d1c298e2de088a1d0e668"
-            }
-          },
-          "GitRuntime-arm64-stable": {
-            "artifactId": "git-runtime-win-arm64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "68f6bdda5b58f4e40f431c0da48b05ba5596445314d5e491e7b4aebb1ec2e985"
+              "value": "c517e0b32c98a4ba90ac95af8d12cc3ac55781ab4ab72f9a91ce3de0541d2b09"
             }
           }
         }
       }
     ],
     "sources": {
-      "gitForWindowsGitHub": {
+      "gitHubCliGitHub": {
         "kind": "githubRelease",
-        "githubOwner": "git-for-windows",
-        "githubRepository": "git"
+        "githubOwner": "cli",
+        "githubRepository": "cli"
       }
     }
   },
   "discovery": {
     "presence": {
       "files": [
-        "cmd/git.exe"
+        "bin/gh.exe"
       ],
       "directories": [
-        "cmd"
+        "bin"
       ],
       "commands": [
         {
-          "name": "git",
-          "relativePath": "cmd/git.exe",
+          "name": "gh",
+          "relativePath": "bin/gh.exe",
           "requiredForState": true,
           "exposeCommand": true,
           "stateChecks": [
@@ -186,7 +158,7 @@
               "arguments": [
                 "--version"
               ],
-              "outputPattern": "(?im)^git version\\s+(?<value>\\d+\\.\\d+\\.\\d+)\\b",
+              "outputPattern": "(?im)^gh version\\s+(?<value>\\d+\\.\\d+\\.\\d+)\\b",
               "expectedValue": "{version}"
             }
           ]
@@ -225,7 +197,7 @@
     "assigned": {
       "install": {
         "kind": "expandArchive",
-        "installDirectory": "git-runtime/{releaseTrack}/{version}/{artifactDistributionVariant}",
+        "installDirectory": "github-cli/{releaseTrack}/{version}/{artifactDistributionVariant}",
         "expandedRoot": "auto",
         "createDirectories": []
       },
