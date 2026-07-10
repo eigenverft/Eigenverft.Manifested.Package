@@ -6,23 +6,18 @@ Windows-focused PowerShell package engine for repeatable developer-machine setup
 
 The product sits between public package managers and heavy endpoint-management systems: more governed than ad-hoc installer scripts, more local and team-owned than a public community bucket, and intentionally smaller than a fleet rollout controller.
 
-🚀 **Key Features:**
+**Key capabilities:**
 
 - Local package assignment through `Invoke-Package`
-- Package catalog discovery through `Search-Package`
+- Catalog discovery through `Search-Package`
 - Inventory-backed state and operation history through `Get-PackageState`
-- Dependency-aware assignment and removal with explicit version selection, offline mode, and materialize-only depot preparation
-- Versioned, reviewable package-definition JSON
-- Package-definition authoring guidance, catalog validation, signing, re-signing, and trusted signature verification
-- Trusted signing-key records for package-definition authority
+- Dependency-aware assignment and removal, version selection, offline mode, and materialize-only depot preparation
+- Versioned, reviewable package-definition JSON with authoring guidance, validation, signing, and verification
 - File-based depots for reusing installers, archives, npm tarballs, models, and runtime payloads
-- Team and file-based package endpoints as the extension model for larger catalogs
-- Offline and controlled-network workflows that can be backed by a prepared depot
-- Package-backed provisioning for `python`, `pwsh`, `git`, `gh`, `code`, `notepad++`, `node`, `npm`, `npx`, `dotnet` (SDK 10), `7z`, `opencode`, `codex`, Cursor's `agent`, llama.cpp tools, Qwen GGUF model resources, PowerShell bootstrap modules, and VC++ prerequisites
-- Package-owned installs with explicit reuse, adoption, repair, assignment, and removal behavior
+- Team endpoints and depots for shared catalogs and artifact reuse
 - Proxy-aware downloads through `Invoke-WebRequestEx` for managed or corporate Windows environments
 
-## 🧭 Motivation
+## Motivation
 
 Preparing a Windows development environment should not depend on a long sequence of hand-maintained install notes. Teams need a way to say which signed catalogs are trusted, where package definitions come from, where package payloads are cached, and what happened during the last run.
 
@@ -30,40 +25,124 @@ This project packages that workflow as a local PowerShell engine. A human or age
 
 <a id="requirements"></a>
 
-## 🖥️ Requirements
+## Requirements
 
 - Windows PowerShell 5.1 or PowerShell 7+
 - Windows 10/11
 - Network access to configured package sources, or a depot that already contains the needed payloads
 - Administrator rights only for package definitions that require machine-level installers or prerequisites
 
-## 🚀 Quick Start
+## Install
 
 Install once, then run exported commands directly (no `Import-Module` needed):
 
 ```powershell
 Install-Module Eigenverft.Manifested.Package -Scope CurrentUser -Repository PSGallery -Force -AllowClobber
+Get-PackageVersion
+```
 
-Invoke-Package -DefinitionId SevenZip,DotNetSdk10,NodeRuntime,CodexCli
+`Get-PackageVersion` shows the resolved module version, example `Invoke-Package` lines for each shipped definition, and the other exported commands.
+
+Update the module itself from PSGallery (proxy-aware on Windows):
+
+```powershell
+Update-PackageVersion -Scope CurrentUser
+Get-PackageVersion
+```
+
+| Command | Role |
+| --- | --- |
+| `Get-PackageVersion` | What module version is installed; example lines per shipped definition; list of other commands |
+| `Update-PackageVersion` | Install or upgrade this module from PSGallery (`-Scope CurrentUser` or `AllUsers`) |
+| `Search-Package` | Find a package when you know a name or command but not the `DefinitionId` |
+| `Get-PackageState` | What is assigned on this machine; recent run outcomes; key local paths |
+
+See [How assignment works](#how-assignment-works) for `Search-Package` and `Get-PackageState` in detail.
+
+---
+
+## Pick your path
+
+Examples first — choose the lane that matches you, then read [How assignment works](#how-assignment-works) when you want the mechanics.
+
+### Personal setup — “just get my machine ready”
+
+```powershell
+Invoke-Package -DefinitionId SevenZip,GitRuntime,NodeRuntime,CodexCli
+Get-PackageState
+
 Search-Package -Query code
+Search-Package -Query gh
+```
+
+**Done when** `Get-PackageState` lists your packages as assigned and recent operations show `Ready`.
+
+`Invoke-Package` is idempotent for each definition: rerunning tends to reuse, repair, or report already-satisfied state rather than blindly reinstalling. Pass multiple definition ids in one call (`-DefinitionId A,B`) or run separate invocations; dependency order is resolved by the engine.
+
+### Example bundles
+
+```powershell
+# Everyday dev
+Invoke-Package -DefinitionId PythonRuntime,PowerShell7,GitRuntime,GHCli,VSCodeRuntime,NodeRuntime,SevenZip,DotNetSdk10
+
+# CLI agents (NodeRuntime is pulled automatically)
+Invoke-Package -DefinitionId OpenCodeCli,CodexCli,CursorCli
+
+# Local AI — large downloads; llama.cpp runtime + GGUF model
+Invoke-Package -DefinitionId LlamaCppRuntime,MiniCPM5_1B_Q8_Model
+# or: Qwen35_9B_Q6_K_Model
+
+# Full demo stack
+Invoke-Package -DefinitionId VisualCppRedistributable,PythonRuntime,PowerShell7,GitRuntime,GHCli,VSCodeRuntime,NotepadPlusPlus,NodeRuntime,SevenZip,DotNetSdk10,OpenCodeCli,CodexCli,CursorCli,LlamaCppRuntime,MiniCPM5_1B_Q8_Model
 Get-PackageState
 ```
 
-`Search-Package` scans enabled package-definition endpoints by name, definition id, publisher, and entry points such as commands. `Invoke-Package` resolves definitions from enabled endpoints, verifies catalog trust, prepares or reuses payloads, applies dependency order, and records state.
+Version pinning, depot prep, offline assign, and removal:
 
-## 📦 Included Definitions
+```powershell
+Invoke-Package -DefinitionId NodeRuntime -PackageVersion 26.3.0
+Invoke-Package -DefinitionId LlamaCppRuntime,MiniCPM5_1B_Q8_Model -MaterializeOnly
+Invoke-Package -DefinitionId NodeRuntime -Offline
+Invoke-Package -DefinitionId SevenZip -DesiredState Removed
+```
 
-The shipped `moduleDefaults` endpoint currently includes signed Eigenverft definitions for:
+### Team member — share or NAS
 
-| Area | Definition IDs |
-| --- | --- |
-| Core runtimes and prerequisites | `NodeRuntime`, `PythonRuntime`, `PowerShell7`, `DotNetSdk10`, `VisualCppRedistributable` |
-| Developer tools | `GitRuntime`, `GHCli`, `VSCodeRuntime`, `VSCodeUser`, `NotepadPlusPlus`, `SevenZip` |
-| CLI agents | `CodexCli`, `OpenCodeCli`, `CursorCli` |
-| Local AI/runtime resources | `LlamaCppRuntime`, `Qwen35_9B_Q6_K_Model` |
-| PowerShell bootstrap modules | `PackageManagement`, `PowerShellGet`, `EigenverftManifestedAgent` |
+Team onboarding is small: add a depot for package payloads, add an endpoint for signed package-definition JSON, then invoke the package.
 
-## 🏢 Corporate First Install
+```powershell
+Add-TeamPackageDepot -BasePath '\\team-share\PackageDepot'
+Add-TeamPackageEndpoint -BasePath '\\team-share\PackageEndpoint'
+
+Invoke-Package -DefinitionId 'MyTeamPackage'
+Get-PackageState
+```
+
+Home NAS works the same way — point `Add-TeamPackageDepot` at a folder on your network so installers, archives, npm tarballs, and model files stay on the share instead of being re-downloaded on every machine:
+
+```powershell
+Add-TeamPackageDepot -BasePath '\\homeserver\artifacts\PackageDepot'
+Invoke-Package -DefinitionId SevenZip,DotNetSdk10,PythonRuntime,NodeRuntime
+```
+
+Later runs reuse files from the depot when the engine finds a matching artifact under `PackageDepot\{definitionId}\{releaseTrack}\{version}\...`. You only need `Add-TeamPackageDepot` again if that Windows user profile has not been configured yet.
+
+First run on an unknown team catalog may prompt for trust. Admins can preseed trust with a public `.cer`:
+
+```powershell
+Import-PackageTrust -Path '\\team-share\PackageTrust\MyTeam.cer'
+Invoke-Package -DefinitionId 'MyTeamPackage'
+```
+
+Inspect local configuration:
+
+```powershell
+Get-PackageDepot
+Get-PackageEndpoint
+Get-PackageTrust
+```
+
+### Corporate / constrained network
 
 When TLS interception or missing trust roots break a normal Gallery install on Windows PowerShell 5.1, use `iwr/bootstrapper.ps1` once, then run commands as usual:
 
@@ -73,34 +152,33 @@ $c='Update-PackageVersion -Scope CurrentUser';$u='https://raw.githubusercontent.
 
 ⚠ Bypasses TLS certificate validation for the bootstrap download and initial PSGallery install only. Prefer normal `Install-Module` when trust works.
 
-## 🖼️ Windows Sandbox
-
-For disposable fresh-machine bring-up, use the [Eigenverft.Manifested.Sandbox](https://github.com/eigenverft/Eigenverft.Manifested.Sandbox) `.wsb` profile—it installs this module from [PSGallery](https://www.powershellgallery.com/packages/Eigenverft.Manifested.Package) and leaves you in PowerShell ready for `Invoke-Package`.
-
----
-
-## 📌 Current State
-
-The module centers on **`Invoke-Package`** for assignment and removal, plus helpers for package search, package state, package-definition authoring and validation, team depots, team endpoints, and signing-key trust.
-
-Use `Search-Package` when you know a friendly name or command but not the exact `DefinitionId`. Results include publisher metadata, summary, selected version, platform availability, catalog-trust status, endpoint source, and an `InvokeCommand` string for the matching definition.
-
-`Invoke-Package` requires `-DefinitionId` and scans every enabled row in `Configuration/Internal/PackageEndpointInventory.json` in endpoint `searchOrder`. Discovery matches `definitionPublication.definitionId`, then catalog trust checks `definitionPublication.definitionSignature` against `PackageTrustInventory.json` and `PackageConfig.json` policy. Optional `-PublisherId` pins one signed `definitionPublication.publisherId` label. If a signed team definition carries an embedded public certificate that is valid but unknown, the default `catalogTrust.unknownSignedKeyPolicy` prompts before adding local trust. Use `-AcceptUnknownSigningKey` only when you intentionally want to auto-trust that verified embedded key for the invocation. If multiple eligible publishers provide the same definition id, `PackageConfig.json` controls the conflict mode; the default is `fail`.
-
-`Invoke-Package -MaterializeOnly` prepares durable depot artifacts without assigning the package, and `-Offline` forces depot-backed acquisition instead of vendor downloads. `-PackageVersion` can pin an exact authored version for assignment; otherwise the definition's version-selection strategy is used.
-
-Shipped definitions use publisher `Eigenverft` and live under the shipped `moduleDefaults` endpoint row. Pass `-DesiredState Assigned` or `Removed`, and optional `-FailFast`.
-
-`Get-PackageDefinitionAuthoringGuide` prints the active authoring endpoint, schema path, validation workflow, signing steps, and trusted catalog checks for maintainers writing package-definition JSON.
-
-### 👥 Team Package Channels
-
-Team onboarding is intentionally small: add a depot for package payloads, add an endpoint for signed package-definition JSON, then invoke the package. The first valid unknown signing key can be trusted from the prompt, while admins can still preseed trust with a public `.cer`.
-
-The maintainer creates one local signing certificate and signs the JSON. `Sign-PackageDefinition` embeds the public certificate in the JSON. The private `.pfx` and adjacent `.catalog-signing.json` stay on the maintainer machine:
+Offline-style workflow on a restricted machine:
 
 ```powershell
-# Maintainer side
+# Connected machine — hydrate the depot first
+Invoke-Package -DefinitionId SevenZip,NodeRuntime,DotNetSdk10,LlamaCppRuntime,MiniCPM5_1B_Q8_Model -MaterializeOnly
+
+# Restricted machine — assign from depot only
+Invoke-Package -DefinitionId SevenZip,NodeRuntime,DotNetSdk10 -Offline
+```
+
+Site-specific depot preference (when depot inventory defines site codes):
+
+```powershell
+$env:EVF_DEPOT_SITE_CODE = 'BER;BER-ENG'
+Invoke-Package -DefinitionId NodeRuntime
+```
+
+### Catalog maintainer — publish package JSON
+
+```powershell
+Get-PackageDefinitionAuthoringGuide -For 'MyPackage'
+Get-PackageSigningProfile -PublisherId 'My Team'
+```
+
+Create signing material on the maintainer machine (keep the private `.pfx` off endpoints):
+
+```powershell
 $password = Read-Host -AsSecureString 'Catalog signing password'
 $signing = New-PackageSigningCertificate `
   -Name 'My Team' `
@@ -111,47 +189,118 @@ $signing = New-PackageSigningCertificate `
   -SignerDisplayName 'My Team Package Catalog Signing' `
   -Password $password
 
-Sign-PackageDefinition -Path '\\team-share\PackageEndpoint\MyPackage.json' -Cert 'MyTeam'
+Sign-PackageDefinition -Path '\\team-share\PackageEndpoint\MyPackage.json' -Cert 'My Team'
 ```
 
-Client happy path:
+Validate and verify before clients consume the file:
 
 ```powershell
-Add-TeamPackageDepot -BasePath '\\team-share\PackageDepot'
-Add-TeamPackageEndpoint -BasePath '\\team-share\PackageEndpoint'
-
-Invoke-Package -DefinitionId 'MyPackage'
+Test-PackageDefinitionCatalog -Path '\\team-share\PackageEndpoint'
+Verify-PackageDefinitionSignature -Path '\\team-share\PackageEndpoint\MyPackage.json' -RequireTrusted
 ```
 
-Admin/preseed path:
+Distribute the public cert for preseeded trust:
 
 ```powershell
 Copy-Item -LiteralPath $signing.CertificatePath -Destination '\\team-share\PackageTrust\MyTeam.cer'
-Import-PackageTrust -Path '\\team-share\PackageTrust\MyTeam.cer'
-Invoke-Package -DefinitionId 'MyPackage'
 ```
 
-The `.cer` file is public and has no password. The `.pfx` is private and password protected. The adjacent `.catalog-signing.json` stores only the DPAPI-protected password for that PFX; it does not store paths and is not shared. `certificatePem` inside signed package JSON is also public verification material. CI can pass `-Password` directly or set `EVF_PACKAGE_SIGNING_PASSWORD`.
-
-Use `New-PackageSigningCertificate` friendly fields such as `-CommonName`, `-Organization`, `-OrganizationalUnit`, `-Country`, `-PublisherName`, and `-SignerDisplayName` for display metadata. `-Subject` remains available for advanced raw X.509 subject strings, but is not needed for normal team catalogs.
+The `.cer` file is public and has no password. The `.pfx` is private and password protected. The adjacent `.catalog-signing.json` stores only the DPAPI-protected password for that PFX on the maintainer machine; it does not store paths and is not shared. `certificatePem` inside signed package JSON is also public verification material. CI can pass `-Password` directly or set `EVF_PACKAGE_SIGNING_PASSWORD`.
 
 Team package JSON files should be signed, and `definitionPublication.publisherId` must match the publisher id stored in local trust after prompt acceptance or `Import-PackageTrust`. Unsigned migration is intentionally explicit: set `package.catalogTrust.policy` to `allowUnsigned` and list the publisher id in `package.catalogTrust.allowUnsignedPublisherIds`.
 
-### 🏠 Home or NAS-backed package depot
+Draft-only authoring (unsigned JSON): `Get-PackageDefinitionAuthoringGuide -For 'MyPackage' -DraftOnly`
 
-The same depot model works outside a corporate share. Point `Add-TeamPackageDepot` at a folder on a home NAS or file server so installers, archives, npm tarballs, model files, and other mirrored artifacts stay on your network instead of being re-downloaded on every machine.
+> **Note:** `Get-PackagePublisher`, `Add-PackagePublisher`, `Add-TeamPackagePublisher`, and related publisher-inventory commands are deprecated and throw at runtime. Use `Import-PackageTrust` / `Trust-PackageSigningCertificate` and `PackageConfig.json` catalog trust settings instead.
 
-One-time setup on a Windows PC that can reach the share:
+---
+
+<a id="how-assignment-works"></a>
+
+## How assignment works
+
+The module centers on **`Invoke-Package`** for assignment and removal, plus helpers for search, state, team depots/endpoints, and catalog trust.
+
+**`Search-Package`** — when you know a friendly name or command but not the exact `DefinitionId`. It scans enabled endpoints by name, definition id, publisher, and entry points such as commands. Results include publisher metadata, summary, selected version, platform availability, catalog-trust status, endpoint source, and an `InvokeCommand` string you can run.
 
 ```powershell
-Add-TeamPackageDepot -BasePath '\\homeserver\artifacts\PackageDepot'
-Invoke-Package -DefinitionId SevenZip,DotNetSdk10,PythonRuntime,NodeRuntime
-Get-PackageState
+Search-Package -Query code
+Search-Package -Query codex -PublisherId Eigenverft
+Search-Package -Query node -CurrentPlatformOnly
+Search-Package -Query mytool -IncludeIneligible   # include trust/eligibility failures
 ```
 
-Later runs reuse files from the depot when the engine finds a matching artifact under `PackageDepot\{definitionId}\{releaseTrack}\{version}\...`. You only need `Add-TeamPackageDepot` again if that Windows user profile has not been configured yet.
+**`Invoke-Package`** — requires `-DefinitionId` and scans every enabled row in `PackageEndpointInventory.json` in endpoint `searchOrder`. Discovery matches `definitionPublication.definitionId`, then catalog trust checks `definitionPublication.definitionSignature` against `PackageTrustInventory.json` and `PackageConfig.json` policy.
 
-### Package Vocabulary
+```powershell
+Invoke-Package -DefinitionId NodeRuntime
+Invoke-Package -DefinitionId MyPackage -PublisherId 'My Team'
+Invoke-Package -DefinitionId A,B,C -FailFast
+```
+
+- **`-PublisherId`** pins one signed `definitionPublication.publisherId` label when multiple publishers could match.
+- **Unknown signing key** — default `catalogTrust.unknownSignedKeyPolicy` prompts before adding local trust. Use `-AcceptUnknownSigningKey` only when you intentionally want to auto-trust that verified embedded key for the invocation.
+- **Publisher conflicts** — if multiple eligible publishers provide the same definition id, `PackageConfig.json` controls the conflict mode; the default is `fail`.
+- **`-MaterializeOnly`** prepares durable depot artifacts without assigning the package (do not combine with `-DesiredState`).
+- **`-Offline`** forces depot-backed acquisition instead of vendor downloads.
+- **`-PackageVersion`** pins an exact authored version, or pass `latestByVersion` / `previousByVersion`; otherwise the definition's version-selection strategy is used.
+- **`-DesiredState`** — `Assigned` (default) or `Removed` when the definition supports removal.
+
+Shipped definitions use publisher `Eigenverft` and live under the shipped `moduleDefaults` endpoint row.
+
+**`Get-PackageState`** — reads local assignment inventory and operation history, reports configured directories, and shows whether install directories still exist.
+
+```powershell
+Get-PackageState
+Get-PackageState -Raw    # full inventories, config objects, directory summaries
+```
+
+**`Get-PackageDefinitionAuthoringGuide`** prints the active authoring endpoint, schema path, validation workflow, signing steps, and trusted catalog checks for maintainers writing package-definition JSON.
+
+---
+
+## Shipped catalog (`moduleDefaults`)
+
+| Area | Definition IDs |
+| --- | --- |
+| Core runtimes and prerequisites | `NodeRuntime`, `PythonRuntime`, `PowerShell7`, `DotNetSdk10`, `VisualCppRedistributable` |
+| Developer tools | `GitRuntime`, `GHCli`, `VSCodeRuntime`, `VSCodeUser`, `NotepadPlusPlus`, `SevenZip` |
+| CLI agents | `CodexCli`, `OpenCodeCli`, `CursorCli` |
+| Local AI / runtime resources | `LlamaCppRuntime`, `Qwen35_9B_Q6_K_Model`, `MiniCPM5_1B_Q8_Model` |
+| PowerShell bootstrap modules | `PackageManagement`, `PowerShellGet`, `EigenverftManifestedAgent` |
+
+After assignment, packages can expose commands such as `python`, `pwsh`, `git`, `gh`, `code`, `notepad++`, `node`, `npm`, `npx`, `dotnet`, `7z`, `opencode`, `codex`, Cursor's `agent`, and llama.cpp tools — depending on the definition.
+
+**Notes on selected packages:**
+
+- `OpenCodeCli` and `CodexCli` are npm-backed; they depend on `NodeRuntime`, and Codex also depends on `VisualCppRedistributable`.
+- `GHCli` and `CursorCli` provide package-owned command shims for `gh` and Cursor's `agent` command.
+- `VisualCppRedistributable` is a machine prerequisite: it can report already-satisfied state from registry validation and only runs the Microsoft installer when needed. Use an elevated session if installation or repair is required.
+- `LlamaCppRuntime` ships the llama.cpp runtime; `Qwen35_9B_Q6_K_Model` and `MiniCPM5_1B_Q8_Model` are pinned GGUF model resources that depend on it.
+- `SevenZip` installs pinned 7-Zip via MSI under the package-owned install layout.
+- `DotNetSdk10` installs a portable .NET 10 SDK for local build and tool workflows.
+- npm-based CLIs share the packaged Node runtime and write npm config under the module's local configuration area, not into a machine-wide npm config.
+
+---
+
+## When something fails
+
+```powershell
+Get-PackageState
+Get-PackageState -Raw
+```
+
+| Symptom | What to try |
+| --- | --- |
+| Unknown signing key | Accept the prompt once, or `Import-PackageTrust -Path '...\Team.cer'` |
+| Download / proxy issues | Retry; downloads use `Invoke-WebRequestEx`. Hydrate with `-MaterializeOnly` on a connected machine first. |
+| Dependency chain failed | Run the failing dependency alone, e.g. `Invoke-Package -DefinitionId VisualCppRedistributable` (elevated if needed) |
+| Batch stopped early | By default every id is attempted; use `-FailFast` to stop after the first non-Ready result |
+| Need exact failure detail | `Get-PackageState -Raw` → `PackageOperationHistory` records |
+
+---
+
+## Package vocabulary
 
 | Term | Meaning |
 | --- | --- |
@@ -165,7 +314,9 @@ Later runs reuse files from the depot when the engine finds a matching artifact 
 | **Package assignment inventory** | Current tracked assigned package facts: definition, selected version, install directory, ownership kind, and definition snapshot. |
 | **Operation history** | Append-only history of package command runs, including successes, skips, and failures. |
 
-### Package Files And State
+## Package files and state
+
+Local application root (default): `%LOCALAPPDATA%\Programs\Evf.Package\`
 
 | File | Role |
 | --- | --- |
@@ -176,50 +327,39 @@ Later runs reuse files from the depot when the engine finds a matching artifact 
 | `State/PackageAssignmentInventory.json` | Current tracked assigned package facts. |
 | `State/PackageOperationHistory.json` | Append-only command history for assigned and removed runs. |
 
-Set `EVF_DEPOT_SITE_CODE` to a semicolon-separated list such as `BER;BER-ENG` when depot configuration should prefer site-specific acquisition entries.
+Advanced inventory management (when team shortcuts are not enough): `Add-PackageDepot`, `Set-PackageDepot`, `Remove-PackageDepot`, `Add-PackageEndpoint`, `Set-PackageEndpoint`, `Remove-PackageEndpoint`.
+
+Trust lifecycle commands for admins: `Trust-PackageSigningCertificate`, `Untrust-PackageSigningCertificate`, `Revoke-PackageSigningCertificate`, `Block-PackageSigningCertificate`, `Export-PackageTrust`, `Remove-PackageTrust`.
+
+Maintainer validation: `Test-PackageDefinitionCatalog`, `Verify-PackageDefinitionCatalog`, `Verify-PackageDefinitionSignature`, `Resign-PackageDefinition`, `Remove-PackageDefinitionSignature`.
 
 ---
 
-## 🧪 Demo Commands
+## Windows Sandbox
 
-```powershell
-Invoke-Package -DefinitionId VisualCppRedistributable,PythonRuntime,PowerShell7,GitRuntime,GHCli,VSCodeRuntime,NotepadPlusPlus,NodeRuntime,SevenZip,DotNetSdk10,OpenCodeCli,CodexCli,CursorCli,LlamaCppRuntime,Qwen35_9B_Q6_K_Model
-Get-PackageState
-```
+For disposable fresh-machine bring-up, use the [Eigenverft.Manifested.Sandbox](https://github.com/eigenverft/Eigenverft.Manifested.Sandbox) `.wsb` profile — it installs this module from [PSGallery](https://www.powershellgallery.com/packages/Eigenverft.Manifested.Package) and leaves you in PowerShell ready for `Invoke-Package`.
 
-- `Get-PackageState` reads local package assignment inventory and operation history, reports configured directories, and shows whether copied package-definition JSON files and install directories still exist.
-- `Invoke-Package` with definition ids such as `PythonRuntime`, `PowerShell7`, `GitRuntime`, `VSCodeRuntime`, `NotepadPlusPlus`, and `NodeRuntime` ensures those pinned definitions reach assigned state.
-- `OpenCodeCli` and `CodexCli` are npm-backed; they depend on `NodeRuntime`, and Codex also depends on `VisualCppRedistributable`.
-- `GHCli` and `CursorCli` provide package-owned command shims for `gh` and Cursor's `agent` command.
-- `VisualCppRedistributable` is a machine prerequisite: it can report already-satisfied state from registry validation and only runs the Microsoft installer when needed.
-- `LlamaCppRuntime` and `Qwen35_9B_Q6_K_Model` cover the llama.cpp runtime and pinned GGUF model resource respectively.
-- `SevenZip` installs pinned 7-Zip via MSI under the package-owned install layout.
-- `DotNetSdk10` installs a portable .NET 10 SDK for local build and tool workflows.
+---
 
-## 📝 Usage Tips
+## Usage tips
 
-- `Invoke-Package` is idempotent for each definition: rerunning tends to reuse, repair, or report already-satisfied state rather than blindly reinstalling.
-- Pass multiple definition ids in one call, for example `-DefinitionId A,B`, or run separate `Invoke-Package` invocations; dependency order is resolved by the engine.
+- Run `Get-PackageDefinitionAuthoringGuide -For '<DefinitionId>'` before creating or updating catalog JSON.
+- Run `Get-PackageState` after assignment when you want the quickest view of package records, recent operations, depot paths, and install directories.
 - Point `Add-TeamPackageDepot` at a NAS or file-share path to keep mirrored artifacts across multiple PCs.
 - Use `Invoke-Package -MaterializeOnly` to hydrate verified depot artifacts and npm tarballs before an offline assignment run.
-- The npm-based CLIs share the packaged Node runtime and write npm config under the module's local configuration area, not into a machine-wide npm config.
-- Run `Get-PackageDefinitionAuthoringGuide -For '<DefinitionId>'` before creating or updating catalog JSON; it identifies the selected authoring endpoint and validation/signing checklist.
-- Run `Get-PackageState` after a package assignment when you want the quickest view of package records, operation history, depot paths, and local definition snapshots.
 - Run `Invoke-Package -DefinitionId VisualCppRedistributable` in an elevated PowerShell session if the Microsoft Visual C++ Redistributable needs installation or repair.
 
-## 🎯 Product Boundaries
+## Product boundaries
 
 This package engine is intentionally local. It is not a central enterprise package manager, a fleet-wide rollout controller, a replacement for WinGet or Intune, a public community app store, or a background auto-update service.
 
 Good changes make one user profile easier to prepare, make package definitions safer and clearer, improve depot reuse, strengthen catalog trust, or make generated package JSON easier to validate and review. Fleet orchestration belongs in a separate manager product that can build on this engine's state and endpoint primitives.
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
-## 📫 Contact & Support
-
-For questions and support:
+## Contact & support
 
 - 🐛 Open an [issue](https://github.com/eigenverft/Eigenverft.Manifested.Package/issues) in this repository
 - 🤝 Submit a [pull request](https://github.com/eigenverft/Eigenverft.Manifested.Package/pulls) with improvements
