@@ -876,6 +876,14 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $llamaEdge.VersionRange | Should -Be '>=9094'
         @($qwenPlan.Nodes.DefinitionId) | Should -Contain 'LlamaCppRuntime'
 
+        $miniCpmPlan = New-PackageDependencyPlan -DefinitionId 'MiniCPM5_1B_Q8_Model'
+        $miniCpmNode = @($miniCpmPlan.Nodes | Where-Object DefinitionId -EQ 'MiniCPM5_1B_Q8_Model')[0]
+        $miniCpmLlamaEdge = @(Get-PackageDependencyPlanChildEdges -Plan $miniCpmPlan -NodeKey $miniCpmNode.NodeKey | Where-Object DefinitionId -EQ 'LlamaCppRuntime')[0]
+
+        $miniCpmPlan.Accepted | Should -BeTrue
+        $miniCpmLlamaEdge.VersionRange | Should -Be '>=9094'
+        @($miniCpmPlan.Nodes.DefinitionId) | Should -Contain 'LlamaCppRuntime'
+
         $vsCodeConflictPlan = New-PackageDependencyPlan -DefinitionId VSCodeRuntime, VSCodeUser
 
         $vsCodeConflictPlan.Accepted | Should -BeFalse
@@ -2323,6 +2331,30 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - config
         $result.Compatibility[0].Kind | Should -Be 'physicalOrVideoMemoryGiB'
         $result.Compatibility[0].OnFail | Should -Be 'warn'
         $result.Compatibility[0].Accepted | Should -BeFalse
+    }
+
+    It 'loads the shipped MiniCPM5_1B_Q8_Model definition and selects the fixed Hugging Face-backed resource release' {
+        Mock Get-PhysicalMemoryGiB { 8.0 }
+        Mock Get-VideoMemoryGiB { 2.0 }
+
+        $config = Get-PackageConfig -DefinitionId 'MiniCPM5_1B_Q8_Model'
+        $result = New-PackageResult -PackageConfig $config
+        $result = Resolve-PackagePackage -PackageResult $result
+        $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $config -SourceRef ([pscustomobject]@{ scope = 'definition'; id = 'huggingFaceDownload' })
+
+        $config.DefinitionId | Should -Be 'MiniCPM5_1B_Q8_Model'
+        $sourceDefinition.Kind | Should -Be 'download'
+        $sourceDefinition.BaseUri | Should -Be 'https://huggingface.co/openbmb/MiniCPM5-1B-GGUF/resolve/main/'
+        $result.PackageId | Should -Be 'minicpm5-1b-q8-0-stable'
+        $result.Package.version | Should -Be '5.1.0'
+        $result.Package.packageFile.fileName | Should -Be 'MiniCPM5-1B-Q8_0.gguf'
+        $result.Package.packageFile.contentHash.algorithm | Should -Be 'sha256'
+        $result.Package.packageFile.contentHash.value | Should -Be '0dc7638539067268774c275a14a6ec9c7e01f7eeb2cff606c8590361fa527e4c'
+        $result.Package.assigned.install.kind | Should -Be 'placePackageFile'
+        $result.Compatibility.Count | Should -Be 1
+        $result.Compatibility[0].Kind | Should -Be 'physicalOrVideoMemoryGiB'
+        $result.Compatibility[0].OnFail | Should -Be 'warn'
+        $result.Compatibility[0].Accepted | Should -BeTrue
     }
 
     It 'fails clearly when the shipped global config still defines vsCodeUpdateService as an environment source' {
