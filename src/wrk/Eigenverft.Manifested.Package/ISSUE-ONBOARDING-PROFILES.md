@@ -94,7 +94,7 @@ Known:
 | `EigenverftManifestedAgent` | `PowerShellGet` (>=2.2.5 <3.0.0) |
 
 - **12 definitions** have `dependency.requires: []` (roots with no declared requires), including `PythonRuntime`, `GitRuntime`, `NodeRuntime`, `DotNetSdk10`, `SevenZip`, `PowerShell7`, `CursorCli`, etc.
-- **Conflict policy (not requires):** `VSCodeRuntime` and `VSCodeUser` use `dependency.policy.conflictsWith` (mutual). `New-PackageDependencyPlan -DefinitionId VSCodeRuntime, VSCodeUser` is **rejected** with `DependencyConflict` (test: `Package.ConfigAndDefinitions.Tests.ps1` - "ships Eigenverft dependency planner examples...").
+- **Conflict policy (not requires):** `VSCodeRuntime` and `VSCodeUser` use `dependency.policy.conflictsWith` (mutual). `New-PackageDependencyPlan -DefinitionId VSCodeRuntime, VSCodeUser` is **rejected** with `DependencyConflict` (test: `Package.DiscoveryAndRemoval.Tests.ps1` - "ships Eigenverft dependency planner examples...").
 - **Transitive expansion works without listing deps in a profile:** e.g. `New-PackageDependencyPlan -DefinitionId 'CodexCli'` yields child edges for `VisualCppRedistributable` and `NodeRuntime` with authored version ranges (same test file). Profile lists can therefore be **top-level roots only** if authors accept planner expansion.
 - **README already models "profiles" informally:** Quick Start uses **4** ids (`SevenZip,DotNetSdk10,NodeRuntime,CodexCli`); Demo Commands use **13** ids in one `Invoke-Package` line (`README.md`). No named `profileId` or review metadata.
 - **`Search-Package` is per-definition only:** each row's `InvokeCommand` is a **single** `-DefinitionId` string (optional `-PublisherId`); no multi-id or profile command (`Commands/Package/Eigenverft.Manifested.Package.Cmd.SearchPackage.ps1`).
@@ -127,7 +127,7 @@ Use this table when scoring options - what exists vs what Option A/B/C would add
 | Schema wire | `eigenverft-module-package-definition-1.9.schema.json` | No profile object | No schema change | No schema change | Possible new profile schema |
 | Docs / demos | `README.md` | Comma lists only | Named examples + invoke lines | Bundled profile files + cmd | Signed profile invoke |
 | Agent skill | `PackageDefinitionAuthoring.md` | Definition authoring only | Add profile authoring section | Same + cmd docs | Sign/profile workflow |
-| Tests to extend | `Package.ConfigAndDefinitions.Tests.ps1` | Dependency plan fixtures | New profile list vs planner tests | Cmd + validation tests | Invoke wrapper + trust tests |
+| Tests to extend | `Package.DependencyPlanning.Tests.ps1` | Dependency plan fixtures | New profile list vs planner tests | Cmd + validation tests | Invoke wrapper + trust tests |
 
 **Profile authoring constraints from shipped catalog (must respect in examples):**
 - Do not combine `VSCodeRuntime` + `VSCodeUser` in one profile root list (planner conflict).
@@ -350,7 +350,7 @@ Reasoning:
 Option A delivers the real gap (named, reviewable DefinitionId bundles) without a second trust system or fleet-like invoke surface. Option B is a sensible follow-up once the artifact shape is stable and hybrid docs packaging is clearer. Option C front-loads profile signing and `Invoke-PackageProfile` before teams prove they need more than definition-level trust. Option D correctly protects engine scope but wrongly delays **content** that the Manager will need anyway - profile **policy** is manager work; profile **recipes** belong in catalog/docs now.
 
 Required Checks:
-- Run `New-PackageDependencyPlan -DefinitionId <profile-roots>` for each example profile and confirm `Accepted -eq $true` (mirror `Package.ConfigAndDefinitions.Tests.ps1` Codex/Qwen patterns).
+- Run `New-PackageDependencyPlan -DefinitionId <profile-roots>` for each example profile and confirm `Accepted -eq $true` (mirror `Package.DependencyPlanning.Tests.ps1` Codex/Qwen patterns).
 - Confirm no example profile lists both `VSCodeRuntime` and `VSCodeUser` (conflict test exists in same file).
 - Walk generated `Invoke-Package -DefinitionId ...` on a test machine or fixture; compare `[STATE] Dependency plan approved...` node/edge counts when roots include `CodexCli` or `Qwen35_9B_Q6_K_Model`.
 - Confirm listed ids exist under `Endpoint/Defaults/Eigenverft/` and pass `Test-PackageDefinitionCatalog` for the module endpoint root.

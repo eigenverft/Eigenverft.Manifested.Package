@@ -72,7 +72,7 @@ Known:
 - **Shipped installer kinds (verified 2026-05-30):** **SevenZip** - `msiInstaller` / `msiUninstaller`; **NotepadPlusPlus** - `nsisInstaller` only. No other shipped definition uses `msiInstaller`.
 - **Adoption policy split (verified):** `allowAdoptExternal: true` on **7** definitions (SevenZip, VSCodeUser, VSCodeRuntime, NotepadPlusPlus, PackageManagement, PowerShellGet, EigenverftManifestedAgent); **false** on the other **11**.
 - **Runtime:** `Resolve-PackageExistingPackageDecision` emits `[DECISION]` reuse/adopt/replace/ignore messages (`Package.Install.Existing.ps1`); MSI/NSIS install engines exist (`Package.Install.InstallerEngine.ps1`).
-- **Tests:** `Package.ConfigAndDefinitions.Tests.ps1` (SevenZip MSI shape); `Package.AcquisitionAndOwnership.Tests.ps1` (adopt/reuse/replace decisions).
+- **Tests:** `Package.Definitions.Tests.ps1` (SevenZip MSI shape); `Package.OwnershipLifecycle.Tests.ps1` (adopt/reuse/replace decisions).
 
 Unknown:
 - Author-facing schema descriptions vs JSON property names - whether agents/operators get enough guidance without reading tests and shipped JSON.
