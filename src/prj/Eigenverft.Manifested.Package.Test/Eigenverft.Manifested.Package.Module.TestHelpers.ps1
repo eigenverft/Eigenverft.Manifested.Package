@@ -979,10 +979,22 @@ function global:Write-TestPackageDocuments {
     Write-TestJsonDocument -Path $endpointInventoryPath -Document $EndpointInventoryDocument
     Write-TestJsonDocument -Path $definitionPath -Document $DefinitionDocument
 
-    # Definition resolution no longer uses filename-based Get-PackageDefinitionPath.
-    # Keep the bootstrap-local PackageEndpointInventory.json aligned for tests that mock
-    # PackageConfig.json only.
-    Write-TestJsonDocument -Path (Get-PackageLocalEndpointInventoryPath) -Document $EndpointInventoryDocument
+    # Some tests mock PackageConfig.json only, so their definition resolution also
+    # needs this endpoint inventory at the bootstrap-local path.  Never allow this
+    # helper to write there outside Pester's per-test TestDrive isolation; a manual
+    # smoke run must use its own explicit endpoint inventory instead.
+    if ([string]::IsNullOrWhiteSpace([string]$TestDrive)) {
+        throw 'Write-TestPackageDocuments requires Pester TestDrive isolation and cannot write the bootstrap-local PackageEndpointInventory.json outside a test.'
+    }
+
+    $testDriveRoot = [System.IO.Path]::GetFullPath([string]$TestDrive).TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
+    $bootstrapEndpointInventoryPath = [System.IO.Path]::GetFullPath((Get-PackageLocalEndpointInventoryPath))
+    $testDrivePrefix = $testDriveRoot + [System.IO.Path]::DirectorySeparatorChar
+    if (-not $bootstrapEndpointInventoryPath.StartsWith($testDrivePrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Write-TestPackageDocuments refused to write bootstrap-local PackageEndpointInventory.json outside Pester TestDrive '$testDriveRoot': '$bootstrapEndpointInventoryPath'."
+    }
+
+    Write-TestJsonDocument -Path $bootstrapEndpointInventoryPath -Document $EndpointInventoryDocument
 
     return [pscustomobject]@{
         GlobalConfigPath        = $globalConfigPath
