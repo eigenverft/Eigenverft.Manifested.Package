@@ -5,8 +5,8 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "VSCodeRuntime",
-    "definitionRevision": 9,
-    "publishedAtUtc": "2026-07-09T03:44:41.3928142Z",
+    "definitionRevision": 10,
+    "publishedAtUtc": "2026-07-14T04:55:50.4324908Z",
     "definitionSignature": {
       "kind": "signed",
       "format": "embedded-json-rsa-sha256-v1",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-09T03:47:38.1631300Z",
-      "signatureValue": "oh28IRKTcr0X0FMWGUVHO0AUWcZNexnfhqAXTDWQxLlo4rltO9UwkgA6gLkEUOtvenn+3nb5Qv9IS0PabPcPmn6bRc0HvM1ISwOAhOcq6PGZMTRP4rndWXGV45A6kaa0o9u2vkBPstGdcqpV0gZGsGa1/kInc3mZ5SFlmRNXX1XnlLRWOE7yFVzxSQowp8arJLf5XTxTleKRIcr2AvkJYrXfGDSwO7kYlQCRmNb9ZJDehcmmIEoqgL9KNemewDumOw/phhY7tLKY/3ch9/mYNLeIUwyGaI8EaJ7RYKtX2KqYYX09KuYwLR6MTxlhABQ50aqVLByQWPbBfizsoqkov5g+bgvdHKFmJtXriBxrxIcUJhdRKsBuaZ5amPKyTTjortGGMCHwDO2gD7InPH2ILN2SIiYdPTKrFJ4QUFF2cvCFubO0z//u1CGWG77ESnCVepnF0FFaYeKgLAxsQ1TbN5/ZWcTtXgQU3v6TqyDEitpQxxYACCYmErsdbs2yU+jV"
+      "signedAtUtc": "2026-07-14T04:56:29.1384934Z",
+      "signatureValue": "OnadNRJPHE7hI8KoV8JeyM0XKnD9eJgYiyAbur5ZOB2PKEuAOAZ9pC1zpFP4LYzkx0lSoV8xmXWpTm3oJ6fIYF3X8AxNmdyvIdiEJfApC67LQw98inTLAdQ4Q5ABm84WvBE/d6kOyAdl9vW5j33DWOudxRfWbbwMydrXICVr38Y6WvPBSqodV270MKpKiB8Fg5I5dd8bZWP04r937Nd3BJaYGnTRcgP8VQbF1/JbEv8rxsrPaMJdYF1bJrhYR5hK7yRdMGH/cU+hbL5vU8IFsHDqwvupEyZK15VIl5G3r9fAEy60I9RvQV2zImKjRAkB8TIkRE1irEBS+w0YO7vKsp4O8YORzvov5OHNv2oKZVqvWiBCD2bvd+UDwPcyp8X56J1QUrsL8C0cfQln63EiZ1y0AVfen/FJm20DJaifL8wFDp0Y7FTnNdrw3fInQH5pKWSLY/T3czSJ0vOvmZ9WJzb0d5Qy/aye3T3BH98Af7MUZJZGmC/G7tmG8t8axCd4"
     }
   },
   "display": {
@@ -26,6 +26,12 @@
       "corporation": "Microsoft Corporation",
       "summary": "Code editor"
     }
+  },
+  "classification": {
+    "tags": [
+      "editor",
+      "vscode"
+    ]
   },
   "dependency": {
     "requires": [],

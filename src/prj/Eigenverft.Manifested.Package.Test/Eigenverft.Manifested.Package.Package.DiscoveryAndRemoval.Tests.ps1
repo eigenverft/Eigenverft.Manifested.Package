@@ -26,6 +26,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - discov
         $nodeDefinition.display.default.publisher = 'OpenJS'
         $nodeDefinition.display.default.corporation = 'OpenJS Foundation'
         $nodeDefinition.display.default.summary = 'Server-side JavaScript runtime'
+        $nodeDefinition | Add-Member -MemberType NoteProperty -Name classification -Value ([pscustomobject]@{ tags = @('nodejs', 'runtime') })
         $nodeDefinition.discovery.presence.files = @('node.exe')
         $nodeDefinition.discovery.presence.directories = @()
         $nodeDefinition.discovery.presence.commands = @(
@@ -41,15 +42,28 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - discov
 
         $documents = Write-TestPackageDocuments -RootPath $rootPath -GlobalDocument $globalDocument -DefinitionDocument $nodeDefinition
         $definitionRoot = Split-Path -Parent (Split-Path -Parent $documents.DefinitionPath)
-        Write-TestJsonDocument -Path (Join-Path (Join-Path $definitionRoot 'Eigenverft') 'VSCodeRuntime.json') -Document (New-TestVSCodeDefinitionDocument -DefinitionId 'VSCodeRuntime' -Releases @(
-                New-TestPackageRelease -Id 'code-win-x64-stable' -Version '1.99.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
-            ))
+        $codeDefinitionPath = Join-Path (Join-Path $definitionRoot 'Eigenverft') 'VSCodeRuntime.json'
+        $codeDefinition = New-TestVSCodeDefinitionDocument -DefinitionId 'VSCodeRuntime' -Releases @(
+            New-TestPackageRelease -Id 'code-win-x64-stable' -Version '1.99.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+        )
+        $codeDefinition.classification = @{ tags = @('editor', 'vscode') }
+        Write-TestJsonDocument -Path $codeDefinitionPath -Document $codeDefinition
+        $untaggedDefinitionPath = Join-Path (Join-Path $definitionRoot 'Eigenverft') 'UnclassifiedTool.json'
+        $untaggedDefinition = New-TestVSCodeDefinitionDocument -DefinitionId 'UnclassifiedTool' -Releases @(
+            New-TestPackageRelease -Id 'unclassified-win-x64-stable' -Version '1.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+        )
+        $untaggedDefinition.display.default.name = 'Unclassified Tool'
+        $untaggedDefinition.display.default.summary = 'Unclassified runtime tool'
+        Write-TestJsonDocument -Path $untaggedDefinitionPath -Document $untaggedDefinition
 
         Mock Get-PackageConfigPath { $documents.GlobalConfigPath }
         Mock Get-PackageEndpointInventoryPath { $documents.EndpointInventoryPath }
 
         $nodeResults = @(Search-Package -Query 'node' -Platform windows -Architecture x64 -ReleaseTrack stable)
         $codeResults = @(Search-Package -Query 'Code editor' -PublisherId Eigenverft -EndpointName moduleDefaults -Platform windows -Architecture x64 -ReleaseTrack stable)
+        $tagQueryResults = @(Search-Package -Query 'nodejs' -Platform windows -Architecture x64 -ReleaseTrack stable)
+        $tagResults = @(Search-Package -Tag EDITOR,vscode -Platform windows -Architecture x64 -ReleaseTrack stable)
+        $untaggedResults = @(Search-Package -Query 'unclassified' -Platform windows -Architecture x64 -ReleaseTrack stable)
 
         $nodeResults.Count | Should -Be 1
         $nodeResults[0].DefinitionId | Should -Be 'NodeRuntime'
@@ -57,12 +71,21 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - discov
         $nodeResults[0].Version | Should -Be '20.11.1'
         $nodeResults[0].PlatformAvailable | Should -BeTrue
         @($nodeResults[0].Commands) | Should -Be @('node')
+        @($nodeResults[0].Tags) | Should -Be @('nodejs', 'runtime')
         $nodeResults[0].EndpointName | Should -Be 'moduleDefaults'
         $nodeResults[0].EndpointSourceKind | Should -Be 'filesystem'
         $nodeResults[0].CatalogTrustStatus | Should -Be 'unsignedConfigTrust'
         $nodeResults[0].InvokeCommand | Should -Be "Invoke-Package -DefinitionId 'NodeRuntime' -PublisherId 'Eigenverft'"
         $codeResults.Count | Should -Be 1
         $codeResults[0].DefinitionId | Should -Be 'VSCodeRuntime'
+        $tagQueryResults.Count | Should -Be 1
+        $tagQueryResults[0].DefinitionId | Should -Be 'NodeRuntime'
+        $tagResults.Count | Should -Be 1
+        $tagResults[0].DefinitionId | Should -Be 'VSCodeRuntime'
+        @(Search-Package -Tag editor,runtime -Platform windows -Architecture x64 -ReleaseTrack stable).Count | Should -Be 0
+        @(Search-Package -Tag runtime -Platform windows -Architecture x64 -ReleaseTrack stable).DefinitionId | Should -Be @('NodeRuntime')
+        $untaggedResults.Count | Should -Be 1
+        @($untaggedResults[0].Tags) | Should -Be @()
         Test-Path -LiteralPath (Join-Path (Join-Path $rootPath 'AppRoot') 'PkgEndpoint') | Should -BeFalse
     }
 

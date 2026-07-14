@@ -129,6 +129,11 @@ function Get-PackageSearchTextFields {
             }
         }
     }
+    foreach ($tag in @(Get-PackageDefinitionClassificationTags_1_9 -Definition $Definition)) {
+        if (-not [string]::IsNullOrWhiteSpace([string]$tag)) {
+            $fields.Add([string]$tag) | Out-Null
+        }
+    }
     if ($Definition.PSObject.Properties['discovery'] -and
         $Definition.discovery.PSObject.Properties['presence'] -and $Definition.discovery.presence) {
         $presence = $Definition.discovery.presence
@@ -197,6 +202,61 @@ function Test-PackageSearchQueryMatch {
     }
 
     return $true
+}
+
+function Test-PackageSearchTagMatch {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [AllowNull()]
+        [string[]]$RequiredTags = @(),
+
+        [AllowNull()]
+        [string[]]$DefinitionTags = @()
+    )
+
+    if (@($RequiredTags).Count -eq 0) {
+        return $true
+    }
+
+    $availableTags = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($tag in @($DefinitionTags)) {
+        if (-not [string]::IsNullOrWhiteSpace([string]$tag)) {
+            $availableTags.Add(([string]$tag).Trim()) | Out-Null
+        }
+    }
+
+    foreach ($requiredTag in @($RequiredTags)) {
+        if (-not $availableTags.Contains(([string]$requiredTag).Trim())) {
+            return $false
+        }
+    }
+
+    return $true
+}
+
+function Resolve-PackageSearchRequiredTags {
+    [CmdletBinding()]
+    [OutputType([string[]])]
+    param(
+        [AllowNull()]
+        [string[]]$Tag = @()
+    )
+
+    $requiredTags = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($rawTag in @($Tag)) {
+        $normalizedTag = ([string]$rawTag).Trim()
+        if ([string]::IsNullOrWhiteSpace($normalizedTag)) {
+            throw 'Search-Package -Tag cannot contain an empty or whitespace-only tag.'
+        }
+        $requiredTags.Add($normalizedTag) | Out-Null
+    }
+
+    return @(
+        foreach ($requiredTag in $requiredTags) {
+            $requiredTag
+        }
+    )
 }
 
 function Get-PackageSearchEntryPointNames {
@@ -307,12 +367,19 @@ function Search-Package {
     .DESCRIPTION
         Scans enabled moduleLocal and filesystem endpoints, applies catalog trust
         eligibility, and returns package definition rows that match the query.
+
+    .PARAMETER Tag
+        Filters results to definitions that carry every requested classification tag.
+        Tag matches are exact and case-insensitive.
     #>
     [CmdletBinding()]
     param(
         [Parameter(Position = 0)]
         [AllowNull()]
         [string]$Query = $null,
+
+        [AllowNull()]
+        [string[]]$Tag = @(),
 
         [AllowNull()]
         [string]$PublisherId = $null,
@@ -339,6 +406,7 @@ function Search-Package {
     $effectivePlatform = if ([string]::IsNullOrWhiteSpace($Platform)) { [string]$runtimeContext.Platform } else { ([string]$Platform).Trim() }
     $effectiveArchitecture = if ([string]::IsNullOrWhiteSpace($Architecture)) { [string]$runtimeContext.Architecture } else { ([string]$Architecture).Trim() }
     $effectiveReleaseTrack = if ([string]::IsNullOrWhiteSpace($ReleaseTrack)) { [string]$settings.ReleaseTrack } else { ([string]$ReleaseTrack).Trim() }
+    $requiredTags = @(Resolve-PackageSearchRequiredTags -Tag $Tag)
     $trustInventoryInfo = Get-PackageTrustInventoryInfo
     $rows = New-Object System.Collections.Generic.List[object]
 
@@ -363,8 +431,12 @@ function Search-Package {
         }
 
         $definition = $definitionInfo.Document
+        $definitionTags = @(Get-PackageDefinitionClassificationTags_1_9 -Definition $definition)
         $fields = @(Get-PackageSearchTextFields -Definition $definition)
         if (-not (Test-PackageSearchQueryMatch -Query $Query -Fields $fields)) {
+            continue
+        }
+        if (-not (Test-PackageSearchTagMatch -RequiredTags $requiredTags -DefinitionTags $definitionTags)) {
             continue
         }
 
@@ -391,6 +463,7 @@ function Search-Package {
             DisplayPublisher           = [string]$display.publisher
             Corporation                = [string]$display.corporation
             Summary                    = [string]$display.summary
+            Tags                       = @($definitionTags)
             Version                    = [string]$selection.Version
             PlatformAvailable          = [bool]$selection.Available
             Platform                   = $effectivePlatform

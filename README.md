@@ -221,12 +221,16 @@ Draft-only authoring (unsigned JSON): `Get-PackageDefinitionAuthoringGuide -For 
 
 The module centers on **`Invoke-Package`** for assignment and removal, plus helpers for search, state, team depots/endpoints, and catalog trust.
 
-**`Search-Package`** — when you know a friendly name or command but not the exact `DefinitionId`. It scans enabled endpoints by name, definition id, publisher, and entry points such as commands. Results include publisher metadata, summary, selected version, platform availability, catalog-trust status, endpoint source, and an `InvokeCommand` string you can run.
+**`Search-Package`** — when you know a friendly name, command, purpose, or product tag but not the exact `DefinitionId`. It scans enabled endpoints by name, definition id, publisher, summary, classification tags, and entry points such as commands. Results include publisher metadata, summary, tags, selected version, platform availability, catalog-trust status, endpoint source, and an `InvokeCommand` string you can run.
 
 ```powershell
 Search-Package -Query code
 Search-Package -Query codex -PublisherId Eigenverft
 Search-Package -Query node -CurrentPlatformOnly
+Search-Package -Tag ai                         # exact, case-insensitive tag match
+Search-Package -Tag ai,model                  # definitions carrying both exact tags
+Search-Package -Tag codex                     # a stable product tag
+Search-Package -Query local -Tag llama-cpp
 Search-Package -Query mytool -IncludeIneligible   # include trust/eligibility failures
 ```
 

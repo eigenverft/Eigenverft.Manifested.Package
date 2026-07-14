@@ -211,6 +211,35 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - defini
         { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw '*schemaVersion*'
     }
 
+    It 'validates optional classification tags and rejects invalid classification shapes' {
+        $release = New-TestPackageRelease -Id 'vs-code-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+        $taglessDefinition = New-TestVSCodeDefinitionDocument -Releases @($release)
+        $taglessInfo = [pscustomobject]@{ Path = 'classification-absent.json'; Document = ConvertTo-TestPsObject $taglessDefinition }
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $taglessInfo -DefinitionId 'VSCodeRuntime' } | Should -Not -Throw
+
+        $definitionDocument = New-TestVSCodeDefinitionDocument -Releases @($release)
+        $definitionDocument.classification = @{
+            tags = @('ai', 'llama-cpp')
+        }
+        $definitionInfo = [pscustomobject]@{ Path = 'classification-valid.json'; Document = ConvertTo-TestPsObject $definitionDocument }
+
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Not -Throw
+
+        foreach ($classification in @(
+                @{ tags = @() },
+                @{ tags = 'ai' },
+                @{ tags = @('AI') },
+                @{ tags = @('ai', 'ai') },
+                @{ tags = @('ai'); category = 'runtime' }
+            )) {
+            $invalidDefinition = New-TestVSCodeDefinitionDocument -Releases @($release)
+            $invalidDefinition.classification = $classification
+            $invalidInfo = [pscustomobject]@{ Path = 'classification-invalid.json'; Document = ConvertTo-TestPsObject $invalidDefinition }
+
+            { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $invalidInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw '*classification*'
+        }
+    }
+
     It 'accepts schema 1.9 packageDepot and vendorDownload candidates' {
         $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -FileName 'VSCode-win32-x64-2.0.0.zip' -AcquisitionCandidates @(
             @{

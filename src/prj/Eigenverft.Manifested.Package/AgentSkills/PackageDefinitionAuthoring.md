@@ -260,13 +260,14 @@ Run `Test-PackageDefinitionCatalog`, signing, and trust commands in the host whe
 3. Author drafts as unsigned: `definitionPublication.definitionSignature.kind = unsigned`.
 4. Never fabricate, copy, or hand-edit `signatureValue`.
 5. Write under **Selection**. Prefer `<publisherId>/<definitionId>.json` unless the endpoint already uses flat files or the user requested a flat layout.
-6. Bump `definitionRevision` for every definition content change.
-7. Keep scripts and acquisition behavior minimal, declarative, and reviewable; do not run upstream installers or `Invoke-Package` during construction (**No Installer Execution During Authoring**).
-8. Run `Test-PackageDefinitionCatalog` before signing or publishing.
-9. Sign or re-sign only after content is stable.
-10. Verify signature or catalog trust.
-11. Check repository tracking/status with `git status --short` before handoff only when the selected authoring root is inside a local Git working tree. For remote endpoints or non-repository paths, do not run repository commands.
-12. When `Selection` is `Ready`, write the JSON under that path and run **Publication finalization** (or draft-only validation only when **Authoring mode** requires it).
+6. When present, keep `classification.tags` concise, lowercase, hyphenated, and limited to purpose/product discovery terms. Do not duplicate platform, architecture, publisher, installer, or package-format fields there.
+7. Bump `definitionRevision` for every definition content change.
+8. Keep scripts and acquisition behavior minimal, declarative, and reviewable; do not run upstream installers or `Invoke-Package` during construction (**No Installer Execution During Authoring**).
+9. Run `Test-PackageDefinitionCatalog` before signing or publishing.
+10. Sign or re-sign only after content is stable.
+11. Verify signature or catalog trust.
+12. Check repository tracking/status with `git status --short` before handoff only when the selected authoring root is inside a local Git working tree. For remote endpoints or non-repository paths, do not run repository commands.
+13. When `Selection` is `Ready`, write the JSON under that path and run **Publication finalization** (or draft-only validation only when **Authoring mode** requires it).
 
 ## Installer Kind Discovery
 
@@ -328,6 +329,7 @@ Stop if the latest version cannot be proven from official sources, an artifact f
 ## Self-Check Checklist
 
 - `publisherId`, `definitionId`, display metadata, and revision match the requested package.
+- When present, `classification.tags` contains only concise lowercase hyphenated purpose/product terms; it does not duplicate structured platform, publisher, installer, or packaging data.
 - `schemaVersion` is `1.9`.
 - Deprecated top-level `dependencies` and `dependencyPolicy` are not used.
 - Dependencies use `dependency.requires[]`.
@@ -343,6 +345,18 @@ Stop if the latest version cannot be proven from official sources, an artifact f
 - Do not sign or publish JSON with a known acquisition, readiness, or install-time blocker unless the user explicitly requested a signed blocked artifact for testing.
 - No credentials, tokens, local private paths, or machine-specific secrets are embedded.
 - `definitionSignature.kind` is `unsigned` only while drafting or when explicitly requested.
+
+## Search Examples
+
+Classification tags are searchable with exact, case-insensitive `-Tag` filtering. Multiple
+tags use AND logic; `-Query` also searches tag text by substring.
+
+```powershell
+Search-Package -Tag ai
+Search-Package -Tag ai,model
+Search-Package -Tag codex
+Search-Package -Query local -Tag llama-cpp
+```
 
 ## Catalog Validation
 

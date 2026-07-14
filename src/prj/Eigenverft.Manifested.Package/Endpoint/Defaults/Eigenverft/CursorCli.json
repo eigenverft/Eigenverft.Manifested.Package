@@ -5,8 +5,8 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "CursorCli",
-    "definitionRevision": 5,
-    "publishedAtUtc": "2026-07-09T03:44:41.3928142Z",
+    "definitionRevision": 6,
+    "publishedAtUtc": "2026-07-14T04:55:50.4324908Z",
     "definitionSignature": {
       "kind": "signed",
       "format": "embedded-json-rsa-sha256-v1",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-09T03:47:36.8464618Z",
-      "signatureValue": "c4xsHDTlt1ZhArM4n4oQzx48sM+FkBkZL6gX0rbepwF+XvDgkdKXUFKyvWOiNBLg/BoBnkldUbS7uw+utGaybyCojGgXGhlT3O9MTfbKwH8WThRejtof303oioYOvdIr5n67KIpaVgCEbbd387ZHD1sFTFoqswDN9kjKaTJQ3yQZrX66BCBxD9l5Iagm39at8gMWnsxR4nRxrH4iDCqNw1fIw5SICuoZdWMGz8CVa4Bqk+1fzFNnOE5AyLThA/tareN89doaf6m9QgQr5DAKI8XaCJdfocDsQVGxkrRXwXhRgCnhePwT3RyTsK9/WezRlDzDcas9U5/mwUEQIDR0VF8MCABwsFcW+PUHyVX2s1v4FI/qYjd/Y1S+MnzXTW8KVUNQc1zLNWa1UApxSJG+WIfKiiSWeyx6rYXt+gInzjx91KNuqkoIcyu44ZCpWQpqaM++go1q7Z97Dkbm++/VSNtpES9R4D9oXMMxVR3K7ZcwOMCehrllWBh3nAbVdfrK"
+      "signedAtUtc": "2026-07-14T04:56:26.3122760Z",
+      "signatureValue": "R/8/fEcNOdgNb0g71SUIiTwlp4KXm4CG4x+P6xw2QFVCkYUoBZwoku4v96BCL7+EQ6KxWLJvTkglib9caIAe5/cT9aWWxBq8ZEzV9imsogNFbAqAeszGg5YdEES9cAk1lOmyeOAmbB7uq5ZvizVtB7ehU9lySyCGzCdmbflNWg518ZPIZ0CwAqaEBENpV2qynJNsbaHbYvgS4Jy34dYMmdqWxS7K8uD4+QihkHJR+gClf7t8T2+uuqXyIXu6w6O2vUzom7GJkLlD/lwg4JT5AJjhGcr5OW9u6MDL2jaTMuS8sjZp3EcUrz3ktPdtjru+3mY01xY03SaZtTloDph676LD0Uu2WU4EndEttgN5uhtfo6PkNB19Skawy/AZnNMBEOTDEu+6raB2QL1LvH0gLxxIx1hj765bnPsb40PBlebS0lIruHxsO4sN8a/vSUzOIq0jb6d2LhOVQcKXeTNiUmV8YdjPtmq4KXM1kUOfveDNqJRzJbQiG42R3+SFL1dV"
     }
   },
   "display": {
@@ -26,6 +26,13 @@
       "corporation": "Anysphere",
       "summary": "Pinned Cursor Agent CLI (portable Windows bundle from Cursor lab CDN)"
     }
+  },
+  "classification": {
+    "tags": [
+      "ai",
+      "cli",
+      "cursor"
+    ]
   },
   "dependency": {
     "requires": []

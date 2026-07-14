@@ -5,8 +5,8 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "PythonRuntime",
-    "definitionRevision": 5,
-    "publishedAtUtc": "2026-06-13T15:41:16.395Z",
+    "definitionRevision": 6,
+    "publishedAtUtc": "2026-07-14T04:55:50.4324908Z",
     "definitionSignature": {
       "kind": "signed",
       "format": "embedded-json-rsa-sha256-v1",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-06-13T15:41:54.6767036Z",
-      "signatureValue": "O0/8dC4CjHZ/St89rDRDD1XO0ea+RnW2fr7j7KpbYMazkGsxPLj8IpJmCRszgfHyiOYFebCHfw+9VVZWnJMKpwfFzwUHdbJillYqcQ+Yf/w+1rDmeQwfnHbc8MDgX2/b4zAI092MH2riKPm07OaCV63z+39G17nT0QwtGwteM4YQPt+75HJureX/IsTYRG/OsM8d+Fo/MIeW5tr0xPKrarJjJfMGILxawb/MJHqgYuGaZG5hRz6drymbqHvWEvRqbKU3aBGxNajMY4mvlJ7JgbGNs620C7O+K2ghymvJcByxu9cmpFSXBybco26xlLy9cyGoDlr8Z7qaFmDhYqvwWtT0fj9bErR+2mwzHKk+a0xm7H7oI9MFCWDvHRqOlAu5ieibnZLmCgKjFIIh3tbkVz2I5ty/R4FLy8BpoIhdt0WSTeijecYu2XkPVpx25tDZd9t6sPtpDhM4h0AbE2s+y0zSl7OcAiAPqSN1QskbwUkfmIFctIcJoZ6WtHXCm4L6"
+      "signedAtUtc": "2026-07-14T04:56:28.5220950Z",
+      "signatureValue": "inFNUudMANgm1kwlI9zTlib/k20m0yqrU++XXXiBNx04mX92uHf0eTXh1hn9jUkzkkTYD7TMPhPEljPZa17yzu9YU6iMNPO8bnRjd14LupnidzENT2r+ggbji7Kmmc52RSQpI9YiPl0TWpl+EDaty8wtfnAr/STkL4qr99UXA+aCjqpvrzRELV6kD7dQ675riNdKTI8crC0DIwQXpnDJ8zHngPjEsggsARMJ+mwAoKS5hDmruhXVPCQFB2T9ZdWnl6DZzD4RpR4+QoEzgpR0sQLmhca644mljhC0rXx6h0JhKnZ4zALNtHV8JCWltAf9VqFVl9Lzk5DXzvnanhzuATsd510ubVKVhtiPnVFWGrZKqcP3BJBVkBFUxGNssvuXpSewBRvAfiLXyJrmYMnVR1PBXhOrQhAIguchCuTe3O2D1H1vVCKGxygKUZX9NyUsqmQa6tp3H41lDt5v5P0n+my0doPaVHGeReKG8wNFgAgM2eaZCeeNau39bjtX5bBM"
     }
   },
   "display": {
@@ -26,6 +26,12 @@
       "corporation": "Python Software Foundation",
       "summary": "Portable Python runtime from the official NuGet package"
     }
+  },
+  "classification": {
+    "tags": [
+      "python",
+      "runtime"
+    ]
   },
   "dependency": {
     "requires": []

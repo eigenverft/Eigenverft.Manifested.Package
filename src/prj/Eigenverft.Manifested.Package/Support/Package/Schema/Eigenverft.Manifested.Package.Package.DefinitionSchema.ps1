@@ -279,7 +279,6 @@ Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -Definiti
 
     $definition = $DefinitionDocumentInfo.Document
     foreach ($retiredProperty in @(
-            'classification',
             'target',
             'origins',
             'interfaces',

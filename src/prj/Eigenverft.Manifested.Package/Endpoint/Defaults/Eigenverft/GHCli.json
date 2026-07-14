@@ -5,8 +5,8 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "GHCli",
-    "definitionRevision": 1,
-    "publishedAtUtc": "2026-07-09T03:44:41.3928142Z",
+    "definitionRevision": 2,
+    "publishedAtUtc": "2026-07-14T04:55:50.4324908Z",
     "definitionSignature": {
       "kind": "signed",
       "format": "embedded-json-rsa-sha256-v1",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-09T03:47:37.3431341Z",
-      "signatureValue": "cfjDOAEHjSPl19WzhACdhjJvIEbzlIfLERwEPPswPBoD98lAbt0u89d6p8kpFWTSO3lZMjfxJtfXU/adAAE38H85EY7mIiWqMkvpLo6ZYkTHhYZ6jyGmUgHC+YnHlBUaZSkWWJWaCDYmukeOBGDy8lJdWmzbi5PuoDLCZgz27fqXkY/fcZXMA0r2i5rhGucUTCSz4XL12XMEdgNKeWlO4dY5MQgtwPugKZ4rsE8AHJlKy61lqTu1mH7SKUySN7on6y0KGdxw2iAQ8Grqq9aTYRGbrUHhSzDxABbTNrieU+5IqQCK8wu933On4N/CHdmmu1AlvZ9Mm//qiT+ZI75K3k7xmASQvLFqzLVhhecRD9tGnnHCfy83nQ2AgQ8mBNEPHCCDFvx4bBhGi/XlHyOc3/xQQQLmnVQp5asycJtrs6nIwwnEwaRicnvXcfa1VIagg0/tTqLdGFd1wTw9aWMZLO4TadBb1chPdE3cdsdrK3NY6mUEWoHX83wqE+v1k7QA"
+      "signedAtUtc": "2026-07-14T04:56:26.8821366Z",
+      "signatureValue": "oGNZwickivpLAF87pqvtoFY+yeXqMzdNaIKzhVKGz4pPGV3TzUVYMrxr22Wj0pz0oDU2qTTqisq2Hm2zR+LLcFAgpnV80nGP/pA99E0TOXn+tKXH6WoVi+sJvrpO0z5QJ1n2blQF+LzytaFNbJQU3lq1Ds2MtLppyHkYeT+oyrBMNri0cQI9j+a/5nr5r+fr4G02+mR7UP+gVXxkAMuSx9itS3kOymmEuI1FuCF0O0oNi4RokiQzMNvqCaR0VIm/KH/pg7VTt0RVn44CASrGRrbViSDy/nNxoTLVZdKPNQevmXEW59ZkD1kaZGV/sFDjS61t8ft244msl8IYXgbIbwJhTrj8DWs+YmmWBMbxzr1SwwXqTwf3Kb1RLV7qjk2H8C5kBDok/i1sOIjjlsUh4rDk8kbNH3DT0qLoDI1vYlQxz4S/jbZKpRLdVjlXVIeL/KaF2FzvK/YKnvvPQHZ7Jk/c3g+G7EKSzjxP7y893S6JcV855buKzRUqRVaCY9B4"
     }
   },
   "display": {
@@ -26,6 +26,12 @@
       "corporation": "GitHub, Inc.",
       "summary": "Portable GitHub CLI runtime"
     }
+  },
+  "classification": {
+    "tags": [
+      "cli",
+      "github"
+    ]
   },
   "dependency": {
     "requires": []

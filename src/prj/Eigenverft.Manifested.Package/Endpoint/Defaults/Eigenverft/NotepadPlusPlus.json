@@ -5,8 +5,8 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "NotepadPlusPlus",
-    "definitionRevision": 6,
-    "publishedAtUtc": "2026-06-13T15:41:16.395Z",
+    "definitionRevision": 7,
+    "publishedAtUtc": "2026-07-14T04:55:50.4324908Z",
     "definitionSignature": {
       "kind": "signed",
       "format": "embedded-json-rsa-sha256-v1",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-06-13T15:41:54.4710341Z",
-      "signatureValue": "FBzySU/eu5FFu2PoEOzrlojM52hkmujDfWqesrdlUnuk0JvpMl8wzXFBR6mNe8hoxQ3Fwac4cyvfgn5TyeTVf2sQT88Cw6myqiuNzfhUfAyMaXSd0af3ysXh5wXk+yizh1/kQMBy+6Fk6FtG2+o/io8B6Ym+s+HfuZ1ttsExZO/VRzKejymDcedt1Wa+7SjyF+4Ir632JmngWhxbHPNkMFfJ/T0dKiCXE8EcuqZtjqKhivfrRPX8Iij0IyKUdBYrAPlWn+hSyscc/9i/Z3zNQfiIl5W3F+L86yEbRiJKLNlCHREDxKExusIJwnGA/ausapX6jVgnUYOsPboehM8O6G8b/8GhCUTm71FptK4ul5qD8RuIbCdIFnMUIH2Yg2+HfLVh9+6UX8B0UgSZmQQFHFLlg9mM0olDUVSpQxLX8tBRwY04JlP2ZlfSdmHqoP2AuHAmuIq+QUMPKRuwWGUtZmEOYfNUL7/lo9LvKp2bI2IxOrsqoS6LNkcYgK5gGPuB"
+      "signedAtUtc": "2026-07-14T04:56:27.7532414Z",
+      "signatureValue": "SfCLVEiJcU4s906xVKFOu7upwL4hNsH91X5qJUI9tUXkAPiqYSNSMWf2+FOMwo5jByRkbz+HkQyVWFdiRg4JVPz8qls/yztXrM2sXh4NxY2AOMKy9Y7qu4qcdPivVAQ/4mHlLtE/8IX0XobLOsP04Z16NzfiMCEAR6Etn6Hulbu96FfWu+XNdiXvPiGLBjj1n5nSBSwHSIFdT7M5xcPOS4834O0Iuobd/BUO/98pMSisF55+CzINJK6v6Fb6MiDQScwPDyKPkl9hBARqPdTAJ6stiqdg1dX1jM0C1N5nu8WGObVaA4eeyn//jddSFeXkdkKn1+ZW70qCAO3uOsYFH0gXx5k+uPoJ0sGGvKxhu4EkoRolTTZ+RU5LlGvZB5bmCqyxyFaLRiB76V8cZ/mqlTyBNnmDXl2L01d1JR3OZpYN+F+gbkqCTASwPHN+dyGa8kocyhXTw2tv7U6uu0GGHQ56xJz0swgDO4aVHG9TFGBQSU9rC14kdQNNzLfmmi2S"
     }
   },
   "display": {
@@ -26,6 +26,12 @@
       "corporation": "NOTEPAD++",
       "summary": "Windows text and source-code editor"
     }
+  },
+  "classification": {
+    "tags": [
+      "editor",
+      "notepad-plus-plus"
+    ]
   },
   "dependency": {
     "requires": []

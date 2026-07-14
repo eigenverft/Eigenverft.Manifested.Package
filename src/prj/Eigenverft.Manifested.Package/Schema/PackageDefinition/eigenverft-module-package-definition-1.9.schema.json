@@ -38,6 +38,10 @@
       "$ref": "#/$defs/display",
       "description": "Human-readable names and summaries for logs and UI; does not affect install mechanics."
     },
+    "classification": {
+      "$ref": "#/$defs/classification",
+      "description": "Optional purpose and product identity tags used by Search-Package. Does not affect install mechanics."
+    },
     "dependency": {
       "$ref": "#/$defs/dependencyModel",
       "description": "Required dependency model. dependency.requires lists package definitions that must reach Assigned before this one; dependency.policy declares peer-policy constraints evaluated by the dependency planner."
@@ -77,6 +81,25 @@
       "properties": {
         "default": {
           "$ref": "#/$defs/displayEntry"
+        }
+      }
+    },
+    "classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tags"
+      ],
+      "properties": {
+        "tags": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "Lowercase hyphenated purpose/product search tags. Keep tags concise; do not duplicate platform, architecture, publisher, installer, or package-format fields.",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          }
         }
       }
     },

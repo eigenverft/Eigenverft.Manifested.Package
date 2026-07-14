@@ -262,6 +262,77 @@ function Test-PackageDefinitionTextPropertyPresent_1_9 {
         -not [string]::IsNullOrWhiteSpace([string]$InputObject.$PropertyName))
 }
 
+function Get-PackageDefinitionClassificationTags_1_9 {
+    [CmdletBinding()]
+    [OutputType([string[]])]
+    param(
+        [AllowNull()]
+        [psobject]$Definition
+    )
+
+    if (-not $Definition -or
+        -not $Definition.PSObject.Properties['classification'] -or
+        -not $Definition.classification -or
+        -not $Definition.classification.PSObject.Properties['tags'] -or
+        $null -eq $Definition.classification.tags) {
+        return @()
+    }
+
+    return @(
+        foreach ($tag in @($Definition.classification.tags)) {
+            if ($null -ne $tag) {
+                [string]$tag
+            }
+        }
+    )
+}
+
+function Assert-PackageDefinitionClassification_1_9 {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$Definition,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DefinitionId
+    )
+
+    if (-not $Definition.PSObject.Properties['classification']) {
+        return
+    }
+
+    $classification = $Definition.classification
+    if (-not $classification -or $classification -is [string] -or $classification -is [System.Collections.IEnumerable]) {
+        throw "Package definition '$DefinitionId' classification must be an object with tags."
+    }
+    foreach ($property in @($classification.PSObject.Properties)) {
+        if (-not [string]::Equals([string]$property.Name, 'tags', [System.StringComparison]::Ordinal)) {
+            throw "Package definition '$DefinitionId' classification uses unsupported property '$($property.Name)'. Use classification.tags only."
+        }
+    }
+    if (-not $classification.PSObject.Properties['tags'] -or $null -eq $classification.tags) {
+        throw "Package definition '$DefinitionId' classification requires a non-empty tags array."
+    }
+    if ($classification.tags -is [string] -or $classification.tags -isnot [System.Collections.IEnumerable]) {
+        throw "Package definition '$DefinitionId' classification.tags must be an array."
+    }
+
+    $tags = @(Get-PackageDefinitionClassificationTags_1_9 -Definition $Definition)
+    if ($tags.Count -eq 0) {
+        throw "Package definition '$DefinitionId' classification.tags must contain at least one tag."
+    }
+
+    $seenTags = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($tag in $tags) {
+        if ([string]::IsNullOrWhiteSpace($tag) -or $tag -cnotmatch '^[a-z0-9]+(?:-[a-z0-9]+)*$') {
+            throw "Package definition '$DefinitionId' classification.tags entries must be lowercase hyphenated identifiers."
+        }
+        if (-not $seenTags.Add($tag)) {
+            throw "Package definition '$DefinitionId' classification.tags contains duplicate tag '$tag'."
+        }
+    }
+}
+
 function Get-PackageDefinitionDependencyModel_1_9 {
     [CmdletBinding()]
     param(
@@ -747,6 +818,8 @@ function Assert-PackageDefinitionSchema_1_9 {
         -not [DateTime]::TryParse([string]$pubRaw, [ref]$publishedAtUtc)) {
         throw "Package definition '$DefinitionId' definitionPublication.publishedAtUtc must be a valid UTC timestamp."
     }
+
+    Assert-PackageDefinitionClassification_1_9 -Definition $definition -DefinitionId $DefinitionId
 
     if (-not $definition.artifacts.PSObject.Properties['targets']) {
         throw "Package definition '$DefinitionId' is missing required artifacts.targets array."
