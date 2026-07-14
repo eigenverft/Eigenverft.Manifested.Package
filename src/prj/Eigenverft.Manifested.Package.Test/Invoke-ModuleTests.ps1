@@ -149,7 +149,8 @@ if (-not (Test-Path -LiteralPath $summaryPath -PathType Leaf)) {
 $summary = Get-Content -LiteralPath $summaryPath -Raw | ConvertFrom-Json
 Remove-Item -LiteralPath $summaryPath -Force -ErrorAction SilentlyContinue
 
-$scopeText = if ($FullName -and $FullName.Count -gt 0) {
+$defaultTestPath = (Resolve-Path -LiteralPath $PSScriptRoot).Path
+$scopeText = if (($FullName -and $FullName.Count -gt 0) -or -not [string]::Equals($resolvedTestPath, $defaultTestPath, [System.StringComparison]::OrdinalIgnoreCase)) {
     'targeted'
 }
 else {
@@ -157,22 +158,24 @@ else {
 }
 
 'Pester {0}: Passed={1} Failed={2} Skipped={3} Duration={4}' -f $scopeText, $summary.Passed, $summary.Failed, $summary.Skipped, $summary.Duration
-'Pester log: {0}' -f $resolvedLogPath
 
 if ([int]$summary.Failed -gt 0) {
-    $failedTests = @($summary.FailedTests)
-    if ($failedTests.Count -gt 0) {
-        'Failed tests:'
-        foreach ($failedTest in @($failedTests | Select-Object -First 10)) {
-            if ([string]::IsNullOrWhiteSpace([string]$failedTest.Message)) {
-                '  - {0}' -f $failedTest.Name
+    'Pester log: {0}' -f $resolvedLogPath
+    if ($Mode -eq 'Detailed') {
+        $failedTests = @($summary.FailedTests)
+        if ($failedTests.Count -gt 0) {
+            'Failed tests:'
+            foreach ($failedTest in @($failedTests | Select-Object -First 10)) {
+                if ([string]::IsNullOrWhiteSpace([string]$failedTest.Message)) {
+                    '  - {0}' -f $failedTest.Name
+                }
+                else {
+                    '  - {0}: {1}' -f $failedTest.Name, $failedTest.Message
+                }
             }
-            else {
-                '  - {0}: {1}' -f $failedTest.Name, $failedTest.Message
+            if ($failedTests.Count -gt 10) {
+                '  ... {0} more failure(s), see log.' -f ($failedTests.Count - 10)
             }
-        }
-        if ($failedTests.Count -gt 10) {
-            '  ... {0} more failure(s), see log.' -f ($failedTests.Count - 10)
         }
     }
     exit 1

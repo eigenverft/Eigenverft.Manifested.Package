@@ -368,4 +368,3 @@ $result = New-AnalyzerJsonResult `
     -Files $affectedFiles
 
 $result | ConvertTo-Json -Depth 8
-
