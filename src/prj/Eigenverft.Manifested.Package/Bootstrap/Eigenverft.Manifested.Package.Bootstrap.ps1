@@ -145,6 +145,113 @@ function Find-LatestInstalledBootstrapModule {
         Select-Object -First 1
 }
 
+function Test-BootstrapProcessIsAdministrator {
+    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = New-Object Security.Principal.WindowsPrincipal($identity)
+    return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+function Get-BootstrapModuleInstallRoot {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Scope
+    )
+
+    if ([string]::Equals($Scope, 'AllUsers', [System.StringComparison]::OrdinalIgnoreCase)) {
+        if (-not (Test-BootstrapProcessIsAdministrator)) {
+            throw 'PowerShell module scope AllUsers requires an elevated process.'
+        }
+        return (Join-Path $env:ProgramFiles 'WindowsPowerShell\Modules')
+    }
+
+    $documentsPath = [Environment]::GetFolderPath([Environment+SpecialFolder]::MyDocuments)
+    if ([string]::IsNullOrWhiteSpace($documentsPath)) {
+        throw 'Could not resolve the current user Documents directory for PowerShell module installation.'
+    }
+    return (Join-Path $documentsPath 'WindowsPowerShell\Modules')
+}
+
+function Install-BootstrapPackageManagementSeed {
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$Artifact,
+
+        [Parameter(Mandatory = $true)]
+        [string]$WorkDirectory,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Scope,
+
+        [string]$ModuleInstallRoot
+    )
+
+    if (-not [string]::Equals([string]$Artifact.ModuleName, 'PackageManagement', [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Direct bootstrap seeding only supports PackageManagement, not '$($Artifact.ModuleName)'."
+    }
+    if ([string]::IsNullOrWhiteSpace($ModuleInstallRoot)) {
+        $ModuleInstallRoot = Get-BootstrapModuleInstallRoot -Scope $Scope
+    }
+
+    $moduleRoot = [System.IO.Path]::GetFullPath($ModuleInstallRoot).TrimEnd('\')
+    $moduleNameRoot = [System.IO.Path]::GetFullPath((Join-Path $moduleRoot ([string]$Artifact.ModuleName))).TrimEnd('\')
+    $targetRoot = [System.IO.Path]::GetFullPath((Join-Path $moduleNameRoot ([string]$Artifact.RequiredVersion))).TrimEnd('\')
+    if (-not $targetRoot.StartsWith($moduleNameRoot + '\', [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Refusing to install PackageManagement outside '$moduleNameRoot'."
+    }
+
+    $extractRoot = [System.IO.Path]::GetFullPath((Join-Path $WorkDirectory 'PackageManagementSeed')).TrimEnd('\')
+    if (-not $extractRoot.StartsWith([System.IO.Path]::GetFullPath($WorkDirectory).TrimEnd('\') + '\', [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Refusing to extract the PackageManagement seed outside '$WorkDirectory'."
+    }
+    $null = New-Item -ItemType Directory -Path $extractRoot -Force
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $archive = [System.IO.Compression.ZipFile]::OpenRead([string]$Artifact.Path)
+    try {
+        foreach ($entry in $archive.Entries) {
+            $entryPath = ([string]$entry.FullName).Replace('\', '/')
+            if ([string]::IsNullOrWhiteSpace($entryPath) -or $entryPath.EndsWith('/')) {
+                continue
+            }
+            if ($entryPath.StartsWith('/') -or $entryPath -match '^[A-Za-z]:' -or (@($entryPath.Split('/')) -contains '..')) {
+                throw "PackageManagement seed contains unsafe archive entry '$entryPath'."
+            }
+            if ($entryPath.StartsWith('_rels/', [System.StringComparison]::OrdinalIgnoreCase) -or
+                $entryPath.StartsWith('package/', [System.StringComparison]::OrdinalIgnoreCase) -or
+                [string]::Equals($entryPath, '[Content_Types].xml', [System.StringComparison]::OrdinalIgnoreCase) -or
+                ($entryPath -notmatch '/' -and [string]::Equals([System.IO.Path]::GetExtension($entryPath), '.nuspec', [System.StringComparison]::OrdinalIgnoreCase))) {
+                continue
+            }
+
+            $destinationPath = [System.IO.Path]::GetFullPath((Join-Path $extractRoot $entryPath.Replace('/', '\')))
+            if (-not $destinationPath.StartsWith($extractRoot + '\', [System.StringComparison]::OrdinalIgnoreCase)) {
+                throw "PackageManagement seed archive entry '$entryPath' escapes '$extractRoot'."
+            }
+            $destinationDirectory = Split-Path -Parent $destinationPath
+            if (-not (Test-Path -LiteralPath $destinationDirectory -PathType Container)) {
+                $null = New-Item -ItemType Directory -Path $destinationDirectory -Force
+            }
+            [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $destinationPath, $true)
+        }
+    }
+    finally {
+        $archive.Dispose()
+    }
+
+    $manifestPath = Join-Path $extractRoot 'PackageManagement.psd1'
+    if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
+        throw "PackageManagement seed '$($Artifact.Path)' does not contain PackageManagement.psd1."
+    }
+
+    $null = New-Item -ItemType Directory -Path $moduleNameRoot -Force
+    if (Test-Path -LiteralPath $targetRoot -PathType Container) {
+        Remove-Item -LiteralPath $targetRoot -Recurse -Force
+    }
+    Move-Item -LiteralPath $extractRoot -Destination $targetRoot
+    Write-Host "Seeded PackageManagement $($Artifact.RequiredVersion) directly under '$targetRoot' for scope '$Scope'."
+    return $targetRoot
+}
+
 function Expand-BootstrapInstallerHelper {
     param(
         [Parameter(Mandatory = $true)]
@@ -280,7 +387,12 @@ try {
         $latestInstalled = Find-LatestInstalledBootstrapModule -Name $artifact.ModuleName
         if (-not $latestInstalled -or $latestInstalled.Version -lt $artifact.RequiredVersionValue) {
             Write-Host "Installing $($artifact.ModuleName) $($artifact.RequiredVersion) from the offline bundle..."
-            $null = Invoke-BootstrapInstallerHelper -Operation Install -Artifact $artifact -HelperPath $helperPath -WorkDirectory $workDirectory -NugetDirectory $nugetDirectory -ProviderDirectory $providerDirectory -InstallScope $Scope
+            if ([string]::Equals([string]$artifact.ModuleName, 'PackageManagement', [System.StringComparison]::OrdinalIgnoreCase)) {
+                $null = Install-BootstrapPackageManagementSeed -Artifact $artifact -WorkDirectory $workDirectory -Scope $Scope
+            }
+            else {
+                $null = Invoke-BootstrapInstallerHelper -Operation Install -Artifact $artifact -HelperPath $helperPath -WorkDirectory $workDirectory -NugetDirectory $nugetDirectory -ProviderDirectory $providerDirectory -InstallScope $Scope
+            }
             $latestInstalled = Find-LatestInstalledBootstrapModule -Name $artifact.ModuleName
             if (-not $latestInstalled -or $latestInstalled.Version -lt $artifact.RequiredVersionValue) {
                 throw "PowerShell module '$($artifact.ModuleName)' version '$($artifact.RequiredVersion)' was not installed."

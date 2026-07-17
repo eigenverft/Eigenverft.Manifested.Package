@@ -99,6 +99,7 @@ exit 0
         $bootstrapContent = Get-Content -LiteralPath $bootstrapScriptPath -Raw
         $bootstrapContent | Should -Match 'function Get-BootstrapNupkgMetadata'
         $bootstrapContent | Should -Match 'function Find-LatestInstalledBootstrapModule'
+        $bootstrapContent | Should -Match 'function Install-BootstrapPackageManagementSeed'
         $bootstrapContent | Should -Match 'Import-Module -Name \$packageCheck\.Path -Force -ErrorAction Stop'
         $bootstrapContent | Should -Match 'Write-Host \(Get-PackageVersion\)'
         foreach ($packageArtifactId in @('package', 'packageManagementPackage', 'powerShellGetPackage')) {
@@ -207,6 +208,51 @@ exit 0
 
         $latest.Version.ToString() | Should -Be '3.0.0'
         $latest.ModuleBase | Should -Be (Join-Path $moduleRoot (Join-Path $moduleName '3.0.0'))
+    }
+
+    It 'seeds PackageManagement directly into the requested module root without NuGet packaging metadata' {
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        $layoutPath = Join-Path $TestDrive 'package-management-seed-layout'
+        $packagePath = Join-Path $TestDrive 'PackageManagement.1.4.8.1.nupkg'
+        $workDirectory = Join-Path $TestDrive 'package-management-seed-work'
+        $moduleInstallRoot = Join-Path $TestDrive 'package-management-seed-modules'
+        $null = New-Item -ItemType Directory -Path (Join-Path $layoutPath '_rels') -Force
+        $null = New-Item -ItemType Directory -Path (Join-Path $layoutPath 'package\services') -Force
+        "@{ RootModule = 'PackageManagement.psm1'; ModuleVersion = '1.4.8.1' }" | Set-Content -LiteralPath (Join-Path $layoutPath 'PackageManagement.psd1') -Encoding UTF8
+        '' | Set-Content -LiteralPath (Join-Path $layoutPath 'PackageManagement.psm1') -Encoding UTF8
+        '<package />' | Set-Content -LiteralPath (Join-Path $layoutPath 'PackageManagement.nuspec') -Encoding UTF8
+        '<Types />' | Set-Content -LiteralPath (Join-Path $layoutPath '[Content_Types].xml') -Encoding UTF8
+        '<Relationships />' | Set-Content -LiteralPath (Join-Path $layoutPath '_rels\.rels') -Encoding UTF8
+        'metadata' | Set-Content -LiteralPath (Join-Path $layoutPath 'package\services\metadata.txt') -Encoding UTF8
+        [System.IO.Compression.ZipFile]::CreateFromDirectory($layoutPath, $packagePath)
+
+        $bootstrapScriptPath = Join-Path $script:ModuleProjectRoot 'Bootstrap\Eigenverft.Manifested.Package.Bootstrap.ps1'
+        $tokens = $null
+        $parseErrors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile($bootstrapScriptPath, [ref]$tokens, [ref]$parseErrors)
+        $parseErrors | Should -BeNullOrEmpty
+        $functionAst = $ast.Find({
+                param($node)
+                $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                    $node.Name -eq 'Install-BootstrapPackageManagementSeed'
+            }, $true)
+        $functionAst | Should -Not -BeNullOrEmpty
+
+        $artifact = [pscustomobject]@{
+            ModuleName      = 'PackageManagement'
+            RequiredVersion = '1.4.8.1'
+            Path            = $packagePath
+        }
+        $targetRoot = & $functionAst.Body.GetScriptBlock() -Artifact $artifact -WorkDirectory $workDirectory -Scope CurrentUser -ModuleInstallRoot $moduleInstallRoot
+        $expectedRoot = Join-Path $moduleInstallRoot 'PackageManagement\1.4.8.1'
+
+        $targetRoot | Should -Be ([System.IO.Path]::GetFullPath($expectedRoot))
+        Test-Path -LiteralPath (Join-Path $expectedRoot 'PackageManagement.psd1') -PathType Leaf | Should -BeTrue
+        Test-Path -LiteralPath (Join-Path $expectedRoot 'PackageManagement.psm1') -PathType Leaf | Should -BeTrue
+        Test-Path -LiteralPath (Join-Path $expectedRoot 'PackageManagement.nuspec') | Should -BeFalse
+        Test-Path -LiteralPath (Join-Path $expectedRoot '[Content_Types].xml') | Should -BeFalse
+        Test-Path -LiteralPath (Join-Path $expectedRoot '_rels') | Should -BeFalse
+        Test-Path -LiteralPath (Join-Path $expectedRoot 'package') | Should -BeFalse
     }
 
     It 'shows the installed package version summary before returning an interactive prompt' {
