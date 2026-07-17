@@ -107,7 +107,10 @@ Resolve-PackageSource -SourceDefinition $source -AcquisitionCandidate $candidate
         [psobject]$AcquisitionCandidate,
 
         [AllowNull()]
-        [psobject]$Package
+        [psobject]$Package,
+
+        [AllowNull()]
+        [psobject]$ArtifactFile
     )
 
     switch -Exact ([string]$SourceDefinition.Kind) {
@@ -145,15 +148,12 @@ Resolve-PackageSource -SourceDefinition $source -AcquisitionCandidate $candidate
             if (-not $Package.PSObject.Properties['releaseTag'] -or [string]::IsNullOrWhiteSpace([string]$Package.releaseTag)) {
                 throw "Package release '$($Package.id)' requires releaseTag when acquisition uses GitHub release source '$($SourceDefinition.Id)'."
             }
-            if (-not $Package.PSObject.Properties['packageFile'] -or
-                $null -eq $Package.packageFile -or
-                -not $Package.packageFile.PSObject.Properties['fileName'] -or
-                [string]::IsNullOrWhiteSpace([string]$Package.packageFile.fileName)) {
-                throw "Package release '$($Package.id)' requires packageFile.fileName when acquisition uses GitHub release source '$($SourceDefinition.Id)'."
+            if (-not $ArtifactFile -or [string]::IsNullOrWhiteSpace([string]$ArtifactFile.RelativePath)) {
+                throw "Package release '$($Package.id)' requires artifact file context when acquisition uses GitHub release source '$($SourceDefinition.Id)'."
             }
 
             $release = Get-GitHubRelease -RepositoryOwner $SourceDefinition.GitHubOwner -RepositoryName $SourceDefinition.GitHubRepository -ReleaseTag ([string]$Package.releaseTag)
-            $assetName = [string]$Package.packageFile.fileName
+            $assetName = Split-Path -Leaf ([string]$ArtifactFile.RelativePath)
             $matchedAsset = @(
                 $release.Assets | Where-Object {
                     [string]::Equals([string]$_.Name, $assetName, [System.StringComparison]::OrdinalIgnoreCase)
@@ -452,10 +452,10 @@ Save-PackageFilesystemFile -SourcePath \\server\share\package.zip -TargetPath C:
     return (Copy-FileToPath -SourcePath $SourcePath -TargetPath $TargetPath -Overwrite)
 }
 
-function Test-PackagePackageFileAcquisitionRequired {
+function Test-PackageArtifactFileAcquisitionRequired {
 <#
 .SYNOPSIS
-Determines whether the selected release needs an acquired package file.
+    Determines whether the selected release has required static artifact files.
 
 .DESCRIPTION
 Interprets the current install kind so acquisition is skipped for install flows
@@ -465,7 +465,7 @@ that do not consume a saved package file.
 The selected release object.
 
 .EXAMPLE
-Test-PackagePackageFileAcquisitionRequired -Package $package
+Test-PackageArtifactFileAcquisitionRequired -Package $package
 #>
     [CmdletBinding()]
     [OutputType([bool])]
@@ -474,26 +474,7 @@ Test-PackagePackageFileAcquisitionRequired -Package $package
         [psobject]$Package
     )
 
-    $assignedInstall = Get-PackageAssignedInstallOperation -Release $Package
-    $installKind = if ($assignedInstall -and $assignedInstall.PSObject.Properties['kind']) {
-        [string]$assignedInstall.kind
-    }
-    else {
-        $null
-    }
-
-    switch -Exact ($installKind) {
-        'expandArchive' { return $true }
-        'placePackageFile' { return $true }
-        'nsisInstaller' { return $true }
-        'innoSetupInstaller' { return $true }
-        'msiInstaller' { return $true }
-        'powershellModuleInstaller' { return $true }
-        'runInstaller' {
-            return (-not $assignedInstall.PSObject.Properties['commandPath'] -or [string]::IsNullOrWhiteSpace([string]$assignedInstall.commandPath))
-        }
-        default { return $false }
-    }
+    return [bool]($Package.PSObject.Properties['artifactFiles'] -and @($Package.artifactFiles).Count -gt 0)
 }
 
 function Get-PackagePreferredVerification {
@@ -533,13 +514,16 @@ The raw acquisition candidate.
         [Parameter(Mandatory = $true)]
         [psobject]$Package,
 
+        [Parameter(Mandatory = $true)]
+        [psobject]$ArtifactFile,
+
         [AllowNull()]
         [psobject]$AcquisitionCandidate,
 
         [ValidateSet('off', 'warnWhenPackageFileExists', 'enforceWhenPackageFileExists', 'enforceAllAcquisition')]
         [string]$PayloadVerificationPolicy = 'off',
 
-        [bool]$PackageFileRequired = $false
+        [bool]$ArtifactFileRequired = $false
     )
 
     $candidateVerification = if ($AcquisitionCandidate -and $AcquisitionCandidate.PSObject.Properties['verification']) {
@@ -552,11 +536,8 @@ The raw acquisition candidate.
         $candidateVerification = [pscustomobject]$candidateVerification
     }
 
-    $packageContentHash = if ($Package -and
-        $Package.PSObject.Properties['packageFile'] -and
-        $Package.packageFile -and
-        $Package.packageFile.PSObject.Properties['contentHash']) {
-        $Package.packageFile.contentHash
+    $packageContentHash = if ($ArtifactFile.PSObject.Properties['ContentHash']) {
+        $ArtifactFile.ContentHash
     }
     else {
         $null
@@ -565,11 +546,8 @@ The raw acquisition candidate.
         $packageContentHash = [pscustomobject]$packageContentHash
     }
 
-    $packagePublisherSignature = if ($Package -and
-        $Package.PSObject.Properties['packageFile'] -and
-        $Package.packageFile -and
-        $Package.packageFile.PSObject.Properties['publisherSignature']) {
-        $Package.packageFile.publisherSignature
+    $packagePublisherSignature = if ($ArtifactFile.PSObject.Properties['PublisherSignature']) {
+        $ArtifactFile.PublisherSignature
     }
     else {
         $null
@@ -578,31 +556,27 @@ The raw acquisition candidate.
         $packagePublisherSignature = [pscustomobject]$packagePublisherSignature
     }
 
-    $packageFilePresent = $Package -and
-        $Package.PSObject.Properties['packageFile'] -and
-        $Package.packageFile -and
-        $Package.packageFile.PSObject.Properties['fileName'] -and
-        -not [string]::IsNullOrWhiteSpace([string]$Package.packageFile.fileName)
+    $packageFilePresent = -not [string]::IsNullOrWhiteSpace([string]$ArtifactFile.RelativePath)
     $packageContentHashPresent = $packageContentHash -and
         $packageContentHash.PSObject.Properties['value'] -and
         -not [string]::IsNullOrWhiteSpace([string]$packageContentHash.value)
     $packagePublisherSignaturePresent = $null -ne $packagePublisherSignature
     $packageBoundaryPresent = $packageContentHashPresent -or $packagePublisherSignaturePresent
     $payloadVerificationRequired = switch -Exact ($PayloadVerificationPolicy) {
-        'enforceWhenPackageFileExists' { [bool]($PackageFileRequired -and $packageFilePresent) }
-        'enforceAllAcquisition' { [bool]$PackageFileRequired }
+        'enforceWhenPackageFileExists' { [bool]($ArtifactFileRequired -and $packageFilePresent) }
+        'enforceAllAcquisition' { [bool]$ArtifactFileRequired }
         default { $false }
     }
     $payloadVerificationWarnOnly = [string]::Equals($PayloadVerificationPolicy, 'warnWhenPackageFileExists', [System.StringComparison]::OrdinalIgnoreCase) -and
-        $PackageFileRequired -and
+        $ArtifactFileRequired -and
         $packageFilePresent -and
         -not $packageBoundaryPresent
 
     if ($payloadVerificationRequired -and -not $packageBoundaryPresent) {
-        throw "Catalog payload policy '$PayloadVerificationPolicy' requires packageFile.contentHash or packageFile.publisherSignature for package '$([string]$Package.id)' because package-file acquisition is required."
+        throw "Catalog payload policy '$PayloadVerificationPolicy' requires contentHash or publisherSignature for artifact file '$([string]$ArtifactFile.Id)' in package '$([string]$Package.id)'."
     }
     if ($payloadVerificationWarnOnly) {
-        Write-PackageExecutionMessage -Level 'WRN' -Message ("[WARN] Catalog payload policy '{0}' found no packageFile.contentHash or packageFile.publisherSignature for package '{1}'." -f $PayloadVerificationPolicy, [string]$Package.id)
+        Write-PackageExecutionMessage -Level 'WRN' -Message ("[WARN] Catalog payload policy '{0}' found no trust boundary for artifact file '{1}' in package '{2}'." -f $PayloadVerificationPolicy, [string]$ArtifactFile.Id, [string]$Package.id)
     }
 
     $mode = if ($candidateVerification -and $candidateVerification.PSObject.Properties['mode'] -and -not [string]::IsNullOrWhiteSpace([string]$candidateVerification.mode)) {
@@ -765,64 +739,374 @@ function Test-PackageDepotDistributionFileMatches {
     }
 }
 
-function Resolve-PackageDepotDistributionSourceArtifact {
+function Get-PackageArtifactFileResult {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$PackageResult,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ArtifactFileId
+    )
+
+    return @($PackageResult.ArtifactFiles | Where-Object {
+            [string]::Equals([string]$_.Id, $ArtifactFileId, [System.StringComparison]::OrdinalIgnoreCase)
+        }) | Select-Object -First 1
+}
+
+function Build-PackageAcquisitionPlan {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
         [psobject]$PackageResult
     )
 
-    if (-not $PackageResult.Package -or
-        -not $PackageResult.Package.PSObject.Properties['packageFile'] -or
-        -not $PackageResult.Package.packageFile -or
-        -not $PackageResult.Package.packageFile.PSObject.Properties['fileName'] -or
-        [string]::IsNullOrWhiteSpace([string]$PackageResult.Package.packageFile.fileName)) {
-        return $null
+    $package = $PackageResult.Package
+    if (-not $package) {
+        throw 'Build-PackageAcquisitionPlan requires a selected release.'
     }
 
-    $orderedCandidates = if ($PackageResult.AcquisitionPlan) { @($PackageResult.AcquisitionPlan.Candidates) } else { @() }
+    $offline = $PackageResult.PSObject.Properties['Offline'] -and [bool]$PackageResult.Offline
+    $payloadVerificationPolicy = if ($PackageResult.PackageConfig -and
+        $PackageResult.PackageConfig.PSObject.Properties['CatalogTrustPayloadVerification'] -and
+        -not [string]::IsNullOrWhiteSpace([string]$PackageResult.PackageConfig.CatalogTrustPayloadVerification)) {
+        [string]$PackageResult.PackageConfig.CatalogTrustPayloadVerification
+    }
+    else {
+        'off'
+    }
+
+    $filePlans = New-Object System.Collections.Generic.List[object]
+    $skippedOfflineCandidateCount = 0
+    foreach ($artifactFile in @($PackageResult.ArtifactFiles)) {
+        $orderedCandidates = New-Object System.Collections.Generic.List[object]
+        foreach ($candidate in @($artifactFile.AcquisitionCandidates | Sort-Object -Property @{
+                    Expression = { if ($_.PSObject.Properties['searchOrder']) { [int]$_.searchOrder } else { [int]::MaxValue } }
+                })) {
+            $candidateKind = [string]$candidate.kind
+            if ($offline -and $candidateKind -notin @('packageDepot', 'archiveEntry')) {
+                $skippedOfflineCandidateCount++
+                continue
+            }
+
+            $resolvedVerification = Resolve-PackageAcquisitionCandidateVerification `
+                -Package $package `
+                -ArtifactFile $artifactFile `
+                -AcquisitionCandidate $candidate `
+                -PayloadVerificationPolicy $payloadVerificationPolicy `
+                -ArtifactFileRequired $true
+            $searchOrder = if ($candidate.PSObject.Properties['searchOrder']) { [int]$candidate.searchOrder } else { [int]::MaxValue }
+
+            switch -Exact ($candidateKind) {
+                'packageDepot' {
+                    $sourcePath = Join-Path $PackageResult.PackageDepotRelativeDirectory ([string]$artifactFile.RelativePath)
+                    foreach ($depotSource in @(Get-PackagePackageDepotSources -PackageConfig $PackageResult.PackageConfig)) {
+                        $orderedCandidates.Add([pscustomobject]@{
+                                kind              = 'packageDepot'
+                                searchOrder       = $searchOrder
+                                sourceSearchOrder = [int]$depotSource.searchOrder
+                                sourceRef         = [pscustomobject]@{ scope = 'environment'; id = [string]$depotSource.id }
+                                sourcePath        = $sourcePath
+                                verification      = $resolvedVerification
+                            }) | Out-Null
+                    }
+                }
+                'vendorDownload' {
+                    $orderedCandidates.Add([pscustomobject]@{
+                            kind              = 'vendorDownload'
+                            searchOrder       = $searchOrder
+                            sourceSearchOrder = 1000
+                            sourceRef         = if ($candidate.PSObject.Properties['sourceId'] -and -not [string]::IsNullOrWhiteSpace([string]$candidate.sourceId)) {
+                                [pscustomobject]@{ scope = 'definition'; id = [string]$candidate.sourceId }
+                            }
+                            else { $null }
+                            sourcePath        = if ($candidate.PSObject.Properties['sourcePath']) { [string]$candidate.sourcePath } else { $null }
+                            url               = if ($candidate.PSObject.Properties['url']) { [string]$candidate.url } else { $null }
+                            verification      = $resolvedVerification
+                        }) | Out-Null
+                }
+                'archiveEntry' {
+                    $orderedCandidates.Add([pscustomobject]@{
+                            kind                 = 'archiveEntry'
+                            searchOrder          = $searchOrder
+                            sourceSearchOrder    = 1000
+                            sourceArtifactFileId = [string]$candidate.sourceArtifactFileId
+                            entryPath            = [string]$candidate.entryPath
+                            verification         = $resolvedVerification
+                        }) | Out-Null
+                }
+                default {
+                    throw "Unsupported artifact acquisition candidate kind '$candidateKind'."
+                }
+            }
+        }
+
+        $plan = [pscustomobject]@{
+            ArtifactFileId      = [string]$artifactFile.Id
+            StagingPath         = [string]$artifactFile.StagingPath
+            DefaultDepotPath    = [string]$artifactFile.DefaultDepotPath
+            Offline             = $offline
+            Candidates          = @($orderedCandidates.ToArray() | Sort-Object -Property searchOrder, sourceSearchOrder, @{
+                    Expression = { if ($_.sourceRef) { [string]$_.sourceRef.id } else { [string]::Empty } }
+                })
+        }
+        $artifactFile.AcquisitionPlan = $plan
+        $filePlans.Add($plan) | Out-Null
+    }
+
+    $PackageResult.ArtifactAcquisitionPlan = [pscustomobject]@{
+        ArtifactFilesRequired        = @($PackageResult.ArtifactFiles).Count -gt 0
+        ArtifactStagingDirectory     = [string]$PackageResult.ArtifactStagingDirectory
+        Offline                      = $offline
+        SkippedOfflineCandidateCount = $skippedOfflineCandidateCount
+        Files                        = @($filePlans.ToArray())
+    }
+    Write-PackageExecutionMessage -Message ("[STATE] Acquisition plans built for {0} required artifact file(s); offline='{1}'." -f $filePlans.Count, $offline)
+    return $PackageResult
+}
+
+function Expand-PackageDeclaredArchiveEntry {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ArchivePath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$EntryPath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TargetPath
+    )
+
+    $normalizedEntryPath = $EntryPath.Replace('\', '/').TrimStart('/')
+    if ([string]::IsNullOrWhiteSpace($normalizedEntryPath) -or
+        [System.IO.Path]::IsPathRooted($EntryPath) -or
+        @($normalizedEntryPath.Split('/') | Where-Object { $_ -in @('', '.', '..') }).Count -gt 0) {
+        throw "Archive entry path '$EntryPath' is unsafe."
+    }
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction SilentlyContinue
+    $archive = [System.IO.Compression.ZipFile]::OpenRead($ArchivePath)
+    try {
+        $matches = @($archive.Entries | Where-Object {
+                [string]::Equals($_.FullName.Replace('\', '/').TrimStart('/'), $normalizedEntryPath, [System.StringComparison]::OrdinalIgnoreCase)
+            })
+        if ($matches.Count -ne 1 -or [string]::IsNullOrWhiteSpace([string]$matches[0].Name)) {
+            throw "Archive '$ArchivePath' must contain exactly one file entry named '$EntryPath'; found $($matches.Count)."
+        }
+
+        $targetDirectory = Split-Path -Parent $TargetPath
+        $null = New-Item -ItemType Directory -Path $targetDirectory -Force
+        $inputStream = $matches[0].Open()
+        try {
+            $outputStream = [System.IO.File]::Open($TargetPath, [System.IO.FileMode]::CreateNew, [System.IO.FileAccess]::Write, [System.IO.FileShare]::None)
+            try { $inputStream.CopyTo($outputStream) }
+            finally { $outputStream.Dispose() }
+        }
+        finally { $inputStream.Dispose() }
+    }
+    finally { $archive.Dispose() }
+
+    return (Resolve-Path -LiteralPath $TargetPath -ErrorAction Stop).Path
+}
+
+function Resolve-PackageArtifactFile {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$PackageResult,
+
+        [Parameter(Mandatory = $true)]
+        [psobject]$ArtifactFile,
+
+        [Parameter(Mandatory = $true)]
+        [hashtable]$ResolutionState,
+
+        [Parameter(Mandatory = $true)]
+        [hashtable]$Visiting
+    )
+
+    $artifactFileId = [string]$ArtifactFile.Id
+    if ($ResolutionState.ContainsKey($artifactFileId)) {
+        return [bool]$ResolutionState[$artifactFileId]
+    }
+    if ($Visiting.ContainsKey($artifactFileId)) {
+        throw "Artifact acquisition cycle encountered while resolving '$artifactFileId'."
+    }
+    $Visiting[$artifactFileId] = $true
+
+    $attempts = New-Object System.Collections.Generic.List[object]
+    $orderedCandidates = @($ArtifactFile.AcquisitionPlan.Candidates)
     $preferredVerification = Get-PackagePreferredVerification -AcquisitionCandidates $orderedCandidates
     $offline = $PackageResult.PSObject.Properties['Offline'] -and [bool]$PackageResult.Offline
 
-    if ((-not $offline) -and
-        -not [string]::IsNullOrWhiteSpace([string]$PackageResult.PackageFilePath) -and
-        (Test-Path -LiteralPath $PackageResult.PackageFilePath -PathType Leaf)) {
-        $verification = Test-PackageSavedFile -Path $PackageResult.PackageFilePath -Verification $preferredVerification
+    if ((-not $offline) -and (Test-Path -LiteralPath $ArtifactFile.StagingPath -PathType Leaf)) {
+        $verification = Test-PackageSavedFile -Path $ArtifactFile.StagingPath -Verification $preferredVerification
+        $attempts.Add([pscustomobject]@{
+                AttemptType = 'ReuseCheck'; Status = if ($verification.Accepted) { 'ReusedArtifactFile' } else { 'ReuseRejected' }
+                SourceScope = 'artifactStaging'; SourceId = $artifactFileId; SourceKind = 'filesystem'
+                ResolvedSource = [string]$ArtifactFile.StagingPath; VerificationStatus = $verification.Status
+                ErrorMessage = if ($verification.Accepted) { $null } else { 'Existing staged artifact did not satisfy verification.' }
+            }) | Out-Null
         if ($verification.Accepted) {
-            return [pscustomobject]@{
-                SourcePath   = [string]$PackageResult.PackageFilePath
-                SourceScope  = 'packageFileStaging'
-                SourceId     = 'packageFileStaging'
-                SourceKind   = 'filesystem'
-                Verification = $verification
+            $ArtifactFile.Verification = $verification
+            $ArtifactFile.Preparation = [pscustomobject]@{
+                Success = $true; Status = 'ReusedArtifactFile'; ArtifactFileId = $artifactFileId
+                StagingPath = [string]$ArtifactFile.StagingPath; SelectedSource = [pscustomobject]@{
+                    SourceScope = 'artifactStaging'; SourceId = $artifactFileId; SourceKind = 'filesystem'; ResolvedSource = [string]$ArtifactFile.StagingPath
+                }
+                Verification = $verification; Attempts = @($attempts.ToArray()); FailureReason = $null; ErrorMessage = $null
             }
+            $ResolutionState[$artifactFileId] = $true
+            $Visiting.Remove($artifactFileId)
+            return $true
         }
     }
 
-    $packageFileName = [string]$PackageResult.Package.packageFile.fileName
-    foreach ($depotSource in @(Get-PackagePackageDepotSources -PackageConfig $PackageResult.PackageConfig)) {
-        if ([string]::IsNullOrWhiteSpace([string]$depotSource.basePath)) {
-            continue
-        }
-        $candidateDirectory = [System.IO.Path]::GetFullPath((Join-Path ([string]$depotSource.basePath) $PackageResult.PackageDepotRelativeDirectory))
-        $candidatePath = Join-Path $candidateDirectory $packageFileName
-        if (-not (Test-Path -LiteralPath $candidatePath -PathType Leaf)) {
-            continue
-        }
-
-        $verification = Test-PackageSavedFile -Path $candidatePath -Verification $preferredVerification
-        if ($verification.Accepted) {
-            return [pscustomobject]@{
-                SourcePath   = $candidatePath
-                SourceScope  = 'environment'
-                SourceId     = [string]$depotSource.id
-                SourceKind   = 'filesystem'
-                Verification = $verification
+    $targetDirectory = Split-Path -Parent ([string]$ArtifactFile.StagingPath)
+    $null = New-Item -ItemType Directory -Path $targetDirectory -Force
+    foreach ($candidate in $orderedCandidates) {
+        $sourceDefinition = $null
+        $resolvedSource = $null
+        $verification = $null
+        $partialPath = '{0}.{1}.partial' -f $ArtifactFile.StagingPath, ([guid]::NewGuid().ToString('N'))
+        try {
+            if ([string]::Equals([string]$candidate.kind, 'archiveEntry', [System.StringComparison]::OrdinalIgnoreCase)) {
+                $sourceArtifactFile = Get-PackageArtifactFileResult -PackageResult $PackageResult -ArtifactFileId ([string]$candidate.sourceArtifactFileId)
+                if (-not $sourceArtifactFile) {
+                    throw "Artifact file '$artifactFileId' references missing source artifact file '$($candidate.sourceArtifactFileId)'."
+                }
+                if (-not (Resolve-PackageArtifactFile -PackageResult $PackageResult -ArtifactFile $sourceArtifactFile -ResolutionState $ResolutionState -Visiting $Visiting)) {
+                    throw "Source artifact file '$($candidate.sourceArtifactFileId)' could not be prepared."
+                }
+                $sourceDefinition = [pscustomobject]@{ Scope = 'artifact'; Id = [string]$sourceArtifactFile.Id; Kind = 'archiveEntry' }
+                $resolvedSource = [pscustomobject]@{ Kind = 'archiveEntry'; ResolvedSource = [string]$sourceArtifactFile.StagingPath }
+                $null = Expand-PackageDeclaredArchiveEntry -ArchivePath $sourceArtifactFile.StagingPath -EntryPath ([string]$candidate.entryPath) -TargetPath $partialPath
             }
+            else {
+                if ($candidate.sourceRef) {
+                    $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $PackageResult.PackageConfig -SourceRef $candidate.sourceRef
+                }
+                elseif ([string]::Equals([string]$candidate.kind, 'vendorDownload', [System.StringComparison]::OrdinalIgnoreCase) -and
+                    -not [string]::IsNullOrWhiteSpace([string]$candidate.url)) {
+                    $sourceDefinition = [pscustomobject]@{
+                        Scope = 'direct'; Id = 'directDownload'; Kind = 'download'; BaseUri = $null; BasePath = $null
+                        GitHubOwner = $null; GitHubRepository = $null
+                    }
+                }
+                else {
+                    throw "Artifact acquisition candidate kind '$($candidate.kind)' could not be resolved to a source definition."
+                }
+                $resolvedSource = Resolve-PackageSource -SourceDefinition $sourceDefinition -AcquisitionCandidate $candidate -Package $PackageResult.Package -ArtifactFile $ArtifactFile
+                switch -Exact ([string]$resolvedSource.Kind) {
+                    'download' { $null = Save-PackageDownloadFile -Uri $resolvedSource.ResolvedSource -TargetPath $partialPath }
+                    'filesystem' { $null = Save-PackageFilesystemFile -SourcePath $resolvedSource.ResolvedSource -TargetPath $partialPath }
+                    default { throw "Unsupported artifact source kind '$($resolvedSource.Kind)'." }
+                }
+            }
+
+            $verification = Test-PackageSavedFile -Path $partialPath -Verification $candidate.verification
+            if (-not $verification.Accepted) {
+                throw "Prepared artifact file '$artifactFileId' did not satisfy verification ($($verification.Status))."
+            }
+
+            if (Test-Path -LiteralPath $ArtifactFile.StagingPath) {
+                Remove-Item -LiteralPath $ArtifactFile.StagingPath -Force
+            }
+            Move-Item -LiteralPath $partialPath -Destination $ArtifactFile.StagingPath -Force
+            $selectedSource = [pscustomobject]@{
+                SourceScope = [string]$sourceDefinition.Scope; SourceId = [string]$sourceDefinition.Id
+                SourceKind = [string]$resolvedSource.Kind; ResolvedSource = [string]$resolvedSource.ResolvedSource
+            }
+            $preparedStatus = if ($candidate.kind -eq 'archiveEntry') {
+                'ExtractedArchiveEntry'
+            }
+            elseif ($candidate.kind -eq 'packageDepot' -and $sourceDefinition.Id -eq 'defaultPackageDepot') {
+                'HydratedFromDefaultPackageDepot'
+            }
+            elseif ($candidate.kind -eq 'packageDepot') {
+                'HydratedFromPackageDepot'
+            }
+            else { 'SavedArtifactFile' }
+            $attempts.Add([pscustomobject]@{
+                    AttemptType = 'Save'; Status = $preparedStatus
+                    SourceScope = $selectedSource.SourceScope; SourceId = $selectedSource.SourceId; SourceKind = $selectedSource.SourceKind
+                    ResolvedSource = $selectedSource.ResolvedSource; VerificationStatus = $verification.Status; ErrorMessage = $null
+                }) | Out-Null
+            $ArtifactFile.Verification = $verification
+            $ArtifactFile.Preparation = [pscustomobject]@{
+                Success = $true; Status = $attempts[$attempts.Count - 1].Status; ArtifactFileId = $artifactFileId
+                StagingPath = [string]$ArtifactFile.StagingPath; SelectedSource = $selectedSource; Verification = $verification
+                Attempts = @($attempts.ToArray()); FailureReason = $null; ErrorMessage = $null
+            }
+            $ResolutionState[$artifactFileId] = $true
+            $Visiting.Remove($artifactFileId)
+            Write-PackageExecutionMessage -Message ("[ACTION] Prepared artifact file '{0}' from '{1}:{2}'." -f $artifactFileId, $selectedSource.SourceScope, $selectedSource.SourceId)
+            return $true
+        }
+        catch {
+            if (Test-Path -LiteralPath $partialPath) {
+                Remove-Item -LiteralPath $partialPath -Force -ErrorAction SilentlyContinue
+            }
+            $attempts.Add([pscustomobject]@{
+                    AttemptType = 'Save'; Status = 'Failed'
+                    SourceScope = if ($sourceDefinition) { [string]$sourceDefinition.Scope } elseif ($candidate.sourceRef) { [string]$candidate.sourceRef.scope } else { $null }
+                    SourceId = if ($sourceDefinition) { [string]$sourceDefinition.Id } elseif ($candidate.sourceRef) { [string]$candidate.sourceRef.id } else { $null }
+                    SourceKind = if ($resolvedSource) { [string]$resolvedSource.Kind } else { [string]$candidate.kind }
+                    ResolvedSource = if ($resolvedSource) { [string]$resolvedSource.ResolvedSource } else { $null }
+                    VerificationStatus = if ($verification) { [string]$verification.Status } else { $null }
+                    ErrorMessage = $_.Exception.Message
+                }) | Out-Null
+            if (-not $PackageResult.PackageConfig.AllowAcquisitionFallback) { break }
         }
     }
 
-    return $null
+    $failureReason = if ($offline) { 'DepotMiss' } else { 'AllSourcesFailed' }
+    $ArtifactFile.Preparation = [pscustomobject]@{
+        Success = $false; Status = 'Failed'; ArtifactFileId = $artifactFileId; StagingPath = [string]$ArtifactFile.StagingPath
+        SelectedSource = $null; Verification = $null; Attempts = @($attempts.ToArray()); FailureReason = $failureReason
+        ErrorMessage = "No verified acquisition candidate produced required artifact file '$artifactFileId'."
+    }
+    $ResolutionState[$artifactFileId] = $false
+    $Visiting.Remove($artifactFileId)
+    return $false
+}
+
+function Resolve-PackageArtifactFiles {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$PackageResult
+    )
+
+    if (-not $PackageResult.ArtifactAcquisitionPlan) {
+        $PackageResult = Build-PackageAcquisitionPlan -PackageResult $PackageResult
+    }
+
+    if (@($PackageResult.ArtifactFiles).Count -eq 0) {
+        $PackageResult.ArtifactPreparation = [pscustomobject]@{ Success = $true; Status = 'Skipped'; Files = @(); MissingArtifactFiles = @() }
+        return $PackageResult
+    }
+
+    $state = @{}
+    foreach ($artifactFile in @($PackageResult.ArtifactFiles)) {
+        $null = Resolve-PackageArtifactFile -PackageResult $PackageResult -ArtifactFile $artifactFile -ResolutionState $state -Visiting @{}
+    }
+    $missing = @($PackageResult.ArtifactFiles | Where-Object { -not $_.Preparation -or -not [bool]$_.Preparation.Success })
+    $PackageResult.ArtifactPreparation = [pscustomobject]@{
+        Success = $missing.Count -eq 0
+        Status = if ($missing.Count -eq 0) { 'Prepared' } else { 'Failed' }
+        Files = @($PackageResult.ArtifactFiles | ForEach-Object { $_.Preparation })
+        MissingArtifactFiles = @($missing | ForEach-Object {
+                [pscustomobject]@{ Id = [string]$_.Id; RelativePath = [string]$_.RelativePath; ExpectedDepotPath = [string]$_.DefaultDepotPath }
+            })
+    }
+    if ($missing.Count -gt 0) {
+        $details = @($missing | ForEach-Object { "'$($_.Id)' at '$($_.DefaultDepotPath)'" }) -join ', '
+        throw "Required artifact file acquisition failed for package '$($PackageResult.Package.id)': $details."
+    }
+
+    return $PackageResult
 }
 
 function Resolve-PackageDepotDistributionPlan {
@@ -836,135 +1120,51 @@ function Resolve-PackageDepotDistributionPlan {
         -not [string]::IsNullOrWhiteSpace([string]$PackageResult.PackageConfig.DepotDistributionMode)) {
         [string]$PackageResult.PackageConfig.DepotDistributionMode
     }
-    else {
-        'packageFocused'
-    }
+    else { 'packageFocused' }
 
     $actions = New-Object System.Collections.Generic.List[object]
-    $result = [pscustomobject]@{
-        Mode       = $mode
-        Status     = 'Skipped'
-        Reason     = $null
-        SourcePath = $null
-        SourceScope = $null
-        SourceId   = $null
-        Actions    = @()
-    }
-
+    $result = [pscustomobject]@{ Mode = $mode; Status = 'Skipped'; Reason = $null; Actions = @() }
     if ([string]::Equals($mode, 'disabled', [System.StringComparison]::OrdinalIgnoreCase)) {
         $result.Reason = 'DisabledByPolicy'
         return $result
     }
+    if (@($PackageResult.ArtifactFiles).Count -eq 0) {
+        $result.Reason = 'NoArtifactFiles'
+        return $result
+    }
+    if (-not $PackageResult.ArtifactPreparation -or -not [bool]$PackageResult.ArtifactPreparation.Success) {
+        throw 'Depot distribution requires the complete verified artifact file set.'
+    }
 
-    if (-not $PackageResult.Package -or
-        -not $PackageResult.Package.PSObject.Properties['packageFile'] -or
-        -not $PackageResult.Package.packageFile -or
-        -not $PackageResult.Package.packageFile.PSObject.Properties['fileName'] -or
-        [string]::IsNullOrWhiteSpace([string]$PackageResult.Package.packageFile.fileName)) {
-        $result.Reason = 'PackageFileNotRequired'
+    $targets = @(Get-PackageDepotDistributionTargets -PackageConfig $PackageResult.PackageConfig)
+    if ($targets.Count -eq 0) {
+        $result.Reason = 'NoWritableMirrorTargets'
         return $result
     }
 
-    $sourceArtifact = Resolve-PackageDepotDistributionSourceArtifact -PackageResult $PackageResult
-    if (-not $sourceArtifact) {
-        $result.Reason = 'NoVerifiedArtifact'
-        return $result
+    foreach ($artifactFile in @($PackageResult.ArtifactFiles)) {
+        if (-not (Test-Path -LiteralPath $artifactFile.StagingPath -PathType Leaf)) {
+            throw "Verified staging file for artifact '$($artifactFile.Id)' is missing."
+        }
+        foreach ($target in $targets) {
+            if (-not [string]::Equals([string]$target.kind, 'filesystem', [System.StringComparison]::OrdinalIgnoreCase) -or
+                [string]::IsNullOrWhiteSpace([string]$target.basePath)) {
+                continue
+            }
+            $targetPackageDirectory = Resolve-PackageArtifactChildPath -RootPath ([string]$target.basePath) -RelativePath ([string]$PackageResult.PackageDepotRelativeDirectory) -ArtifactFileId ([string]$artifactFile.Id)
+            $targetPath = Resolve-PackageArtifactChildPath -RootPath $targetPackageDirectory -RelativePath ([string]$artifactFile.RelativePath) -ArtifactFileId ([string]$artifactFile.Id)
+            $comparison = Test-PackageDepotDistributionFileMatches -SourcePath ([string]$artifactFile.StagingPath) -TargetPath $targetPath
+            $actions.Add([pscustomobject]@{
+                    ArtifactFileId = [string]$artifactFile.Id; DepotId = [string]$target.id
+                    SourcePath = [string]$artifactFile.StagingPath; TargetPath = $targetPath
+                    Action = if ($comparison.Matches) { 'Skip' } else { 'Copy' }
+                    Status = if ($comparison.Matches) { 'Skipped' } else { 'Pending' }
+                    Reason = [string]$comparison.Reason; EnsureExists = [bool]$target.ensureExists; ErrorMessage = $null
+                }) | Out-Null
+        }
     }
 
     $result.Status = 'Planned'
-    $result.SourcePath = [string]$sourceArtifact.SourcePath
-    $result.SourceScope = [string]$sourceArtifact.SourceScope
-    $result.SourceId = [string]$sourceArtifact.SourceId
-
-    $sourceFullPath = [System.IO.Path]::GetFullPath([string]$sourceArtifact.SourcePath)
-    $packageFileName = [string]$PackageResult.Package.packageFile.fileName
-    foreach ($mirrorSource in @(Get-PackageDepotDistributionTargets -PackageConfig $PackageResult.PackageConfig)) {
-        if (-not [string]::Equals([string]$mirrorSource.kind, 'filesystem', [System.StringComparison]::OrdinalIgnoreCase)) {
-            $actions.Add([pscustomobject]@{
-                DepotId      = [string]$mirrorSource.id
-                Action       = 'Skip'
-                Status       = 'Skipped'
-                Reason       = 'UnsupportedDepotKind'
-                SourcePath   = $sourceFullPath
-                TargetPath   = $null
-                EnsureExists = [bool]$mirrorSource.ensureExists
-                ErrorMessage = $null
-            }) | Out-Null
-            continue
-        }
-        if ([string]::IsNullOrWhiteSpace([string]$mirrorSource.basePath)) {
-            $actions.Add([pscustomobject]@{
-                DepotId      = [string]$mirrorSource.id
-                Action       = 'Skip'
-                Status       = 'Skipped'
-                Reason       = 'MissingBasePath'
-                SourcePath   = $sourceFullPath
-                TargetPath   = $null
-                EnsureExists = [bool]$mirrorSource.ensureExists
-                ErrorMessage = $null
-            }) | Out-Null
-            continue
-        }
-
-        $targetDirectory = [System.IO.Path]::GetFullPath((Join-Path ([string]$mirrorSource.basePath) $PackageResult.PackageDepotRelativeDirectory))
-        $targetPath = Join-Path $targetDirectory $packageFileName
-        $targetFullPath = [System.IO.Path]::GetFullPath($targetPath)
-        if ([string]::Equals($sourceFullPath, $targetFullPath, [System.StringComparison]::OrdinalIgnoreCase)) {
-            $actions.Add([pscustomobject]@{
-                DepotId      = [string]$mirrorSource.id
-                Action       = 'Skip'
-                Status       = 'Skipped'
-                Reason       = 'SourceIsTarget'
-                SourcePath   = $sourceFullPath
-                TargetPath   = $targetFullPath
-                EnsureExists = [bool]$mirrorSource.ensureExists
-                ErrorMessage = $null
-            }) | Out-Null
-            continue
-        }
-
-        $match = Test-PackageDepotDistributionFileMatches -SourcePath $sourceFullPath -TargetPath $targetFullPath
-        if ($match.Matches) {
-            $actions.Add([pscustomobject]@{
-                DepotId      = [string]$mirrorSource.id
-                Action       = 'Skip'
-                Status       = 'Skipped'
-                Reason       = [string]$match.Reason
-                SourcePath   = $sourceFullPath
-                TargetPath   = $targetFullPath
-                EnsureExists = [bool]$mirrorSource.ensureExists
-                ErrorMessage = $null
-            }) | Out-Null
-            continue
-        }
-
-        if ([string]::Equals($mode, 'packageFocused', [System.StringComparison]::OrdinalIgnoreCase) -and
-            -not [string]::Equals([string]$match.Reason, 'Missing', [System.StringComparison]::OrdinalIgnoreCase)) {
-            $actions.Add([pscustomobject]@{
-                DepotId      = [string]$mirrorSource.id
-                Action       = 'Skip'
-                Status       = 'Skipped'
-                Reason       = 'DifferentTargetPreservedByPackageFocusedPolicy'
-                SourcePath   = $sourceFullPath
-                TargetPath   = $targetFullPath
-                EnsureExists = [bool]$mirrorSource.ensureExists
-                ErrorMessage = [string]$match.Reason
-            }) | Out-Null
-            continue
-        }
-
-        $actions.Add([pscustomobject]@{
-            DepotId      = [string]$mirrorSource.id
-            Action       = 'Copy'
-            Status       = 'Pending'
-            Reason       = [string]$match.Reason
-            SourcePath   = $sourceFullPath
-            TargetPath   = $targetFullPath
-            EnsureExists = [bool]$mirrorSource.ensureExists
-            ErrorMessage = $null
-        }) | Out-Null
-    }
-
     $result.Actions = @($actions.ToArray())
     return $result
 }
@@ -978,464 +1178,24 @@ function Invoke-PackageDepotDistribution {
 
     $plan = Resolve-PackageDepotDistributionPlan -PackageResult $PackageResult
     foreach ($action in @($plan.Actions)) {
-        if (-not [string]::Equals([string]$action.Action, 'Copy', [System.StringComparison]::OrdinalIgnoreCase)) {
-            continue
-        }
+        if ($action.Action -ne 'Copy') { continue }
         try {
             $targetDirectory = Split-Path -Parent ([string]$action.TargetPath)
-            if ($action.EnsureExists -and -not [string]::IsNullOrWhiteSpace($targetDirectory)) {
-                $null = New-Item -ItemType Directory -Path $targetDirectory -Force
-            }
+            $null = New-Item -ItemType Directory -Path $targetDirectory -Force
             $null = Copy-FileToPath -SourcePath ([string]$action.SourcePath) -TargetPath ([string]$action.TargetPath) -Overwrite
             $action.Status = 'Copied'
-            $action.ErrorMessage = $null
-            Write-PackageExecutionMessage -Message ("[ACTION] Mirrored package file to depot '{0}' at '{1}'." -f [string]$action.DepotId, [string]$action.TargetPath)
+            Write-PackageExecutionMessage -Message ("[ACTION] Mirrored artifact file '{0}' to depot '{1}'." -f $action.ArtifactFileId, $action.DepotId)
         }
         catch {
             $action.Status = 'Failed'
             $action.ErrorMessage = $_.Exception.Message
-            Write-PackageExecutionMessage -Level 'WRN' -Message ("[WARN] Failed to mirror package file to depot '{0}' at '{1}': {2}" -f [string]$action.DepotId, [string]$action.TargetPath, $_.Exception.Message)
+            Write-PackageExecutionMessage -Level 'WRN' -Message ("[WARN] Failed to mirror artifact file '{0}' to depot '{1}': {2}" -f $action.ArtifactFileId, $action.DepotId, $_.Exception.Message)
         }
     }
 
-    $copiedCount = @($plan.Actions | Where-Object { [string]::Equals([string]$_.Status, 'Copied', [System.StringComparison]::OrdinalIgnoreCase) }).Count
-    $failedCount = @($plan.Actions | Where-Object { [string]::Equals([string]$_.Status, 'Failed', [System.StringComparison]::OrdinalIgnoreCase) }).Count
-    $skippedCount = @($plan.Actions | Where-Object { [string]::Equals([string]$_.Status, 'Skipped', [System.StringComparison]::OrdinalIgnoreCase) }).Count
-    $plan | Add-Member -MemberType NoteProperty -Name CopiedCount -Value $copiedCount -Force
-    $plan | Add-Member -MemberType NoteProperty -Name FailedCount -Value $failedCount -Force
-    $plan | Add-Member -MemberType NoteProperty -Name SkippedCount -Value $skippedCount -Force
+    $plan | Add-Member -MemberType NoteProperty -Name CopiedCount -Value @($plan.Actions | Where-Object Status -eq 'Copied').Count -Force
+    $plan | Add-Member -MemberType NoteProperty -Name FailedCount -Value @($plan.Actions | Where-Object Status -eq 'Failed').Count -Force
+    $plan | Add-Member -MemberType NoteProperty -Name SkippedCount -Value @($plan.Actions | Where-Object Status -eq 'Skipped').Count -Force
     $PackageResult.DepotDistribution = $plan
-
-    if ([string]::Equals([string]$plan.Status, 'Skipped', [System.StringComparison]::OrdinalIgnoreCase)) {
-        Write-PackageExecutionMessage -Message ("[STATE] Depot distribution skipped: mode='{0}', reason='{1}'." -f [string]$plan.Mode, [string]$plan.Reason)
-    }
-    else {
-        Write-PackageExecutionMessage -Message ("[STATE] Depot distribution completed: mode='{0}', copied={1}, skipped={2}, failed={3}." -f [string]$plan.Mode, $copiedCount, $skippedCount, $failedCount)
-    }
-
-    return $PackageResult
-}
-
-function Build-PackageAcquisitionPlan {
-<#
-.SYNOPSIS
-Builds the internal Package acquisition plan for the selected release.
-
-.DESCRIPTION
-    Normalizes the ordered acquisition candidates and captures the package-file staging
-and depot targets so later package-file save steps can execute linearly.
-
-.PARAMETER PackageResult
-The Package result object to enrich.
-
-.EXAMPLE
-Build-PackageAcquisitionPlan -PackageResult $result
-#>
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [psobject]$PackageResult
-    )
-
-    $package = $PackageResult.Package
-    if (-not $package) {
-        throw 'Build-PackageAcquisitionPlan requires a selected release.'
-    }
-
-    if ([string]::Equals([string]$PackageResult.InstallOrigin, 'AlreadySatisfied', [System.StringComparison]::OrdinalIgnoreCase)) {
-        $PackageResult.AcquisitionPlan = [pscustomobject]@{
-            PackageFileRequired      = $false
-            PackageFileStagingFilePath = $PackageResult.PackageFilePath
-            Offline                  = if ($PackageResult.PSObject.Properties['Offline']) { [bool]$PackageResult.Offline } else { $false }
-            SkippedOfflineCandidateCount = 0
-            SkippedOfflineVendorCandidateCount = 0
-            Candidates               = @()
-        }
-        Write-PackageExecutionMessage -Message '[STATE] Acquisition skipped because package target is already satisfied.'
-        return $PackageResult
-    }
-
-    $requiresPackageFile = Test-PackagePackageFileAcquisitionRequired -Package $package
-    $payloadVerificationPolicy = if ($PackageResult.PackageConfig -and
-        $PackageResult.PackageConfig.PSObject.Properties['CatalogTrustPayloadVerification'] -and
-        -not [string]::IsNullOrWhiteSpace([string]$PackageResult.PackageConfig.CatalogTrustPayloadVerification)) {
-        [string]$PackageResult.PackageConfig.CatalogTrustPayloadVerification
-    }
-    else {
-        'off'
-    }
-    $offline = $PackageResult.PSObject.Properties['Offline'] -and [bool]$PackageResult.Offline
-    $skippedOfflineCandidateCount = 0
-    $skippedOfflineVendorCandidateCount = 0
-    $orderedCandidates = New-Object System.Collections.Generic.List[object]
-    if ($requiresPackageFile -and $package.PSObject.Properties['acquisitionCandidates']) {
-        foreach ($candidate in @($package.acquisitionCandidates | Sort-Object -Property @{
-                    Expression = { if ($_.PSObject.Properties['searchOrder']) { [int]$_.searchOrder } else { [int]::MaxValue } }
-                })) {
-            $candidateKind = [string]$candidate.kind
-            if ($offline -and -not [string]::Equals($candidateKind, 'packageDepot', [System.StringComparison]::OrdinalIgnoreCase)) {
-                $skippedOfflineCandidateCount++
-                if ([string]::Equals($candidateKind, 'vendorDownload', [System.StringComparison]::OrdinalIgnoreCase)) {
-                    $skippedOfflineVendorCandidateCount++
-                }
-                continue
-            }
-            $resolvedVerification = Resolve-PackageAcquisitionCandidateVerification -Package $package -AcquisitionCandidate $candidate -PayloadVerificationPolicy $payloadVerificationPolicy -PackageFileRequired $requiresPackageFile
-            switch -Exact ($candidateKind) {
-                'packageDepot' {
-                    $resolvedDepotSourcePath = Join-Path $PackageResult.PackageDepotRelativeDirectory ([string]$package.packageFile.fileName)
-                    foreach ($depotSource in @(Get-PackagePackageDepotSources -PackageConfig $PackageResult.PackageConfig)) {
-                        $orderedCandidates.Add([pscustomobject]@{
-                            kind         = 'packageDepot'
-                            searchOrder     = if ($candidate.PSObject.Properties['searchOrder']) { [int]$candidate.searchOrder } else { [int]::MaxValue }
-                            sourceSearchOrder = [int]$depotSource.searchOrder
-                            sourceRef    = [pscustomobject]@{
-                                scope = 'environment'
-                                id    = $depotSource.id
-                            }
-                            sourcePath   = $resolvedDepotSourcePath
-                            verification = $resolvedVerification
-                        }) | Out-Null
-                    }
-                }
-                'vendorDownload' {
-                    $directUrl = if ($candidate.PSObject.Properties['url']) { [string]$candidate.url } else { $null }
-                    $orderedCandidates.Add([pscustomobject]@{
-                        kind         = $candidateKind
-                        searchOrder     = if ($candidate.PSObject.Properties['searchOrder']) { [int]$candidate.searchOrder } else { [int]::MaxValue }
-                        sourceSearchOrder = 1000
-                        sourceRef    = if ($candidate.PSObject.Properties['sourceId'] -and -not [string]::IsNullOrWhiteSpace([string]$candidate.sourceId)) {
-                            [pscustomobject]@{
-                                scope = 'definition'
-                                id    = [string]$candidate.sourceId
-                            }
-                        }
-                        else {
-                            $null
-                        }
-                        sourcePath   = [string]$candidate.sourcePath
-                        url          = $directUrl
-                        verification = $resolvedVerification
-                    }) | Out-Null
-                }
-            }
-        }
-    }
-
-    $PackageResult.AcquisitionPlan = [pscustomobject]@{
-        PackageFileRequired    = $requiresPackageFile
-        PackageFileStagingFilePath = $PackageResult.PackageFilePath
-        DefaultPackageDepotFilePath = $PackageResult.DefaultPackageDepotFilePath
-        Offline                = $offline
-        SkippedOfflineCandidateCount = $skippedOfflineCandidateCount
-        SkippedOfflineVendorCandidateCount = $skippedOfflineVendorCandidateCount
-        Candidates             = @(
-            $orderedCandidates.ToArray() |
-                Sort-Object -Property searchOrder, sourceSearchOrder, @{
-                    Expression = {
-                        if ($_.sourceRef) { [string]$_.sourceRef.id } else { [string]::Empty }
-                    }
-                }
-        )
-    }
-
-    $candidateSummary = @(
-        foreach ($candidate in @($PackageResult.AcquisitionPlan.Candidates)) {
-            $sourceSummary = if ($candidate.sourceRef) {
-                '{0}:{1}' -f [string]$candidate.sourceRef.scope, [string]$candidate.sourceRef.id
-            }
-            else {
-                'direct'
-            }
-            '{0}@{1}->{2}' -f [string]$candidate.kind, [string]$candidate.searchOrder, $sourceSummary
-        }
-    ) -join ', '
-    if ([string]::IsNullOrWhiteSpace($candidateSummary)) {
-        $candidateSummary = '<none>'
-    }
-    $offlineSuffix = if ($offline) { " offline='true', skippedByPolicy=$skippedOfflineCandidateCount" } else { " offline='false'" }
-    Write-PackageExecutionMessage -Message ("[STATE] Acquisition plan packageFileRequired='{0}'{1} with {2} candidate(s): {3}." -f $requiresPackageFile, $offlineSuffix, @($PackageResult.AcquisitionPlan.Candidates).Count, $candidateSummary)
-
-    return $PackageResult
-}
-
-function Resolve-PackageInstallFile {
-<#
-.SYNOPSIS
-Ensures the selected package file is present in the package file staging.
-
-.DESCRIPTION
-Reuses an already-present verified package file when possible, then checks the
-default package depot, and otherwise attempts each configured acquisition
-candidate in searchOrder order until one succeeds or all candidates fail.
-
-.PARAMETER PackageResult
-The Package result object to enrich.
-
-.EXAMPLE
-Resolve-PackageInstallFile -PackageResult $result
-#>
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [psobject]$PackageResult
-    )
-
-    $package = $PackageResult.Package
-    $packageConfig = $PackageResult.PackageConfig
-
-    if (-not $package -or -not (Get-PackageAssignedOperation -Release $package)) {
-        throw 'Resolve-PackageInstallFile requires a selected release with assigned settings.'
-    }
-
-    $assignedInstall = Get-PackageAssignedInstallOperation -Release $package
-    $installKind = if ($assignedInstall -and $assignedInstall.PSObject.Properties['kind']) { [string]$assignedInstall.kind } else { $null }
-    $existingDecision = if ($PackageResult.ExistingPackage -and $PackageResult.ExistingPackage.PSObject.Properties['Decision']) { [string]$PackageResult.ExistingPackage.Decision } else { $null }
-    $keepPackageFileAcquisitionForAdoptedPowerShellModule = [string]::Equals($existingDecision, 'AdoptExternal', [System.StringComparison]::OrdinalIgnoreCase) -and
-        [string]::Equals($installKind, 'powershellModuleInstaller', [System.StringComparison]::OrdinalIgnoreCase)
-    if ($PackageResult.ExistingPackage -and
-        $PackageResult.ExistingPackage.PSObject.Properties['Decision'] -and
-        $PackageResult.ExistingPackage.Decision -in @('ReusePackageOwned', 'AdoptExternal') -and
-        (-not $keepPackageFileAcquisitionForAdoptedPowerShellModule)) {
-        $PackageResult.PackageFilePreparation = [pscustomobject]@{
-            Success         = $true
-            Status          = 'Skipped'
-            PackageFilePath = $PackageResult.PackageFilePath
-            SelectedSource  = $null
-            Verification    = $null
-            Attempts        = @()
-            FailureReason   = $null
-            ErrorMessage    = $null
-        }
-        Write-PackageExecutionMessage -Message ("[STATE] Package file step skipped because existing install decision is '{0}'." -f [string]$PackageResult.ExistingPackage.Decision)
-        return $PackageResult
-    }
-
-    if (-not $PackageResult.AcquisitionPlan) {
-        $PackageResult = Build-PackageAcquisitionPlan -PackageResult $PackageResult
-    }
-
-    if (-not $PackageResult.AcquisitionPlan.PackageFileRequired) {
-        $PackageResult.PackageFilePreparation = [pscustomobject]@{
-            Success         = $true
-            Status          = 'Skipped'
-            PackageFilePath = $PackageResult.PackageFilePath
-            SelectedSource  = $null
-            Verification    = $null
-            Attempts        = @()
-            FailureReason   = $null
-            ErrorMessage    = $null
-        }
-        Write-PackageExecutionMessage -Message "[STATE] Package file step skipped because the selected install kind does not require a saved package file."
-        return $PackageResult
-    }
-
-    if ([string]::IsNullOrWhiteSpace($PackageResult.PackageFilePath)) {
-        throw "Package release '$($package.id)' does not define packageFile.fileName."
-    }
-
-    $offline = $PackageResult.PSObject.Properties['Offline'] -and [bool]$PackageResult.Offline
-    $orderedCandidates = @($PackageResult.AcquisitionPlan.Candidates)
-    if (-not $orderedCandidates) {
-        if ($offline) {
-            $skippedByPolicy = if ($PackageResult.AcquisitionPlan.PSObject.Properties['SkippedOfflineCandidateCount']) { [int]$PackageResult.AcquisitionPlan.SkippedOfflineCandidateCount } else { 0 }
-            throw "Package release '$($package.id)' has no usable packageDepot acquisition candidates for Offline mode. Skipped $skippedByPolicy vendor or package-definition non-depot candidate(s)."
-        }
-        throw "Package release '$($package.id)' does not define any acquisition candidates."
-    }
-
-    $attempts = New-Object System.Collections.Generic.List[object]
-    $preferredVerification = Get-PackagePreferredVerification -AcquisitionCandidates $orderedCandidates
-
-    if ((-not $offline) -and (Test-Path -LiteralPath $PackageResult.PackageFilePath)) {
-        $verification = Test-PackageSavedFile -Path $PackageResult.PackageFilePath -Verification $preferredVerification
-        $attempts.Add([pscustomobject]@{
-            AttemptType        = 'ReuseCheck'
-            Status             = if ($verification.Accepted) { 'ReusedPackageFile' } else { 'ReuseRejected' }
-            SourceScope        = 'packageFileStaging'
-            SourceId           = 'packageFileStaging'
-            SourceKind         = 'filesystem'
-            ResolvedSource     = $PackageResult.PackageFilePath
-            VerificationStatus = $verification.Status
-            ErrorMessage       = if ($verification.Accepted) { $null } else { 'Existing package-file staging file did not satisfy verification.' }
-        }) | Out-Null
-
-        if ($verification.Accepted) {
-            $PackageResult.PackageFilePreparation = [pscustomobject]@{
-                Success         = $true
-                Status          = 'ReusedPackageFile'
-                PackageFilePath = $PackageResult.PackageFilePath
-                SelectedSource  = [pscustomobject]@{
-                    SourceScope = 'packageFileStaging'
-                    SourceId    = 'packageFileStaging'
-                    SourceKind  = 'filesystem'
-                    ResolvedSource = $PackageResult.PackageFilePath
-                }
-                Verification    = $verification
-                Attempts        = @($attempts.ToArray())
-                FailureReason   = $null
-                ErrorMessage    = $null
-            }
-            Write-PackageExecutionMessage -Message ("[ACTION] Reused package-file staging file '{0}'." -f $PackageResult.PackageFilePath)
-            return $PackageResult
-        }
-    }
-
-    $null = New-Item -ItemType Directory -Path $PackageResult.PackageFileStagingDirectory -Force
-
-    foreach ($candidate in $orderedCandidates) {
-        $sourceDefinition = $null
-        $resolvedSource = $null
-        $verification = $null
-        $stagingPath = '{0}.{1}.partial' -f $PackageResult.PackageFilePath, ([guid]::NewGuid().ToString('N'))
-
-        try {
-            if ($candidate.sourceRef) {
-                $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $packageConfig -SourceRef $candidate.sourceRef
-            }
-            elseif ([string]::Equals([string]$candidate.kind, 'vendorDownload', [System.StringComparison]::OrdinalIgnoreCase) -and
-                $candidate.PSObject.Properties['url'] -and
-                -not [string]::IsNullOrWhiteSpace([string]$candidate.url)) {
-                $sourceDefinition = [pscustomobject]@{
-                    Scope            = 'direct'
-                    Id               = 'directDownload'
-                    Kind             = 'download'
-                    BaseUri          = $null
-                    BasePath         = $null
-                    GitHubOwner      = $null
-                    GitHubRepository = $null
-                }
-            }
-            else {
-                throw "Package acquisition candidate kind '$($candidate.kind)' could not be resolved to a source definition."
-            }
-            $resolvedSource = Resolve-PackageSource -SourceDefinition $sourceDefinition -AcquisitionCandidate $candidate -Package $package
-
-            switch -Exact ([string]$resolvedSource.Kind) {
-                'download' {
-                    $null = Save-PackageDownloadFile -Uri $resolvedSource.ResolvedSource -TargetPath $stagingPath
-                }
-                'filesystem' {
-                    $null = Save-PackageFilesystemFile -SourcePath $resolvedSource.ResolvedSource -TargetPath $stagingPath
-                }
-                default {
-                    throw "Unsupported package-file source kind '$($resolvedSource.Kind)'."
-                }
-            }
-
-            $verification = Test-PackageSavedFile -Path $stagingPath -Verification $candidate.verification
-            if (-not $verification.Accepted) {
-                if (Test-Path -LiteralPath $stagingPath) {
-                    Remove-Item -LiteralPath $stagingPath -Force -ErrorAction SilentlyContinue
-                }
-
-                $attempts.Add([pscustomobject]@{
-                    AttemptType        = 'Save'
-                    Status             = 'Failed'
-                    SourceScope        = $sourceDefinition.Scope
-                    SourceId           = $sourceDefinition.Id
-                    SourceKind         = $resolvedSource.Kind
-                    ResolvedSource     = $resolvedSource.ResolvedSource
-                    VerificationStatus = $verification.Status
-                    ErrorMessage       = 'Saved package file did not satisfy verification.'
-                }) | Out-Null
-
-                if (-not $packageConfig.AllowAcquisitionFallback) {
-                    break
-                }
-
-                continue
-            }
-
-            if (Test-Path -LiteralPath $PackageResult.PackageFilePath) {
-                Remove-Item -LiteralPath $PackageResult.PackageFilePath -Force
-            }
-            Move-Item -LiteralPath $stagingPath -Destination $PackageResult.PackageFilePath -Force
-
-            $saveStatus = if ([string]::Equals([string]$sourceDefinition.Scope, 'environment', [System.StringComparison]::OrdinalIgnoreCase) -and
-                [string]::Equals([string]$sourceDefinition.Id, 'defaultPackageDepot', [System.StringComparison]::OrdinalIgnoreCase)) {
-                'HydratedFromDefaultPackageDepot'
-            }
-            else {
-                'SavedPackageFile'
-            }
-
-            $attempts.Add([pscustomobject]@{
-                AttemptType        = 'Save'
-                Status             = $saveStatus
-                SourceScope        = $sourceDefinition.Scope
-                SourceId           = $sourceDefinition.Id
-                SourceKind         = $resolvedSource.Kind
-                ResolvedSource     = $resolvedSource.ResolvedSource
-                VerificationStatus = $verification.Status
-                ErrorMessage       = $null
-            }) | Out-Null
-
-            $PackageResult.PackageFilePreparation = [pscustomobject]@{
-                Success         = $true
-                Status          = $saveStatus
-                PackageFilePath = $PackageResult.PackageFilePath
-                SelectedSource  = [pscustomobject]@{
-                    SourceScope    = $sourceDefinition.Scope
-                    SourceId       = $sourceDefinition.Id
-                    SourceKind     = $resolvedSource.Kind
-                    ResolvedSource = $resolvedSource.ResolvedSource
-                }
-                Verification    = $verification
-                Attempts        = @($attempts.ToArray())
-                FailureReason   = $null
-                ErrorMessage    = $null
-            }
-            Write-PackageExecutionMessage -Message ("[ACTION] Saved package file from '{0}:{1}'." -f $sourceDefinition.Scope, $sourceDefinition.Id)
-            return $PackageResult
-        }
-        catch {
-            if (Test-Path -LiteralPath $stagingPath) {
-                Remove-Item -LiteralPath $stagingPath -Force -ErrorAction SilentlyContinue
-            }
-
-            $attempts.Add([pscustomobject]@{
-                AttemptType        = 'Save'
-                Status             = 'Failed'
-                SourceScope        = if ($sourceDefinition) { $sourceDefinition.Scope } elseif ($candidate.sourceRef) { [string]$candidate.sourceRef.scope } else { $null }
-                SourceId           = if ($sourceDefinition) { $sourceDefinition.Id } elseif ($candidate.sourceRef) { [string]$candidate.sourceRef.id } else { $null }
-                SourceKind         = if ($resolvedSource) { $resolvedSource.Kind } else { $null }
-                ResolvedSource     = if ($resolvedSource) { $resolvedSource.ResolvedSource } else { $null }
-                VerificationStatus = if ($verification) { $verification.Status } else { $null }
-                ErrorMessage       = $_.Exception.Message
-            }) | Out-Null
-
-            if (-not $packageConfig.AllowAcquisitionFallback) {
-                break
-            }
-        }
-    }
-
-    $failureReason = if ($offline) { 'DepotMiss' } else { 'AllSourcesFailed' }
-    $errorMessage = if ($offline) {
-        "Offline acquisition failed for Package release '$($package.id)': no packageDepot candidate provided a verified depot artifact. vendorDownload candidates were skipped by policy."
-    }
-    else {
-        "All acquisition candidates failed for Package release '$($package.id)'."
-    }
-
-    $PackageResult.PackageFilePreparation = [pscustomobject]@{
-        Success         = $false
-        Status          = 'Failed'
-        PackageFilePath = $PackageResult.PackageFilePath
-        SelectedSource  = $null
-        Verification    = $null
-        Attempts        = @($attempts.ToArray())
-        FailureReason   = $failureReason
-        ErrorMessage    = $errorMessage
-    }
-
-    if ($offline) {
-        Write-PackageExecutionMessage -Level 'ERR' -Message ("[ACTION] Offline depot acquisition failed for release '{0}'." -f $package.id)
-    }
-    else {
-        Write-PackageExecutionMessage -Level 'ERR' -Message ("[ACTION] All acquisition candidates failed for release '{0}'." -f $package.id)
-    }
-
     return $PackageResult
 }

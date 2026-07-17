@@ -164,7 +164,7 @@ Invoke-PackageInstallerProcess -PackageResult $result
         Resolve-PackageTemplateText -Text ([string]$install.commandPath) -PackageConfig $PackageResult.PackageConfig -Package $PackageResult.Package
     }
     else {
-        $PackageResult.PackageFilePath
+        $PackageResult.OperationArtifactFilePath
     }
 
     $timestamp = (Get-Date -Format 'yyyyMMdd-HHmmss')
@@ -180,11 +180,11 @@ Invoke-PackageInstallerProcess -PackageResult $result
     $commandArguments = @()
     foreach ($argument in @($install.commandArguments)) {
         $resolvedArgument = Resolve-PackageTemplateText -Text ([string]$argument) -PackageConfig $PackageResult.PackageConfig -Package $PackageResult.Package -ExtraTokens @{
-                packageFilePath   = $PackageResult.PackageFilePath
+                operationArtifactFilePath = $PackageResult.OperationArtifactFilePath
                 installDirectory  = $PackageResult.InstallDirectory
-                packageFileStagingDirectory = $PackageResult.PackageFileStagingDirectory
+                artifactStagingDirectory = $PackageResult.ArtifactStagingDirectory
                 packageInstallStageDirectory = $PackageResult.PackageInstallStageDirectory
-                downloadDirectory = $PackageResult.PackageFileStagingDirectory
+                installArtifactStagingDirectory = $PackageResult.InstallArtifactStagingDirectory
                 logPath           = $logPath
                 timestamp         = $timestamp
             }
@@ -195,9 +195,8 @@ Invoke-PackageInstallerProcess -PackageResult $result
     $successExitCodes = if ($install.PSObject.Properties['successExitCodes']) { @($install.successExitCodes | ForEach-Object { [int]$_ }) } else { @(0) }
     $restartExitCodes = if ($install.PSObject.Properties['restartExitCodes']) { @($install.restartExitCodes | ForEach-Object { [int]$_ }) } else { @() }
     $targetKind = Get-PackageInstallTargetKind -Package $PackageResult.Package
-    $workingDirectory = if (-not [string]::IsNullOrWhiteSpace([string]$PackageResult.InstallDirectory)) {
-        $null = New-Item -ItemType Directory -Path $PackageResult.InstallDirectory -Force
-        $PackageResult.InstallDirectory
+    $workingDirectory = if (-not [string]::IsNullOrWhiteSpace([string]$PackageResult.OperationArtifactFilePath)) {
+        Split-Path -Parent ([string]$PackageResult.OperationArtifactFilePath)
     }
     else {
         $PackageResult.PackageInstallStageDirectory
@@ -212,25 +211,21 @@ Invoke-PackageInstallerProcess -PackageResult $result
     return (Invoke-PackageInstallerCommand -PackageResult $PackageResult -CommandPath $commandPath -CommandArguments @($commandArguments) -WorkingDirectory $workingDirectory -TimeoutSec $timeoutSec -SuccessExitCodes @($successExitCodes) -RestartExitCodes @($restartExitCodes) -TargetKind $targetKind -InstallerKind $installerKind -UiMode $uiMode -LogPath $logPath)
 }
 
-function Copy-PackageInstallerToInstallStage {
+function Get-PackageStagedInstallerPath {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
         [psobject]$PackageResult
     )
 
-    if ([string]::IsNullOrWhiteSpace($PackageResult.PackageFilePath) -or -not (Test-Path -LiteralPath $PackageResult.PackageFilePath -PathType Leaf)) {
-        throw "Package installer for '$($PackageResult.PackageId)' requires a saved package file."
+    if ([string]::IsNullOrWhiteSpace($PackageResult.OperationArtifactFilePath) -or -not (Test-Path -LiteralPath $PackageResult.OperationArtifactFilePath -PathType Leaf)) {
+        throw "Package installer for '$($PackageResult.PackageId)' requires its selected operation artifact file."
     }
     if ([string]::IsNullOrWhiteSpace($PackageResult.PackageInstallStageDirectory)) {
         throw "Package installer for '$($PackageResult.PackageId)' requires a package install stage directory."
     }
 
-    $stageDirectory = [System.IO.Path]::GetFullPath([string]$PackageResult.PackageInstallStageDirectory)
-    $null = New-Item -ItemType Directory -Path $stageDirectory -Force
-    $installerFileName = Split-Path -Leaf $PackageResult.PackageFilePath
-    $stagedInstallerPath = Join-Path $stageDirectory $installerFileName
-    return (Copy-FileToPath -SourcePath $PackageResult.PackageFilePath -TargetPath $stagedInstallerPath -Overwrite)
+    return [string]$PackageResult.OperationArtifactFilePath
 }
 
 function Get-PackageWindowsInstallerExecutablePath {
@@ -286,16 +281,16 @@ Runs an MSI package through msiexec from the isolated package install stage.
         throw "Package msiInstaller for '$($PackageResult.PackageId)' requires an install directory."
     }
 
-    $stagedInstallerPath = Copy-PackageInstallerToInstallStage -PackageResult $PackageResult
+    $stagedInstallerPath = Get-PackageStagedInstallerPath -PackageResult $PackageResult
     $commandPath = Get-PackageWindowsInstallerExecutablePath
     $commandArguments = @('/i', (Format-PackageProcessArgument -Value $stagedInstallerPath))
     foreach ($argument in @($install.commandArguments)) {
         $resolvedArgument = Resolve-PackageTemplateText -Text ([string]$argument) -PackageConfig $PackageResult.PackageConfig -Package $PackageResult.Package -ExtraTokens @{
-                packageFilePath = $PackageResult.PackageFilePath
+                operationArtifactFilePath = $PackageResult.OperationArtifactFilePath
                 installDirectory = $PackageResult.InstallDirectory
-                packageFileStagingDirectory = $PackageResult.PackageFileStagingDirectory
+                artifactStagingDirectory = $PackageResult.ArtifactStagingDirectory
                 packageInstallStageDirectory = $PackageResult.PackageInstallStageDirectory
-                downloadDirectory = $PackageResult.PackageFileStagingDirectory
+                installArtifactStagingDirectory = $PackageResult.InstallArtifactStagingDirectory
             }
         $commandArguments += (Format-PackageProcessArgument -Value $resolvedArgument)
     }
@@ -322,7 +317,7 @@ Runs an MSI package through msiexec from the isolated package install stage.
     $uiMode = if ($install.PSObject.Properties['uiMode'] -and -not [string]::IsNullOrWhiteSpace([string]$install.uiMode)) { [string]$install.uiMode } else { 'silent' }
     $elevationMode = if ($install.PSObject.Properties['elevation'] -and -not [string]::IsNullOrWhiteSpace([string]$install.elevation)) { [string]$install.elevation } else { $null }
 
-    return (Invoke-PackageInstallerCommand -PackageResult $PackageResult -CommandPath $commandPath -CommandArguments @($commandArguments) -WorkingDirectory $PackageResult.PackageInstallStageDirectory -TimeoutSec $timeoutSec -SuccessExitCodes @($successExitCodes) -RestartExitCodes @($restartExitCodes) -TargetKind $targetKind -InstallerKind 'msi' -UiMode $uiMode -LogPath $null -ElevationMode $elevationMode)
+    return (Invoke-PackageInstallerCommand -PackageResult $PackageResult -CommandPath $commandPath -CommandArguments @($commandArguments) -WorkingDirectory (Split-Path -Parent $stagedInstallerPath) -TimeoutSec $timeoutSec -SuccessExitCodes @($successExitCodes) -RestartExitCodes @($restartExitCodes) -TargetKind $targetKind -InstallerKind 'msi' -UiMode $uiMode -LogPath $null -ElevationMode $elevationMode)
 }
 
 function Invoke-PackageNsisInstallerProcess {
@@ -349,15 +344,15 @@ Runs an NSIS installer package through the isolated package install stage.
         throw "Package nsisInstaller for '$($PackageResult.PackageId)' cannot use installerKind '$($install.installerKind)'. Use innoSetupInstaller for Inno Setup packages."
     }
 
-    $commandPath = Copy-PackageInstallerToInstallStage -PackageResult $PackageResult
+    $commandPath = Get-PackageStagedInstallerPath -PackageResult $PackageResult
     $commandArguments = @()
     foreach ($argument in @($install.commandArguments)) {
         $resolvedArgument = Resolve-PackageTemplateText -Text ([string]$argument) -PackageConfig $PackageResult.PackageConfig -Package $PackageResult.Package -ExtraTokens @{
-                packageFilePath = $PackageResult.PackageFilePath
+                operationArtifactFilePath = $PackageResult.OperationArtifactFilePath
                 installDirectory = $PackageResult.InstallDirectory
-                packageFileStagingDirectory = $PackageResult.PackageFileStagingDirectory
+                artifactStagingDirectory = $PackageResult.ArtifactStagingDirectory
                 packageInstallStageDirectory = $PackageResult.PackageInstallStageDirectory
-                downloadDirectory = $PackageResult.PackageFileStagingDirectory
+                installArtifactStagingDirectory = $PackageResult.InstallArtifactStagingDirectory
             }
         $commandArguments += (Format-PackageProcessArgument -Value $resolvedArgument)
     }
@@ -383,7 +378,7 @@ Runs an NSIS installer package through the isolated package install stage.
     $installerKind = if ($install.PSObject.Properties['installerKind'] -and -not [string]::IsNullOrWhiteSpace([string]$install.installerKind)) { [string]$install.installerKind } else { 'nsis' }
     $uiMode = if ($install.PSObject.Properties['uiMode'] -and -not [string]::IsNullOrWhiteSpace([string]$install.uiMode)) { [string]$install.uiMode } else { 'silent' }
 
-    return (Invoke-PackageInstallerCommand -PackageResult $PackageResult -CommandPath $commandPath -CommandArguments @($commandArguments) -WorkingDirectory $PackageResult.PackageInstallStageDirectory -TimeoutSec $timeoutSec -SuccessExitCodes @($successExitCodes) -RestartExitCodes @($restartExitCodes) -TargetKind $targetKind -InstallerKind $installerKind -UiMode $uiMode -LogPath $null)
+    return (Invoke-PackageInstallerCommand -PackageResult $PackageResult -CommandPath $commandPath -CommandArguments @($commandArguments) -WorkingDirectory (Split-Path -Parent $commandPath) -TimeoutSec $timeoutSec -SuccessExitCodes @($successExitCodes) -RestartExitCodes @($restartExitCodes) -TargetKind $targetKind -InstallerKind $installerKind -UiMode $uiMode -LogPath $null)
 }
 
 function Invoke-PackageInnoSetupInstallerProcess {
@@ -405,15 +400,15 @@ Runs an Inno Setup installer package through the isolated package install stage.
         throw "Package innoSetupInstaller for '$($PackageResult.PackageId)' requires an install directory."
     }
 
-    $commandPath = Copy-PackageInstallerToInstallStage -PackageResult $PackageResult
+    $commandPath = Get-PackageStagedInstallerPath -PackageResult $PackageResult
     $commandArguments = @()
     foreach ($argument in @($install.commandArguments)) {
         $resolvedArgument = Resolve-PackageTemplateText -Text ([string]$argument) -PackageConfig $PackageResult.PackageConfig -Package $PackageResult.Package -ExtraTokens @{
-                packageFilePath = $PackageResult.PackageFilePath
+                operationArtifactFilePath = $PackageResult.OperationArtifactFilePath
                 installDirectory = $PackageResult.InstallDirectory
-                packageFileStagingDirectory = $PackageResult.PackageFileStagingDirectory
+                artifactStagingDirectory = $PackageResult.ArtifactStagingDirectory
                 packageInstallStageDirectory = $PackageResult.PackageInstallStageDirectory
-                downloadDirectory = $PackageResult.PackageFileStagingDirectory
+                installArtifactStagingDirectory = $PackageResult.InstallArtifactStagingDirectory
             }
         $commandArguments += (Format-PackageProcessArgument -Value $resolvedArgument)
     }
@@ -445,5 +440,5 @@ Runs an Inno Setup installer package through the isolated package install stage.
     $targetKind = Get-PackageInstallTargetKind -Package $PackageResult.Package
     $uiMode = if ($install.PSObject.Properties['uiMode'] -and -not [string]::IsNullOrWhiteSpace([string]$install.uiMode)) { [string]$install.uiMode } else { 'silent' }
 
-    return (Invoke-PackageInstallerCommand -PackageResult $PackageResult -CommandPath $commandPath -CommandArguments @($commandArguments) -WorkingDirectory $PackageResult.PackageInstallStageDirectory -TimeoutSec $timeoutSec -SuccessExitCodes @($successExitCodes) -RestartExitCodes @($restartExitCodes) -TargetKind $targetKind -InstallerKind 'innoSetup' -UiMode $uiMode -LogPath $null)
+    return (Invoke-PackageInstallerCommand -PackageResult $PackageResult -CommandPath $commandPath -CommandArguments @($commandArguments) -WorkingDirectory (Split-Path -Parent $commandPath) -TimeoutSec $timeoutSec -SuccessExitCodes @($successExitCodes) -RestartExitCodes @($restartExitCodes) -TargetKind $targetKind -InstallerKind 'innoSetup' -UiMode $uiMode -LogPath $null)
 }

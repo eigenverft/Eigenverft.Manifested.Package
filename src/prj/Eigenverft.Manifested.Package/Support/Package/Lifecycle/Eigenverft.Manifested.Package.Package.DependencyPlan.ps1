@@ -245,7 +245,7 @@ function Resolve-PackageDependencyPlanNodeSelection {
     }
 
     try {
-        $selectedPackage = Resolve-PackageEffectivePackage_1_9 -PackageConfig $Node.PackageConfig -PackageVersionOverride $packageVersionOverride -PackageVersionRange $versionRange
+        $selectedPackage = Resolve-PackageEffectivePackage_2_0 -PackageConfig $Node.PackageConfig -PackageVersionOverride $packageVersionOverride -PackageVersionRange $versionRange
     }
     catch {
         $reason = if (-not [string]::IsNullOrWhiteSpace($versionRange) -and $_.Exception.Message -like '*versionRange*') {
@@ -404,7 +404,7 @@ function Test-PackageDependencyPlanPeerPolicy {
 
     foreach ($node in @(ConvertTo-PackageDependencyPlanArray -Value $Plan.Nodes)) {
         $definition = $node.PackageConfig.Definition
-        $dependencyModel = Get-PackageDefinitionDependencyModel_1_9 -Definition $definition -DefinitionId ([string]$node.DefinitionId)
+        $dependencyModel = Get-PackageDefinitionDependencyModel_2_0 -Definition $definition -DefinitionId ([string]$node.DefinitionId)
         foreach ($conflict in @($dependencyModel.ConflictsWith)) {
             if (-not (Test-PackageDependencyPlanPolicyReference -Plan $Plan -Node $node -PolicyReference $conflict -Kind 'conflictsWith')) {
                 continue
@@ -507,7 +507,7 @@ function Resolve-PackageDependencyPlanNode {
     Resolve-PackageDependencyPlanNodeSelection -Context $Context -Node $node
 
     $definition = $config.Definition
-    $dependencyModel = Get-PackageDefinitionDependencyModel_1_9 -Definition $definition -DefinitionId $resolvedDefinitionId
+    $dependencyModel = Get-PackageDefinitionDependencyModel_2_0 -Definition $definition -DefinitionId $resolvedDefinitionId
     $nextStack = @($Stack) + $nodeKey
     foreach ($dependency in @($dependencyModel.Requires)) {
         if ($null -eq $dependency) {

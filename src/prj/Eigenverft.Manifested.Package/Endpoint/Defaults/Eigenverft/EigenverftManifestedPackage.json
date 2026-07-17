@@ -4,9 +4,9 @@
   "definitionPublication": {
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
-    "definitionId": "SevenZip",
-    "definitionRevision": 6,
-    "publishedAtUtc": "2026-07-14T04:55:50.4324908Z",
+    "definitionId": "EigenverftManifestedPackage",
+    "definitionRevision": 2,
+    "publishedAtUtc": "2026-07-17T04:39:49.8313681Z",
     "definitionSignature": {
       "kind": "signed",
       "format": "embedded-json-rsa-sha256-v1",
@@ -15,39 +15,47 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-17T06:16:22.5458299Z",
-      "signatureValue": "gSE4uewX4hRoW9JMk6/u7M+HoD5Sm5rTPEDfQ7tkJOX1vYGXEeQglKkiC9AKRtgBH7KKuJjvc+LkIGiKOPUPanZaX/HXkPrJaeCUVM3kZUh4I5VclcRzSshpRQ5rD0dtoj1qxM/o2+jBlZLy247C45KVBR2W3CEkcD69BsgMMmkxXJhoYFxk1TEUoMBk3CT7RBjnat2AjoKOOhJihe/tx8MqqCls6vb2H6MfinJMobOEp1KAoXi9tVbAG0BJs/HQ7rAvpOPTfqZpAEEBfgiPmAbUgI7cGU3nmoNV/639rLSDqxEOSU3FK035PRR52IsodjkGaDKNpzZRlV5atIcfIzp5M6eMRH9RBJ5eZXYGa+jaWvjr4krhNWEXdON4OgGub5qyIc9BFhBik3vEI/27Bxed+ZEXZkYRTBSFY+rC9U7MlcInMQzBZ4ih9x279uT9CRKh1PemtgyBa6JDlGNoFh209bBVf7tdTjtL4S8p5SatKf+/zWhSCnlhTcXSmG9a"
+      "signedAtUtc": "2026-07-17T06:16:19.6186614Z",
+      "signatureValue": "JyyDHWbidiemEXlKHo9YmI/Iw7OUn+/zmqzcavnQ95RGGpJDf81FLcApCLZGXVQpsunW8e4rSNWw+RbKCyk2zcMVNvJZuf/cc89ZbM0h2oNpkJE/EsvoPUZeB6klhAwFfBEHUE3E4FLrPObD5dsJdI62tKPAw9JkP6XaVEBgN18bQHXeKaX8CBe1E/1xD8yP0Q3ZYXxQzpH44ucgyPjZb8yVfAeLg0kzBIvH2DLlfbcc9oJnP8/NxYg14S9uU/CswfEug2ivSaFqqivCCLektjc2fnykR4/Dt6iWWeLKV4EfiirrliIKFXvp1+dEnK/3SisHDZpzA1X7qXDBaUKoLcpy1UfieBg0wrO8qsmrMUSfgjkgIsJsCb2JMMmUPlVoqYxmNlJMj3+gPDIUXGS8DPxWIEl+8OUynTaRvUqWZ9kjU4s8WZLomB1X9R/K3N23FFu0OqPD6IzBkl8jzDbx9El7Qx6FwJsWV8AVYcjV/ZeqnA0Wd8o2gN0Vu6Tez6gL"
     }
   },
   "display": {
     "default": {
-      "name": "7-Zip",
-      "publisher": "Igor Pavlov",
-      "corporation": "Igor Pavlov",
-      "summary": "Pinned 7-Zip MSI package"
+      "name": "Eigenverft Manifested Package",
+      "publisher": "Eigenverft",
+      "corporation": "Eigenverft",
+      "summary": "Pinned Eigenverft.Manifested.Package PowerShell module installed from a depot-backed Gallery nupkg"
     }
   },
   "classification": {
     "tags": [
-      "seven-zip",
-      "utility"
+      "eigenverft-package",
+      "package-engine",
+      "package-management"
     ]
   },
   "dependency": {
-    "requires": []
+    "requires": [
+      {
+        "publisherId": "Eigenverft",
+        "definitionId": "PowerShellGet",
+        "versionRange": ">=2.2.5 <3.0.0"
+      }
+    ]
   },
   "artifacts": {
     "targets": [
       {
-        "id": "SevenZip-win-x64-stable",
+        "id": "EigenverftManifestedPackage-psmodule-stable",
         "releaseTrack": "stable",
-        "artifactDistributionVariant": "win-x64",
+        "artifactDistributionVariant": "psmodule-any",
         "constraints": {
           "os": [
             "windows"
           ],
           "cpu": [
-            "x64"
+            "x64",
+            "arm64"
           ]
         },
         "versionSelection": {
@@ -56,19 +64,19 @@
         },
         "artifactFiles": {
           "package": {
-            "relativePathTemplate": "7z{releaseTag}-x64.msi",
+            "relativePathTemplate": "Eigenverft.Manifested.Package.{version}.nupkg",
             "acquisitionCandidates": [
               {
                 "kind": "packageDepot",
                 "searchOrder": 100,
                 "verification": {
-                  "mode": "required"
+                  "mode": "optional"
                 }
               },
               {
                 "kind": "vendorDownload",
-                "sourceId": "sevenZipGitHubRelease",
-                "sourcePath": "{version}/7z{releaseTag}-x64.msi",
+                "sourceId": "powerShellGalleryPackageApi",
+                "sourcePath": "Eigenverft.Manifested.Package/{version}",
                 "searchOrder": 900,
                 "verification": {
                   "mode": "required"
@@ -81,45 +89,18 @@
     ],
     "releases": [
       {
-        "version": "26.02",
+        "version": "1.20264.57",
         "releaseTracks": [
           "stable"
         ],
-        "upstreamRelease": {
-          "sourceId": "sevenZipGitHubRelease",
-          "releaseTag": "2602"
-        },
         "targetArtifacts": {
-          "SevenZip-win-x64-stable": {
-            "artifactId": "sevenzip-msi-win-x64-stable",
+          "EigenverftManifestedPackage-psmodule-stable": {
+            "artifactId": "eigenverft-manifested-package-psmodule-stable",
             "artifactFiles": {
               "package": {
                 "contentHash": {
                   "algorithm": "sha256",
-                  "value": "db407a4f6d4999e5c7bc00ce8a882be94717b56e7fa68140fe3f12605d91643e"
-                }
-              }
-            }
-          }
-        }
-      },
-      {
-        "version": "26.01",
-        "releaseTracks": [
-          "stable"
-        ],
-        "upstreamRelease": {
-          "sourceId": "sevenZipGitHubRelease",
-          "releaseTag": "2601"
-        },
-        "targetArtifacts": {
-          "SevenZip-win-x64-stable": {
-            "artifactId": "sevenzip-msi-win-x64-stable",
-            "artifactFiles": {
-              "package": {
-                "contentHash": {
-                  "algorithm": "sha256",
-                  "value": "a47ea8dcf8bc08e6de474cae77c828e031fa22cb528f6095defffebf11cd02f2"
+                  "value": "5be57bf2264061203cd6f72a48ce9057c597d14be75c67c627846b2b64e4d909"
                 }
               }
             }
@@ -128,67 +109,41 @@
       }
     ],
     "sources": {
-      "sevenZipGitHubRelease": {
+      "powerShellGalleryPackageApi": {
         "kind": "download",
-        "baseUri": "https://github.com/ip7z/7zip/releases/download/"
+        "baseUri": "https://www.powershellgallery.com/api/v2/package/"
       }
     }
   },
   "discovery": {
     "presence": {
-      "files": [
-        "7z.exe",
-        "7zFM.exe"
-      ],
+      "files": [],
       "directories": [],
-      "commands": [
-        {
-          "name": "7z",
-          "relativePath": "7z.exe",
-          "requiredForState": true,
-          "exposeCommand": true,
-          "stateChecks": [
-            {
-              "arguments": [],
-              "outputPattern": "(?m)^7-Zip\\s+(?<value>\\d+\\.\\d+)\\s+",
-              "expectedValue": "{version}"
-            }
-          ]
-        }
-      ],
-      "apps": [
-        {
-          "name": "7-Zip File Manager",
-          "relativePath": "7zFM.exe",
-          "requiredForState": false,
-          "exposeApp": true
-        }
-      ],
+      "commands": [],
+      "apps": [],
       "metadataFiles": [],
       "signatures": [],
       "fileDetails": [],
       "registry": [],
-      "powerShellModules": []
+      "powerShellModules": [
+        {
+          "name": "Eigenverft.Manifested.Package",
+          "requiredVersion": "1.20264.57",
+          "scope": "CurrentUser",
+          "requiredForState": true
+        }
+      ]
     },
     "existingInstall": {
       "enabled": true,
       "searchLocations": [
         {
-          "id": "sevenZipUninstallRegistry",
-          "kind": "windowsUninstallRegistrySearch",
+          "id": "currentUserPowerShellModule",
+          "kind": "powershellModule",
           "searchOrder": 100,
-          "rootPaths": [
-            "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
-            "HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
-            "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
-          ],
-          "displayNamePatterns": [
-            "7-Zip* (x64)*"
-          ],
-          "publisherPatterns": [
-            "Igor Pavlov"
-          ],
-          "installDirectorySource": "installLocation"
+          "name": "Eigenverft.Manifested.Package",
+          "requiredVersion": "1.20264.57",
+          "scope": "CurrentUser"
         }
       ],
       "installRootRules": []
@@ -198,7 +153,7 @@
     "policy": {
       "ownershipPolicy": {
         "allowAdoptExternal": true,
-        "upgradeAdoptedInstall": true,
+        "upgradeAdoptedInstall": false,
         "requirePackageOwnership": false
       },
       "compatibility": {
@@ -213,49 +168,32 @@
     },
     "assigned": {
       "install": {
-        "kind": "msiInstaller",
-        "installDirectory": "7zip/{releaseTrack}/{version}/{artifactDistributionVariant}",
-        "uiMode": "silent",
-        "elevation": "required",
+        "kind": "powershellModuleInstaller",
+        "moduleName": "Eigenverft.Manifested.Package",
+        "requiredVersion": "1.20264.57",
+        "scope": "CurrentUser",
+        "allowClobber": true,
+        "skipPublisherCheck": false,
         "timeoutSec": 600,
-        "commandArguments": [
-          "/qn",
-          "/norestart"
-        ],
-        "targetDirectoryProperty": {
-          "enabled": true,
-          "name": "INSTALLDIR"
-        },
-        "successExitCodes": [
-          0,
-          3010
-        ],
-        "restartExitCodes": [
-          3010
-        ],
         "artifactFileId": "package"
       },
       "readyStateCheck": {
         "use": "discovery.presence",
         "expectedVersion": "{version}",
         "require": {
-          "files": true,
+          "files": false,
           "directories": false,
-          "commands": true,
+          "commands": false,
           "apps": false,
           "metadataFiles": false,
           "signatures": false,
           "fileDetails": false,
           "registry": false,
-          "powerShellModules": false
+          "powerShellModules": true
         }
       },
       "pathRegistration": {
-        "mode": "user",
-        "source": {
-          "kind": "shim",
-          "use": "discovery.presence.commands"
-        }
+        "mode": "none"
       },
       "versionUpdatePolicy": {
         "whenAssigned": "trackSelectedVersion",
@@ -266,45 +204,19 @@
     "removed": {
       "policy": {
         "whenNotInInventory": "succeed",
-        "allowedInventoryOwnershipKinds": [
-          "PackageInstalled",
-          "AdoptedExternal"
-        ],
+        "allowedInventoryOwnershipKinds": [],
         "allowUntrackedExternalRemoval": false,
         "removeDependencies": false
       },
       "operation": {
-        "kind": "msiUninstaller",
-        "commandSource": {
-          "use": "discovery.existingInstall",
-          "searchLocationId": "sevenZipUninstallRegistry",
-          "registryValueOrder": [
-            "QuietUninstallString",
-            "UninstallString"
-          ]
-        },
-        "commandArguments": [
-          "/qn",
-          "/norestart"
-        ],
-        "elevation": "required",
-        "timeoutSec": 600,
-        "successExitCodes": [
-          0,
-          1605,
-          3010
-        ],
-        "restartExitCodes": [
-          3010
-        ],
-        "uiMode": "silent"
+        "kind": "none"
       },
       "absenceVerification": {
         "use": "discovery.presence",
         "require": {
-          "files": true,
+          "files": false,
           "directories": false,
-          "commands": true,
+          "commands": false,
           "apps": false,
           "metadataFiles": false,
           "signatures": false,

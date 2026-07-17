@@ -126,11 +126,18 @@ function Get-PackagePowerShellModuleDependencyPackageFile {
         return $null
     }
 
-    foreach ($candidatePath in @(
-            $(if ($dependencyResult.PSObject.Properties['DefaultPackageDepotFilePath']) { [string]$dependencyResult.DefaultPackageDepotFilePath } else { $null })
-            $(if ($dependencyResult.Assigned -and $dependencyResult.Assigned.PSObject.Properties['PackageFilePath']) { [string]$dependencyResult.Assigned.PackageFilePath } else { $null })
-            $(if ($dependencyResult.PSObject.Properties['PackageFilePath']) { [string]$dependencyResult.PackageFilePath } else { $null })
-        )) {
+    $candidatePaths = New-Object System.Collections.Generic.List[string]
+    foreach ($artifactFile in @($dependencyResult.ArtifactFiles)) {
+        if (-not [string]::IsNullOrWhiteSpace([string]$artifactFile.DefaultDepotPath)) { $candidatePaths.Add([string]$artifactFile.DefaultDepotPath) | Out-Null }
+        if (-not [string]::IsNullOrWhiteSpace([string]$artifactFile.StagingPath)) { $candidatePaths.Add([string]$artifactFile.StagingPath) | Out-Null }
+    }
+    if ($dependencyResult.Assigned -and $dependencyResult.Assigned.PSObject.Properties['OperationArtifactFilePath']) {
+        $candidatePaths.Add([string]$dependencyResult.Assigned.OperationArtifactFilePath) | Out-Null
+    }
+    if ($dependencyResult.PSObject.Properties['OperationArtifactFilePath']) {
+        $candidatePaths.Add([string]$dependencyResult.OperationArtifactFilePath) | Out-Null
+    }
+    foreach ($candidatePath in @($candidatePaths.ToArray())) {
         if (-not [string]::IsNullOrWhiteSpace($candidatePath) -and
             [string]::Equals([System.IO.Path]::GetExtension($candidatePath), '.nupkg', [System.StringComparison]::OrdinalIgnoreCase) -and
             (Test-Path -LiteralPath $candidatePath -PathType Leaf)) {
@@ -204,10 +211,10 @@ function Invoke-PackagePowerShellModuleHelper {
         throw "Package '$($PackageResult.DefinitionId)' powershellModuleInstaller requires a package install stage directory."
     }
 
-    $stageDirectory = [System.IO.Path]::GetFullPath([string]$PackageResult.PackageInstallStageDirectory)
+    $stageDirectory = Resolve-PackageArtifactChildPath -RootPath ([string]$PackageResult.PackageInstallStageDirectory) -RelativePath 'PowerShellModule'
     if ($Operation -eq 'Install') {
-        if ([string]::IsNullOrWhiteSpace([string]$PackageResult.PackageFilePath) -or -not (Test-Path -LiteralPath $PackageResult.PackageFilePath -PathType Leaf)) {
-            throw "Package '$($PackageResult.DefinitionId)' powershellModuleInstaller requires a staged .nupkg package file."
+        if ([string]::IsNullOrWhiteSpace([string]$PackageResult.OperationArtifactFilePath) -or -not (Test-Path -LiteralPath $PackageResult.OperationArtifactFilePath -PathType Leaf)) {
+            throw "Package '$($PackageResult.DefinitionId)' powershellModuleInstaller requires its selected staged .nupkg artifact file."
         }
         Remove-PathIfExists -Path $stageDirectory | Out-Null
     }
@@ -219,8 +226,8 @@ function Invoke-PackagePowerShellModuleHelper {
     $null = New-Item -ItemType Directory -Path $providerDirectory -Force
 
     if ($Operation -eq 'Install') {
-        $targetPackageFile = [System.IO.Path]::GetFullPath((Join-Path $nugetDirectory (Split-Path -Leaf ([string]$PackageResult.PackageFilePath))))
-        $null = Copy-FileToPath -SourcePath ([string]$PackageResult.PackageFilePath) -TargetPath $targetPackageFile -Overwrite
+        $targetPackageFile = [System.IO.Path]::GetFullPath((Join-Path $nugetDirectory (Split-Path -Leaf ([string]$PackageResult.OperationArtifactFilePath))))
+        $null = Copy-FileToPath -SourcePath ([string]$PackageResult.OperationArtifactFilePath) -TargetPath $targetPackageFile -Overwrite
         $null = Copy-PackagePowerShellModuleDependencyPackagesToLocalRepository -PackageResult $PackageResult -NugetDirectory $nugetDirectory
     }
 
@@ -408,7 +415,8 @@ Installs an exact PowerShell module version from the staged .nupkg through a loc
         InstalledVersion = if ($helperResult.PSObject.Properties['installedVersion']) { [string]$helperResult.installedVersion } else { $null }
         ModuleBase       = if ($helperResult.PSObject.Properties['moduleBase']) { [string]$helperResult.moduleBase } else { $null }
         Scope            = if ($helperResult.PSObject.Properties['scope']) { [string]$helperResult.scope } else { $null }
-        PackageFilePath  = $PackageResult.PackageFilePath
+        ArtifactFileId   = [string]$PackageResult.OperationArtifactFile.Id
+        OperationArtifactFilePath = $PackageResult.OperationArtifactFilePath
         NugetDirectory   = $result.NugetDirectory
         ProviderDirectory = $result.ProviderDirectory
         RequestPath      = $result.RequestPath

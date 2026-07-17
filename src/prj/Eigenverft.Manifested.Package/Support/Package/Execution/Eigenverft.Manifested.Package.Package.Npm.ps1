@@ -114,11 +114,11 @@ function Get-PackageNpmMaterializationDirectory {
         [psobject]$PackageResult
     )
 
-    if ([string]::IsNullOrWhiteSpace([string]$PackageResult.PackageFileStagingDirectory)) {
-        throw "Package npm materialization for '$($PackageResult.PackageId)' requires a package file staging directory."
+    if ([string]::IsNullOrWhiteSpace([string]$PackageResult.ArtifactStagingDirectory)) {
+        throw "Package npm materialization for '$($PackageResult.PackageId)' requires an artifact staging directory."
     }
 
-    return ([System.IO.Path]::GetFullPath((Join-Path ([string]$PackageResult.PackageFileStagingDirectory) 'npm-materialized')))
+    return ([System.IO.Path]::GetFullPath((Join-Path ([string]$PackageResult.ArtifactStagingDirectory) 'npm-materialized')))
 }
 
 function Get-PackageNpmPlatform {

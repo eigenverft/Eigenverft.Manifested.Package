@@ -78,8 +78,8 @@ function Get-PackageOutcomeSummary {
     else {
         [string]$PackageResult.InstallDirectory
     }
-    $packageFileStatusText = if ($PackageResult.PackageFilePreparation -and $PackageResult.PackageFilePreparation.PSObject.Properties['Status']) {
-        [string]$PackageResult.PackageFilePreparation.Status
+    $artifactStatusText = if ($PackageResult.ArtifactPreparation -and $PackageResult.ArtifactPreparation.PSObject.Properties['Status']) {
+        [string]$PackageResult.ArtifactPreparation.Status
     }
     else {
         '<none>'
@@ -158,7 +158,7 @@ function Get-PackageOutcomeSummary {
             return ("[OUTCOME] Applied package prerequisite ({0}) with installStatus='{1}' and restartRequired='{2}'." -f $(if ($versionSpanText) { $versionSpanText } else { 'dependency package' }), $assignedStatusText, $assignedRestartText)
         }
         'AlreadySatisfied' {
-            return '[OUTCOME] Package prerequisite already satisfied; installer and package-file acquisition were skipped.'
+            return '[OUTCOME] Package prerequisite already satisfied; installer and artifact acquisition were skipped.'
         }
         default {
             $originText = if ([string]::IsNullOrWhiteSpace([string]$PackageResult.InstallOrigin)) { 'completed' } else { [string]$PackageResult.InstallOrigin }
@@ -186,8 +186,8 @@ function Get-PackageCommandFailureReason {
         'FindExistingPackage' { return 'ExistingPackageDiscoveryFailed' }
         'ClassifyExistingPackage' { return 'ExistingPackageOwnershipClassificationFailed' }
         'ResolveExistingPackageDecision' { return 'ExistingPackageDecisionFailed' }
-        'PreparePackageAssignedFile' { return 'PackageFilePreparationFailed' }
-        'DistributePackageFileToDepots' { return 'DepotDistributionFailed' }
+        'PrepareArtifactFiles' { return 'ArtifactFilePreparationFailed' }
+        'DistributeArtifactFilesToDepots' { return 'DepotDistributionFailed' }
         'MaterializeNpmPackage' { return 'NpmMaterializationFailed' }
         'AssertDurableMaterialization' { return 'PackageMaterializationNotDurable' }
         'AssignPackage' { return 'PackageAssignFailed' }
@@ -237,7 +237,7 @@ function Clear-PackageWorkDirectories {
     )
 
     foreach ($cleanupTarget in @(
-            [pscustomobject]@{ Label = 'package file staging'; Path = [string]$PackageResult.PackageFileStagingDirectory; RootPath = [string]$PackageResult.PackageFileStagingRootDirectory }
+            [pscustomobject]@{ Label = 'artifact staging'; Path = [string]$PackageResult.ArtifactStagingDirectory; RootPath = [string]$PackageResult.ArtifactStagingRootDirectory }
             [pscustomobject]@{ Label = 'package install stage'; Path = [string]$PackageResult.PackageInstallStageDirectory; RootPath = [string]$PackageResult.PackageInstallStageRootDirectory }
         )) {
         if ([string]::IsNullOrWhiteSpace($cleanupTarget.Path)) {
@@ -284,8 +284,8 @@ function Invoke-PackageAssignedFlow {
         [pscustomobject]@{ Name = 'FindExistingPackage'; Message = '[STEP] Discovering existing installs.'; Action = { param($r) Find-PackageExistingPackage -PackageResult $r } },
         [pscustomobject]@{ Name = 'ClassifyExistingPackage'; Message = '[STEP] Classifying install ownership.'; Action = { param($r) Set-PackageExistingPackage -PackageResult $r } },
         [pscustomobject]@{ Name = 'ResolveExistingPackageDecision'; Message = '[STEP] Deciding reuse, adoption, or replacement.'; Action = { param($r) Resolve-PackageExistingPackageDecision -PackageResult $r } },
-        [pscustomobject]@{ Name = 'PreparePackageAssignedFile'; Message = '[STEP] Ensuring package file is available.'; Action = { param($r) Resolve-PackageInstallFile -PackageResult $r } },
-        [pscustomobject]@{ Name = 'DistributePackageFileToDepots'; Message = '[STEP] Reconciling package file depot mirrors.'; Action = { param($r) Invoke-PackageDepotDistribution -PackageResult $r } },
+        [pscustomobject]@{ Name = 'PrepareArtifactFiles'; Message = '[STEP] Ensuring the complete artifact file set is available.'; Action = { param($r) Resolve-PackageArtifactFiles -PackageResult $r } },
+        [pscustomobject]@{ Name = 'DistributeArtifactFilesToDepots'; Message = '[STEP] Reconciling artifact file depot mirrors.'; Action = { param($r) Invoke-PackageDepotDistribution -PackageResult $r } },
         [pscustomobject]@{ Name = 'MaterializeNpmPackage'; Message = '[STEP] Materializing npm package metadata and tarballs.'; Action = { param($r) Invoke-PackageNpmMaterialization -PackageResult $r } },
         [pscustomobject]@{ Name = 'AssignPackage'; Message = '[STEP] Assigning the package (install or reuse per assigned install operation).'; Action = { param($r) Set-PackageAssignedState -PackageResult $r } },
         [pscustomobject]@{ Name = 'CheckAssignedReadiness'; Message = '[STEP] Checking assigned package readiness.'; Action = { param($r) Test-PackageAssignedReadiness -PackageResult $r } },
@@ -325,45 +325,46 @@ function Invoke-PackageAssignedFlow {
     return $PackageResult
 }
 
-function Find-PackageDurablePackageFileInDepot {
+function Find-PackageDurableArtifactFilesInDepot {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
         [psobject]$PackageResult
     )
 
-    if (-not $PackageResult.Package -or
-        -not $PackageResult.Package.PSObject.Properties['packageFile'] -or
-        -not $PackageResult.Package.packageFile -or
-        -not $PackageResult.Package.packageFile.PSObject.Properties['fileName'] -or
-        [string]::IsNullOrWhiteSpace([string]$PackageResult.Package.packageFile.fileName)) {
-        return $null
-    }
-
-    $preferredVerification = Get-PackagePreferredVerification -AcquisitionCandidates @($PackageResult.AcquisitionPlan.Candidates)
-    $packageFileName = [string]$PackageResult.Package.packageFile.fileName
-    foreach ($depotSource in @(Get-PackagePackageDepotSources -PackageConfig $PackageResult.PackageConfig)) {
-        if ([string]::IsNullOrWhiteSpace([string]$depotSource.basePath)) {
-            continue
-        }
-
-        $candidateDirectory = [System.IO.Path]::GetFullPath((Join-Path ([string]$depotSource.basePath) $PackageResult.PackageDepotRelativeDirectory))
-        $candidatePath = Join-Path $candidateDirectory $packageFileName
-        if (-not (Test-Path -LiteralPath $candidatePath -PathType Leaf)) {
-            continue
-        }
-
-        $verification = Test-PackageSavedFile -Path $candidatePath -Verification $preferredVerification
-        if ($verification.Accepted) {
-            return [pscustomobject]@{
-                SourceId       = [string]$depotSource.id
-                Path           = $candidatePath
-                Verification   = $verification
+    $durableFiles = New-Object System.Collections.Generic.List[object]
+    $missingFiles = New-Object System.Collections.Generic.List[object]
+    foreach ($artifactFile in @($PackageResult.ArtifactFiles)) {
+        $preferredVerification = Get-PackagePreferredVerification -AcquisitionCandidates @($artifactFile.AcquisitionPlan.Candidates)
+        $found = $null
+        foreach ($depotSource in @(Get-PackagePackageDepotSources -PackageConfig $PackageResult.PackageConfig)) {
+            if ([string]::IsNullOrWhiteSpace([string]$depotSource.basePath)) { continue }
+            $packageDirectory = Resolve-PackageArtifactChildPath -RootPath ([string]$depotSource.basePath) -RelativePath ([string]$PackageResult.PackageDepotRelativeDirectory)
+            $candidatePath = Resolve-PackageArtifactChildPath -RootPath $packageDirectory -RelativePath ([string]$artifactFile.RelativePath)
+            if (-not (Test-Path -LiteralPath $candidatePath -PathType Leaf)) { continue }
+            $verification = Test-PackageSavedFile -Path $candidatePath -Verification $preferredVerification
+            if ($verification.Accepted) {
+                $found = [pscustomobject]@{
+                    Id = [string]$artifactFile.Id; RelativePath = [string]$artifactFile.RelativePath
+                    SourceId = [string]$depotSource.id; Path = $candidatePath; Verification = $verification
+                }
+                break
             }
         }
+        if ($found) { $durableFiles.Add($found) | Out-Null }
+        else {
+            $missingFiles.Add([pscustomobject]@{
+                    Id = [string]$artifactFile.Id; RelativePath = [string]$artifactFile.RelativePath
+                    ExpectedDepotPath = [string]$artifactFile.DefaultDepotPath
+                }) | Out-Null
+        }
     }
 
-    return $null
+    return [pscustomobject]@{
+        Complete = $missingFiles.Count -eq 0
+        Files = @($durableFiles.ToArray())
+        MissingFiles = @($missingFiles.ToArray())
+    }
 }
 
 function Assert-PackageMaterializationDurable {
@@ -373,15 +374,16 @@ function Assert-PackageMaterializationDurable {
         [psobject]$PackageResult
     )
 
-    $requiresPackageFile = Test-PackagePackageFileAcquisitionRequired -Package $PackageResult.Package
+    $requiresArtifactFiles = Test-PackageArtifactFileAcquisitionRequired -Package $PackageResult.Package
     $npmMaterialized = Test-PackageNpmMaterializedInstallKind -Package $PackageResult.Package
-    $durablePackageFile = $null
+    $durableArtifactFiles = $null
     $durableNpmMaterialization = $null
 
-    if ($requiresPackageFile) {
-        $durablePackageFile = Find-PackageDurablePackageFileInDepot -PackageResult $PackageResult
-        if (-not $durablePackageFile) {
-            throw "MaterializeOnly for '$($PackageResult.PackageId)' did not produce a verified package file in depot layout. Staging files alone are not durable materialization."
+    if ($requiresArtifactFiles) {
+        $durableArtifactFiles = Find-PackageDurableArtifactFilesInDepot -PackageResult $PackageResult
+        if (-not $durableArtifactFiles.Complete) {
+            $details = @($durableArtifactFiles.MissingFiles | ForEach-Object { "'$($_.Id)' at '$($_.ExpectedDepotPath)'" }) -join ', '
+            throw "MaterializeOnly for '$($PackageResult.PackageId)' did not produce the complete verified artifact file set in depot layout: $details. Staging files alone are not durable materialization."
         }
     }
 
@@ -395,10 +397,10 @@ function Assert-PackageMaterializationDurable {
     $PackageResult.InstallOrigin = 'MaterializedOnly'
     $PackageResult | Add-Member -MemberType NoteProperty -Name Materialization -Value ([pscustomobject]@{
         Success                = $true
-        Status                 = if ($requiresPackageFile -or $npmMaterialized) { 'Durable' } else { 'NoDurableArtifactsRequired' }
-        PackageFile            = $durablePackageFile
+        Status                 = if ($requiresArtifactFiles -or $npmMaterialized) { 'Durable' } else { 'NoDurableArtifactsRequired' }
+        ArtifactFiles          = if ($durableArtifactFiles) { @($durableArtifactFiles.Files) } else { @() }
         NpmMaterialization     = $durableNpmMaterialization
-        PackageFileRequired    = $requiresPackageFile
+        ArtifactFilesRequired = $requiresArtifactFiles
         NpmMaterializedPackage = $npmMaterialized
     }) -Force
 
@@ -420,8 +422,8 @@ function Invoke-PackageMaterializeOnlyFlow {
         [pscustomobject]@{ Name = 'ResolveDependencies'; Message = '[STEP] Materializing package dependencies.'; Action = { param($r) Resolve-PackageDependencies -PackageResult $r -DependencyStack $DependencyStack } },
         [pscustomobject]@{ Name = 'ResolvePaths'; Message = '[STEP] Resolving package paths.'; Action = { param($r) Resolve-PackagePaths -PackageResult $r } },
         [pscustomobject]@{ Name = 'BuildAcquisitionPlan'; Message = '[STEP] Building acquisition plan.'; Action = { param($r) Build-PackageAcquisitionPlan -PackageResult $r } },
-        [pscustomobject]@{ Name = 'PreparePackageAssignedFile'; Message = '[STEP] Materializing package file into staging.'; Action = { param($r) Resolve-PackageInstallFile -PackageResult $r } },
-        [pscustomobject]@{ Name = 'DistributePackageFileToDepots'; Message = '[STEP] Reconciling package file depot mirrors.'; Action = { param($r) Invoke-PackageDepotDistribution -PackageResult $r } },
+        [pscustomobject]@{ Name = 'PrepareArtifactFiles'; Message = '[STEP] Materializing the artifact file set into staging.'; Action = { param($r) Resolve-PackageArtifactFiles -PackageResult $r } },
+        [pscustomobject]@{ Name = 'DistributeArtifactFilesToDepots'; Message = '[STEP] Reconciling artifact file depot mirrors.'; Action = { param($r) Invoke-PackageDepotDistribution -PackageResult $r } },
         [pscustomobject]@{ Name = 'MaterializeNpmPackage'; Message = '[STEP] Materializing npm package metadata and tarballs.'; Action = { param($r) Invoke-PackageNpmMaterialization -PackageResult $r } },
         [pscustomobject]@{ Name = 'AssertDurableMaterialization'; Message = '[STEP] Verifying durable depot materialization.'; Action = { param($r) Assert-PackageMaterializationDurable -PackageResult $r } },
         [pscustomobject]@{ Name = 'ClearPackageWorkDirectories'; Message = '[STEP] Cleaning package staging directories.'; Action = { param($r) Clear-PackageWorkDirectories -PackageResult $r } }
@@ -438,11 +440,11 @@ function Invoke-PackageMaterializeOnlyFlow {
             $PackageResult.CurrentStep = $step.Name
             Write-PackageExecutionMessage -Message $step.Message
             $PackageResult = & $step.Action $PackageResult
-            if ($step.Name -eq 'PreparePackageAssignedFile' -and
-                $PackageResult.PackageFilePreparation -and
-                $PackageResult.PackageFilePreparation.PSObject.Properties['Success'] -and
-                -not [bool]$PackageResult.PackageFilePreparation.Success) {
-                throw ([string]$PackageResult.PackageFilePreparation.ErrorMessage)
+            if ($step.Name -eq 'PrepareArtifactFiles' -and
+                $PackageResult.ArtifactPreparation -and
+                $PackageResult.ArtifactPreparation.PSObject.Properties['Success'] -and
+                -not [bool]$PackageResult.ArtifactPreparation.Success) {
+                throw 'One or more required artifact files could not be prepared.'
             }
         }
 

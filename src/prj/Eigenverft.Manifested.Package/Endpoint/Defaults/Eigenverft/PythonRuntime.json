@@ -1,11 +1,11 @@
 {
-  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json",
-  "schemaVersion": "1.9",
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-2.0.schema.json",
+  "schemaVersion": "2.0",
   "definitionPublication": {
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "PythonRuntime",
-    "definitionRevision": 6,
+    "definitionRevision": 7,
     "publishedAtUtc": "2026-07-14T04:55:50.4324908Z",
     "definitionSignature": {
       "kind": "signed",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-14T04:56:28.5220950Z",
-      "signatureValue": "inFNUudMANgm1kwlI9zTlib/k20m0yqrU++XXXiBNx04mX92uHf0eTXh1hn9jUkzkkTYD7TMPhPEljPZa17yzu9YU6iMNPO8bnRjd14LupnidzENT2r+ggbji7Kmmc52RSQpI9YiPl0TWpl+EDaty8wtfnAr/STkL4qr99UXA+aCjqpvrzRELV6kD7dQ675riNdKTI8crC0DIwQXpnDJ8zHngPjEsggsARMJ+mwAoKS5hDmruhXVPCQFB2T9ZdWnl6DZzD4RpR4+QoEzgpR0sQLmhca644mljhC0rXx6h0JhKnZ4zALNtHV8JCWltAf9VqFVl9Lzk5DXzvnanhzuATsd510ubVKVhtiPnVFWGrZKqcP3BJBVkBFUxGNssvuXpSewBRvAfiLXyJrmYMnVR1PBXhOrQhAIguchCuTe3O2D1H1vVCKGxygKUZX9NyUsqmQa6tp3H41lDt5v5P0n+my0doPaVHGeReKG8wNFgAgM2eaZCeeNau39bjtX5bBM"
+      "signedAtUtc": "2026-07-17T06:16:22.1188393Z",
+      "signatureValue": "ALBG2W8kjrz1tu+IbkA4MjV4pz7IMLLPawHSpLcILJI8yNWcY92DJRDMbJ1ZCR1w7iGrHEKwMeTrOi3WSEJ818aQPShN7wYpxL3dsT8//0t3QjjqKLp0s2ViWUSrhzJ/J2TY66BmFQhYcKEIlVU370u3ugGSF0gmGr2cZhVBKSkGG0xjeLl9JdckFHpIN7kc+rU/QFNOm9sYh3SFzPt6vPLYmtRT8IQAw4isS/TJVqwny9pTpqPZilpPo27xZp+/9brHqmi2v/KZqd0JfkwSyZo9AExY6UiLeohroI8dF4zMJkkG3ixWC9D5JatH10lq8/gbQqyB52r/t+g2xqR3y2rrD80nysdVmvb+uzpp2l+Vpe2Z6Brq0YyNc9udVuvyKSM8YGb9q3Y6n/wLGWfCFBrhJWf5c+iuhel+kAIaF3Rvl06xi4dUkuDkRZG5NmKxzqQV5MF2eFz7MSWcyUdeMkG6pWGAn49obmGAHkNb1kbYt+zbYN0kUG84cOWZo1Sz"
     }
   },
   "display": {
@@ -54,25 +54,29 @@
           "strategy": "latestByVersion",
           "allowPrerelease": false
         },
-        "fileNameTemplate": "python.{version}.nupkg",
-        "acquisitionCandidates": [
-          {
-            "kind": "packageDepot",
-            "searchOrder": 100,
-            "verification": {
-              "mode": "optional"
-            }
-          },
-          {
-            "kind": "vendorDownload",
-            "sourceId": "pythonNuGetPackage",
-            "sourcePath": "python/{version}/python.{version}.nupkg",
-            "searchOrder": 900,
-            "verification": {
-              "mode": "required"
-            }
+        "artifactFiles": {
+          "package": {
+            "relativePathTemplate": "python.{version}.nupkg",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "optional"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "sourceId": "pythonNuGetPackage",
+                "sourcePath": "python/{version}/python.{version}.nupkg",
+                "searchOrder": 900,
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
           }
-        ]
+        }
       },
       {
         "id": "PythonRuntime-win-arm64-stable",
@@ -90,25 +94,29 @@
           "strategy": "latestByVersion",
           "allowPrerelease": false
         },
-        "fileNameTemplate": "pythonarm64.{version}.nupkg",
-        "acquisitionCandidates": [
-          {
-            "kind": "packageDepot",
-            "searchOrder": 100,
-            "verification": {
-              "mode": "optional"
-            }
-          },
-          {
-            "kind": "vendorDownload",
-            "sourceId": "pythonNuGetPackage",
-            "sourcePath": "pythonarm64/{version}/pythonarm64.{version}.nupkg",
-            "searchOrder": 900,
-            "verification": {
-              "mode": "required"
-            }
+        "artifactFiles": {
+          "package": {
+            "relativePathTemplate": "pythonarm64.{version}.nupkg",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "optional"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "sourceId": "pythonNuGetPackage",
+                "sourcePath": "pythonarm64/{version}/pythonarm64.{version}.nupkg",
+                "searchOrder": 900,
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
           }
-        ]
+        }
       }
     ],
     "releases": [
@@ -124,16 +132,24 @@
         "targetArtifacts": {
           "PythonRuntime-win-x64-stable": {
             "artifactId": "python-runtime-win-x64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "77271b5958f88608884998c27df6f8dd2fa59faf72614bc1e2ffd1d72a3336c3"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "77271b5958f88608884998c27df6f8dd2fa59faf72614bc1e2ffd1d72a3336c3"
+                }
+              }
             }
           },
           "PythonRuntime-win-arm64-stable": {
             "artifactId": "python-runtime-win-arm64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "b31a716b6e3570c725c1d5f849f8c9427655760a139054d3837ba653fdd80347"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "b31a716b6e3570c725c1d5f849f8c9427655760a139054d3837ba653fdd80347"
+                }
+              }
             }
           }
         }
@@ -150,16 +166,24 @@
         "targetArtifacts": {
           "PythonRuntime-win-x64-stable": {
             "artifactId": "python-runtime-win-x64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "9ac15cfa6cab1115c83d48f2af55c554efa4d1bb044bbc4ab1c9d17ad426e16c"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "9ac15cfa6cab1115c83d48f2af55c554efa4d1bb044bbc4ab1c9d17ad426e16c"
+                }
+              }
             }
           },
           "PythonRuntime-win-arm64-stable": {
             "artifactId": "python-runtime-win-arm64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "f689dbf00ae9b3d0f0a8830e7335b51ca291b105ce92d41e5e7dfa6dfe706ec3"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "f689dbf00ae9b3d0f0a8830e7335b51ca291b105ce92d41e5e7dfa6dfe706ec3"
+                }
+              }
             }
           }
         }
@@ -176,16 +200,24 @@
         "targetArtifacts": {
           "PythonRuntime-win-x64-stable": {
             "artifactId": "python-runtime-win-x64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "03ad5810986afd8273a34a28c15cb594300ba7f4749f24362d69206fa1b6ac15"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "03ad5810986afd8273a34a28c15cb594300ba7f4749f24362d69206fa1b6ac15"
+                }
+              }
             }
           },
           "PythonRuntime-win-arm64-stable": {
             "artifactId": "python-runtime-win-arm64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "ff4558830622fb904923dd8b68132a1971b6cd688b04d28623c9f3953079409a"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "ff4558830622fb904923dd8b68132a1971b6cd688b04d28623c9f3953079409a"
+                }
+              }
             }
           }
         }
@@ -202,16 +234,24 @@
         "targetArtifacts": {
           "PythonRuntime-win-x64-stable": {
             "artifactId": "python-runtime-win-x64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "c2347c2975f661b2dafceacc94218dfe87781955a3cd309c633d343b8c8dac31"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "c2347c2975f661b2dafceacc94218dfe87781955a3cd309c633d343b8c8dac31"
+                }
+              }
             }
           },
           "PythonRuntime-win-arm64-stable": {
             "artifactId": "python-runtime-win-arm64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "2a0406b834d4ff33414f70597b67797466ba2344baa534ab8f62c4eae1c3e599"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "2a0406b834d4ff33414f70597b67797466ba2344baa534ab8f62c4eae1c3e599"
+                }
+              }
             }
           }
         }
@@ -292,7 +332,8 @@
         "kind": "expandArchive",
         "installDirectory": "python-runtime/{releaseTrack}/{version}/{artifactDistributionVariant}",
         "expandedRoot": "tools",
-        "createDirectories": []
+        "createDirectories": [],
+        "artifactFileId": "package"
       },
       "readyStateCheck": {
         "use": "discovery.presence",

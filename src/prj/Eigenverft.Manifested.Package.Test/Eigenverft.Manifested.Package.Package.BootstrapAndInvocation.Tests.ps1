@@ -499,8 +499,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - bootst
         Mock Resolve-PackageDependencies { $PackageResult }
         Mock Resolve-PackagePaths { $PackageResult }
         Mock Build-PackageAcquisitionPlan { $PackageResult }
-        Mock Resolve-PackageInstallFile {
-            $PackageResult | Add-Member -MemberType NoteProperty -Name PackageFilePreparation -Value ([pscustomobject]@{ Success = $true; Status = 'Skipped'; ErrorMessage = $null }) -Force
+        Mock Resolve-PackageArtifactFiles {
+            $PackageResult | Add-Member -MemberType NoteProperty -Name ArtifactPreparation -Value ([pscustomobject]@{ Success = $true; Status = 'Skipped'; ErrorMessage = $null }) -Force
             $PackageResult
         }
         Mock Invoke-PackageDepotDistribution { $PackageResult }
@@ -568,8 +568,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - bootst
         Mock Find-PackageExistingPackage { $stepOrder.Add('FindExistingPackage') | Out-Null; $PackageResult }
         Mock Set-PackageExistingPackage { $stepOrder.Add('ClassifyExistingPackage') | Out-Null; $PackageResult }
         Mock Resolve-PackageExistingPackageDecision { $stepOrder.Add('ResolveExistingPackageDecision') | Out-Null; $PackageResult }
-        Mock Resolve-PackageInstallFile { $stepOrder.Add('PreparePackageAssignedFile') | Out-Null; $PackageResult }
-        Mock Invoke-PackageDepotDistribution { $stepOrder.Add('DistributePackageFileToDepots') | Out-Null; $PackageResult }
+        Mock Resolve-PackageArtifactFiles { $stepOrder.Add('PrepareArtifactFiles') | Out-Null; $PackageResult }
+        Mock Invoke-PackageDepotDistribution { $stepOrder.Add('DistributeArtifactFilesToDepots') | Out-Null; $PackageResult }
         Mock Invoke-PackageNpmMaterialization { $stepOrder.Add('MaterializeNpmPackage') | Out-Null; $PackageResult }
         Mock Set-PackageAssignedState {
             $stepOrder.Add('AssignPackage') | Out-Null

@@ -159,6 +159,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - catalo
             ))
         $missingTargetDefinition.packageOperations.assigned.install = [pscustomobject]@{
             kind             = 'runInstaller'
+            artifactFileId   = 'package'
             targetKind       = 'directory'
             installerKind    = 'customExe'
             uiMode           = 'silent'
@@ -174,6 +175,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - catalo
             ))
         $machinePrerequisiteDefinition.packageOperations.assigned.install = [pscustomobject]@{
             kind             = 'runInstaller'
+            artifactFileId   = 'package'
             targetKind       = 'machinePrerequisite'
             installerKind    = 'customExe'
             uiMode           = 'silent'
@@ -236,18 +238,20 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - catalo
         $report.TrustedCount | Should -Be $report.CheckedCount
     }
 
-    It 'enforces package-file payload hash metadata when strict payload verification is enabled' {
+    It 'enforces per-artifact payload hash metadata when strict payload verification is enabled' {
         $candidate = [pscustomobject]@{
             kind         = 'vendorDownload'
             verification = [pscustomobject]@{ mode = 'none' }
         }
         $unsignedPackage = New-TestPackageRelease -Id 'payload-without-hash' -Version '1.0.0' -Architecture 'x64' -FileName 'payload.zip'
+        $unsignedArtifactFile = ConvertTo-TestPsObject @{ id = 'package'; relativePath = 'payload.zip' }
 
-        { Resolve-PackageAcquisitionCandidateVerification -Package $unsignedPackage -AcquisitionCandidate $candidate -PayloadVerificationPolicy enforceWhenPackageFileExists -PackageFileRequired $true } | Should -Throw "*requires packageFile.contentHash or packageFile.publisherSignature*"
+        { Resolve-PackageAcquisitionCandidateVerification -Package $unsignedPackage -ArtifactFile $unsignedArtifactFile -AcquisitionCandidate $candidate -PayloadVerificationPolicy enforceWhenPackageFileExists -ArtifactFileRequired $true } | Should -Throw "*requires contentHash or publisherSignature for artifact file 'package'*"
 
         $hash = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
         $hashedPackage = New-TestPackageRelease -Id 'payload-with-hash' -Version '1.0.0' -Architecture 'x64' -FileName 'payload.zip' -PackageFileSha256 $hash
-        $verification = Resolve-PackageAcquisitionCandidateVerification -Package $hashedPackage -AcquisitionCandidate $candidate -PayloadVerificationPolicy enforceWhenPackageFileExists -PackageFileRequired $true
+        $hashedArtifactFile = ConvertTo-TestPsObject @{ id = 'package'; relativePath = 'payload.zip'; contentHash = @{ algorithm = 'sha256'; value = $hash } }
+        $verification = Resolve-PackageAcquisitionCandidateVerification -Package $hashedPackage -ArtifactFile $hashedArtifactFile -AcquisitionCandidate $candidate -PayloadVerificationPolicy enforceWhenPackageFileExists -ArtifactFileRequired $true
 
         $verification.mode | Should -Be 'required'
         $verification.sha256 | Should -Be $hash

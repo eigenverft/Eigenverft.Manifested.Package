@@ -25,8 +25,8 @@ Install-PackageArchive -PackageResult $result
         [psobject]$PackageResult
     )
 
-    if ([string]::IsNullOrWhiteSpace($PackageResult.PackageFilePath) -or -not (Test-Path -LiteralPath $PackageResult.PackageFilePath)) {
-        throw "Package archive install for '$($PackageResult.PackageId)' requires a saved package file."
+    if ([string]::IsNullOrWhiteSpace($PackageResult.OperationArtifactFilePath) -or -not (Test-Path -LiteralPath $PackageResult.OperationArtifactFilePath)) {
+        throw "Package archive install for '$($PackageResult.PackageId)' requires its selected operation artifact file."
     }
 
     $install = Get-PackageAssignedInstallOperation -Release $PackageResult.Package
@@ -37,9 +37,9 @@ Install-PackageArchive -PackageResult $result
         throw "Package archive install for '$($PackageResult.PackageId)' requires a package install stage directory."
     }
 
-    $stagePath = [System.IO.Path]::GetFullPath([string]$PackageResult.PackageInstallStageDirectory)
+    $stagePath = Resolve-PackageArtifactChildPath -RootPath ([string]$PackageResult.PackageInstallStageDirectory) -RelativePath 'Expanded'
     Remove-PathIfExists -Path $stagePath | Out-Null
-    Expand-ArchiveToDirectory -ArchivePath $PackageResult.PackageFilePath -DestinationDirectory $stagePath -Overwrite | Out-Null
+    Expand-ArchiveToDirectory -ArchivePath $PackageResult.OperationArtifactFilePath -DestinationDirectory $stagePath -Overwrite | Out-Null
     $expandedRoot = Get-ExpandedArchiveRoot -StagePath $stagePath
     if ($install.PSObject.Properties['expandedRoot'] -and
         -not [string]::IsNullOrWhiteSpace([string]$install.expandedRoot) -and
@@ -81,8 +81,7 @@ Resolves the final installed file path for a single-file package install.
 
 .DESCRIPTION
 Uses install.targetRelativePath when present and otherwise falls back to the
-canonical packageFile.fileName so single-file resource packages can share one
-simple install model.
+selected operation artifact file's relative path.
 #>
     [CmdletBinding()]
     param(
@@ -99,18 +98,15 @@ simple install model.
         -not [string]::IsNullOrWhiteSpace([string]$install.targetRelativePath)) {
         $targetRelativePath = ([string]$install.targetRelativePath) -replace '/', '\'
     }
-    elseif ($PackageResult.Package -and
-        $PackageResult.Package.PSObject.Properties['packageFile'] -and
-        $PackageResult.Package.packageFile -and
-        $PackageResult.Package.packageFile.PSObject.Properties['fileName'] -and
-        -not [string]::IsNullOrWhiteSpace([string]$PackageResult.Package.packageFile.fileName)) {
-        $targetRelativePath = [string]$PackageResult.Package.packageFile.fileName
+    elseif ($PackageResult.OperationArtifactFile -and
+        -not [string]::IsNullOrWhiteSpace([string]$PackageResult.OperationArtifactFile.RelativePath)) {
+        $targetRelativePath = [string]$PackageResult.OperationArtifactFile.RelativePath
     }
     else {
-        throw "Package single-file install for '$($PackageResult.PackageId)' requires assigned.targetRelativePath or packageFile.fileName."
+        throw "Package file placement for '$($PackageResult.PackageId)' requires assigned.targetRelativePath or an operation artifact relative path."
     }
 
-    return (Join-Path $PackageResult.InstallDirectory $targetRelativePath)
+    return (Resolve-PackageArtifactChildPath -RootPath $PackageResult.InstallDirectory -RelativePath $targetRelativePath -ArtifactFileId ([string]$PackageResult.OperationArtifactFile.Id))
 }
 
 function Install-PackagePackageFile {
@@ -128,8 +124,8 @@ saved package file into the configured target-relative path.
         [psobject]$PackageResult
     )
 
-    if ([string]::IsNullOrWhiteSpace($PackageResult.PackageFilePath) -or -not (Test-Path -LiteralPath $PackageResult.PackageFilePath -PathType Leaf)) {
-        throw "Package single-file install for '$($PackageResult.PackageId)' requires a saved package file."
+    if ([string]::IsNullOrWhiteSpace($PackageResult.OperationArtifactFilePath) -or -not (Test-Path -LiteralPath $PackageResult.OperationArtifactFilePath -PathType Leaf)) {
+        throw "Package file placement for '$($PackageResult.PackageId)' requires its selected operation artifact file."
     }
 
     $installedFilePath = Get-PackageInstalledFilePath -PackageResult $PackageResult
@@ -145,14 +141,15 @@ saved package file into the configured target-relative path.
         $null = New-Item -ItemType Directory -Path $targetDirectory -Force
     }
 
-    $null = Copy-FileToPath -SourcePath $PackageResult.PackageFilePath -TargetPath $installedFilePath -Overwrite
+    $null = Copy-FileToPath -SourcePath $PackageResult.OperationArtifactFilePath -TargetPath $installedFilePath -Overwrite
 
     return [pscustomobject]@{
         Status           = Get-PackageOwnedInstallStatus -PackageResult $PackageResult
         InstallKind      = 'placePackageFile'
         InstallDirectory = $PackageResult.InstallDirectory
         InstalledFilePath = $installedFilePath
-        PackageFilePath  = $PackageResult.PackageFilePath
+        ArtifactFileId   = [string]$PackageResult.OperationArtifactFile.Id
+        OperationArtifactFilePath = $PackageResult.OperationArtifactFilePath
         ReusedExisting   = $false
     }
 }

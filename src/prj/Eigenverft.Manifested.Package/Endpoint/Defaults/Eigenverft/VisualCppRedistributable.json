@@ -1,11 +1,11 @@
 {
-  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json",
-  "schemaVersion": "1.9",
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-2.0.schema.json",
+  "schemaVersion": "2.0",
   "definitionPublication": {
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "VisualCppRedistributable",
-    "definitionRevision": 5,
+    "definitionRevision": 6,
     "publishedAtUtc": "2026-07-14T04:55:50.4324908Z",
     "definitionSignature": {
       "kind": "signed",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-14T04:56:28.9923193Z",
-      "signatureValue": "HxCiSqOgltBINUKuW7DkcxLi1aOfgvWqvGz59qnnjQM3rC6KigKbrmJ0sUs4+8TzRp5nuO81LboZKZJARTDwhpuu4JpX/vKBA0P/gnxhXOfW3loZi8tSpKzCWfRZICU6i9mIGKzWzDEdnKkE8ShXSaicS2b8CsnzdMVXqEg/ovx0EosRz1u+dPN1azQ+goTIPRc3DXO0m1WvIYspaS5tcjYueL6egxvZX+M+yzIow54L280yfXsVyLOL2uTXCzyU5+ehVxSfhNffrSH5knkKMoXRDdND4Uajq4B0YHXmACpA/G9lYVkkYhE4bEnGK3YmIDIOvM+sDDkSdh/x/4GkzZbrFsMnwAjMmj36pdFkM8XJwI5ymR7VhKjLNcpx0uz/rLCsN/FbVCAE/ua9Lj/o0M780j7wYBrau8iCE4cmbzY6CrrcPp8tD0LrSbSBMIO7WkfnbWwH1xdG3+vgVmlRfGWgScaIJxwRoSCUOncp8UyVjZ/PLavx6MU2xdAzNoJ8"
+      "signedAtUtc": "2026-07-17T06:16:22.7386023Z",
+      "signatureValue": "KmwttlF55K5OhsopZE4YZB4kfGzBelTNztPKkpU26GtCdCzR7LYHmUkLsx29yrBldetyw8L7ZwihhUJIWzzv1ZK2ASQJ3fRN+yZ9POrev9baUslhc6LcsmPuhC1gjHsq4TMYtDmvJgIWp4vOsybiUaTVI2RgrJTBVaTvH9fVzX5P9xy4+Gxmucq99wsljAFB5AlorAA0O1hhp2cfUtpun4v46HNL5ebKZlNBKF5Hv1cFgRVDJLH80FEPqrAz6Ucxlh0oSH+sRhnChAfY0RLrik8KU2t12SsJYJO3/fj3UGReFeRX5XckVj6Ti1bAABFqhzlWvL6cUbWIvFJRoBqK1wGKRMIonvdyBU9XZnajYCj1Rul7lwvyZ3fOcG9WNQkHtUfSDBl+b5UdNHvGW498M7ysTzQCrPgXJCS2COaAmp8iuQWhfZqvZcDNqSsbS+ltmDKaOc9I8LRTMUV2jO3jKEU4IIwthmTAMnAe93p0gSWiF9K9tqXD3m6Gek9IZ6en"
     }
   },
   "display": {
@@ -55,25 +55,29 @@
           "strategy": "latestByVersion",
           "allowPrerelease": false
         },
-        "fileNameTemplate": "vc_redist.x64.exe",
-        "acquisitionCandidates": [
-          {
-            "kind": "packageDepot",
-            "searchOrder": 100,
-            "verification": {
-              "mode": "optional"
-            }
-          },
-          {
-            "kind": "vendorDownload",
-            "sourceId": "visualCppRedistributableDownload",
-            "sourcePath": "vc14/vc_redist.x64.exe",
-            "searchOrder": 900,
-            "verification": {
-              "mode": "required"
-            }
+        "artifactFiles": {
+          "package": {
+            "relativePathTemplate": "vc_redist.x64.exe",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "optional"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "sourceId": "visualCppRedistributableDownload",
+                "sourcePath": "vc14/vc_redist.x64.exe",
+                "searchOrder": 900,
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
           }
-        ]
+        }
       }
     ],
     "releases": [
@@ -85,10 +89,14 @@
         "targetArtifacts": {
           "VisualCppRedistributable-x64-stable": {
             "artifactId": "vc-runtime-x64-stable",
-            "publisherSignature": {
-              "kind": "authenticode",
-              "requireValid": true,
-              "subjectContains": "Microsoft Corporation"
+            "artifactFiles": {
+              "package": {
+                "publisherSignature": {
+                  "kind": "authenticode",
+                  "requireValid": true,
+                  "subjectContains": "Microsoft Corporation"
+                }
+              }
             }
           }
         }
@@ -176,7 +184,8 @@
         ],
         "restartExitCodes": [
           3010
-        ]
+        ],
+        "artifactFileId": "package"
       },
       "readyStateCheck": {
         "use": "discovery.presence",

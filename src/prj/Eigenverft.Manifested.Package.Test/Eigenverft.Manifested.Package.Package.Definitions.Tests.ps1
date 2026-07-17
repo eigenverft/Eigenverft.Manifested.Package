@@ -127,7 +127,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $result.PackageId | Should -Be 'llama-cpp-win-cpu-x64-stable'
         $result.Package.version | Should -Be '9934'
         $result.Package.releaseTag | Should -Be 'b9934'
-        $result.Package.packageFile.fileName | Should -Be 'llama-b9934-bin-win-cpu-x64.zip'
+        $result.Package.artifactFiles[0].relativePath | Should -Be 'llama-b9934-bin-win-cpu-x64.zip'
         $result.Package.assigned.pathRegistration.source.kind | Should -Be 'shim'
         $result.Package.assigned.pathRegistration.source.use | Should -Be 'discovery.presence.commands'
         @($config.Definition.discovery.presence.commands.name) | Should -Be @('llama-cli', 'llama-server', 'llama-quantize', 'llama-bench', 'llama-tokenize')
@@ -159,8 +159,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $sourceDefinition.GitHubRepository | Should -Be 'git'
         $result.Package.version | Should -Be '2.55.0'
         $result.Package.releaseTag | Should -Be 'v2.55.0.windows.2'
-        $result.Package.packageFile.fileName | Should -Be $expectedFileName
-        $result.Package.packageFile.contentHash.value | Should -Be $expectedSha256
+        $result.Package.artifactFiles[0].relativePath | Should -Be $expectedFileName
+        $result.Package.artifactFiles[0].contentHash.value | Should -Be $expectedSha256
         $result.Package.assigned.pathRegistration.source.kind | Should -Be 'shim'
         $result.Package.assigned.pathRegistration.source.use | Should -Be 'discovery.presence.commands'
         $config.Definition.discovery.presence.commands[0].name | Should -Be 'git'
@@ -192,8 +192,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $sourceDefinition.GitHubRepository | Should -Be 'cli'
         $result.Package.version | Should -Be '2.96.0'
         $result.Package.releaseTag | Should -Be 'v2.96.0'
-        $result.Package.packageFile.fileName | Should -Be $expectedFileName
-        $result.Package.packageFile.contentHash.value | Should -Be $expectedSha256
+        $result.Package.artifactFiles[0].relativePath | Should -Be $expectedFileName
+        $result.Package.artifactFiles[0].contentHash.value | Should -Be $expectedSha256
         $result.Package.assigned.install.kind | Should -Be 'expandArchive'
         $result.Package.assigned.install.expandedRoot | Should -Be 'auto'
         $result.Package.assigned.pathRegistration.source.kind | Should -Be 'shim'
@@ -230,8 +230,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $result.Package.assigned.install.targetDirectoryArgument.prefix | Should -Be '/D='
         $result.Package.discovery.existingInstall.searchLocations[0].kind | Should -Be 'windowsUninstallRegistryKey'
         $result.Package.discovery.existingInstall.searchLocations[0].installDirectorySource | Should -Be 'displayIconDirectory'
-        $result.Package.packageFile.fileName | Should -Be $expectedFileName
-        $result.Package.packageFile.contentHash.value | Should -Be $expectedSha256
+        $result.Package.artifactFiles[0].relativePath | Should -Be $expectedFileName
+        $result.Package.artifactFiles[0].contentHash.value | Should -Be $expectedSha256
     }
 
     It 'loads the shipped VSCodeUser definition with Inno Setup uninstall registry removal' {
@@ -241,8 +241,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $result = Resolve-PackagePackage -PackageResult $result
 
         $config.DefinitionId | Should -Be 'VSCodeUser'
-        $config.SchemaVersion | Should -Be '1.9'
-        @($result.Package.acquisitionCandidates | ForEach-Object { $_.kind }) | Should -Be @('packageDepot', 'vendorDownload')
+        $config.SchemaVersion | Should -Be '2.0'
+        @($result.Package.artifactFiles[0].acquisitionCandidates | ForEach-Object { $_.kind }) | Should -Be @('packageDepot', 'vendorDownload')
         $result.Package.assigned.install.kind | Should -Be 'innoSetupInstaller'
         $result.Package.removed.operation.kind | Should -Be 'innoSetupUninstaller'
         $result.Package.discovery.existingInstall.enabled | Should -Be $true
@@ -266,17 +266,17 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $sourceDefinition.BaseUri | Should -Be 'https://github.com/ip7z/7zip/releases/download/'
         $result.Package.version | Should -Be '26.02'
         $result.Package.releaseTag | Should -Be '2602'
-        $result.Package.packageFile.fileName | Should -Be '7z2602-x64.msi'
-        $result.Package.packageFile.contentHash.algorithm | Should -Be 'sha256'
-        $result.Package.packageFile.contentHash.value | Should -Be 'db407a4f6d4999e5c7bc00ce8a882be94717b56e7fa68140fe3f12605d91643e'
+        $result.Package.artifactFiles[0].relativePath | Should -Be '7z2602-x64.msi'
+        $result.Package.artifactFiles[0].contentHash.algorithm | Should -Be 'sha256'
+        $result.Package.artifactFiles[0].contentHash.value | Should -Be 'db407a4f6d4999e5c7bc00ce8a882be94717b56e7fa68140fe3f12605d91643e'
         $result.Package.assigned.install.kind | Should -Be 'msiInstaller'
         $result.Package.assigned.install.targetDirectoryProperty.name | Should -Be 'INSTALLDIR'
         $result.Package.removed.operation.kind | Should -Be 'msiUninstaller'
         $result.Package.discovery.existingInstall.searchLocations[0].kind | Should -Be 'windowsUninstallRegistrySearch'
         $result.Package.discovery.existingInstall.searchLocations[0].displayNamePatterns | Should -Contain '7-Zip* (x64)*'
         $result.Package.removed.policy.allowedInventoryOwnershipKinds | Should -Contain 'AdoptedExternal'
-        $result.AcquisitionPlan.PackageFileRequired | Should -BeTrue
-        @($result.AcquisitionPlan.Candidates | ForEach-Object { $_.kind }) | Should -Be @('packageDepot', 'vendorDownload')
+        $result.ArtifactAcquisitionPlan.ArtifactFilesRequired | Should -BeTrue
+        @($result.ArtifactFiles[0].AcquisitionPlan.Candidates | ForEach-Object { $_.kind }) | Should -Be @('packageDepot', 'vendorDownload')
     }
 
     It 'loads the shipped NodeRuntime definition and selects the fixed Node.js archive release' {
@@ -304,8 +304,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $sourceDefinition.BaseUri | Should -Be 'https://nodejs.org/dist/'
         $result.Package.version | Should -Be '26.5.0'
         $result.Package.releaseTag | Should -Be 'v26.5.0'
-        $result.Package.packageFile.fileName | Should -Be $expectedFileName
-        $result.Package.packageFile.contentHash.value | Should -Be $expectedSha256
+        $result.Package.artifactFiles[0].relativePath | Should -Be $expectedFileName
+        $result.Package.artifactFiles[0].contentHash.value | Should -Be $expectedSha256
         $result.Package.assigned.pathRegistration.source.kind | Should -Be 'shim'
         $result.Package.assigned.pathRegistration.source.use | Should -Be 'discovery.presence.commands'
         @($config.Definition.discovery.presence.commands.name) | Should -Be @('node', 'npm', 'npx')
@@ -336,9 +336,9 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $sourceDefinition.BaseUri | Should -Be 'https://builds.dotnet.microsoft.com/dotnet/'
         $result.Package.version | Should -Be '10.0.301'
         $result.Package.releaseTag | Should -Be '10.0.9'
-        $result.Package.packageFile.fileName | Should -Be $expectedFileName
-        $result.Package.packageFile.contentHash.algorithm | Should -Be 'sha512'
-        $result.Package.packageFile.contentHash.value | Should -Be $expectedSha512
+        $result.Package.artifactFiles[0].relativePath | Should -Be $expectedFileName
+        $result.Package.artifactFiles[0].contentHash.algorithm | Should -Be 'sha512'
+        $result.Package.artifactFiles[0].contentHash.value | Should -Be $expectedSha512
         $result.Package.assigned.install.kind | Should -Be 'expandArchive'
         $result.Package.assigned.install.installDirectory | Should -Be 'dotnet-sdk10/{releaseTrack}/{version}/{artifactDistributionVariant}'
         $result.Package.assigned.pathRegistration.source.kind | Should -Be 'shim'
@@ -372,8 +372,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $result.Package.version | Should -Be '2026.07.08-0c04a8a'
         $result.Package.assigned.install.kind | Should -Be 'expandArchive'
         $result.Package.assigned.install.expandedRoot | Should -Be 'dist-package'
-        $result.Package.packageFile.fileName | Should -Be $expectedFileName
-        $result.Package.packageFile.contentHash.value | Should -Be $expectedSha256
+        $result.Package.artifactFiles[0].relativePath | Should -Be $expectedFileName
+        $result.Package.artifactFiles[0].contentHash.value | Should -Be $expectedSha256
         $result.Package.assigned.pathRegistration.source.kind | Should -Be 'shim'
         $result.Package.assigned.pathRegistration.source.use | Should -Be 'discovery.presence.commands'
         $config.Definition.discovery.presence.commands[0].name | Should -Be 'agent'
@@ -406,10 +406,10 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
             foreach ($dep in @($config.Definition.dependency.requires)) {
                 $dep.PSObject.Properties.Name | Should -Not -Contain 'repositoryId'
             }
-            $result.Package.packageFile | Should -BeNullOrEmpty
+            @($result.Package.artifactFiles).Count | Should -Be 0
             $result.Package.assigned.install.PSObject.Properties.Name | Should -Not -Contain 'additionalTarballs'
-            $result.AcquisitionPlan.PackageFileRequired | Should -BeFalse
-            @($result.AcquisitionPlan.Candidates).Count | Should -Be 0
+            $result.ArtifactAcquisitionPlan.ArtifactFilesRequired | Should -BeFalse
+            @($result.ArtifactAcquisitionPlan.Files).Count | Should -Be 0
         }
 
         { Get-PackageConfig -DefinitionId 'OpenCodeCliDepot' } | Should -Throw
@@ -487,11 +487,11 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
             $result.Package.readiness.powerShellModules[0].RequiredVersion | Should -Be $case.Version
             $result.Package.ownershipPolicy.allowAdoptExternal | Should -BeTrue
             $result.Package.ownershipPolicy.requirePackageOwnership | Should -BeFalse
-            $result.Package.packageFile.fileName | Should -Be ('{0}.{1}.nupkg' -f $case.ModuleName, $case.Version)
-            $result.Package.packageFile.contentHash.value | Should -Be $case.Hash
+            $result.Package.artifactFiles[0].relativePath | Should -Be ('{0}.{1}.nupkg' -f $case.ModuleName, $case.Version)
+            $result.Package.artifactFiles[0].contentHash.value | Should -Be $case.Hash
             $result.InstallDirectory | Should -BeNullOrEmpty
-            $result.AcquisitionPlan.PackageFileRequired | Should -BeTrue
-            @($result.AcquisitionPlan.Candidates | ForEach-Object { $_.kind }) | Should -Be @('packageDepot', 'vendorDownload')
+            $result.ArtifactAcquisitionPlan.ArtifactFilesRequired | Should -BeTrue
+            @($result.ArtifactFiles[0].AcquisitionPlan.Candidates | ForEach-Object { $_.kind }) | Should -Be @('packageDepot', 'vendorDownload')
         }
     }
 

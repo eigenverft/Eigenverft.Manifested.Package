@@ -133,8 +133,15 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
         $text | Should -Match "Task: create or update package definition 'TestDef'."
         $text | Should -Match '## Runtime endpoint status'
         $text | Should -Match 'AgentAction:'
-        $text | Should -Match '## Start Here'
+        $text | Should -Match 'Start Here: Task and output location'
         $text | Should -Match '# PackageDefinitionAuthoring'
+        $text | Should -Match 'target = distribution suitable for the machine'
+        $text | Should -Match 'artifactFiles = every required file in that distribution'
+        $text | Should -Match 'artifactFileId = file consumed by the install operation'
+        $text | Should -Match '### Split installer'
+        $text | Should -Match '### Archive-derived bootstrap files'
+        $text | Should -Not -Match 'eigenverft-module-package-definition-1\.9\.schema\.json'
+        $text | Should -Not -Match 'packageFile\.fileName'
     }
 
     It 'Get-PackageDefinitionAuthoringGuide -DraftOnly prepends draft-only authoring mode' {
@@ -170,56 +177,43 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
         $text = Get-Content -Raw -LiteralPath $skillPath
         $anchors = @(
             'PackageDefinitionAuthoring',
-            'What this text is',
-            "Task: create or update package definition 'TotalCommander'",
-            'definitionId',
-            'publisherId',
-            'Required First Step',
-            'Before making any JSON edit',
-            'eigenverft-module-package-definition-1.9.schema.json',
+            'Task and output location',
+            'definitionPublication.definitionId',
+            'definitionPublication.publisherId',
+            'eigenverft-module-package-definition-2.0.schema.json',
             'x-eigenverftAgentHint',
-            'nested `description` and `$comment` fields',
-            'Treat schema `description` and `$comment` text as authoring instructions',
-            'Do not skim',
-            'Start Here',
-            'Runtime endpoint status',
-            'Authoring mode',
-            'Publication finalization',
             'Authoring Targets And Endpoints',
             'Selection',
-            'No Installer Execution During Authoring',
-            '$PSVersionTable',
-            'powershell.exe',
-            'pwsh',
-            'Get-Module -ListAvailable Eigenverft.Manifested.Package',
-            'Installer Kind Discovery',
-            'search the web and read documentation first',
-            'Never run the installer',
-            'Existing Definition Latest Version Update',
-            'latest upstream version',
-            'independent of the definition''s install-time `versionSelection` policy',
-            'latest stable version',
-            'Do not use unofficial mirrors as the source of truth',
-            'do not edit or re-sign the JSON',
-            'Refresh every target artifact',
-            'Bump `definitionRevision`',
-            'Test-PackageDefinitionCatalog -RequireTrusted',
-            'Verify-PackageDefinitionSignature -RequireTrusted',
-            'git status --short',
-            'validation, signing, and trust verification',
-            'Test-PackageDefinitionCatalog',
-            'raw JSON Schema validation',
-            'Test-Json',
-            'Get-PackageSigningProfile',
-            'Sign-PackageDefinition',
-            'Resign-PackageDefinition',
-            '-KeepSchemaVersion',
+            'Five-line package mental model',
+            'target = distribution suitable for the machine',
+            'release = selected version',
+            'artifactFiles = every required file in that distribution',
+            'acquisitionCandidates = fallback ways to obtain one file',
+            'artifactFileId = file consumed by the install operation',
+            'Hard stop conditions',
+            'Never run `setup.exe`',
+            'Authoring sequence',
+            'resolved source URL/path',
+            'Artifact file-set rules',
+            'Target and release file-ID sets must match exactly',
+            'archiveEntry',
+            'Install-operation decision table',
+            'complete artifact set is staged',
+            'Discovery/removal alignment',
+            'Validation and signing',
+            'Test-PackageDefinitionCatalog -Path',
+            'Test-PackageDefinitionCatalog -Path ''<definition.json>'' -RequireTrusted',
             'Verify-PackageDefinitionSignature',
-            'Verify-PackageDefinitionCatalog',
-            'Agent Completion At A Valid Endpoint',
-            'definitionSignature.kind = unsigned',
+            'Compact Check Result',
+            'every artifact file ID with resolved source',
+            'Single archive',
+            'Split installer',
+            'Archive-derived bootstrap files',
+            'bootstrapPowerShell',
+            'bootstrapCommand',
+            'git status --short',
+            'definitionPublication.definitionSignature.kind',
             'signatureValue',
-            'installerKind` is descriptive metadata',
             '.cer',
             '.pem'
         )
@@ -227,6 +221,9 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
         foreach ($anchor in $anchors) {
             $text | Should -Match ([regex]::Escape($anchor))
         }
+        $text | Should -Not -Match 'eigenverft-module-package-definition-1\.9\.schema\.json'
+        $text | Should -Not -Match 'packageFile\.fileName'
+        $text | Should -Not -Match '"packageFile"\s*:'
     }
 
     It 'returns an empty package state when durable inventory/history files and local directories are absent' {

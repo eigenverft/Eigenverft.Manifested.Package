@@ -18,7 +18,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - npm ma
 
         $packageResult = [pscustomobject]@{
             PackageId                    = 'VSCodeRuntime'
-            PackageFilePath              = $packageFilePath
+            OperationArtifactFilePath    = $packageFilePath
             PackageInstallStageDirectory = $stagePath
             InstallDirectory             = $installDirectory
             Package                      = [pscustomobject]@{
@@ -121,7 +121,7 @@ exit 0
         $packageResult = [pscustomobject]@{
             PackageId = 'opencode-runtime-win32-x64-stable'
             DefinitionId = 'OpenCodeCli'
-            PackageFileStagingDirectory = (Join-Path $rootPath 'FileStage\OpenCodeCli')
+            ArtifactStagingDirectory = (Join-Path $rootPath 'FileStage\OpenCodeCli')
             PackageDepotRelativeDirectory = 'OpenCodeCli\stable\1.14.46\win32-x64'
             PackageConfig = [pscustomobject]@{
                 DefinitionId = 'OpenCodeCli'
@@ -251,7 +251,7 @@ exit 0
         $packageResult = [pscustomobject]@{
             PackageId = 'opencode-runtime-win32-x64-stable'
             DefinitionId = 'OpenCodeCli'
-            PackageFileStagingDirectory = (Join-Path $rootPath 'FileStage\OpenCodeCli')
+            ArtifactStagingDirectory = (Join-Path $rootPath 'FileStage\OpenCodeCli')
             PackageDepotRelativeDirectory = 'OpenCodeCli\stable\1.14.46\win32-x64'
             PackageConfig = [pscustomobject]@{
                 DefinitionId = 'OpenCodeCli'
@@ -301,7 +301,7 @@ exit 0
             PackageId = 'opencode-runtime-win32-x64-stable'
             DefinitionId = 'OpenCodeCli'
             Offline = $true
-            PackageFileStagingDirectory = (Join-Path $rootPath 'FileStage\OpenCodeCli')
+            ArtifactStagingDirectory = (Join-Path $rootPath 'FileStage\OpenCodeCli')
             PackageDepotRelativeDirectory = 'OpenCodeCli\stable\1.14.46\win32-x64'
             PackageConfig = [pscustomobject]@{
                 DefinitionId = 'OpenCodeCli'
@@ -375,7 +375,7 @@ exit /b 0
             PackageId              = 'opencode-runtime-win32-x64-stable'
             DefinitionId           = 'OpenCodeCli'
             InstallDirectory       = $installDirectory
-            PackageFileStagingDirectory = $fileStageDirectory
+            ArtifactStagingDirectory = $fileStageDirectory
             PackageInstallStageDirectory = $stageDirectory
             ExistingPackage        = $null
             NpmMaterialization     = [pscustomobject]@{
@@ -434,8 +434,9 @@ exit /b 0
         (Get-Content -LiteralPath $argumentsFile -Raw) | Should -Match 'install -g'
     }
 
-    It 'does not use the single package-file acquisition path for npmMaterializedInstallGlobalPackage' {
+    It 'does not require static artifact-file acquisition for npmMaterializedInstallGlobalPackage' {
         $package = [pscustomobject]@{
+            artifactFiles = @()
             assigned = [pscustomobject]@{
                 install = [pscustomobject]@{
                     kind             = 'npmMaterializedInstallGlobalPackage'
@@ -445,7 +446,7 @@ exit /b 0
             }
         }
 
-        Test-PackagePackageFileAcquisitionRequired -Package $package | Should -BeFalse
+        Test-PackageArtifactFileAcquisitionRequired -Package $package | Should -BeFalse
     }
 
 }

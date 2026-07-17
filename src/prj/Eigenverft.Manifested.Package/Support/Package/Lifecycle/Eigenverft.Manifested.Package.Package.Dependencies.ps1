@@ -174,7 +174,7 @@ Resolve-PackageDependencies -PackageResult $result
     )
 
     $definition = $PackageResult.PackageConfig.Definition
-    $dependencyModel = Get-PackageDefinitionDependencyModel_1_9 -Definition $definition -DefinitionId ([string]$PackageResult.DefinitionId)
+    $dependencyModel = Get-PackageDefinitionDependencyModel_2_0 -Definition $definition -DefinitionId ([string]$PackageResult.DefinitionId)
     $dependencyRecords = New-Object System.Collections.Generic.List[object]
     $seenDependencyIds = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
 

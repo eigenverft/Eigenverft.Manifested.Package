@@ -368,6 +368,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - discov
             ))
         $definitionDocument.packageOperations.assigned.install = [pscustomobject]@{
             kind             = 'runInstaller'
+            artifactFileId   = 'package'
             targetKind       = 'machinePrerequisite'
             installerKind    = 'customExe'
             uiMode           = 'quiet'

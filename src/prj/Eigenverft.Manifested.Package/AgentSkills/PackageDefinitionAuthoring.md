@@ -1,478 +1,285 @@
 # PackageDefinitionAuthoring
 
-## Mandatory Preflight
+This guide is the schema 2.0 authoring contract for Eigenverft.Manifested.Package. Read it completely before editing a package definition. Package authoring is declarative JSON work; do not execute a vendor installer or `Invoke-Package` to discover behavior.
 
-Before executing any other package-authoring operation, fully read this document from top to bottom and fully read the active package-definition schema. The only actions allowed before this preflight is complete are locating/opening this guide and locating/opening the schema file.
+## 1. Start Here: Task and output location
 
-Read the complete schema file for the active `schemaVersion`, currently `Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json`, including root descriptions, `x-eigenverftAgentHint`, nested `description` fields, and `$comment` fields for every object shape you may edit. If either this document or the schema cannot be read fully, stop and ask the user before searching, editing, validating, signing, or writing package JSON.
+1. Read the prepended Task, Authoring mode, and Runtime endpoint status.
+2. Read this complete guide and the focused schema material listed below.
+3. Resolve the task identity and authoring path, research every artifact, then follow sections 3 through 9 in order.
 
-## What this text is
+The Task normally supplies `definitionPublication.definitionId`. Use the user's `publisherId`; otherwise infer it from the selected catalog only when unambiguous. Write to the Runtime endpoint `Selection`, normally:
 
-You are authoring **package-definition JSON** for **Eigenverft.Manifested.Package**, a Windows PowerShell module that catalogs declarative install recipes and applies them later with `Invoke-Package`. Your job here is only the JSON catalog file - not module source code, not running vendor installers, and not `Invoke-Package` while you write JSON.
-
-**How this document is usually delivered**
-
-The user gives you one block of text. Above this heading you should already see, in order when present:
-
-1. **Task** - e.g. `Task: create or update package definition 'TotalCommander'.` That line names the **`definitionId`** unless the user says otherwise.
-2. **Authoring mode** (optional) - e.g. `draft-only`: keep the file unsigned and skip signing/trust steps described below.
-3. **Runtime endpoint status** - machine paths, `Selection`, `MarkedCandidates`, `AgentAction`, and optional `TroubleshootingKind`.
-
-Everything from this heading downward is the skill. Read the prepended sections first, then follow this document.
-
-**Typical output file path**
-
-When `Selection` shows `Ready` and a folder path, create or edit JSON **under that folder**. The recommended layout from schema and shipped examples is:
-
-`<Selection-path>\<publisherId>\<definitionId>.json`
-
-- **`definitionId`**: from the **Task** line or the user (e.g. `TotalCommander`).
-- **`publisherId`**: from the user if they named it; otherwise infer from existing `*.json` under the same catalog root or ask before writing.
-- If the existing endpoint uses flat files directly under `Selection`, or the user explicitly asks for that layout, use `<Selection-path>\<definitionId>.json` instead. Runtime identity comes from `definitionPublication`, not from the folder name.
-
-## Start Here
-
-1. Read the **Task**, **Authoring mode** (if any), and **Runtime endpoint status** above this heading.
-2. If `Selection` is `(none)` or `TroubleshootingKind` is set, read **Troubleshooting for agents** and explain the situation to the user. Do not edit JSON until there is a writable authoring root or the user picks another target.
-3. If `Selection` is `Ready` with a path, complete **Required First Step**, then **Authoring Workflow** (validate; sign and verify trust only when not in draft-only mode).
-4. Do not run vendor installers or `Invoke-Package` while writing JSON (**No Installer Execution During Authoring**).
-
-If **Runtime endpoint status** is missing above this text, run `Get-PackageEndpoint` in a shell where the module is installed, report what you find, and ask the user how to proceed. Do not guess the authoring folder.
-
-If **Authoring mode** shows `draft-only`, obey that block for signing and trust even when other sections describe full publication finalization.
-
-## Required First Step
-
-Before making any JSON edit, ground the work in the user's task, the prepended runtime information, and the installed module schema - not in this chat history, the current workspace, or PowerShell module **source code** (`.ps1` implementation trees).
-
-**Read fully (required):**
-
-- The prepended **Task**, **Authoring mode**, and **Runtime endpoint status** (when present), plus this guide from top to bottom.
-- `Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json` on the machine where the module is installed. Resolve the folder with `(Get-Module Eigenverft.Manifested.Package).ModuleBase` after import, or `Get-Module -ListAvailable Eigenverft.Manifested.Package` if import fails. Read the complete schema, including the root `description`, `x-eigenverftAgentHint`, and the relevant nested `description` and `$comment` fields for every object shape you edit.
-- Any extra instructions the user gave in chat (publisher, scope, installer kind, draft vs signed, and so on)
-
-For normal authoring, these inputs are enough: the skill explains workflow, endpoints, validation, and signing; the schema defines shape, acquisition, dependencies, and materialization. Follow the schema first. Treat schema `description` and `$comment` text as authoring instructions, not decoration.
-
-**Read only when needed:**
-
-- Other `*.json` package definitions under the same **Selection** catalog root (same or sibling `publisherId` folders). Use them for structure and convention; they illustrate the schema and do not override it.
-- Shipped example definitions under the installed module folder, for example `<ModuleBase>\Endpoint\Defaults\Eigenverft`, when the selected authoring root has no useful examples. Resolve `<ModuleBase>` with `Get-Module`; do not guess a source repository path.
-- The target definition file itself when the task is an update, version bump, or review of existing JSON.
-
-**Do not read by default:**
-
-- PowerShell module source, engine implementation, dependency planner, trust model, or installer runtime code. Authoring is declarative JSON work.
-
-Do not skim the required inputs or infer missing rules from example JSON alone. If the user's task, this guide, schema comments/descriptions, and an example disagree - or if this guide or the schema cannot be read fully - stop and ask the user before editing.
-
-Every property you write must be allowed by the JSON Schema for the selected object shape. Do not add "helpful" extra properties because they seem useful to the engine or appear in a guessed installer command. If the schema cannot express the package behavior, stop and report the schema/authoring mismatch instead of forcing JSON through a looser validator.
-
-## Authoring Targets And Endpoints
-
-**Endpoints** are configured catalog roots on disk (or future remote catalogs). The module stores their list in `PackageEndpointInventory.json` (path shown as `InventoryPath` in **Runtime endpoint status**).
-
-- **Authoring** (your job now): write JSON only under endpoints marked `authoringTarget: true` that are `Ready` in **Runtime endpoint status** (`Selection` path).
-- **Later install/scan**: other module features read enabled endpoints and may run `Invoke-Package` to apply definitions. That runtime install work is **not** part of composing JSON.
-
-The folder you write to is always whatever **Selection** shows. Do not guess a path from product names or repo layout; use `Selection` or `Get-PackageEndpoint`.
-
-### Status values
-
-
-| Status        | Meaning                                                                                                                                                                                               |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Ready`       | Marked, **enabled**, writable, and a supported kind (`moduleLocal` or `filesystem`). This is the only status selected for authoring. For these kinds, enabled also means effective for package scans. |
-| `Blocked`     | Marked but not usable: disabled, path missing/unreachable, not writable, or otherwise not ready. Disabled endpoints are listed but not filesystem-probed. Skipped for selection.                      |
-| `Unsupported` | Marked but kind is not `moduleLocal` or `filesystem` (for example `httpsCatalog` in v1). Skipped for selection.                                                                                       |
-
-
-Selection uses only `Ready` targets, then applies `searchOrder` (`First` = lowest order, `Last` = highest). `authoringTarget` is not inferred from writability alone.
-
-### Managing authoring intent
-
-```powershell
-Get-PackageEndpoint
-Add-PackageEndpoint -EndpointName 'teamCatalog' -BasePath '\\share\PackageEndpoint' -AuthoringTarget
-Set-PackageEndpoint -EndpointName 'teamCatalog' -AuthoringTarget
-Set-PackageEndpoint -EndpointName 'teamCatalog' -NoAuthoringTarget
+```text
+<Selection>\<publisherId>\<definitionId>.json
 ```
 
-Or set `"authoringTarget": true` on an endpoint object in `PackageEndpointInventory.json`.
+Use the endpoint's existing flat layout only when the endpoint or user requires it. `definitionPublication.publisherId` and `definitionPublication.definitionId` are authoritative.
+
+### Authoring Targets And Endpoints
+
+Only a `Ready` endpoint marked `authoringTarget: true` is a valid output location. If Runtime endpoint status is absent, run `Get-PackageEndpoint`. Do not guess a repository or installed-module path.
 
 ### Troubleshooting for agents
 
-Explain endpoint configuration to the user when runtime status shows:
+- `NoMarkedTarget`: stop edits and explain how to mark or add an authoring target.
+- `AllMarkedBlocked`: stop edits; report the path and reason for each blocked target.
+- `Selection: (none)`: do not write JSON until the user supplies or enables a writable target.
 
-- **NoMarkedTarget** - No endpoint has `authoringTarget: true`. Name the inventory file, summarize configured endpoints from `Get-PackageEndpoint`, and describe how to mark or add an authoring target.
-- **AllMarkedBlocked** - Targets are marked but none are writable or supported. List each skipped endpoint with resolved path (if any) and skip reason; suggest fixing permissions, creating the folder or share, enabling the endpoint, or choosing another marked endpoint.
+Before editing, read:
 
-Do not silently continue as if a usable authoring root exists.
+- this complete guide;
+- the root instructions in `Schema/PackageDefinition/eigenverft-module-package-definition-2.0.schema.json`;
+- the schema definitions for the root, target, release, `artifactFiles`, one artifact file, one acquisition candidate, and the selected installer kind;
+- one shipped definition matching that installer kind.
 
-### Definition layout under a target root
+Read the relevant `description`, `$comment`, and `x-eigenverftAgentHint` text. Do not read the entire large schema blindly, but do not partially read any selected definition. For an update, also read the complete current JSON.
 
-Place the JSON under the resolved authoring root from **Runtime endpoint status** or `Get-PackageEndpoint`.
+## 2. Five-line package mental model
 
-Recommended convention: `<publisherId>/<definitionId>.json`.
-
-Flat files directly under the endpoint root can also be valid when that is the endpoint's existing convention or the user requests it. Keep the file name clear and make `definitionPublication.publisherId` and `definitionPublication.definitionId` authoritative.
-
-### Publication finalization
-
-Skip this subsection when **Authoring mode** is `draft-only` (unsigned JSON and non-trusted validation only).
-
-A package definition is a trusted-catalog or shipped-catalog change when the user asks for a publishable definition, the selected endpoint is an enabled scan endpoint, or **Selection** points at the module's shipped defaults such as `Endpoint/Defaults/Eigenverft` under the installed module folder. These are not disposable drafts. Do not leave a new or changed definition unsigned unless **Authoring mode** is `draft-only` or the user explicitly requested unsigned draft work.
-
-The selected path from **Runtime endpoint status** is authoritative. Do not guess a repository path or edit a different copy of `Endpoint/Defaults/Eigenverft`. If **Selection** points into an installed module folder and the path is not writable, stop and explain the endpoint/write-access problem to the user instead of editing another file.
-
-Before final handoff for definitions intended for trusted or shipped catalog use:
-
-1. Finish all JSON edits under the selected authoring root using the layout above.
-2. Run `Test-PackageDefinitionCatalog` on the changed file.
-3. Sign or re-sign with the profile the user approved or that `Get-PackageSigningProfile` selected, commonly:
-
-```powershell
-Resign-PackageDefinition -Path '<definition.json>' -Cert Eigenverft -KeepSchemaVersion
+```text
+target = distribution suitable for the machine
+release = selected version
+artifactFiles = every required file in that distribution
+acquisitionCandidates = fallback ways to obtain one file
+artifactFileId = file consumed by the install operation
 ```
 
-4. Run `Test-PackageDefinitionCatalog -RequireTrusted` on the changed file or endpoint folder.
-5. Run `Verify-PackageDefinitionSignature -RequireTrusted` for the file, or `Verify-PackageDefinitionCatalog -RequireTrusted` for the folder.
-6. If the selected authoring root is inside a local Git working tree, check repository tracking/status with `git status --short` so new JSON files are not forgotten. For remote endpoints or non-repository paths, skip repository commands and mark the repository-status check `Not applicable`.
-7. In the handoff, include **Required handoff check result** so executed validation, signing, and trust verification, plus source research and blockers, are explicit.
+The target chooses machine suitability and reusable file rules. The release contributes exact version facts and trust evidence. A selected distribution is complete only when every declared artifact file is verified.
 
-### Required handoff check result
+## 3. Hard stop conditions
 
-Before the final user handoff, include a section named `Check Result`. This is mandatory for every package-definition authoring or update task, including draft-only work.
+Stop and ask the user or report the blocker when:
 
-Use a compact table or bullet list with one row per relevant check:
+- no writable `Selection` exists, required source evidence is unavailable, or the requested behavior is not expressible by schema 2.0;
+- installer kind, silent arguments, scope, elevation, or removal behavior cannot be established from vendor documentation plus a trustworthy corroborating source;
+- any required file lacks a resolvable source or its own trust boundary;
+- target and release artifact file IDs differ, a path is rooted/unsafe/colliding, or an `archiveEntry` reference is missing or cyclic;
+- install readiness and removed-state absence checks do not align with what install and removal actually do;
+- validation, signing, or required trust verification fails.
 
-- `Definition path`
-- `Vendor installer kind evidence`
-- `Generic installer kind corroboration`
-- `Vendor installer switch evidence`
-- `Generic installer switch corroboration`
-- `Installer-owned default-location decision`
-- `Resolved acquisition URL verification`
-- `Artifact hash verification`
-- `Publisher signature verification`
-- `Target/readiness consistency`
-- `Install-root-free readiness compatibility`
-- `Removed-state operation/absence compatibility`
-- `Known runtime blocker status`
-- `Raw JSON schema validation`
-- `Test-PackageDefinitionCatalog`
-- `Catalog warning review`
-- `Signing or re-signing`
-- `Trusted signature/catalog verification`
-- `Repository status` (local Git working tree only)
+Never run `setup.exe`, `msiexec`, a vendor bootstrapper, repair/uninstall commands, or `Invoke-Package` during authoring. Downloading without execution is allowed only to resolve URLs and calculate or verify hashes/signatures. Never fabricate hashes, signatures, installer arguments, or trust.
 
-Each row must include `Status`, `Evidence`, and `Command/source`. Valid statuses are `Passed`, `Failed`, `Not run`, and `Not applicable`.
+## 4. Authoring sequence
 
-For installer-backed definitions, the installer evidence rows are required and must cite the exact JSON behavior they justify: `packageOperations.assigned.install.kind`, any `installerKind`, `commandArguments`, target-directory argument/property behavior, force/update semantics, shortcut or registry side effects when relevant, and elevation assumptions. Use `Not applicable` only for definitions with no installer command surface to validate, such as pure archive extraction, file placement, or PowerShell module installs.
+1. Confirm `definitionPublication`, display metadata, dependencies, target constraints, `releaseTrack`, and `artifactDistributionVariant`.
+2. Research the latest requested release and every file in the distribution. Record the resolved source URL/path, version evidence, hash/signature evidence, and installer evidence per file.
+3. Define stable file IDs under target `artifactFiles`. Put reusable `relativePathTemplate` and ordered `acquisitionCandidates` there.
+4. Define the exact same IDs under each release target's `artifactFiles`. Put exact `relativePath`, source overrides, `contentHash`, and `publisherSignature` facts there.
+5. Select the install input with `packageOperations.assigned.install.artifactFileId`.
+6. Align discovery, readiness, removal, absence verification, dependencies, and ownership policy.
+7. Increment `definitionPublication.definitionRevision`; keep `definitionSignature.kind` as `unsigned` until signing.
+8. Validate, review every warning, sign when required, then validate trust.
 
-For machine/admin installers, the default-location decision row must say whether custom install-directory arguments were omitted. If they were not omitted, cite the user request or vendor documentation that explicitly requires a custom target directory for normal deployment.
+For a version update, research the requested upstream version independently of `versionSelection`, refresh every artifact file's source and trust facts, retain older releases when the package's history policy requires them, and re-sign only after validation.
 
-If the install operation has no schema `installDirectory`, or `assigned.install.targetKind` is `machinePrerequisite`, the install-root-free readiness row is required. It must say which readiness and removal checks were reviewed and whether any install-relative checks remain.
+## 5. Artifact file-set rules
 
-The removed-state operation/absence row must say whether `packageOperations.removed.operation` can actually make every required `absenceVerification` signal absent. If it cannot, mark the row `Failed` and stop instead of signing or publishing.
+- Every declared artifact file is mandatory. There are no optional, primary, or sidecar roles.
+- The object key is the stable file ID. A filename may change between releases without changing the ID.
+- Target and release file-ID sets must match exactly.
+- `relativePathTemplate` and release `relativePath` must be relative, traversal-free, and unique case-insensitively after resolution.
+- `acquisitionCandidates` are ordered fallbacks for one file, not a list of files.
+- A static file-backed target declares at least one file. npm materialization is the explicit dynamic exception.
+- Each file needs its own resolved source evidence and its own `contentHash` or `publisherSignature` trust evidence when policy requires verification.
+- `archiveEntry` creates one declared file from another declared file. Set `sourceArtifactFileId`, exact `entryPath`, `searchOrder`, and `verification`; independently hash or signature-verify the extracted output.
+- Never use absolute paths, `..`, normalization escapes, duplicate destinations, missing references, or dependency cycles.
 
-The catalog warning review row must report `WarningCount` and list or summarize every warning from `Test-PackageDefinitionCatalog.Issues`. A package is not complete when warnings are unexplained; either fix them, mark them as intentionally acceptable with evidence, or stop.
+## 6. Install-operation decision table
 
-The resolved acquisition URL row must show the exact final URL or path after `baseUri`, `sourcePath`, `urlTemplate`, `{version}`, and `{releaseTag}` resolution for every target artifact. Do not count a hash check as passed if the JSON would resolve to a different URL or path than the one actually downloaded.
+| Artifact behavior | `packageOperations.assigned.install.kind` | Required selection |
+| --- | --- | --- |
+| Expand an archive into an install directory | `expandArchive` | `artifactFileId` |
+| Place one declared file | `placePackageFile` | `artifactFileId` |
+| Install a `.nupkg` as a PowerShell module | `powershellModuleInstaller` | `artifactFileId` |
+| Execute an MSI | `msiInstaller` | `artifactFileId` |
+| Execute NSIS | `nsisInstaller` | `artifactFileId` |
+| Execute Inno Setup | `innoSetupInstaller` | `artifactFileId` |
+| Execute another file-backed installer | `runInstaller` | `artifactFileId` |
+| Dynamically materialize npm tarballs | npm materialization kind | no static selection |
+| Reuse an already installed product | `reuseExisting` | no static selection unless another operation requires files |
 
-Use `Passed` only when the command was actually executed or the source was actually opened/read during the current task. Do not mark a check as passed because it is planned, recommended, inferred from prior conversation, or expected to pass. If a required check is `Failed` or `Not run`, do not call the package complete; report the blocker or explain why the task is draft-only/incomplete. If no vendor installer documentation or no generic corroborating source was found for installer kind or switches, mark the relevant row `Failed` and stop instead of guessing.
+The complete artifact set is staged with its sibling and nested layout intact. `artifactFileId` chooses only the file consumed or executed by the adapter. For split installers, select the executable and declare every `.001`, `.002`, or equivalent part so they are present beside it.
 
-## Product Boundary
+`installerKind` and arguments require evidence; they are not guesses. Prefer vendor documentation, then corroborate with a reputable package-manager manifest or equivalent source. Do not use unofficial mirrors as the source of truth.
 
-Package definitions are declarative JSON: where to download software, how to verify it, and how the module should install it later. They are not scripts you run during authoring.
+## 7. Discovery/removal alignment
 
-When **Selection** is `Ready`, finish the catalog work on that path (JSON plus validation; signing and trust when not draft-only). Do not stop after drafting if the user expected a signed catalog file and **Authoring mode** is not `draft-only`.
+`discovery.presence` describes the installed state, not downloaded artifacts. `packageOperations.assigned.readyStateCheck` must require signals the install operation creates. `packageOperations.removed.operation` must be capable of removing every signal required by `packageOperations.removed.absenceVerification`.
 
-Do not change the module's PowerShell implementation, invent fleet/orchestration features, or expand scope beyond one definition file (plus validation/signing commands). If the product cannot be described in schema 1.9 JSON, tell the user and stop.
+Review these together:
 
-Do not run upstream installers or `Invoke-Package` while constructing JSON. See **No Installer Execution During Authoring**.
+- install directory and target-relative paths;
+- files, directories, commands, apps, registry entries, metadata, signatures, and PowerShell modules;
+- path registration and generated shims;
+- installer-owned uninstall commands versus tracked-directory deletion;
+- machine prerequisites or PowerShell modules that have no install directory;
+- `ownershipPolicy` and allowed inventory ownership kinds.
 
-## No Installer Execution During Authoring
+If removal cannot make required presence signals absent, stop. For machine/admin installers, prefer the vendor-owned default location unless the user or vendor documentation explicitly requires a custom target.
 
-Package-definition authoring is **declarative JSON work**. Discover acquisition URLs, installer kind, silent switches, scopes, and materialization from the schema, this guide, example definitions, and official or reputable web sources - not by executing the vendor installer on the agent machine.
+## 8. Validation and signing
 
-**Forbidden while drafting or updating definition JSON** (including one-off "tests" or "figuring out switches"):
-
-- Running `setup.exe`, `install.exe`, `.msi`, or any vendor bootstrapper
-- **Administrative or machine-wide installs** (`ALLUSERS`, elevated `/quiet`, `msiexec /i` with admin scope, or any install that requires elevation) unless the user explicitly ordered a separate install test outside authoring
-- User-scoped trial installs used only to learn behavior - also forbidden during authoring
-- `Invoke-Package`, hand-running materialization blocks from the JSON, or ad-hoc copies of install commands from the definition
-- Repair, modify, or uninstall runs whose only purpose is to probe installer behavior
-
-Authoring must not mutate the host with installed products, services, drivers, or registry state from exploratory installs.
-
-**Allowed while authoring:**
-
-- Catalog commands on the JSON artifact: `Test-PackageDefinitionCatalog`, signing, `Verify-PackageDefinitionSignature`, and related trust checks
-- Downloading release binaries **only** when a version-update workflow needs `contentHash` or `publisherSignature` verification - do not execute the downloaded installer afterward
-
-**When installer behavior is unclear:**
-
-1. Re-read schema 1.9 (`x-eigenverftAgentHint`, acquisition and materialization sections) and **Installer Kind Discovery** below.
-2. Align with an existing trusted `*.json` definition for the same artifact kind (portable vs user installer vs admin installer).
-3. Search the web: official silent-install docs, release notes, package-manager manifests, and vendor KB articles.
-4. If still unclear, stop and ask the user. Do **not** install the product to discover switches, scope, or paths.
-
-## Inputs To Read First
-
-After **Required First Step**, use these when the task still needs location or command detail:
-
-- `Selection` path from **Runtime endpoint status**, or `Get-PackageEndpoint` when the runtime block is absent
-- Example `*.json` under the **Selection** root - only when structure or convention is unclear from the schema alone
-- Command help for validation, signing, or trust when usage is unclear
-
-Do not expand scope into module source unless **Required First Step** says that is warranted.
-
-## PowerShell Host Check
-
-Do not assume the current shell can import the module. Some agents run commands in PowerShell 7 (`pwsh`) while the module may be installed only for Windows PowerShell 5.1 (`powershell.exe`), or the reverse. Check both hosts before running validation, signing, or trust commands.
-
-Check the current host:
+Resolve the installed module root rather than guessing it:
 
 ```powershell
-$PSVersionTable.PSEdition
-$PSVersionTable.PSVersion
-Get-Module -ListAvailable Eigenverft.Manifested.Package | Select-Object Name, Version, ModuleBase
+$moduleBase = (Get-Module -ListAvailable Eigenverft.Manifested.Package |
+    Sort-Object Version -Descending |
+    Select-Object -First 1).ModuleBase
+$schemaPath = Join-Path $moduleBase 'Schema\PackageDefinition\eigenverft-module-package-definition-2.0.schema.json'
+Test-Json -Json (Get-Content -Raw -LiteralPath '<definition.json>') `
+    -Schema (Get-Content -Raw -LiteralPath $schemaPath) -ErrorAction Stop
+Test-PackageDefinitionCatalog -Path '<definition.json>' -ErrorOnFailure
 ```
 
-Check Windows PowerShell 5.1 from an agent shell:
+Review and explain every catalog warning. For draft-only mode, keep `definitionPublication.definitionSignature.kind` as `unsigned` and stop after successful draft validation.
+
+For a trusted definition, discover the signing profile with `Get-PackageSigningProfile -PublisherId '<publisherId>'`. If exactly one approved profile exists, sign or re-sign and verify:
 
 ```powershell
-powershell.exe -NoProfile -Command "$PSVersionTable.PSEdition; $PSVersionTable.PSVersion; Get-Module -ListAvailable Eigenverft.Manifested.Package | Select-Object Name,Version,ModuleBase"
-```
-
-Check PowerShell 7 from Windows PowerShell:
-
-```powershell
-pwsh -NoProfile -Command "$PSVersionTable.PSEdition; $PSVersionTable.PSVersion; Get-Module -ListAvailable Eigenverft.Manifested.Package | Select-Object Name,Version,ModuleBase"
-```
-
-Run `Test-PackageDefinitionCatalog`, signing, and trust commands in the host where `Eigenverft.Manifested.Package` is installed. If the module is available in only Windows PowerShell 5.1, call `powershell.exe`. If it is available in only PowerShell 7, call `pwsh`. If neither host can see the module, tell the user the module must be installed or imported before validation can run.
-
-## Authoring Workflow
-
-1. Use **Start Here** and the sections above this document when present; otherwise obtain paths with `Get-PackageEndpoint`.
-2. Start from schema 1.9 and a nearby example under the resolved authoring target. If the target is empty, use shipped examples under the installed module's `<ModuleBase>\Endpoint\Defaults\Eigenverft` as examples only.
-3. Author drafts as unsigned: `definitionPublication.definitionSignature.kind = unsigned`.
-4. Never fabricate, copy, or hand-edit `signatureValue`.
-5. Write under **Selection**. Prefer `<publisherId>/<definitionId>.json` unless the endpoint already uses flat files or the user requested a flat layout.
-6. When present, keep `classification.tags` concise, lowercase, hyphenated, and limited to purpose/product discovery terms. Do not duplicate platform, architecture, publisher, installer, or package-format fields there.
-7. Bump `definitionRevision` for every definition content change.
-8. Keep scripts and acquisition behavior minimal, declarative, and reviewable; do not run upstream installers or `Invoke-Package` during construction (**No Installer Execution During Authoring**).
-9. Run `Test-PackageDefinitionCatalog` before signing or publishing.
-10. Sign or re-sign only after content is stable.
-11. Verify signature or catalog trust.
-12. Check repository tracking/status with `git status --short` before handoff only when the selected authoring root is inside a local Git working tree. For remote endpoints or non-repository paths, do not run repository commands.
-13. When `Selection` is `Ready`, write the JSON under that path and run **Publication finalization** (or draft-only validation only when **Authoring mode** requires it).
-
-## Installer Kind Discovery
-
-When the installer kind, silent arguments, extraction behavior, or package format is unclear, **search the web and read documentation first**. Prefer official vendor documentation, release notes, package manager manifests, installer docs, and existing trusted package definitions.
-
-For installer kind and installer switches, do a vendor-focused web search first and identify the vendor-documented installer technology, package format, silent-mode syntax, target-directory syntax, update/force behavior, shortcut creation, registry/uninstall behavior, and elevation expectations. Then confirm the installer kind and switch usage against at least one broader generic source, such as a reputable package-manager manifest, deployment guide, enterprise software catalog, or community packaging recipe. Treat generic results as corroboration only; if they disagree with the vendor documentation, if they omit a risky detail such as installer kind or target-directory force/update semantics, or if the vendor documentation is not found, stop and report the ambiguity instead of guessing.
-
-Carry the discovered installer evidence into the final `Check Result`; the handoff must show the vendor source and generic corroborating source that justify the exact installer kind and switches written into JSON.
-
-**Never run the installer to discover this information.** That includes administrative installs, quiet `msiexec` trials, or any "test install" while editing JSON. Those steps are forbidden under **No Installer Execution During Authoring**.
-
-Discover whether the vendor ships multiple artifact kinds for the same product, such as portable archives, user installers, machine/admin installers, MSI packages, app-store packages, or architecture-specific builds. Prefer a vendor-published portable archive when it fits the package intent. Otherwise prefer a user-scoped installer over a machine/admin installer. Use admin or machine-wide installers only when the user's intent and documentation explicitly require that scope - not because an elevated trial install was run.
-
-Before writing `packageOperations.assigned.install`, classify the artifact in this order and follow the first matching branch:
-
-1. **Portable/archive/file placement:** use `expandArchive` or `placePackageFile`; package-managed `installDirectory` is normal.
-2. **Verified MSI/NSIS/Inno technology:** use the matching dedicated adapter only when vendor documentation, file metadata, or trusted package evidence identifies that technology. Use its target-directory feature only when that installer edition normally supports custom target directories.
-3. **Generic or custom EXE application installer:** use `runInstaller` only if the schema can represent the state without pretending it owns a directory. Do not switch to `nsisInstaller` or `innoSetupInstaller` to get `installDirectory`.
-4. **Machine/admin installer:** treat it as installer-owned default-location state. Omit custom install-directory arguments and do not add `installDirectory` unless the user explicitly requested a non-default location or vendor documentation says custom target directories are the normal deployment path.
-5. **No fitting schema branch:** stop and ask for a schema/runtime decision. Do not choose a nearby adapter, fake installer technology, or add extra properties to make the JSON validate.
-
-For machine/admin installers, prefer the vendor default location plus registry/existing-install discovery and installer-backed removal when available. If using `runInstaller`, `targetKind: machinePrerequisite` is acceptable only when readiness can be proven without an install-directory root, such as registry checks or another machine-level signal. If the package must expose app files, shims, or relative file probes but the schema cannot discover the installer-owned directory after install, stop instead of inventing a package-owned install path.
-
-Install-root-free means no install-relative runtime checks. When `assigned.install.targetKind` is `machinePrerequisite`, or when the selected install operation has no schema `installDirectory`, do not use readiness `files`, `directories`, `commandChecks`, `metadataFiles`, `signatures`, or `fileDetails`, and do not define app/file probes that depend on an installed-directory-relative path. Use only registry, PowerShell module, or other machine-level signals that the runtime can evaluate without `InstallDirectory`. If the intended package needs installed files, app launchers, signatures, or file details to prove readiness, stop for a schema/runtime decision.
-
-Removed-state checks must match the removed operation. If `packageOperations.removed.operation.kind` is `none`, absence verification may only require checks that are already expected to be absent before removal. Do not require registry, file, directory, app, command, signature, file-detail, metadata-file, or PowerShell-module absence after a no-op removal. If the package should actually uninstall software, use a schema-supported uninstaller operation or stop.
-
-For `machinePrerequisite` installs with no `installDirectory`, removed-state support is runtime-sensitive. Do not publish a definition that can create a `PackageApplied` inventory record without an install directory unless removed-state handling is proven not to require `inventory.installDirectory`. If that cannot be proven from runtime code or an executed non-destructive validation command, stop and report the blocker.
-
-Sanity check before signing: if `assigned.install.commandArguments` contains `{installDirectory}`, the selected install operation must have a real schema `installDirectory` property and the artifact branch above must be package-managed. Otherwise remove the custom directory argument or stop.
-
-Total Commander-style example: a vendor custom EXE admin installer is not NSIS or Inno just because it accepts silent switches and an install folder. Do not model it as `nsisInstaller` or `innoSetupInstaller`, and do not pass `{installDirectory}` unless the user explicitly asked for a custom location.
-
-Choose the install operation shape from the schema, not from a guessed product-specific label. `runInstaller.installerKind` is descriptive metadata for logging; it does not create a new adapter and it does not permit properties outside the schema.
-
-Do not mix artifact kinds by accident. If the existing definition is for a user installer, update from the user-installer source. If it is for a portable/runtime package, update from the matching portable/runtime source. If intent is unclear, stop and ask the user before switching installer kind.
-
-Non-executing inspection of a downloaded file (for example format identification from headers or static metadata) is a last resort after documentation and examples, and must not launch or install the payload. If the installer format or silent switches still cannot be established confidently, stop and ask the user instead of guessing or installing.
-
-## Existing Definition Latest Version Update
-
-Use this workflow when asked to check or update an existing package definition to the latest upstream version. This is an authoring/update task and is independent of the definition's install-time `versionSelection` policy.
-
-1. Read the full existing definition before changing it.
-2. Identify every target artifact that belongs to the definition's release, for example x64 and arm64 entries.
-3. Search official vendor release channels, update services, release notes, download pages, package metadata, and package-manager manifests for the latest stable version. Some vendors expose multiple official "latest" sources, and they can disagree temporarily.
-4. Compare all discovered official sources. Record which source matches the package's artifact kind and whether any other official source disagrees. Do not use unofficial mirrors as the source of truth.
-5. If official sources disagree, verify the concrete artifact endpoint, version text, hash, and publisher signature for the intended artifact kind before editing. If the newest valid artifact cannot be proven, stop and report the ambiguity.
-6. If the definition already contains the latest stable version and all hashes still match the upstream artifacts, do not edit or re-sign the JSON. Report that it is current.
-7. If a newer stable version exists, update the release entry or add a new release following the existing file's retention pattern. If retention is unclear, add the new release and leave older releases unchanged.
-8. Refresh every target artifact for that release together. Do not update only one architecture when the definition contains multiple stable targets.
-9. Resolve the exact artifact URL or path from the definition's own source model before downloading. Verify that this exact resolved location works for every target; do not download from a corrected/manual URL while leaving a broken `baseUri`/`sourcePath`/`urlTemplate` in JSON.
-10. Download each upstream artifact through the source model declared in the definition, compute the declared `contentHash`, and verify any declared `publisherSignature`. Do not run or install the downloaded artifact; see **No Installer Execution During Authoring**.
-11. Bump `definitionRevision`, refresh `publishedAtUtc`, then sign or re-sign after all semantic JSON edits are finished and no known runtime blocker remains.
-12. Run **Publication finalization** before handoff.
-
-Stop if the latest version cannot be proven from official sources, an artifact for any required target is missing, a hash cannot be verified, or an expected publisher signature no longer matches.
-
-## Self-Check Checklist
-
-- `publisherId`, `definitionId`, display metadata, and revision match the requested package.
-- When present, `classification.tags` contains only concise lowercase hyphenated purpose/product terms; it does not duplicate structured platform, publisher, installer, or packaging data.
-- `schemaVersion` is `1.9`.
-- Deprecated top-level `dependencies` and `dependencyPolicy` are not used.
-- Dependencies use `dependency.requires[]`.
-- Coexistence policy uses `dependency.policy.conflictsWith[]` or `dependency.policy.requiresAbsent[]` only when the user's intent is explicit.
-- Download URLs, checksums, installer arguments, and materialization paths are reviewable.
-- Every `vendorDownload` candidate resolves to the exact artifact location that was checked for existence, hash, and publisher signature.
-- `packageOperations.assigned.install` uses one exact schema-defined operation shape; no extra fields are added to make a custom installer work.
-- Machine/admin installer command arguments omit custom install-directory values unless explicitly required by the user or vendor documentation.
-- If `assigned.install.targetKind` is `machinePrerequisite`, or the install operation has no schema `installDirectory`, readiness is install-root-free: no readiness `files`, `directories`, `commandChecks`, `metadataFiles`, `signatures`, `fileDetails`, or app/file probes that depend on an install-relative path.
-- If `packageOperations.removed.operation.kind` is `none`, absence verification does not require registry, files, directories, commands, apps, signatures, file details, metadata files, or PowerShell modules unless those signals are already expected to be absent before removal.
-- If `assigned.install.targetKind` is `machinePrerequisite` and the install operation has no schema `installDirectory`, removed-state handling is proven not to require `inventory.installDirectory`; otherwise removed state is blocked.
-- `discovery.presence` and `readyStateCheck.require` can succeed for every selectable artifact target. If separate x64/x86 targets install different executable names, use an artifact that satisfies one shared readiness model or stop for a schema/runtime decision.
-- Do not sign or publish JSON with a known acquisition, readiness, or install-time blocker unless the user explicitly requested a signed blocked artifact for testing.
-- No credentials, tokens, local private paths, or machine-specific secrets are embedded.
-- `definitionSignature.kind` is `unsigned` only while drafting or when explicitly requested.
-
-## Search Examples
-
-Classification tags are searchable with exact, case-insensitive `-Tag` filtering. Multiple
-tags use AND logic; `-Query` also searches tag text by substring.
-
-```powershell
-Search-Package -Tag ai
-Search-Package -Tag ai,model
-Search-Package -Tag codex
-Search-Package -Query local -Tag llama-cpp
-```
-
-## Catalog Validation
-
-Validate a single draft file while authoring:
-
-```powershell
-Test-PackageDefinitionCatalog -Path '<definition.json>'
-```
-
-Validate an endpoint folder before publication:
-
-```powershell
-Test-PackageDefinitionCatalog -Path '<endpoint-root>' -RequireTrusted -ErrorOnFailure
-```
-
-Treat validation errors as blockers until the user says otherwise. Treat validation warnings as review blockers until each warning is fixed or explicitly justified in the `Check Result`. Do not rely only on `Valid = true`; inspect `ErrorCount`, `WarningCount`, and `Issues`. Do not use `Verify-PackageDefinitionCatalog` as a replacement for schema and reference validation; it checks signature and trust summary, while `Test-PackageDefinitionCatalog` checks parse, schema, signature/trust status, duplicate identities, and static dependency references.
-
-Also run raw JSON Schema validation when the current host supports `Test-Json`; PowerShell 7 usually does. This catches schema-shape errors before signing:
-
-```powershell
-$moduleBase = (Get-Module Eigenverft.Manifested.Package).ModuleBase
-$schemaPath = Join-Path $moduleBase 'Schema\PackageDefinition\eigenverft-module-package-definition-1.9.schema.json'
-Test-Json -Json (Get-Content -Raw -LiteralPath '<definition.json>') -Schema (Get-Content -Raw -LiteralPath $schemaPath) -ErrorAction Stop
-```
-
-If `Test-Json` is unavailable in the current shell, try the other PowerShell host described in **PowerShell Host Check**. If raw schema validation cannot be run, say so in the handoff; do not claim that schema-file validation passed. If `Test-PackageDefinitionCatalog` passes but raw schema validation fails, treat the raw schema failure as a blocker and fix the JSON or ask for a schema/runtime decision.
-
-## Signing And Signing-Profile Discovery
-
-Use `Sign-PackageDefinition` for first signing and `Resign-PackageDefinition` for changed signed definitions. Use `-KeepSchemaVersion` when re-signing a stable schema version.
-
-If signing is required and the user did not name a certificate or profile, discover existing signing profiles first:
-
-```powershell
-Get-PackageSigningProfile -PublisherId '<publisherId>'
-```
-
-Selection rules:
-
-- Zero matching profiles: stop and ask the user to create a profile with `New-PackageSigningCertificate` or to supply a signing certificate/profile path.
-- Exactly one matching profile: use `SigningDescriptorPath` when present; otherwise use `PfxPath`.
-- Multiple matching profiles: stop and ask the user which profile or certificate to use.
-- Public `.cer` and `.pem` files are trust/verification material, not signing certificates. Do not pass them as signing certs.
-
-Example re-sign after one unambiguous profile was selected:
-
-```powershell
-Resign-PackageDefinition -Path '<definition.json>' -Cert '<SigningDescriptorPath-or-PfxPath>' -KeepSchemaVersion
-```
-
-Do not fabricate signatures, edit `signatureValue` by hand, auto-trust unknown keys, or use runtime trust bypasses as a publication workflow.
-
-## Signature And Catalog Verification
-
-Verify one signed file:
-
-```powershell
+Resign-PackageDefinition -Path '<definition.json>' -Cert '<approved-profile>' -KeepSchemaVersion
+Test-PackageDefinitionCatalog -Path '<definition.json>' -RequireTrusted -ErrorOnFailure
 Verify-PackageDefinitionSignature -Path '<definition.json>' -RequireTrusted -ErrorOnFailure
 ```
 
-Verify a signed endpoint catalog:
+Use `Sign-PackageDefinition` for a first signature. Never edit `signatureValue` by hand, use `.cer`/`.pem` as a private signing key, auto-trust an unknown signer, or bypass trust for publication. If the output is in Git, run `git status --short` so a new file is not forgotten.
 
-```powershell
-Verify-PackageDefinitionCatalog -Path '<endpoint-root>' -RequireTrusted
+## 9. Compact Check Result
+
+Every handoff must include `Check Result`. Use `Passed`, `Failed`, `Not run`, or `Not applicable`, and include evidence plus command/source for:
+
+- definition path, schema version, and revision;
+- target/release selection facts;
+- installer kind, arguments, scope, elevation, and target behavior;
+- every artifact file ID with resolved source and independent hash/signature evidence;
+- target/release ID-set match and safe unique relative paths;
+- `artifactFileId` and complete sibling-layout reasoning;
+- discovery/readiness/removal alignment;
+- raw schema validation, catalog validation, and warning review;
+- signing profile, signing result, and trusted verification, or draft-only status;
+- repository status when applicable;
+- known runtime blockers.
+
+Mark a check `Passed` only when its command ran or its source was read in the current task. Do not call a definition complete while a required check is failed or not run.
+
+## 10. Canonical examples and common mistakes
+
+These are focused fragments to merge into a complete schema 2.0 definition. Keep file IDs unchanged between the target and release.
+
+### Single archive
+
+```json
+{
+  "artifacts": {
+    "targets": [{
+      "id": "tool-win-x64-stable",
+      "artifactFiles": {
+        "package": {
+          "relativePathTemplate": "tool-{version}.zip",
+          "acquisitionCandidates": [
+            { "kind": "packageDepot", "searchOrder": 100, "verification": { "mode": "required" } },
+            { "kind": "vendorDownload", "url": "https://vendor.example/tool-{version}.zip", "searchOrder": 900, "verification": { "mode": "required" } }
+          ]
+        }
+      }
+    }],
+    "releases": [{
+      "version": "2.0.0",
+      "targetArtifacts": {
+        "tool-win-x64-stable": {
+          "artifactId": "tool-win-x64-stable",
+          "artifactFiles": {
+            "package": { "contentHash": { "algorithm": "sha256", "value": "<64-lowercase-hex>" } }
+          }
+        }
+      }
+    }]
+  },
+  "packageOperations": {
+    "assigned": {
+      "install": { "kind": "expandArchive", "artifactFileId": "package", "installDirectory": "tool/{version}", "expandedRoot": "auto" }
+    }
+  }
+}
 ```
 
-If trust verification fails, stop and explain to the user. They may need `Import-PackageTrust`, `Trust-PackageSigningCertificate`, or another trust command before verification can pass.
+### Split installer
 
-## Agent Completion At A Valid Endpoint
+```json
+{
+  "artifacts": {
+    "targets": [{
+      "id": "suite-win-x64-stable",
+      "artifactFiles": {
+        "setup": {
+          "relativePathTemplate": "setup-{version}.exe",
+          "acquisitionCandidates": [{ "kind": "vendorDownload", "url": "https://vendor.example/{version}/setup.exe", "searchOrder": 900, "verification": { "mode": "required" } }]
+        },
+        "part001": {
+          "relativePathTemplate": "setup-{version}.001",
+          "acquisitionCandidates": [{ "kind": "vendorDownload", "url": "https://vendor.example/{version}/setup.001", "searchOrder": 900, "verification": { "mode": "required" } }]
+        }
+      }
+    }],
+    "releases": [{
+      "version": "4.2.0",
+      "targetArtifacts": {
+        "suite-win-x64-stable": {
+          "artifactId": "suite-win-x64-stable",
+          "artifactFiles": {
+            "setup": { "contentHash": { "algorithm": "sha256", "value": "<setup-hash>" } },
+            "part001": { "contentHash": { "algorithm": "sha256", "value": "<part-hash>" } }
+          }
+        }
+      }
+    }]
+  },
+  "packageOperations": {
+    "assigned": {
+      "install": { "kind": "runInstaller", "artifactFileId": "setup", "targetKind": "directory", "installerKind": "customExe", "installDirectory": "suite/{version}", "uiMode": "silent", "elevation": "none", "commandArguments": ["/S"], "successExitCodes": [0], "restartExitCodes": [] }
+    }
+  }
+}
+```
 
-When **Runtime endpoint status** shows `Selection` with status `Ready`:
+### Archive-derived bootstrap files
 
-1. Write the JSON under the **Selection** path (`definitionId` usually from the **Task** line). Prefer `<publisherId>\<definitionId>.json`; use `<definitionId>.json` directly under **Selection** when that matches the endpoint convention or user instruction.
-2. Run `Test-PackageDefinitionCatalog` on that file.
-3. Run raw JSON Schema validation with `Test-Json` when available, or state clearly that raw schema validation could not be run.
-4. Unless **Authoring mode** is `draft-only`, complete **Publication finalization** (sign with an approved profile when appropriate, then verify signature and trust).
+```json
+{
+  "artifactFiles": {
+    "modulePackage": {
+      "relativePathTemplate": "Eigenverft.Manifested.Package.{version}.nupkg",
+      "acquisitionCandidates": [{ "kind": "vendorDownload", "url": "https://gallery.example/Eigenverft.Manifested.Package/{version}", "searchOrder": 900, "verification": { "mode": "required" } }]
+    },
+    "bootstrapPowerShell": {
+      "relativePathTemplate": "Bootstrap/Eigenverft.Manifested.Package.Bootstrap.ps1",
+      "acquisitionCandidates": [
+        { "kind": "packageDepot", "searchOrder": 100, "verification": { "mode": "required" } },
+        { "kind": "archiveEntry", "sourceArtifactFileId": "modulePackage", "entryPath": "Bootstrap/Eigenverft.Manifested.Package.Bootstrap.ps1", "searchOrder": 900, "verification": { "mode": "required" } }
+      ]
+    },
+    "bootstrapCommand": {
+      "relativePathTemplate": "Bootstrap/Eigenverft.Manifested.Package.Bootstrap.cmd",
+      "acquisitionCandidates": [
+        { "kind": "packageDepot", "searchOrder": 100, "verification": { "mode": "required" } },
+        { "kind": "archiveEntry", "sourceArtifactFileId": "modulePackage", "entryPath": "Bootstrap/Eigenverft.Manifested.Package.Bootstrap.cmd", "searchOrder": 900, "verification": { "mode": "required" } }
+      ]
+    }
+  }
+}
+```
 
-Success means the JSON exists on the catalog root with catalog validation, raw schema validation when available, signing/trust when required, and a final `Check Result` that records the executed evidence. Proof is validation/signature/source output - not installing the product.
+The matching release declares all three IDs and independently records `contentHash` or `publisherSignature` for each. The PowerShell module install operation uses `"artifactFileId": "modulePackage"`.
 
-**Draft-only:** when **Authoring mode** shows `draft-only`, stop after unsigned JSON and schema validation; skip signing and `-RequireTrusted` steps.
+Common mistakes:
 
-**Do not confuse catalog work with runtime install:**
-
-
-| Your authoring job                                               | Out of scope while authoring                     |
-| ---------------------------------------------------------------- | ------------------------------------------------ |
-| JSON under **Selection**, validated (signed when not draft-only) | `Invoke-Package` or running the vendor installer |
-| Document results for the user                                    | Trial installs to discover silent switches       |
-
-
-## Common Mistakes
-
-- Using retired top-level `dependencies` instead of `dependency.requires`.
-- Using retired top-level `dependencyPolicy` instead of `dependency.policy`.
-- Forgetting to bump `definitionRevision`.
-- Hand-editing `signatureValue`.
-- Treating `.cer` or `.pem` files as signing certificates.
-- Authoring under a folder that does not match **Selection** in **Runtime endpoint status**.
-- Leaving a definition unsigned when it is meant for a trusted, enabled scan endpoint.
-- Skipping `Test-PackageDefinitionCatalog` or trust verification.
-- Inventing `conflictsWith` pairs without clear user intent.
-- Trusting unknown signing keys as a shortcut.
-- Embedding secrets or local machine paths in package JSON.
-- Reporting work as done without the required final `Check Result`, validation, signing status, and repository-status check when the selected authoring root is inside a local Git working tree.
-- Reading module or engine source when the schema, this guide, and example definitions were sufficient.
-- Running vendor installers (including administrative or quiet "test" installs) to discover silent switches or install paths.
-- Calling `Invoke-Package` during authoring instead of using catalog validation and documentation.
-- Choosing an admin/machine-wide installer artifact because a trial elevated install "worked" when user or portable artifacts fit the intent.
-
-## Out Of Scope
-
-- Package engine changes.
-- Schema changes.
-- Dependency planner or resolver architecture changes.
-- Fleet management or orchestration.
-- Lockfile models inside materialized packages.
-- New signing or trust commands.
-- Editing built-in sample catalog JSON shipped inside the module install unless the user explicitly asked for that and **Selection** points there.
-- Executing upstream installers or `Invoke-Package` on the authoring machine to probe behavior; use documentation, examples, and **No Installer Execution During Authoring** instead.
+- placing `relativePathTemplate` or reusable candidates on the release instead of the target;
+- placing exact hashes only on candidates instead of the matching release file entry;
+- changing file IDs between releases because a filename changed;
+- omitting a split part or treating a required file as optional;
+- pointing `artifactFileId` at an undeclared file or confusing it with a filename;
+- using one candidate per file as if candidates were members of the set;
+- forgetting independent trust evidence for an extracted file;
+- allowing rooted, traversal, or case-colliding paths;
+- running an installer to discover switches;
+- skipping revision bump, warning review, signing, trusted verification, or the final Check Result.

@@ -6,8 +6,9 @@
 
 Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - PowerShell module installer' -Body {
 
-    It 'requires package-file acquisition for powershellModuleInstaller' {
+    It 'requires artifact-file acquisition for powershellModuleInstaller' {
         $package = [pscustomobject]@{
+            artifactFiles = @([pscustomobject]@{ id = 'modulePackage' })
             assigned = [pscustomobject]@{
                 install = [pscustomobject]@{
                     kind            = 'powershellModuleInstaller'
@@ -17,19 +18,21 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - PowerS
             }
         }
 
-        Test-PackagePackageFileAcquisitionRequired -Package $package | Should -BeTrue
+        Test-PackageArtifactFileAcquisitionRequired -Package $package | Should -BeTrue
     }
 
     It 'resolves paths for powershellModuleInstaller without an install directory' {
         $rootPath = Join-Path $TestDrive 'psmodule-paths'
         $packageResult = [pscustomobject]@{
-            PackageFileStagingDirectory = $null
+            ArtifactStagingDirectory = $null
             PackageInstallStageDirectory = $null
             InstallDirectory = $null
             PackageDepotRelativeDirectory = $null
             PackageWorkSlotDirectory = $null
-            PackageFilePath = $null
-            DefaultPackageDepotFilePath = $null
+            DefaultPackageDepotDirectory = $null
+            ArtifactFiles = @()
+            OperationArtifactFile = $null
+            OperationArtifactFilePath = $null
             PackageConfig = [pscustomobject]@{
                 DefinitionId = 'PowerShellGet'
                 Definition   = [pscustomobject]@{ id = 'PowerShellGet' }
@@ -44,12 +47,17 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - PowerS
                 version      = '2.2.5'
                 releaseTrack = 'stable'
                 artifactDistributionVariant = 'psmodule-any'
-                packageFile  = [pscustomobject]@{
-                    fileName = 'PowerShellGet.2.2.5.nupkg'
-                }
+                artifactFiles = @([pscustomobject]@{
+                    id = 'modulePackage'
+                    relativePath = 'PowerShellGet.2.2.5.nupkg'
+                    acquisitionCandidates = @()
+                    contentHash = $null
+                    publisherSignature = $null
+                })
                 assigned     = [pscustomobject]@{
                     install = [pscustomobject]@{
                         kind            = 'powershellModuleInstaller'
+                        artifactFileId  = 'modulePackage'
                         moduleName      = 'PowerShellGet'
                         requiredVersion = '2.2.5'
                     }
@@ -60,8 +68,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - PowerS
         $result = Resolve-PackagePaths -PackageResult $packageResult
 
         $result.InstallDirectory | Should -BeNullOrEmpty
-        $result.PackageFilePath | Should -Match 'PowerShellGet\.2\.2\.5\.nupkg$'
-        $result.DefaultPackageDepotFilePath | Should -Match 'PkgDepot\\PowerShellGet\\stable\\2\.2\.5\\psmodule-any\\PowerShellGet\.2\.2\.5\.nupkg$'
+        $result.OperationArtifactFilePath | Should -Match 'PowerShellGet\.2\.2\.5\.nupkg$'
+        $result.ArtifactFiles[0].DefaultDepotPath | Should -Match 'PkgDepot\\PowerShellGet\\stable\\2\.2\.5\\psmodule-any\\PowerShellGet\.2\.2\.5\.nupkg$'
     }
 
     It 'invokes powershellModuleInstaller through a full helper script path and staged local repository' {
@@ -110,7 +118,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - PowerS
         $packageResult = [pscustomobject]@{
             DefinitionId = 'EigenverftManifestedAgent'
             PackageId = 'eigenverft-manifested-agent-psmodule-stable'
-            PackageFilePath = $packageFilePath
+            OperationArtifactFilePath = $packageFilePath
             PackageInstallStageDirectory = $stageDirectory
             Package = [pscustomobject]@{
                 assigned = [pscustomobject]@{
@@ -133,12 +141,12 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - PowerS
         $invokeCalls[0].CommandArguments | Should -Contain '-File'
         $helperPath = [string]$invokeCalls[0].CommandArguments[([array]::IndexOf($invokeCalls[0].CommandArguments, '-File') + 1)]
         [System.IO.Path]::IsPathRooted($helperPath) | Should -BeTrue
-        $invokeCalls[0].WorkingDirectory | Should -Be ([System.IO.Path]::GetFullPath($stageDirectory))
+        $invokeCalls[0].WorkingDirectory | Should -Be ([System.IO.Path]::GetFullPath((Join-Path $stageDirectory 'PowerShellModule')))
         $invokeCalls[0].TargetKind | Should -Be 'powershellModule'
         $invokeCalls[0].InstallerKind | Should -Be 'powershellModuleInstaller'
         $invokeCalls[0].ElevationMode | Should -Be 'none'
         $invokeCalls[0].WindowStyle | Should -Be 'Hidden'
-        Test-Path -LiteralPath (Join-Path $stageDirectory 'Nuget\Eigenverft.Manifested.Agent.1.20261.39327.nupkg') -PathType Leaf | Should -BeTrue
+        Test-Path -LiteralPath (Join-Path $stageDirectory 'PowerShellModule\Nuget\Eigenverft.Manifested.Agent.1.20261.39327.nupkg') -PathType Leaf | Should -BeTrue
         $result.InstallKind | Should -Be 'powershellModuleInstaller'
         $result.Status | Should -Be 'Applied'
         $result.InstalledVersion | Should -Be '1.20261.39327'
@@ -314,7 +322,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - PowerS
         $packageResult.ExistingPackage | Should -BeNullOrEmpty
     }
 
-    It 'keeps package-file acquisition active for adopted PowerShell modules' {
+    It 'keeps artifact-file acquisition active for adopted PowerShell modules' {
         $packageFilePath = Join-Path $TestDrive 'PowerShellGet.2.2.5.nupkg'
         Set-Content -LiteralPath $packageFilePath -Value 'nupkg' -Encoding UTF8
         $packageResult = [pscustomobject]@{
@@ -323,6 +331,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - PowerS
             }
             Package = ConvertTo-TestPsObject @{
                 id = 'powershellget-psmodule-stable'
+                artifactFiles = @(@{ id = 'modulePackage' })
                 assigned = @{
                     install = @{
                         kind = 'powershellModuleInstaller'
@@ -332,23 +341,31 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - PowerS
             PackageConfig = ConvertTo-TestPsObject @{
                 AllowAcquisitionFallback = $true
             }
-            PackageFilePath = $packageFilePath
-            AcquisitionPlan = [pscustomobject]@{
-                PackageFileRequired = $true
-                Candidates = @(
+            ArtifactFiles = @([pscustomobject]@{
+                Id = 'modulePackage'
+                RelativePath = 'PowerShellGet.2.2.5.nupkg'
+                StagingPath = $packageFilePath
+                DefaultDepotPath = $null
+                AcquisitionPlan = [pscustomobject]@{
+                    Candidates = @(
                     [pscustomobject]@{
                         verification = [pscustomobject]@{
                             mode = 'none'
                         }
                     }
                 )
-            }
-            PackageFilePreparation = $null
+                }
+                Preparation = $null
+                Verification = $null
+            })
+            ArtifactAcquisitionPlan = [pscustomobject]@{ ArtifactFilesRequired = $true }
+            ArtifactPreparation = $null
         }
 
-        $packageResult = Resolve-PackageInstallFile -PackageResult $packageResult
+        $packageResult = Resolve-PackageArtifactFiles -PackageResult $packageResult
 
-        $packageResult.PackageFilePreparation.Status | Should -Be 'ReusedPackageFile'
+        $packageResult.ArtifactPreparation.Status | Should -Be 'Prepared'
+        $packageResult.ArtifactFiles[0].Preparation.Status | Should -Be 'ReusedArtifactFile'
     }
 
     It 'writes adopted PowerShell modules to package inventory without an install directory' {
@@ -401,7 +418,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - PowerS
         $packageResult = [pscustomobject]@{
             InstallOrigin = $null
             Assigned = $null
-            PackageFilePreparation = [pscustomobject]@{ Success = $true }
+            ArtifactPreparation = [pscustomobject]@{ Success = $true }
             ExistingPackage = $null
             Package = [pscustomobject]@{
                 id = 'powershellget-psmodule-stable'
@@ -424,6 +441,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - PowerS
                 ReusedExisting = $false
             }
         }
+        Mock Stage-PackageArtifactFilesForInstallation { $PackageResult }
 
         $result = Set-PackageAssignedState -PackageResult $packageResult
 

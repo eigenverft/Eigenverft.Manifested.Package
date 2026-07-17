@@ -1,11 +1,11 @@
 {
-  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json",
-  "schemaVersion": "1.9",
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-2.0.schema.json",
+  "schemaVersion": "2.0",
   "definitionPublication": {
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "MiniCPM5_1B_Q8_Model",
-    "definitionRevision": 2,
+    "definitionRevision": 3,
     "publishedAtUtc": "2026-07-14T04:55:50.4324908Z",
     "definitionSignature": {
       "kind": "signed",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-14T04:56:27.3871243Z",
-      "signatureValue": "M4Sqv3BezEMCoKsz/9tR8Ky/tfS/g0lvSvPYlfzLmBcxYDWS309UrY8zsythIaYLGWDk/oR8a2Q3RTVFrMaA4KcS0/jp44cMAF3Tr/Do0gsN4TJMrBJ4wOhnuVhMPVE+MTlzkzpZLlGDj/P75wYazZ4v6k2BJTCxJA308rr1KTcXDra13VP/1wjk5qOPD3zEGrEUAy9sPsdC+oDMl08PkuPZUwJ098D/6eyBGa0ql1BXy6OGeXO8lzUpRAwd+zJ1DaBQxiMyGdkAeQUa5u8rKSgkkUej1MiUleH7vmdPLMihmxT0LsBDa7INK2TQUFVWAuNOkQkqy4p7RnnqZISRGau6g9nvfZh5If04EH5BTkr/RJl7xq8HEnDR7iQPeQjPJb6y+H+AlI00sCtSFZ2Uu4RNb/1DGbELm6xttI5BnORUZQqc2Ntj+XpMbagEO3T8iGficH0iLV4SvvDK/WrvDPz0xNZhXuqVRWz5I61UYYfc/fVJnydB5YU7Jm57wsdB"
+      "signedAtUtc": "2026-07-17T06:16:20.5186435Z",
+      "signatureValue": "T11FUzh1ImnTmpaOlFUv4Is2zB7mrpXX/3Dq/fyT2+lbGR4Z1P4je9shLbBPlG7KHWEbeQTWASKqnoG/n3WqzQ0R83qV4X6Gu/pCcGWI/i94Br3UJn3tW1+ivqnfXRTnIehp9SuzqINlCR/HjWUKN/fITZKs6mqDwqytR9E+hKtc+sSmYDcs9dczdCLOlfKVQYiucJ/SYb0YT3f3I0p/5vokK4zAg0KhoFbsqjLRNeeLE18newgC1qAwCMS2PlEmZOPPtH+NnMczVbEHttn7uo5q2XBLvqguCvJO46rpSfoRqMlSxoxGwmUQy5IB5y+BYwzZVShHVHgAGn5mWDrSDrzVEs1CVXM99AcBZxmzSWTsrf+Rpfj5/Q7g4DUarDcxUPgRixEplc5WDiDcuuPI0vGlqIymVi/BDP0r6d7AyqEt709MygYSXDWOqcic1ml0ffpu7I6a1Oojp7B40gULL90LaBQJfTbEjFDxlIjuj7yXJ549Lh+7u2/jXftKm2bD"
     }
   },
   "display": {
@@ -60,25 +60,29 @@
           "strategy": "latestByVersion",
           "allowPrerelease": false
         },
-        "fileNameTemplate": "MiniCPM5-1B-Q8_0.gguf",
-        "acquisitionCandidates": [
-          {
-            "kind": "packageDepot",
-            "searchOrder": 100,
-            "verification": {
-              "mode": "required"
-            }
-          },
-          {
-            "kind": "vendorDownload",
-            "sourceId": "huggingFaceDownload",
-            "searchOrder": 900,
-            "sourcePath": "MiniCPM5-1B-Q8_0.gguf",
-            "verification": {
-              "mode": "required"
-            }
+        "artifactFiles": {
+          "package": {
+            "relativePathTemplate": "MiniCPM5-1B-Q8_0.gguf",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "required"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "sourceId": "huggingFaceDownload",
+                "searchOrder": 900,
+                "sourcePath": "MiniCPM5-1B-Q8_0.gguf",
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
           }
-        ]
+        }
       }
     ],
     "releases": [
@@ -90,9 +94,13 @@
         "targetArtifacts": {
           "MiniCPM5_1B_Q8_Model-q8-0-stable": {
             "artifactId": "minicpm5-1b-q8-0-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "0dc7638539067268774c275a14a6ec9c7e01f7eeb2cff606c8590361fa527e4c"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "0dc7638539067268774c275a14a6ec9c7e01f7eeb2cff606c8590361fa527e4c"
+                }
+              }
             }
           }
         }
@@ -147,7 +155,8 @@
       "install": {
         "kind": "placePackageFile",
         "installDirectory": "minicpm5-1b/{releaseTrack}/{version}/{artifactDistributionVariant}",
-        "targetRelativePath": "MiniCPM5-1B-Q8_0.gguf"
+        "targetRelativePath": "MiniCPM5-1B-Q8_0.gguf",
+        "artifactFileId": "package"
       },
       "readyStateCheck": {
         "use": "discovery.presence",

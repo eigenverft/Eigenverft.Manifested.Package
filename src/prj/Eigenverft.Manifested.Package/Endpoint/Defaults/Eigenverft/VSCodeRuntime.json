@@ -1,11 +1,11 @@
 {
-  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json",
-  "schemaVersion": "1.9",
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-2.0.schema.json",
+  "schemaVersion": "2.0",
   "definitionPublication": {
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "VSCodeRuntime",
-    "definitionRevision": 10,
+    "definitionRevision": 11,
     "publishedAtUtc": "2026-07-14T04:55:50.4324908Z",
     "definitionSignature": {
       "kind": "signed",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-14T04:56:29.1384934Z",
-      "signatureValue": "OnadNRJPHE7hI8KoV8JeyM0XKnD9eJgYiyAbur5ZOB2PKEuAOAZ9pC1zpFP4LYzkx0lSoV8xmXWpTm3oJ6fIYF3X8AxNmdyvIdiEJfApC67LQw98inTLAdQ4Q5ABm84WvBE/d6kOyAdl9vW5j33DWOudxRfWbbwMydrXICVr38Y6WvPBSqodV270MKpKiB8Fg5I5dd8bZWP04r937Nd3BJaYGnTRcgP8VQbF1/JbEv8rxsrPaMJdYF1bJrhYR5hK7yRdMGH/cU+hbL5vU8IFsHDqwvupEyZK15VIl5G3r9fAEy60I9RvQV2zImKjRAkB8TIkRE1irEBS+w0YO7vKsp4O8YORzvov5OHNv2oKZVqvWiBCD2bvd+UDwPcyp8X56J1QUrsL8C0cfQln63EiZ1y0AVfen/FJm20DJaifL8wFDp0Y7FTnNdrw3fInQH5pKWSLY/T3czSJ0vOvmZ9WJzb0d5Qy/aye3T3BH98Af7MUZJZGmC/G7tmG8t8axCd4"
+      "signedAtUtc": "2026-07-17T06:16:22.9094658Z",
+      "signatureValue": "cwqI6VndCLFIDyI+zPK70CYiELrtGRNpFaQa17lQDARXKQdjnDPqpfckUvsD1p1MdKXukIkimvFM52D7R1086u1ANaZkbAAfCiIkFtmupB+6a842iVK8WCW0HRYt77xg7CgtiJsnZYkn6Xrl0PeiAgGBP6WF/B/xnjwHaGopgrJeNDaCnu1ymydu6K39hjQZjh87TZBx8xKJg8uMJhm5rnWCkhVypw6hmQPmrEsPBlsqRt/ZjMxeGQbG4ogTN0iFCLX3xgZkKc1vgqNui2bsxorQXIe+hVVk66trpi22pwJJUks38sIwmTjuQcWYQ962wCJUzP3H7XP0U73agi9bvSTppyAcYJ2zkZRlbyzr+sz6vo8BfDRrKpz+mylVMbBa+0l5BxK70BkVXyKCq/7Y2akuH+PhTYCjyTi41HNRHDnKWqNaTg040WZ6udNV3QkniZqXVm3kPDV3IEUw9OKyNUhk+4vJwiGi91ABqiap6SRfP2N9Ifs6oPFsLw5eXoOl"
     }
   },
   "display": {
@@ -62,25 +62,29 @@
           "strategy": "latestByVersion",
           "allowPrerelease": false
         },
-        "fileNameTemplate": "VSCode-win32-x64-{version}.zip",
-        "acquisitionCandidates": [
-          {
-            "kind": "packageDepot",
-            "searchOrder": 100,
-            "verification": {
-              "mode": "optional"
-            }
-          },
-          {
-            "kind": "vendorDownload",
-            "sourceId": "vsCodeUpdateService",
-            "searchOrder": 900,
-            "sourcePath": "{version}/win32-x64-archive/stable",
-            "verification": {
-              "mode": "required"
-            }
+        "artifactFiles": {
+          "package": {
+            "relativePathTemplate": "VSCode-win32-x64-{version}.zip",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "optional"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "sourceId": "vsCodeUpdateService",
+                "searchOrder": 900,
+                "sourcePath": "{version}/win32-x64-archive/stable",
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
           }
-        ]
+        }
       },
       {
         "id": "VSCodeRuntime-win32-arm64-stable",
@@ -98,25 +102,29 @@
           "strategy": "latestByVersion",
           "allowPrerelease": false
         },
-        "fileNameTemplate": "VSCode-win32-arm64-{version}.zip",
-        "acquisitionCandidates": [
-          {
-            "kind": "packageDepot",
-            "searchOrder": 100,
-            "verification": {
-              "mode": "optional"
-            }
-          },
-          {
-            "kind": "vendorDownload",
-            "sourceId": "vsCodeUpdateService",
-            "searchOrder": 900,
-            "sourcePath": "{version}/win32-arm64-archive/stable",
-            "verification": {
-              "mode": "required"
-            }
+        "artifactFiles": {
+          "package": {
+            "relativePathTemplate": "VSCode-win32-arm64-{version}.zip",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "optional"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "sourceId": "vsCodeUpdateService",
+                "searchOrder": 900,
+                "sourcePath": "{version}/win32-arm64-archive/stable",
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
           }
-        ]
+        }
       }
     ],
     "releases": [
@@ -128,16 +136,24 @@
         "targetArtifacts": {
           "VSCodeRuntime-win32-x64-stable": {
             "artifactId": "vsCode-win-x64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "1b3a27d323b64cdcbcb6260e6f35a84979e0333f01a85c21386a6140b9e0fdf0"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "1b3a27d323b64cdcbcb6260e6f35a84979e0333f01a85c21386a6140b9e0fdf0"
+                }
+              }
             }
           },
           "VSCodeRuntime-win32-arm64-stable": {
             "artifactId": "vsCode-win-arm64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "be1debe651bb35382d48ca6e20d97001a427edb74296eb11d7a99a8efcb320d5"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "be1debe651bb35382d48ca6e20d97001a427edb74296eb11d7a99a8efcb320d5"
+                }
+              }
             }
           }
         }
@@ -149,18 +165,26 @@
         ],
         "targetArtifacts": {
           "VSCodeRuntime-win32-arm64-stable": {
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "7b013a63287c8bf3f9a3b0528fb7bb4cc06a759f59992a06c00289347a8fbdb2"
-            },
-            "artifactId": "vsCode-win-arm64-stable"
+            "artifactId": "vsCode-win-arm64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "7b013a63287c8bf3f9a3b0528fb7bb4cc06a759f59992a06c00289347a8fbdb2"
+                }
+              }
+            }
           },
           "VSCodeRuntime-win32-x64-stable": {
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "14491695f81d320396344ce2fb9a8be70755662e5e611920fcfa814648d948f5"
-            },
-            "artifactId": "vsCode-win-x64-stable"
+            "artifactId": "vsCode-win-x64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "14491695f81d320396344ce2fb9a8be70755662e5e611920fcfa814648d948f5"
+                }
+              }
+            }
           }
         }
       },
@@ -172,16 +196,24 @@
         "targetArtifacts": {
           "VSCodeRuntime-win32-x64-stable": {
             "artifactId": "vsCode-win-x64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "eab37733d5374ec9081ca87ba7b504add854df704951dfadef387920bb24ab32"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "eab37733d5374ec9081ca87ba7b504add854df704951dfadef387920bb24ab32"
+                }
+              }
             }
           },
           "VSCodeRuntime-win32-arm64-stable": {
             "artifactId": "vsCode-win-arm64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "1911dd09c58803da6e892c19938bcea3dbf70199e4bdfa7f8adca0e4b129d408"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "1911dd09c58803da6e892c19938bcea3dbf70199e4bdfa7f8adca0e4b129d408"
+                }
+              }
             }
           }
         }
@@ -194,16 +226,24 @@
         "targetArtifacts": {
           "VSCodeRuntime-win32-x64-stable": {
             "artifactId": "vsCode-win-x64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "519e145e572f8ad7a8146399354e7c57b42ad5d02d67d567092a51aac3fb927b"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "519e145e572f8ad7a8146399354e7c57b42ad5d02d67d567092a51aac3fb927b"
+                }
+              }
             }
           },
           "VSCodeRuntime-win32-arm64-stable": {
             "artifactId": "vsCode-win-arm64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "d49aed455b3c62578874fe05648ca91ea047b7a8f6548951260a739461558b99"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "d49aed455b3c62578874fe05648ca91ea047b7a8f6548951260a739461558b99"
+                }
+              }
             }
           }
         }
@@ -216,16 +256,24 @@
         "targetArtifacts": {
           "VSCodeRuntime-win32-x64-stable": {
             "artifactId": "vsCode-win-x64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "fea13bf400c6770dd14eeabc0e47757ffe2703f1a3f2a258faa22bce3bdd21af"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "fea13bf400c6770dd14eeabc0e47757ffe2703f1a3f2a258faa22bce3bdd21af"
+                }
+              }
             }
           },
           "VSCodeRuntime-win32-arm64-stable": {
             "artifactId": "vsCode-win-arm64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "7e40617507cb917fdaa7b7f6312c3202352e2f2db102e80d28b80d2fee99e2ed"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "7e40617507cb917fdaa7b7f6312c3202352e2f2db102e80d28b80d2fee99e2ed"
+                }
+              }
             }
           }
         }
@@ -360,7 +408,8 @@
         "expandedRoot": "auto",
         "createDirectories": [
           "data"
-        ]
+        ],
+        "artifactFileId": "package"
       },
       "readyStateCheck": {
         "use": "discovery.presence",

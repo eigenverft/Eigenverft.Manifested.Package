@@ -274,7 +274,7 @@ function Resolve-PackagePackage {
 Attaches the selected release to a Package result.
 
 .DESCRIPTION
-Selects a schemaVersion 1.9 artifact target and release entry for the
+Selects a schemaVersion 2.0 artifact target and release entry for the
 resolved Package config, projects that artifact target/release into the runtime
 assigned package object, and attaches it to the result.
 
@@ -314,7 +314,7 @@ Resolve-PackagePackage -PackageResult $result
         $null
     }
 
-    $selectedPackage = Resolve-PackageEffectivePackage_1_9 -PackageConfig $packageConfig -PackageVersionOverride $packageVersionOverride -PackageVersionRange $packageVersionRange
+    $selectedPackage = Resolve-PackageEffectivePackage_2_0 -PackageConfig $packageConfig -PackageVersionOverride $packageVersionOverride -PackageVersionRange $packageVersionRange
 
     $PackageResult.Package = $selectedPackage
     $PackageResult.EffectiveRelease = $selectedPackage
@@ -365,4 +365,3 @@ Resolve-PackagePackage -PackageResult $result
 
     return $PackageResult
 }
-

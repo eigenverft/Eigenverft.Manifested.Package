@@ -6,6 +6,53 @@
 
 Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - registry and installer' -Body {
 
+    It 'stages a complete split installer set and executes the selected file beside its parts' {
+        $rootPath = Join-Path $TestDrive 'split-installer-stage'
+        $sourceDirectory = Join-Path $rootPath 'source'
+        $installStageDirectory = Join-Path $rootPath 'install-stage'
+        $setupSource = Join-Path $sourceDirectory 'setup.exe'
+        $partSource = Join-Path $sourceDirectory 'setup.001'
+        Write-TestTextFile -Path $setupSource -Content 'setup'
+        Write-TestTextFile -Path $partSource -Content 'part001'
+        $setupArtifact = [pscustomobject]@{ Id = 'setup'; RelativePath = 'installer\setup.exe'; StagingPath = $setupSource }
+        $partArtifact = [pscustomobject]@{ Id = 'part001'; RelativePath = 'installer\setup.001'; StagingPath = $partSource }
+        $invokeCalls = New-Object System.Collections.Generic.List[object]
+        Mock Invoke-PackageInstallerCommand {
+            param($PackageResult, $CommandPath, $CommandArguments, $WorkingDirectory)
+            $invokeCalls.Add([pscustomobject]@{ CommandPath = $CommandPath; WorkingDirectory = $WorkingDirectory }) | Out-Null
+            [pscustomobject]@{ CommandPath = $CommandPath; WorkingDirectory = $WorkingDirectory }
+        }
+        $packageResult = [pscustomobject]@{
+            PackageId = 'SplitSuite'
+            PackageInstallStageDirectory = $installStageDirectory
+            InstallDirectory = Join-Path $rootPath 'installed'
+            ArtifactPreparation = [pscustomobject]@{ Success = $true }
+            ArtifactFiles = @($setupArtifact, $partArtifact)
+            OperationArtifactFile = $setupArtifact
+            OperationArtifactFilePath = $setupSource
+            PackageConfig = [pscustomobject]@{}
+            Package = [pscustomobject]@{
+                assigned = [pscustomobject]@{
+                    install = [pscustomobject]@{
+                        kind = 'runInstaller'; artifactFileId = 'setup'; targetKind = 'directory'
+                        installerKind = 'customExe'; uiMode = 'silent'; elevation = 'none'
+                        commandArguments = @('/S'); successExitCodes = @(0); restartExitCodes = @()
+                    }
+                }
+            }
+        }
+
+        $packageResult = Stage-PackageArtifactFilesForInstallation -PackageResult $packageResult
+        $null = Invoke-PackageInstallerProcess -PackageResult $packageResult
+
+        $expectedDirectory = Join-Path $installStageDirectory 'Artifacts\installer'
+        $packageResult.OperationArtifactFilePath | Should -Be (Join-Path $expectedDirectory 'setup.exe')
+        Test-Path -LiteralPath (Join-Path $expectedDirectory 'setup.001') -PathType Leaf | Should -BeTrue
+        $invokeCalls.Count | Should -Be 1
+        $invokeCalls[0].CommandPath | Should -Be $packageResult.OperationArtifactFilePath
+        $invokeCalls[0].WorkingDirectory | Should -Be $expectedDirectory
+    }
+
     It 'resolves registry values through the generic execution-engine helper' {
         $registryPath = 'HKLM:\SOFTWARE\Vendor\Product'
 
@@ -253,8 +300,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - regist
         }
 
         $packageResult = [pscustomobject]@{
-            PackageFilePath           = $installerPath
-            PackageFileStagingDirectory = $workspacePath
+            OperationArtifactFilePath = $installerPath
+            ArtifactStagingDirectory = $workspacePath
             PackageInstallStageDirectory = $workspacePath
             InstallDirectory          = $null
             PackageConfig        = [pscustomobject]@{
@@ -282,7 +329,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - regist
 
         $startProcessCalls.Count | Should -Be 1
         $startProcessCalls[0].Verb | Should -Be 'RunAs'
-        $startProcessCalls[0].WorkingDirectory | Should -Be $workspacePath
+        $startProcessCalls[0].WorkingDirectory | Should -Be (Split-Path -Parent $installerPath)
         $startProcessCalls[0].ArgumentList[-1].StartsWith('"') | Should -BeTrue
         $startProcessCalls[0].ArgumentList[-1].EndsWith('"') | Should -BeTrue
         $result.TargetKind | Should -Be 'machinePrerequisite'
@@ -325,8 +372,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - regist
 
         $packageResult = [pscustomobject]@{
             PackageId                    = 'NotepadPlusPlus'
-            PackageFilePath              = $packageFilePath
-            PackageFileStagingDirectory  = Split-Path -Parent $packageFilePath
+            OperationArtifactFilePath    = $packageFilePath
+            ArtifactStagingDirectory  = Split-Path -Parent $packageFilePath
             PackageInstallStageDirectory = $installStageDirectory
             InstallDirectory             = $installDirectory
             PackageConfig                = [pscustomobject]@{}
@@ -349,10 +396,10 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - regist
 
         $result = Invoke-PackageNsisInstallerProcess -PackageResult $packageResult
 
-        $stagedInstallerPath = Join-Path $installStageDirectory 'npp.8.9.4.Installer.x64.exe'
+        $stagedInstallerPath = $packageFilePath
         $startProcessCalls.Count | Should -Be 1
         $startProcessCalls[0].FilePath | Should -Be $stagedInstallerPath
-        $startProcessCalls[0].WorkingDirectory | Should -Be $installStageDirectory
+        $startProcessCalls[0].WorkingDirectory | Should -Be (Split-Path -Parent $stagedInstallerPath)
         $startProcessCalls[0].ArgumentList | Should -Be @('/S', '/noUpdater', '/closeRunningNpp', ('/D=' + $installDirectory))
         $startProcessCalls[0].ArgumentList[-1].StartsWith('"') | Should -BeFalse
         Test-Path -LiteralPath $stagedInstallerPath -PathType Leaf | Should -BeTrue
@@ -387,8 +434,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - regist
 
         $packageResult = [pscustomobject]@{
             PackageId = 'SevenZip'
-            PackageFilePath = $packageFilePath
-            PackageFileStagingDirectory = Split-Path -Parent $packageFilePath
+            OperationArtifactFilePath = $packageFilePath
+            ArtifactStagingDirectory = Split-Path -Parent $packageFilePath
             PackageInstallStageDirectory = $installStageDirectory
             InstallDirectory = $installDirectory
             PackageConfig = [pscustomobject]@{}
@@ -413,10 +460,10 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - regist
 
         $result = Invoke-PackageMsiInstallerProcess -PackageResult $packageResult
 
-        $stagedInstallerPath = Join-Path $installStageDirectory '7z2601-x64.msi'
+        $stagedInstallerPath = $packageFilePath
         $invokeCalls.Count | Should -Be 1
         $invokeCalls[0].CommandPath | Should -Be $msiexecPath
-        $invokeCalls[0].WorkingDirectory | Should -Be $installStageDirectory
+        $invokeCalls[0].WorkingDirectory | Should -Be (Split-Path -Parent $stagedInstallerPath)
         $invokeCalls[0].CommandArguments | Should -Be @('/i', (Format-PackageProcessArgument -Value $stagedInstallerPath), '/qn', '/norestart', (Format-PackageProcessArgument -Value ('INSTALLDIR=' + $installDirectory)))
         $invokeCalls[0].InstallerKind | Should -Be 'msi'
         $invokeCalls[0].ElevationMode | Should -Be 'required'
@@ -444,8 +491,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - regist
         $packageResult = [pscustomobject]@{
             DefinitionId = 'NotepadPlusPlus'
             InstallDirectory = Join-Path $TestDrive 'npp'
-            PackageFilePath = $null
-            PackageFileStagingDirectory = Join-Path $TestDrive 'FileStage'
+            OperationArtifactFilePath = $null
+            ArtifactStagingDirectory = Join-Path $TestDrive 'FileStage'
             PackageInstallStageDirectory = Join-Path $TestDrive 'InstStage'
             PackageConfig = [pscustomobject]@{ Definition = [pscustomobject]@{} }
             Package = [pscustomobject]@{}
@@ -500,8 +547,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - regist
         $packageResult = [pscustomobject]@{
             DefinitionId = 'SevenZip'
             InstallDirectory = Join-Path $rootPath '7-Zip'
-            PackageFilePath = $null
-            PackageFileStagingDirectory = Join-Path $rootPath 'FileStage'
+            OperationArtifactFilePath = $null
+            ArtifactStagingDirectory = Join-Path $rootPath 'FileStage'
             PackageInstallStageDirectory = Join-Path $rootPath 'InstStage'
             PackageConfig = [pscustomobject]@{ Definition = [pscustomobject]@{} }
             Package = [pscustomobject]@{}

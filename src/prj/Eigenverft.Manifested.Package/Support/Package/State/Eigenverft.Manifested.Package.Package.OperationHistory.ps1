@@ -96,9 +96,7 @@ Creates one operation-history record from a finalized Package result.
         [string]$CompletedAtUtc
     )
 
-    $packageFilePreparation = $PackageResult.PackageFilePreparation
-    $selectedSource = if ($packageFilePreparation -and $packageFilePreparation.PSObject.Properties['SelectedSource']) { $packageFilePreparation.SelectedSource } else { $null }
-    $verification = if ($packageFilePreparation -and $packageFilePreparation.PSObject.Properties['Verification']) { $packageFilePreparation.Verification } else { $null }
+    $artifactPreparation = $PackageResult.ArtifactPreparation
     $depotDistribution = if ($PackageResult.PSObject.Properties['DepotDistribution']) { $PackageResult.DepotDistribution } else { $null }
     $installStatus = if ($PackageResult.Assigned -and $PackageResult.Assigned.PSObject.Properties['Status']) { [string]$PackageResult.Assigned.Status } else { $null }
     $operationId = if ($PackageResult.PSObject.Properties['OperationId'] -and -not [string]::IsNullOrWhiteSpace([string]$PackageResult.OperationId)) {
@@ -139,14 +137,21 @@ Creates one operation-history record from a finalized Package result.
         installOrigin                 = [string]$PackageResult.InstallOrigin
         installStatus                 = $installStatus
         installDirectory              = [string]$PackageResult.InstallDirectory
-        packageFilePreparation        = [pscustomobject]@{
-            status                      = if ($packageFilePreparation -and $packageFilePreparation.PSObject.Properties['Status']) { [string]$packageFilePreparation.Status } else { $null }
-            success                     = if ($packageFilePreparation -and $packageFilePreparation.PSObject.Properties['Success']) { [bool]$packageFilePreparation.Success } else { $null }
-            packageFilePath             = [string]$PackageResult.PackageFilePath
-            defaultPackageDepotFilePath = [string]$PackageResult.DefaultPackageDepotFilePath
-            sourceScope                 = if ($selectedSource -and $selectedSource.PSObject.Properties['SourceScope']) { [string]$selectedSource.SourceScope } else { $null }
-            sourceId                    = if ($selectedSource -and $selectedSource.PSObject.Properties['SourceId']) { [string]$selectedSource.SourceId } else { $null }
-            verificationStatus          = if ($verification -and $verification.PSObject.Properties['Status']) { [string]$verification.Status } else { $null }
+        artifactPreparation           = [pscustomobject]@{
+            status  = if ($artifactPreparation -and $artifactPreparation.PSObject.Properties['Status']) { [string]$artifactPreparation.Status } else { $null }
+            success = if ($artifactPreparation -and $artifactPreparation.PSObject.Properties['Success']) { [bool]$artifactPreparation.Success } else { $null }
+            files   = @($PackageResult.ArtifactFiles | ForEach-Object {
+                    $selectedSource = if ($_.Preparation -and $_.Preparation.PSObject.Properties['SelectedSource']) { $_.Preparation.SelectedSource } else { $null }
+                    [pscustomobject]@{
+                        id = [string]$_.Id; relativePath = [string]$_.RelativePath; stagingPath = [string]$_.StagingPath
+                        defaultDepotPath = [string]$_.DefaultDepotPath
+                        status = if ($_.Preparation) { [string]$_.Preparation.Status } else { $null }
+                        success = if ($_.Preparation) { [bool]$_.Preparation.Success } else { $null }
+                        sourceScope = if ($selectedSource) { [string]$selectedSource.SourceScope } else { $null }
+                        sourceId = if ($selectedSource) { [string]$selectedSource.SourceId } else { $null }
+                        verificationStatus = if ($_.Verification) { [string]$_.Verification.Status } else { $null }
+                    }
+                })
         }
         depotDistribution             = [pscustomobject]@{
             mode        = if ($depotDistribution -and $depotDistribution.PSObject.Properties['Mode']) { [string]$depotDistribution.Mode } else { $null }

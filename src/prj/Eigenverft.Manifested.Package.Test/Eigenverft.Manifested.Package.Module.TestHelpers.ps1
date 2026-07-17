@@ -108,11 +108,23 @@ function global:Write-TestZipFromDirectory {
         $null = New-Item -ItemType Directory -Path $zipDirectory -Force
     }
 
-    if (Test-Path -LiteralPath $ZipPath) {
-        Remove-Item -LiteralPath $ZipPath -Force
+    $compressionPath = if ([string]::Equals([System.IO.Path]::GetExtension($ZipPath), '.zip', [System.StringComparison]::OrdinalIgnoreCase)) {
+        $ZipPath
+    }
+    else {
+        [System.IO.Path]::ChangeExtension($ZipPath, '.zip')
     }
 
-    Compress-Archive -Path (Join-Path $SourceDirectory '*') -DestinationPath $ZipPath -Force
+    foreach ($pathToRemove in @($ZipPath, $compressionPath) | Select-Object -Unique) {
+        if (Test-Path -LiteralPath $pathToRemove) {
+            Remove-Item -LiteralPath $pathToRemove -Force
+        }
+    }
+
+    Compress-Archive -Path (Join-Path $SourceDirectory '*') -DestinationPath $compressionPath -Force
+    if (-not [string]::Equals($compressionPath, $ZipPath, [System.StringComparison]::OrdinalIgnoreCase)) {
+        Move-Item -LiteralPath $compressionPath -Destination $ZipPath -Force
+    }
 }
 
 function global:New-TestPackageArchiveInfo {
@@ -432,22 +444,20 @@ function global:New-TestPackageRelease {
             os  = @('windows')
             cpu = @($Architecture)
         }
-        packageFile  = if ([string]::IsNullOrWhiteSpace($FileName)) {
-            $null
-        }
-        else {
-            $packageFile = @{
-                fileName = $FileName
+        artifactFiles = if ([string]::IsNullOrWhiteSpace($FileName)) { @() } else {
+            $artifactFile = @{
+                id = 'package'
+                relativePath = $FileName
+                acquisitionCandidates = $AcquisitionCandidates
             }
             if (-not [string]::IsNullOrWhiteSpace($PackageFileSha256)) {
-                $packageFile.contentHash = @{
+                $artifactFile.contentHash = @{
                     algorithm = 'sha256'
                     value     = $PackageFileSha256
                 }
             }
-            $packageFile
+            @($artifactFile)
         }
-        acquisitionCandidates = $AcquisitionCandidates
     }
 
     if (-not [string]::IsNullOrWhiteSpace($ReleaseTag)) {
@@ -549,6 +559,10 @@ function global:New-TestVSCodeDefinitionDocument {
     }
     else {
         throw "Test definition helper requires assigned.install. Use New-TestPackageRelease -Install or pass an assigned object with an install property."
+    }
+    $fileBackedInstallKinds = @('expandArchive', 'placePackageFile', 'powershellModuleInstaller', 'msiInstaller', 'nsisInstaller', 'innoSetupInstaller', 'runInstaller')
+    if ([string]$assigned.install.kind -in $fileBackedInstallKinds -and -not $assigned.install.PSObject.Properties['artifactFileId']) {
+        $assigned.install | Add-Member -MemberType NoteProperty -Name artifactFileId -Value 'package'
     }
 
     if ($rawAssigned.PSObject.Properties['pathRegistration']) {
@@ -678,10 +692,11 @@ function global:New-TestVSCodeDefinitionDocument {
 
         $targetId = [string]$release.id
         $artifactSources = @(
-            foreach ($candidate in @($release.acquisitionCandidates)) {
+            $releaseArtifactFile = @($release.artifactFiles) | Where-Object { [string]$_.id -eq 'package' } | Select-Object -First 1
+            foreach ($candidate in @($releaseArtifactFile.acquisitionCandidates)) {
                 if ($null -eq $candidate) { continue }
                 $source = [ordered]@{ kind = [string]$candidate.kind }
-                foreach ($propertyName in @('sourceId', 'sourcePath', 'searchOrder', 'priority', 'verification')) {
+                foreach ($propertyName in @('sourceId', 'sourcePath', 'url', 'urlTemplate', 'sourceArtifactFileId', 'entryPath', 'searchOrder', 'priority', 'verification')) {
                     if ($candidate.PSObject.Properties[$propertyName]) {
                         $source[$propertyName] = $candidate.$propertyName
                     }
@@ -700,8 +715,13 @@ function global:New-TestVSCodeDefinitionDocument {
             constraints                = $release.constraints
             versionSelection          = @{ strategy = 'latestByVersion'; allowPrerelease = $false }
         }
-        if ($artifactSources.Count -gt 0) {
-            $packageTarget.acquisitionCandidates = $artifactSources
+        if ([string]$assigned.install.kind -in $fileBackedInstallKinds) {
+            $packageTarget.artifactFiles = @{
+                package = @{
+                    relativePathTemplate = if ($releaseArtifactFile -and -not [string]::IsNullOrWhiteSpace([string]$releaseArtifactFile.relativePath)) { [string]$releaseArtifactFile.relativePath } else { 'package-{version}.zip' }
+                    acquisitionCandidates = $artifactSources
+                }
+            }
         }
 
         $artifactTargets += $packageTarget
@@ -709,21 +729,24 @@ function global:New-TestVSCodeDefinitionDocument {
         $artifact = [ordered]@{
             artifactId = if ($release.PSObject.Properties['artifactId']) { [string]$release.artifactId } else { $targetId }
         }
-        if ($release.packageFile -and $release.packageFile.PSObject.Properties['fileName']) {
-            $artifact.fileName = [string]$release.packageFile.fileName
-        }
-        if ($release.packageFile -and $release.packageFile.PSObject.Properties['contentHash']) {
-            $artifact.contentHash = $release.packageFile.contentHash
-        }
-        foreach ($packageFileProperty in @('publisherSignature', 'autoUpdateSupported', 'integrity', 'authenticode')) {
-            if ($release.packageFile -and $release.packageFile.PSObject.Properties[$packageFileProperty]) {
-                $artifact[$packageFileProperty] = $release.packageFile.$packageFileProperty
+        if ([string]$assigned.install.kind -in $fileBackedInstallKinds) {
+            $releaseArtifactFileEntry = [ordered]@{}
+            if ($releaseArtifactFile -and -not [string]::IsNullOrWhiteSpace([string]$releaseArtifactFile.relativePath)) {
+                $releaseArtifactFileEntry.relativePath = [string]$releaseArtifactFile.relativePath
             }
+            if ($releaseArtifactFile -and $releaseArtifactFile.PSObject.Properties['contentHash']) {
+                $releaseArtifactFileEntry.contentHash = $releaseArtifactFile.contentHash
+            }
+            if ($release.PSObject.Properties['sourcePath']) {
+                $releaseArtifactFileEntry.sourcePath = [string]$release.sourcePath
+            }
+            foreach ($artifactFileProperty in @('publisherSignature')) {
+                if ($releaseArtifactFile -and $releaseArtifactFile.PSObject.Properties[$artifactFileProperty]) {
+                    $releaseArtifactFileEntry[$artifactFileProperty] = $releaseArtifactFile.$artifactFileProperty
+                }
+            }
+            $artifact.artifactFiles = @{ package = $releaseArtifactFileEntry }
         }
-        if ($release.PSObject.Properties['sourcePath']) {
-            $artifact.sourcePath = [string]$release.sourcePath
-        }
-
         $versionEntry = [ordered]@{
             version           = [string]$release.version
             releaseTracks     = @([string]$release.releaseTrack)
@@ -753,7 +776,7 @@ function global:New-TestVSCodeDefinitionDocument {
     }
 
     return @{
-        schemaVersion = '1.9'
+        schemaVersion = '2.0'
         definitionPublication = @{
             publisherId = $PublisherId
             publisherName = $PublisherName
@@ -1003,4 +1026,3 @@ function global:Write-TestPackageDocuments {
         DefinitionPath          = $definitionPath
     }
 }
-

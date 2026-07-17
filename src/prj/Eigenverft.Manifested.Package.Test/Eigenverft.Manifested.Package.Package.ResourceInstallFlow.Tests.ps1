@@ -14,12 +14,9 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - resour
 
         $packageResult = [pscustomobject]@{
             PackageId        = 'Qwen35_9B_Q6_K_Model'
-            PackageFilePath  = $packageFilePath
+            OperationArtifactFilePath = $packageFilePath
             InstallDirectory = $installDirectory
             Package          = [pscustomobject]@{
-                packageFile = [pscustomobject]@{
-                    fileName = 'Qwen3.5-9B-Q6_K.gguf'
-                }
                 assigned = [pscustomobject]@{
                     install = [pscustomobject]@{
                         kind               = 'placePackageFile'
@@ -45,7 +42,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - resour
         $preferredTargetInstallDirectory = Join-Path $rootPath 'installs'
         $packageStateIndexFilePath = Join-Path $rootPath 'PackageAssignmentInventory.json'
         $definitionDocument = @{
-            schemaVersion = '1.9'
+            schemaVersion = '2.0'
             definitionPublication = @{
                 publisherId = 'Eigenverft'
                 publisherName = 'Eigenverft Module'
@@ -83,15 +80,20 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - resour
                             strategy = 'latestByVersion'
                             allowPrerelease = $false
                         }
-                        acquisitionCandidates = @(
-                            @{
-                                kind = 'packageDepot'
-                                searchOrder = 250
-                                verification = @{
-                                    mode = 'none'
-                                }
+                        artifactFiles = @{
+                            package = @{
+                                relativePathTemplate = 'Qwen3.5-9B-Q6_K.gguf'
+                                acquisitionCandidates = @(
+                                    @{
+                                        kind = 'packageDepot'
+                                        searchOrder = 250
+                                        verification = @{
+                                            mode = 'none'
+                                        }
+                                    }
+                                )
                             }
-                        )
+                        }
                     }
                 )
                 releases = @(
@@ -101,7 +103,9 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - resour
                         targetArtifacts = @{
                             'Qwen35_9B_Q6_K_Model-q6-k-stable' = @{
                                 artifactId = 'qwen35-9b-q6-k-stable'
-                                fileName = 'Qwen3.5-9B-Q6_K.gguf'
+                                artifactFiles = @{
+                                    package = @{}
+                                }
                             }
                         }
                     }
@@ -152,6 +156,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - resour
                 assigned = @{
                     install = @{
                         kind = 'placePackageFile'
+                        artifactFileId = 'package'
                         installDirectory = 'qwen35-2b/{releaseTrack}/{version}/{artifactDistributionVariant}'
                         targetRelativePath = 'Qwen3.5-9B-Q6_K.gguf'
                         pathRegistration = @{
@@ -216,14 +221,15 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - resour
         $result = Resolve-PackagePaths -PackageResult $result
         $result = Build-PackageAcquisitionPlan -PackageResult $result
 
-        $null = New-Item -ItemType Directory -Path (Split-Path -Parent $result.DefaultPackageDepotFilePath) -Force
-        Write-TestTextFile -Path $result.DefaultPackageDepotFilePath -Content 'gguf-binary'
+        $artifactFile = $result.ArtifactFiles[0]
+        $null = New-Item -ItemType Directory -Path (Split-Path -Parent $artifactFile.DefaultDepotPath) -Force
+        Write-TestTextFile -Path $artifactFile.DefaultDepotPath -Content 'gguf-binary'
 
-        $result = Resolve-PackageInstallFile -PackageResult $result
+        $result = Resolve-PackageArtifactFiles -PackageResult $result
         $result = Set-PackageAssignedState -PackageResult $result
         $result = Test-PackageAssignedReadiness -PackageResult $result
 
-        $result.PackageFilePreparation.Status | Should -Be 'HydratedFromDefaultPackageDepot'
+        $result.ArtifactFiles[0].Preparation.Status | Should -Be 'HydratedFromDefaultPackageDepot'
         $result.Assigned.InstallKind | Should -Be 'placePackageFile'
         $result.Assigned.InstalledFilePath | Should -Be (Join-Path $result.InstallDirectory 'Qwen3.5-9B-Q6_K.gguf')
         Test-Path -LiteralPath $result.Assigned.InstalledFilePath -PathType Leaf | Should -BeTrue
@@ -242,13 +248,13 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - resour
         Write-TestTextFile -Path (Join-Path $npmCacheDirectory 'cache-entry') -Content 'cache'
 
         $result = Clear-PackageWorkDirectories -PackageResult ([pscustomobject]@{
-                PackageFileStagingDirectory = $preparationDirectory
+                ArtifactStagingDirectory = $preparationDirectory
                 PackageInstallStageDirectory = $installStageDirectory
-                PackageFileStagingRootDirectory = $fileStageRoot
+                ArtifactStagingRootDirectory = $fileStageRoot
                 PackageInstallStageRootDirectory = $installStageRoot
             })
 
-        $result.PackageFileStagingDirectory | Should -Be $preparationDirectory
+        $result.ArtifactStagingDirectory | Should -Be $preparationDirectory
         Test-Path -LiteralPath $preparationDirectory | Should -BeFalse
         Test-Path -LiteralPath $installStageDirectory | Should -BeFalse
         Test-Path -LiteralPath (Join-Path $fileStageRoot 'packages') | Should -BeFalse
@@ -294,8 +300,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - resour
         $result.ErrorMessage | Should -Match 'Package readiness failed'
         @($result.Readiness.FailedChecks).Count | Should -Be 1
         $result.Readiness.FailedChecks[0].Kind | Should -Be 'files'
-        Test-Path -LiteralPath $result.PackageFileStagingDirectory -PathType Container | Should -BeTrue
-        Test-Path -LiteralPath $result.PackageFilePath -PathType Leaf | Should -BeTrue
+        Test-Path -LiteralPath $result.ArtifactStagingDirectory -PathType Container | Should -BeTrue
+        Test-Path -LiteralPath $result.ArtifactFiles[0].StagingPath -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath $result.PackageInstallStageDirectory -PathType Container | Should -BeTrue
         Test-Path -LiteralPath $packageStateIndexFilePath -PathType Leaf | Should -BeFalse
         Test-Path -LiteralPath $operationHistoryFilePath -PathType Leaf | Should -BeTrue
@@ -304,8 +310,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - resour
         $historyDocument.Document.records[0].status | Should -Be 'Failed'
         $historyDocument.Document.records[0].failureReason | Should -Be 'AssignedPackageReadinessFailed'
         $historyDocument.Document.records[0].failedStep | Should -Be 'CheckAssignedReadiness'
-        $historyDocument.Document.records[0].packageFilePreparation.status | Should -Be 'HydratedFromDefaultPackageDepot'
-        $historyDocument.Document.records[0].packageFilePreparation.packageFilePath | Should -Be $result.PackageFilePath
+        $historyDocument.Document.records[0].artifactPreparation.status | Should -Be 'Prepared'
+        $historyDocument.Document.records[0].artifactPreparation.files[0].stagingPath | Should -Be $result.ArtifactFiles[0].StagingPath
         $historyDocument.Document.records[0].depotDistribution.status | Should -Be 'Planned'
         $historyDocument.Document.records[0].depotDistribution.skipped | Should -Be 1
     }
@@ -371,10 +377,11 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - resour
                 [pscustomobject]@{
                     DefinitionId = 'PackageManagement'
                     Result = [pscustomobject]@{
-                        DefaultPackageDepotFilePath = $dependencyDepotFile
-                        PackageFilePath = Join-Path $rootPath 'FileStage\PackageManagement.1.4.8.1.nupkg'
+                        ArtifactFiles = @([pscustomobject]@{ DefaultDepotPath = $dependencyDepotFile })
+                        OperationArtifactFilePath = Join-Path $rootPath 'FileStage\PackageManagement.1.4.8.1.nupkg'
                         Assigned = [pscustomobject]@{
                             InstallKind = 'powershellModuleInstaller'
+                            OperationArtifactFilePath = Join-Path $rootPath 'FileStage\PackageManagement.1.4.8.1.nupkg'
                         }
                     }
                 }

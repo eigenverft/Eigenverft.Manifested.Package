@@ -1,10 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://eigenverft.local/schemas/eigenverft-module-package-definition-1.9.schema.json",
-  "title": "Eigenverft module package definition document (wire format 1.9)",
-  "$comment": "META: JSON Schema for INSTANCE package-definition documents (one file per definition). Runtime validates with DefinitionSchema.ps1 + DefinitionSchema.Wire1_9.ps1, signature assertions, and 1.9 acquisition vocabulary assertions. definitionPublication.definitionSignature is required; kind=unsigned is valid for draft authoring, kind=signed after Sign-PackageDefinition. Endpoints are discovery-only. Recommended layout under an endpoint root: <publisherId>/<definitionId>.json.",
-  "description": "AUTHOR TASK - Produce or edit one complete package-definition JSON object for Eigenverft.Manifested.Package. Required top-level order: schemaVersion, definitionPublication, display, dependency, artifacts, discovery, packageOperations. Use schemaVersion exactly 1.9.\n\nAUTHORING VS SIGNING: Design semantic package content first (dependency, artifacts, discovery, packageOperations). A valid embedded signature is not required while drafting. Always include definitionPublication.definitionSignature: for drafts use kind=unsigned with format and signedContent only; do not invent keyThumbprint, signedAtUtc, certificatePem, or signatureValue. Never hand-edit signatureValue base64. After the JSON content is final, signing is a separate maintainer step.\n\nSIGNING WORKFLOW: If no catalog-signing certificate exists, run New-PackageSigningCertificate (creates a password-protected PFX, public CER, and adjacent DPAPI password descriptor; keep the private key off endpoints). Prefer friendly metadata fields such as -CommonName, -Organization, -OrganizationalUnit, -Country, and -SignerDisplayName over raw -Subject unless advanced X.509 control is required. Inject or refresh the embedded signature with Sign-PackageDefinition -Path <file> -Cert <friendly-name-or-pfx> -KeepSchemaVersion and optionally -Password <secure> for CI. Sign-PackageDefinition embeds the public certificate so clients can verify before trusting. Verify with Verify-PackageDefinitionSignature or Verify-PackageDefinitionCatalog before replacing published copies. Admins can preseed public trust with the CER via Import-PackageTrust or Trust-PackageSigningCertificate. Re-run Sign-PackageDefinition after any meaningful definition change and bump definitionRevision.\n\nDEPLOYMENT (neutral): Whether an embedded signature is required depends on client catalogTrust.policy and how trust is delivered-not on this schema alone. Synced file-share or NAS endpoint roots used with strict policy need kind=signed definitions and either trusted keys in PackageTrustInventory.json or a valid embedded certificate that local policy allows the user to trust. Unsigned catalogs may run only where catalogTrust.policy=allowUnsigned and publisher policy explicitly allows unsigned definitions.\n\nPUBLICATION: definitionPublication.publisherId is the maintainer namespace (shipped: Eigenverft; teams: e.g. My Team). definitionPublication.definitionId is the id used by Invoke-Package. Increment definitionPublication.definitionRevision for every meaningful JSON change. publishedAtUtc is audit metadata only.\n\nCATALOG TRUST: Production strict clients expect kind=signed with RSA/SHA-256 signatureValue over canonical JSON excluding signatureValue. certificatePem is public verification material, not a trust decision. kind=unsigned is explicit draft/migration shape and does not prove authorship under strict policy.\n\nDEPENDENCY: dependency is required. dependency.requires is required but may be []. dependency.policy is optional and contains peer policy such as conflictsWith and requiresAbsent. dependency.requires[].publisherId is optional.\n\nCOMMON TRAPS: root repositoryId and root definitionId are retired; top-level dependencies and dependencyPolicy are retired in 1.9; vendorDownload candidates need sourceId+sourcePath or direct url/urlTemplate; GitHub release sources need real assets and releaseTag; packageDepot is the only prepared artifact acquisition candidate; package-definition filesystem acquisition is retired; NSIS and Inno Setup differ; choose package-managed shims vs installer PATH deliberately.",
-  "x-eigenverftAgentHint": "LLM/agent: first read the complete PackageDefinitionAuthoring guide that delivered this task, then read this complete schema. Treat root description, this hint, nested description fields, and $comment fields as authoring requirements. Edit INSTANCE JSON conforming to this schema and DefinitionSchema.Wire1_9.ps1 plus 1.9 signature rules. Author drafts with definitionPublication.definitionSignature.kind=unsigned (no signatureValue). Do not fabricate signatures. After content is stable, a human or automation runs Sign-PackageDefinition -KeepSchemaVersion or Resign-PackageDefinition -KeepSchemaVersion; use New-PackageSigningCertificate when no key exists yet. Shipped examples: Endpoint/Defaults/Eigenverft (signed). Layout: <publisherId>/<definitionId>.json under endpoint roots. Bump definitionRevision on every definition change. Embedded signatures are required for strict file-based catalogs; web or centrally trusted endpoints may use other trust delivery-check deployment policy before assuming unsigned JSON is runnable. Raw JSON Schema validation must pass; do not add extra properties that only a looser runtime validator accepts.",
+  "$id": "https://eigenverft.local/schemas/eigenverft-module-package-definition-2.0.schema.json",
+  "title": "Eigenverft module package definition document (wire format 2.0)",
+  "$comment": "META: JSON Schema for INSTANCE package-definition documents. Runtime validates with DefinitionSchema.ps1 + DefinitionSchema.Wire2_0.ps1. Schema 2.0 is a breaking artifact-file-set contract: a selected artifact owns zero files only for dynamic npm materialization, otherwise it owns one or more required artifactFiles.",
+  "description": "AUTHOR TASK - Produce or edit one complete schemaVersion 2.0 package-definition JSON object. Read PackageDefinitionAuthoring.md first, then the schema root, artifacts/file definitions, the chosen install-operation definition, and one matching shipped example. A target selects a distribution. A release selects a version. artifactFiles lists every required file in that distribution. acquisitionCandidates are fallback ways to obtain one file. packageOperations.assigned.install.artifactFileId names the file consumed by a file-backed operation. Draft with definitionSignature.kind=unsigned; never invent signatureValue. Resolve and verify every artifact file before signing. Bump definitionRevision after meaningful changes.",
+  "x-eigenverftAgentHint": "LLM/agent: use schemaVersion 2.0 only. Keep target and release artifactFiles keys identical. All declared files are required. Put reusable relativePathTemplate and acquisitionCandidates under the target file; put exact hashes, signatures, and optional release overrides under the release file. Every file-backed install operation requires artifactFileId. packageDepot, vendorDownload, and archiveEntry are fallback acquisition kinds for one file. Author unsigned drafts, validate, then sign as a separate maintainer step.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -23,12 +23,12 @@
     },
     "$schema": {
       "type": "string",
-      "description": "Optional. In instance documents set to ../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json (relative to Endpoint/Defaults/Eigenverft) so editors attach validation; runtime ignores."
+      "description": "Optional. In shipped instance documents set to ../../../Schema/PackageDefinition/eigenverft-module-package-definition-2.0.schema.json so editors attach validation; runtime ignores."
     },
     "schemaVersion": {
       "type": "string",
-      "const": "1.9",
-      "description": "Must be the literal string 1.9. This wire version consolidates dependency edges and peer policy under one top-level dependency object."
+      "const": "2.0",
+      "description": "Must be the literal string 2.0. This breaking wire version models a selected artifact as a required artifact file set."
     },
     "definitionPublication": {
       "$ref": "#/$defs/definitionPublication",
@@ -139,7 +139,7 @@
         },
         "definitionSignature": {
           "$ref": "#/$defs/definitionSignature",
-          "description": "Catalog trust metadata for this file. Required on every 1.9 definition. Draft authoring: kind=unsigned (no signatureValue). Published strict catalogs: kind=signed after Sign-PackageDefinition or Resign-PackageDefinition. Do not hand-edit signatureValue."
+          "description": "Catalog trust metadata for this file. Required on every 2.0 definition. Draft authoring: kind=unsigned (no signatureValue). Published strict catalogs: kind=signed after Sign-PackageDefinition or Resign-PackageDefinition. Do not hand-edit signatureValue."
         }
       }
     },
@@ -164,7 +164,7 @@
         "format": {
           "type": "string",
           "const": "embedded-json-rsa-sha256-v1",
-          "description": "Fixed catalog signature format for 1.9. Required for both unsigned and signed kinds."
+          "description": "Fixed catalog signature format for 2.0. Required for both unsigned and signed kinds."
         },
         "signedContent": {
           "type": "string",
@@ -330,7 +330,7 @@
     },
     "artifacts": {
       "type": "object",
-      "$comment": "AUTHOR FOCUS: Define everything needed to select and download the right binary for each machine class. targets[] = one row per selectable lane (releaseTrack + artifactDistributionVariant + constraints). releases[] = version rows with targetArtifacts keyed by target id and optional upstreamRelease. sources = named download roots used by acquisitionCandidates. Generators: add a target per OS/CPU you support, then a release row per shipped version with matching hashes.",
+      "$comment": "AUTHOR FOCUS: targets[] selects a machine lane and declares reusable artifactFiles layout/acquisition. releases[] supplies exact per-version artifactFiles trust facts. Target and release file ids must match exactly. sources contains named download roots.",
       "additionalProperties": false,
       "required": [
         "targets",
@@ -403,14 +403,38 @@
           "$ref": "#/$defs/versionSelection",
           "description": "How the runtime selects a release from artifacts.releases for this target."
         },
-        "fileNameTemplate": {
+        "artifactFiles": {
+          "$ref": "#/$defs/artifactFileTargetMap",
+          "description": "Every required static file for this target, keyed by stable file id. Omit only for dynamic npm materialization."
+        }
+      }
+    },
+    "artifactFileTargetMap": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "$ref": "#/$defs/identifier"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/artifactFileTarget"
+      }
+    },
+    "artifactFileTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relativePathTemplate",
+        "acquisitionCandidates"
+      ],
+      "properties": {
+        "relativePathTemplate": {
           "type": "string",
           "minLength": 1,
-          "description": "Default package file or asset name template for this target. Omit for operations such as npmMaterializedInstallGlobalPackage that do not acquire one authored raw package file."
+          "description": "Artifact-root-relative materialized path template. It may include version/release tokens and subdirectories."
         },
         "acquisitionCandidates": {
           "$ref": "#/$defs/acquisitionCandidates",
-          "description": "Default ordered candidates used to acquire the raw artifact for this target. Omit when assignment does not need a package file."
+          "description": "Ordered fallback ways to materialize this one file."
         }
       }
     },
@@ -506,7 +530,7 @@
     "upstreamRelease": {
       "type": "object",
       "additionalProperties": false,
-      "$comment": "Conditional requirements: when sourceId resolves to a source whose kind requires a fixed upstream tag (for example githubRelease), the runtime expects releaseTag to be populated. JSON Schema cannot express that dependency here; validate combinations against Wire1_9 or follow existing definitions.",
+      "$comment": "Conditional requirements: when sourceId resolves to a source whose kind requires a fixed upstream tag (for example githubRelease), the runtime expects releaseTag to be populated. Validate combinations against Wire2_0 or follow existing definitions.",
       "required": [
         "sourceId"
       ],
@@ -534,41 +558,60 @@
           "minLength": 1,
           "description": "Stable selected-artifact id written into results and inventory."
         },
-        "fileName": {
+        "artifactFiles": {
+          "$ref": "#/$defs/artifactFileReleaseMap",
+          "description": "Exact release facts keyed by the same file ids declared on the target. Omit only for dynamic npm materialization."
+        }
+      }
+    },
+    "artifactFileReleaseMap": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "$ref": "#/$defs/identifier"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/artifactFileRelease"
+      }
+    },
+    "artifactFileRelease": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "relativePath": {
           "type": "string",
           "minLength": 1,
-          "description": "Exact package file or asset name override for this release/target."
+          "description": "Exact artifact-root-relative path override for this release."
         },
         "sourcePath": {
           "type": "string",
-          "description": "Optional source-relative path override for this release/target."
+          "description": "Optional source-relative path override for this release file."
         },
         "acquisitionCandidates": {
           "$ref": "#/$defs/acquisitionCandidates",
-          "description": "Optional acquisition candidate override for this release/target."
+          "description": "Optional ordered candidate override for this release file."
         },
         "url": {
           "type": "string",
-          "description": "Optional direct artifact URL template. Prefer candidate.urlTemplate for per-source policy; use this only when the artifact itself owns the full URL."
+          "description": "Optional direct URL owned by this release file."
         },
         "urlTemplate": {
           "type": "string",
-          "description": "Optional direct artifact URL template using tokens such as {version}, {releaseTag}, {releaseTrack}, and {artifactDistributionVariant}."
+          "description": "Optional direct URL template owned by this release file."
         },
         "contentHash": {
           "$ref": "#/$defs/contentHash",
-          "description": "Trust boundary for fixed package files."
+          "description": "Content trust boundary for this exact file."
         },
         "publisherSignature": {
           "$ref": "#/$defs/publisherSignature",
-          "description": "Publisher signature requirement for executable artifacts when fixed hashes are unsuitable."
+          "description": "Publisher signature requirement for this exact executable file."
         }
       }
     },
     "acquisitionCandidates": {
       "type": "array",
-      "minItems": 1,
-      "description": "Ordered candidates used to acquire raw package files. Lower searchOrder runs first.",
+      "description": "Ordered fallback candidates used to materialize one artifact file. Lower searchOrder runs first.",
       "items": {
         "$ref": "#/$defs/acquisitionCandidate"
       }
@@ -623,6 +666,38 @@
             "urlTemplate": {
               "type": "string",
               "description": "Direct absolute vendor/upstream URL template with {version}, {releaseTag}, {releaseTrack}, and {artifactDistributionVariant}. Mutually exclusive with sourceId/sourcePath."
+            },
+            "searchOrder": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "verification": {
+              "$ref": "#/$defs/verification"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "sourceArtifactFileId",
+            "entryPath",
+            "searchOrder",
+            "verification"
+          ],
+          "properties": {
+            "kind": {
+              "const": "archiveEntry"
+            },
+            "sourceArtifactFileId": {
+              "$ref": "#/$defs/identifier",
+              "description": "Another file in the selected artifact set whose archive contains entryPath."
+            },
+            "entryPath": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Safe archive-relative path of the single file to extract."
             },
             "searchOrder": {
               "type": "integer",
@@ -878,7 +953,7 @@
     "metadataFileProbe": {
       "type": "object",
       "additionalProperties": true,
-      "$comment": "additionalProperties allows forward-compatible metadata keys beyond relativePath; only keys understood by the engine have effect - treat unknown keys as documentation until Wire1_9 recognizes them.",
+      "$comment": "additionalProperties allows forward-compatible metadata keys beyond relativePath; only keys understood by the engine have effect - treat unknown keys as documentation until Wire2_0 recognizes them.",
       "required": [
         "relativePath"
       ],
@@ -1291,7 +1366,7 @@
               "minLength": 1
             }
           },
-          "description": "Supported shape in Wire1_9: { \"kind\": \"fileName\", \"value\": \"example.exe\" }."
+          "description": "Supported shape in Wire2_0: { \"kind\": \"fileName\", \"value\": \"example.exe\" }."
         },
         "installRootRelativePath": {
           "type": "string",
@@ -1401,6 +1476,7 @@
       "$comment": "installDirectory follows the same root rules as other assigned operations: expand environment variables, normalize slashes, and if not absolute, prefix with preferredTargetInstallRootDirectory. expandedRoot names the directory inside the archive that becomes the logical payload root after extraction.",
       "required": [
         "kind",
+        "artifactFileId",
         "installDirectory",
         "expandedRoot",
         "createDirectories"
@@ -1408,6 +1484,10 @@
       "properties": {
         "kind": {
           "const": "expandArchive"
+        },
+        "artifactFileId": {
+          "$ref": "#/$defs/identifier",
+          "description": "Required artifact file containing the archive to expand."
         },
         "installDirectory": {
           "type": "string",
@@ -1456,12 +1536,17 @@
       "additionalProperties": false,
       "required": [
         "kind",
+        "artifactFileId",
         "installDirectory",
         "targetRelativePath"
       ],
       "properties": {
         "kind": {
           "const": "placePackageFile"
+        },
+        "artifactFileId": {
+          "$ref": "#/$defs/identifier",
+          "description": "Required artifact file to place."
         },
         "installDirectory": {
           "type": "string",
@@ -1479,6 +1564,7 @@
       "$comment": "NSIS-only installer adapter. NSIS requires the target directory argument last and unquoted, usually /D=<installDirectory>. Do not use this for Inno Setup; use innoSetupInstaller.",
       "required": [
         "kind",
+        "artifactFileId",
         "installDirectory",
         "commandArguments",
         "targetDirectoryArgument"
@@ -1486,6 +1572,10 @@
       "properties": {
         "kind": {
           "const": "nsisInstaller"
+        },
+        "artifactFileId": {
+          "$ref": "#/$defs/identifier",
+          "description": "Required NSIS executable artifact file."
         },
         "installDirectory": {
           "type": "string"
@@ -1542,6 +1632,7 @@
       "$comment": "Inno Setup installer adapter. Common silent args are /VERYSILENT /NORESTART /SUPPRESSMSGBOXES and optional /MERGETASKS=... . Target directory is passed as /DIR=\"<installDirectory>\" when targetDirectoryArgument.enabled=true.",
       "required": [
         "kind",
+        "artifactFileId",
         "installDirectory",
         "commandArguments",
         "targetDirectoryArgument"
@@ -1549,6 +1640,10 @@
       "properties": {
         "kind": {
           "const": "innoSetupInstaller"
+        },
+        "artifactFileId": {
+          "$ref": "#/$defs/identifier",
+          "description": "Required Inno Setup executable artifact file."
         },
         "installDirectory": {
           "type": "string"
@@ -1606,6 +1701,7 @@
       "$comment": "MSI installer adapter. The engine stages the .msi, invokes %SystemRoot%\\System32\\msiexec.exe directly, and appends the configured public property for installDirectory when enabled. This install kind requires normal package-file acquisition.",
       "required": [
         "kind",
+        "artifactFileId",
         "installDirectory",
         "commandArguments",
         "targetDirectoryProperty"
@@ -1613,6 +1709,10 @@
       "properties": {
         "kind": {
           "const": "msiInstaller"
+        },
+        "artifactFileId": {
+          "$ref": "#/$defs/identifier",
+          "description": "Required MSI artifact file."
         },
         "installDirectory": {
           "type": "string"
@@ -1666,6 +1766,7 @@
       "$comment": "Generic raw installer process launch. This shape intentionally does not own installDirectory. Do not add installDirectory or target-directory helper fields here; choose nsisInstaller, innoSetupInstaller, msiInstaller, expandArchive, or another schema-defined operation when the engine must manage an install directory. installerKind is descriptive/logging metadata only and does not create product-specific behavior.",
       "required": [
         "kind",
+        "artifactFileId",
         "targetKind",
         "installerKind",
         "uiMode",
@@ -1678,6 +1779,10 @@
       "properties": {
         "kind": {
           "const": "runInstaller"
+        },
+        "artifactFileId": {
+          "$ref": "#/$defs/identifier",
+          "description": "Required executable artifact file."
         },
         "targetKind": {
           "type": "string",
@@ -1724,12 +1829,17 @@
       "$comment": "Depot-backed PowerShell module adapter. The selected artifact must be the module .nupkg; the engine stages it under PackageInstallStage\\Nuget and installs from a temporary local PSRepository using Windows PowerShell 5.1. Do not use this as an online Install-Module wrapper.",
       "required": [
         "kind",
+        "artifactFileId",
         "moduleName",
         "requiredVersion"
       ],
       "properties": {
         "kind": {
           "const": "powershellModuleInstaller"
+        },
+        "artifactFileId": {
+          "$ref": "#/$defs/identifier",
+          "description": "Required PowerShell module nupkg artifact file."
         },
         "moduleName": {
           "type": "string",
@@ -2242,7 +2352,7 @@
           }
         }
       ],
-      "$comment": "This oneOf currently covers osVersion and memory GiB checks implemented in Wire1_9; additional compatibility kinds may appear in definitions before this schema lists them - extend the schema when adding new kinds."
+      "$comment": "This oneOf currently covers osVersion and memory GiB checks implemented in Wire2_0; additional compatibility kinds may appear in definitions before this schema lists them - extend the schema when adding new kinds."
     },
     "onFail": {
       "type": "string",

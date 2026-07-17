@@ -1,11 +1,11 @@
 {
-  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json",
-  "schemaVersion": "1.9",
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-2.0.schema.json",
+  "schemaVersion": "2.0",
   "definitionPublication": {
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "NodeRuntime",
-    "definitionRevision": 8,
+    "definitionRevision": 9,
     "publishedAtUtc": "2026-07-14T04:55:50.4324908Z",
     "definitionSignature": {
       "kind": "signed",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-14T04:56:27.5205108Z",
-      "signatureValue": "J4RW0v8sBFb0Jm7Bz6B7vgV7rGtHVnNmp0nDwFe5/t+qQvAs2CClx7GCGN1FDdSx3C5JDQJ9GAgKeO8QfOnYICYxzC+cVe9KFUcGoQHVJ3K1fUpNkXAAR5XNOWi1qJ7Cyvn/4YfC4WvSLv/lVmvSpUbgquABhNjmINmqI8LA/4oNdhwHYnbN3oHn1u4ShJ1mQqIgyw1z81e7LuitUzpQcyxkWhwi0ytdmOHFY/PtzgMicN8/W/9PNQhz6OuhwUXYuXpZ2uF5nR72EUA3itbcYvAByZ0vViev9TigFstCqusR5Z+k5UWyruQpNq0//aJmEMm+cVe+fckQFtiJpWIH7M+4+ggKuCUnXbMLFXlxGWiOz7mBnxPA2I9m/nHrSm1Y4NjOAvVXkrPTNf0nncqlp0EoACnG8AvnubrKRrGPBcGY9lcZS0j/pNppgK10/rkOMaxqULd4u5VOgBaZW+Gxy7zb7BwcVFB1Zmiv2wFBsz+UFQHqnKsyS/BzzhyWGx7q"
+      "signedAtUtc": "2026-07-17T06:16:20.6977783Z",
+      "signatureValue": "gsj8ZFViAazjknD+DogBx1tPoWjVSlT44PnknDXChg6KsAUrYtMmWbnG4Ps3PmBVgkW+mc9ztXjZStMnMP3X1oSoKxlEgQukPBWI1psZ+KHt81deUjxsv3b1xvprUh//A3V1uI5cjIaWy8z1yLxd9dCMz8M+RtdtK23+X66AXBIlfKVmGyZmmZI5JqAMV74lzzx6OaQXmoo6+Ou6ENodZ3jt4XyD7glxBpW+RtmiOVfOT1oGJx2WE5JXRsq55VUTDu2JrwtuLP/8rUGHdRCq4sWIIj5TwW1Qx1NzYQWyszCk4uwsNhfQLxaS3g2sHfQ+oZiAXjfCSn1IfArh/vh9vkVtn9tZMDjGciHGWkfrBeo3w03JWs6jpkPPux7Cl/9gQNQMA9VpYFM7e4oD6/KnJKzf4cfh3+3vCDcfJDSgbodEnWXnRWuLpgE2tjZDRD7NRU9vhbApDYE89J9CYVLmHj3dh0Mzl9coC2nNukvVN6ecdjaPQPF+bxiDCVEOlyQU"
     }
   },
   "display": {
@@ -54,25 +54,29 @@
           "strategy": "latestByVersion",
           "allowPrerelease": false
         },
-        "fileNameTemplate": "node-v{version}-win-x64.zip",
-        "acquisitionCandidates": [
-          {
-            "kind": "packageDepot",
-            "searchOrder": 100,
-            "verification": {
-              "mode": "optional"
-            }
-          },
-          {
-            "kind": "vendorDownload",
-            "sourceId": "nodeJsRelease",
-            "sourcePath": "v{version}/node-v{version}-win-x64.zip",
-            "searchOrder": 900,
-            "verification": {
-              "mode": "required"
-            }
+        "artifactFiles": {
+          "package": {
+            "relativePathTemplate": "node-v{version}-win-x64.zip",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "optional"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "sourceId": "nodeJsRelease",
+                "sourcePath": "v{version}/node-v{version}-win-x64.zip",
+                "searchOrder": 900,
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
           }
-        ]
+        }
       },
       {
         "id": "NodeRuntime-win-arm64-stable",
@@ -90,25 +94,29 @@
           "strategy": "latestByVersion",
           "allowPrerelease": false
         },
-        "fileNameTemplate": "node-v{version}-win-arm64.zip",
-        "acquisitionCandidates": [
-          {
-            "kind": "packageDepot",
-            "searchOrder": 100,
-            "verification": {
-              "mode": "optional"
-            }
-          },
-          {
-            "kind": "vendorDownload",
-            "sourceId": "nodeJsRelease",
-            "sourcePath": "v{version}/node-v{version}-win-arm64.zip",
-            "searchOrder": 900,
-            "verification": {
-              "mode": "required"
-            }
+        "artifactFiles": {
+          "package": {
+            "relativePathTemplate": "node-v{version}-win-arm64.zip",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "optional"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "sourceId": "nodeJsRelease",
+                "sourcePath": "v{version}/node-v{version}-win-arm64.zip",
+                "searchOrder": 900,
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
           }
-        ]
+        }
       }
     ],
     "releases": [
@@ -124,16 +132,24 @@
         "targetArtifacts": {
           "NodeRuntime-win-x64-stable": {
             "artifactId": "node-runtime-win-x64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "d3b2277dbcccfdf24ef6302928f64f484cff1d77a6d3caa3a28f4d20ce9158f6"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "d3b2277dbcccfdf24ef6302928f64f484cff1d77a6d3caa3a28f4d20ce9158f6"
+                }
+              }
             }
           },
           "NodeRuntime-win-arm64-stable": {
             "artifactId": "node-runtime-win-arm64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "c0cfa5877b6de743301e622f5abc4d26fb0ff8798adffc8fffd2885f426008ba"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "c0cfa5877b6de743301e622f5abc4d26fb0ff8798adffc8fffd2885f426008ba"
+                }
+              }
             }
           }
         }
@@ -150,16 +166,24 @@
         "targetArtifacts": {
           "NodeRuntime-win-x64-stable": {
             "artifactId": "node-runtime-win-x64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "0ae68406b42d7725661da979b1403ec9926da205c6770827f33aac9d8f26e821"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "0ae68406b42d7725661da979b1403ec9926da205c6770827f33aac9d8f26e821"
+                }
+              }
             }
           },
           "NodeRuntime-win-arm64-stable": {
             "artifactId": "node-runtime-win-arm64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "f274669adb93b1fd0fbf8f21fd078609e9dcc84333d4f2718d2dde3f9a161a01"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "f274669adb93b1fd0fbf8f21fd078609e9dcc84333d4f2718d2dde3f9a161a01"
+                }
+              }
             }
           }
         }
@@ -175,18 +199,26 @@
         },
         "targetArtifacts": {
           "NodeRuntime-win-x64-stable": {
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "45001b289ebffe7b22260898f3750059183d8246042b88e8ffa4337e65e6763e"
-            },
-            "artifactId": "node-runtime-win-x64-stable"
+            "artifactId": "node-runtime-win-x64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "45001b289ebffe7b22260898f3750059183d8246042b88e8ffa4337e65e6763e"
+                }
+              }
+            }
           },
           "NodeRuntime-win-arm64-stable": {
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "021eb7de1d5257b24765f292dfcb469ff1528c29d88f48c875befb28114fb0fb"
-            },
-            "artifactId": "node-runtime-win-arm64-stable"
+            "artifactId": "node-runtime-win-arm64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "021eb7de1d5257b24765f292dfcb469ff1528c29d88f48c875befb28114fb0fb"
+                }
+              }
+            }
           }
         }
       },
@@ -201,18 +233,26 @@
         },
         "targetArtifacts": {
           "NodeRuntime-win-x64-stable": {
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "f2aa33b35b75aca5f3f7b85675a6f6423201053e9381911e64961f3bda2528ab"
-            },
-            "artifactId": "node-runtime-win-x64-stable"
+            "artifactId": "node-runtime-win-x64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "f2aa33b35b75aca5f3f7b85675a6f6423201053e9381911e64961f3bda2528ab"
+                }
+              }
+            }
           },
           "NodeRuntime-win-arm64-stable": {
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "4957712f67fce55779cc794d9b4df9e0e802a18c841ad5a4e42f17be490e634d"
-            },
-            "artifactId": "node-runtime-win-arm64-stable"
+            "artifactId": "node-runtime-win-arm64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "4957712f67fce55779cc794d9b4df9e0e802a18c841ad5a4e42f17be490e634d"
+                }
+              }
+            }
           }
         }
       },
@@ -228,16 +268,24 @@
         "targetArtifacts": {
           "NodeRuntime-win-x64-stable": {
             "artifactId": "node-runtime-win-x64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "ec6d0f6b056c89498a9b26c4d5c77a31fd0b7fe45ba8a45fa87d26f66c3ebce4"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "ec6d0f6b056c89498a9b26c4d5c77a31fd0b7fe45ba8a45fa87d26f66c3ebce4"
+                }
+              }
             }
           },
           "NodeRuntime-win-arm64-stable": {
             "artifactId": "node-runtime-win-arm64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "18c5014722e1debdb3e693501043a087485e6f1277b20c79c5ec86bce6027ee0"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "18c5014722e1debdb3e693501043a087485e6f1277b20c79c5ec86bce6027ee0"
+                }
+              }
             }
           }
         }
@@ -254,16 +302,24 @@
         "targetArtifacts": {
           "NodeRuntime-win-x64-stable": {
             "artifactId": "node-runtime-win-x64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "edaca9bd58ec8e92037dac4e877d52f6b8f430b81c18b57e264b4e2fb111cd56"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "edaca9bd58ec8e92037dac4e877d52f6b8f430b81c18b57e264b4e2fb111cd56"
+                }
+              }
             }
           },
           "NodeRuntime-win-arm64-stable": {
             "artifactId": "node-runtime-win-arm64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "14834611d4c6b3c06054e7007732b90474c16e0b32f395e05b55a571ef71c6d2"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "14834611d4c6b3c06054e7007732b90474c16e0b32f395e05b55a571ef71c6d2"
+                }
+              }
             }
           }
         }
@@ -280,16 +336,24 @@
         "targetArtifacts": {
           "NodeRuntime-win-x64-stable": {
             "artifactId": "node-runtime-win-x64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "371071a4f7e2c8a5dd280730049c685911feecc59f50ebc488d675dc1087c69c"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "371071a4f7e2c8a5dd280730049c685911feecc59f50ebc488d675dc1087c69c"
+                }
+              }
             }
           },
           "NodeRuntime-win-arm64-stable": {
             "artifactId": "node-runtime-win-arm64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "131efa8bd858f8ad000a1a0436d8bb1320c638291c779a921fb20e5702a1cc0a"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "131efa8bd858f8ad000a1a0436d8bb1320c638291c779a921fb20e5702a1cc0a"
+                }
+              }
             }
           }
         }
@@ -306,16 +370,24 @@
         "targetArtifacts": {
           "NodeRuntime-win-x64-stable": {
             "artifactId": "node-runtime-win-x64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "cc5149eabd53779ce1e7bdc5401643622d0c7e6800ade18928a767e940bb0e62"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "cc5149eabd53779ce1e7bdc5401643622d0c7e6800ade18928a767e940bb0e62"
+                }
+              }
             }
           },
           "NodeRuntime-win-arm64-stable": {
             "artifactId": "node-runtime-win-arm64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "c9eb7402eda26e2ba7e44b6727fc85a8de56c5095b1f71ebd3062892211aa116"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "c9eb7402eda26e2ba7e44b6727fc85a8de56c5095b1f71ebd3062892211aa116"
+                }
+              }
             }
           }
         }
@@ -416,7 +488,8 @@
         "kind": "expandArchive",
         "installDirectory": "node-runtime/{releaseTrack}/{version}/{artifactDistributionVariant}",
         "expandedRoot": "auto",
-        "createDirectories": []
+        "createDirectories": [],
+        "artifactFileId": "package"
       },
       "readyStateCheck": {
         "use": "discovery.presence",

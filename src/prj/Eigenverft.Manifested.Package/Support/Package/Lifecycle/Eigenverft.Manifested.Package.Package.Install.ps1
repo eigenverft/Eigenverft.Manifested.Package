@@ -5,6 +5,42 @@
     in dependency order immediately before this file.
 #>
 
+function Stage-PackageArtifactFilesForInstallation {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$PackageResult
+    )
+
+    if (@($PackageResult.ArtifactFiles).Count -eq 0) {
+        return $PackageResult
+    }
+    if (-not $PackageResult.ArtifactPreparation -or -not [bool]$PackageResult.ArtifactPreparation.Success) {
+        throw "Installation for '$($PackageResult.PackageId)' requires the complete verified artifact file set."
+    }
+
+    $artifactInstallStageDirectory = Resolve-PackageArtifactChildPath -RootPath ([string]$PackageResult.PackageInstallStageDirectory) -RelativePath 'Artifacts'
+    Remove-PathIfExists -Path $PackageResult.PackageInstallStageDirectory | Out-Null
+    $null = New-Item -ItemType Directory -Path $artifactInstallStageDirectory -Force
+    foreach ($artifactFile in @($PackageResult.ArtifactFiles)) {
+        if (-not (Test-Path -LiteralPath $artifactFile.StagingPath -PathType Leaf)) {
+            throw "Required artifact file '$($artifactFile.Id)' is missing from staging."
+        }
+        $targetPath = Resolve-PackageArtifactChildPath -RootPath $artifactInstallStageDirectory -RelativePath ([string]$artifactFile.RelativePath) -ArtifactFileId ([string]$artifactFile.Id)
+        $null = New-Item -ItemType Directory -Path (Split-Path -Parent $targetPath) -Force
+        $null = Copy-FileToPath -SourcePath ([string]$artifactFile.StagingPath) -TargetPath $targetPath -Overwrite
+    }
+
+    $install = Get-PackageAssignedInstallOperation -Release $PackageResult.Package
+    if ($install -and $install.PSObject.Properties['artifactFileId']) {
+        $PackageResult.OperationArtifactFile = Get-PackageArtifactFileResult -PackageResult $PackageResult -ArtifactFileId ([string]$install.artifactFileId)
+        $PackageResult.OperationArtifactFilePath = Resolve-PackageArtifactChildPath -RootPath $artifactInstallStageDirectory -RelativePath ([string]$PackageResult.OperationArtifactFile.RelativePath) -ArtifactFileId ([string]$PackageResult.OperationArtifactFile.Id)
+    }
+    $PackageResult | Add-Member -MemberType NoteProperty -Name InstallArtifactStagingDirectory -Value $artifactInstallStageDirectory -Force
+    Write-PackageExecutionMessage -Message ("[STATE] Staged {0} artifact file(s) for installation under '{1}'." -f @($PackageResult.ArtifactFiles).Count, $artifactInstallStageDirectory)
+    return $PackageResult
+}
+
 function Set-PackageAssignedState {
 <#
 .SYNOPSIS
@@ -70,7 +106,7 @@ Set-PackageAssignedState -PackageResult $result
             InstalledVersion = if ($moduleStatus -and $moduleStatus.PSObject.Properties['installedVersion']) { [string]$moduleStatus.installedVersion } else { $null }
             ModuleBase       = if ($moduleStatus -and $moduleStatus.PSObject.Properties['moduleBase']) { [string]$moduleStatus.moduleBase } else { $PackageResult.ExistingPackage.CandidatePath }
             Scope            = if ($moduleStatus -and $moduleStatus.PSObject.Properties['scope']) { [string]$moduleStatus.scope } else { if ($install.PSObject.Properties['scope']) { [string]$install.scope } else { 'CurrentUser' } }
-            PackageFilePath  = $PackageResult.PackageFilePath
+            OperationArtifactFilePath = $PackageResult.OperationArtifactFilePath
         }
         $PackageResult.Readiness = $PackageResult.ExistingPackage.Readiness
         Write-PackageExecutionMessage -Message ("[ACTION] Adopted external PowerShell module '{0}' version '{1}'." -f [string]$PackageResult.Assigned.ModuleName, [string]$PackageResult.Assigned.RequiredVersion)
@@ -96,9 +132,11 @@ Set-PackageAssignedState -PackageResult $result
         throw "Package release '$($package.id)' requires an existing install, but no reusable install passed readiness."
     }
 
-    if ($PackageResult.PackageFilePreparation -and -not $PackageResult.PackageFilePreparation.Success) {
-        throw $PackageResult.PackageFilePreparation.ErrorMessage
+    if ($PackageResult.ArtifactPreparation -and -not $PackageResult.ArtifactPreparation.Success) {
+        throw 'One or more required artifact files could not be prepared.'
     }
+
+    $PackageResult = Stage-PackageArtifactFilesForInstallation -PackageResult $PackageResult
 
     switch -Exact ([string]$install.kind) {
         'expandArchive' {

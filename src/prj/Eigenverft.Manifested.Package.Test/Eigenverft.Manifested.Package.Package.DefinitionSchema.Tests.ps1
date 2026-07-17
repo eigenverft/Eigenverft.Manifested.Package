@@ -31,8 +31,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - defini
         $sourceDefinition.BaseUri | Should -Be 'https://api.nuget.org/v3-flatcontainer/'
         $result.Package.version | Should -Be '3.14.6'
         $result.Package.releaseTag | Should -Be '3.14.6'
-        $result.Package.packageFile.fileName | Should -Be $expectedFileName
-        $result.Package.packageFile.contentHash.value | Should -Be $expectedSha256
+        $result.Package.artifactFiles[0].relativePath | Should -Be $expectedFileName
+        $result.Package.artifactFiles[0].contentHash.value | Should -Be $expectedSha256
         $result.Package.assigned.install.expandedRoot | Should -Be 'tools'
         $result.Package.assigned.pathRegistration.source.kind | Should -Be 'shim'
         $result.Package.assigned.pathRegistration.source.use | Should -Be 'discovery.presence.commands'
@@ -66,8 +66,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - defini
         $sourceDefinition.GitHubRepository | Should -Be 'PowerShell'
         $result.Package.version | Should -Be '7.6.3'
         $result.Package.releaseTag | Should -Be 'v7.6.3'
-        $result.Package.packageFile.fileName | Should -Be $expectedFileName
-        $result.Package.packageFile.contentHash.value | Should -Be $expectedSha256
+        $result.Package.artifactFiles[0].relativePath | Should -Be $expectedFileName
+        $result.Package.artifactFiles[0].contentHash.value | Should -Be $expectedSha256
         $result.Package.assigned.pathRegistration.source.kind | Should -Be 'shim'
         $result.Package.assigned.pathRegistration.source.use | Should -Be 'discovery.presence.commands'
         $config.Definition.discovery.presence.commands[0].name | Should -Be 'pwsh'
@@ -88,8 +88,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - defini
         $result.Package.assigned.install.targetKind | Should -Be 'machinePrerequisite'
         $result.Package.assigned.install.elevation | Should -Be 'required'
         $result.Package.assigned.install.commandArguments | Should -Be @('/install', '/quiet', '/norestart', '/log', '{logPath}')
-        $result.Package.packageFile.fileName | Should -Be 'vc_redist.x64.exe'
-        $result.Package.packageFile.publisherSignature.subjectContains | Should -Be 'Microsoft Corporation'
+        $result.Package.artifactFiles[0].relativePath | Should -Be 'vc_redist.x64.exe'
+        $result.Package.artifactFiles[0].publisherSignature.subjectContains | Should -Be 'Microsoft Corporation'
     }
 
     It 'loads the shipped Qwen35_9B_Q6_K_Model definition and selects the fixed Hugging Face-backed resource release' {
@@ -106,9 +106,9 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - defini
         $sourceDefinition.BaseUri | Should -Be 'https://huggingface.co/unsloth/Qwen3.5-9B-GGUF/resolve/main/'
         $result.PackageId | Should -Be 'qwen35-9b-q6-k-stable'
         $result.Package.version | Should -Be '3.5.0'
-        $result.Package.packageFile.fileName | Should -Be 'Qwen3.5-9B-Q6_K.gguf'
-        $result.Package.packageFile.contentHash.algorithm | Should -Be 'sha256'
-        $result.Package.packageFile.contentHash.value | Should -Be '91898433cf5ce0a8f45516a4cc3e9343b6e01d052d01f684309098c66a326c59'
+        $result.Package.artifactFiles[0].relativePath | Should -Be 'Qwen3.5-9B-Q6_K.gguf'
+        $result.Package.artifactFiles[0].contentHash.algorithm | Should -Be 'sha256'
+        $result.Package.artifactFiles[0].contentHash.value | Should -Be '91898433cf5ce0a8f45516a4cc3e9343b6e01d052d01f684309098c66a326c59'
         $result.Package.assigned.install.kind | Should -Be 'placePackageFile'
         $result.Compatibility.Count | Should -Be 1
         $result.Compatibility[0].Kind | Should -Be 'physicalOrVideoMemoryGiB'
@@ -130,9 +130,9 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - defini
         $sourceDefinition.BaseUri | Should -Be 'https://huggingface.co/openbmb/MiniCPM5-1B-GGUF/resolve/main/'
         $result.PackageId | Should -Be 'minicpm5-1b-q8-0-stable'
         $result.Package.version | Should -Be '5.1.0'
-        $result.Package.packageFile.fileName | Should -Be 'MiniCPM5-1B-Q8_0.gguf'
-        $result.Package.packageFile.contentHash.algorithm | Should -Be 'sha256'
-        $result.Package.packageFile.contentHash.value | Should -Be '0dc7638539067268774c275a14a6ec9c7e01f7eeb2cff606c8590361fa527e4c'
+        $result.Package.artifactFiles[0].relativePath | Should -Be 'MiniCPM5-1B-Q8_0.gguf'
+        $result.Package.artifactFiles[0].contentHash.algorithm | Should -Be 'sha256'
+        $result.Package.artifactFiles[0].contentHash.value | Should -Be '0dc7638539067268774c275a14a6ec9c7e01f7eeb2cff606c8590361fa527e4c'
         $result.Package.assigned.install.kind | Should -Be 'placePackageFile'
         $result.Compatibility.Count | Should -Be 1
         $result.Compatibility[0].Kind | Should -Be 'physicalOrVideoMemoryGiB'
@@ -240,7 +240,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - defini
         }
     }
 
-    It 'accepts schema 1.9 packageDepot and vendorDownload candidates' {
+    It 'accepts schema 2.0 packageDepot and vendorDownload candidates' {
         $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -FileName 'VSCode-win32-x64-2.0.0.zip' -AcquisitionCandidates @(
             @{
                 kind         = 'packageDepot'
@@ -256,18 +256,17 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - defini
             }
         )
         $definitionDocument = New-TestVSCodeDefinitionDocument -Releases @($release)
-        $definitionDocument.schemaVersion = '1.9'
         $definitionDocument.definitionPublication.definitionSignature = @{
             kind          = 'unsigned'
             format        = 'embedded-json-rsa-sha256-v1'
             signedContent = 'canonicalDefinitionExcludingSignatureValue'
         }
-        $definitionInfo = [pscustomobject]@{ Path = 'test-1.9.json'; Document = ConvertTo-TestPsObject $definitionDocument }
+        $definitionInfo = [pscustomobject]@{ Path = 'test-2.0.json'; Document = ConvertTo-TestPsObject $definitionDocument }
 
         { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Not -Throw
     }
 
-    It 'rejects schema 1.9 package-definition download and filesystem acquisition candidates' {
+    It 'rejects package-definition download and filesystem acquisition candidates in schema 2.0' {
         foreach ($kind in @('download', 'filesystem')) {
             $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -FileName 'VSCode-win32-x64-2.0.0.zip' -AcquisitionCandidates @(
                 @{
@@ -279,19 +278,18 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - defini
                 }
             )
             $definitionDocument = New-TestVSCodeDefinitionDocument -Releases @($release)
-            $definitionDocument.schemaVersion = '1.9'
             $definitionDocument.definitionPublication.definitionSignature = @{
                 kind          = 'unsigned'
                 format        = 'embedded-json-rsa-sha256-v1'
                 signedContent = 'canonicalDefinitionExcludingSignatureValue'
             }
-            $definitionInfo = [pscustomobject]@{ Path = "test-1.9-$kind.json"; Document = ConvertTo-TestPsObject $definitionDocument }
+            $definitionInfo = [pscustomobject]@{ Path = "test-2.0-$kind.json"; Document = ConvertTo-TestPsObject $definitionDocument }
 
-            { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw "*schemaVersion 1.9*$kind*"
+            { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw "*retired*kind '$kind'*"
         }
     }
 
-    It 'validates GitHub releaseTag requirements behind schema 1.9 vendorDownload' {
+    It 'validates GitHub releaseTag requirements behind schema 2.0 vendorDownload' {
         $release = New-TestPackageRelease -Id 'llama-cpu-x64-stable' -Version '0.0.1' -Architecture 'x64' -ArtifactDistributionVariant 'win-cpu-x64' -FileName 'llama-b8863-bin-win-cpu-x64.zip' -AcquisitionCandidates @(
             @{
                 kind         = 'vendorDownload'
@@ -307,13 +305,12 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - defini
                 githubRepository = 'llama.cpp'
             }
         }
-        $definitionDocument.schemaVersion = '1.9'
         $definitionDocument.definitionPublication.definitionSignature = @{
             kind          = 'unsigned'
             format        = 'embedded-json-rsa-sha256-v1'
             signedContent = 'canonicalDefinitionExcludingSignatureValue'
         }
-        $definitionInfo = [pscustomobject]@{ Path = 'test-1.9-github.json'; Document = ConvertTo-TestPsObject $definitionDocument }
+        $definitionInfo = [pscustomobject]@{ Path = 'test-2.0-github.json'; Document = ConvertTo-TestPsObject $definitionDocument }
 
         { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw '*requires releaseTag*'
     }
@@ -337,6 +334,15 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - defini
         }
     }
 
+    It 'rejects schema 1.9 with an explicit manual-migration-required error' {
+        $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -FileName 'VSCode-win32-x64-2.0.0.zip'
+        $definitionDocument = New-TestVSCodeDefinitionDocument -Releases @($release)
+        $definitionDocument.schemaVersion = '1.9'
+        $definitionInfo = [pscustomobject]@{ Path = 'legacy-1.9.json'; Document = ConvertTo-TestPsObject $definitionDocument }
+
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw '*manual migration*automatic conversion is not supported*'
+    }
+
     It 'rejects retired download candidates in the only supported schema' {
         $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -FileName 'VSCode-win32-x64-2.0.0.zip' -AcquisitionCandidates @(
             @{
@@ -348,7 +354,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - defini
             }
         )
         $definitionDocument = New-TestVSCodeDefinitionDocument -Releases @($release)
-        $definitionInfo = [pscustomobject]@{ Path = 'test-1.9-download.json'; Document = ConvertTo-TestPsObject $definitionDocument }
+        $definitionInfo = [pscustomobject]@{ Path = 'test-2.0-download.json'; Document = ConvertTo-TestPsObject $definitionDocument }
 
         { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw "*retired kind 'download'*"
     }
@@ -489,7 +495,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - defini
         { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw '*priority*'
     }
 
-    It 'fails clearly when packageFile still uses retired raw-file trust properties' {
+    It 'fails clearly when an artifact file still uses retired raw-file trust properties' {
         $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64' -FileName 'VSCode-win32-x64-2.0.0.zip' -AcquisitionCandidates @(
             @{
                 kind         = 'packageDepot'
@@ -497,31 +503,27 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - defini
                 verification = @{ mode = 'required' }
             }
         )
-        $release.packageFile | Add-Member -NotePropertyName integrity -NotePropertyValue @{
-            algorithm = 'sha256'
-            sha256    = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
-        }
-        $release.packageFile | Add-Member -NotePropertyName authenticode -NotePropertyValue @{
-            requireValid = $true
-        }
-        $release.packageFile | Add-Member -NotePropertyName autoUpdateSupported -NotePropertyValue $false
         $definitionDocument = New-TestVSCodeDefinitionDocument -Releases @($release)
         $artifact = $definitionDocument.artifacts.releases[0].targetArtifacts['vsCode-win-x64-stable']
+        $artifactFile = $artifact.artifactFiles.package
+        $artifactFile.integrity = @{ algorithm = 'sha256'; sha256 = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef' }
+        $artifactFile.authenticode = @{ requireValid = $true }
+        $artifactFile.autoUpdateSupported = $false
         $definitionInfo = [pscustomobject]@{
             Path     = Join-Path $TestDrive 'VSCodeRuntime.json'
             Document = ConvertTo-TestPsObject -InputObject $definitionDocument
         }
 
-        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw '*packageFile.autoUpdateSupported*'
-        $null = $artifact.Remove('autoUpdateSupported')
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw "*retired property 'autoUpdateSupported'*"
+        $null = $artifactFile.Remove('autoUpdateSupported')
         $definitionInfo.Document = ConvertTo-TestPsObject -InputObject $definitionDocument
-        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw '*packageFile.integrity*'
-        $null = $artifact.Remove('integrity')
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw "*retired property 'integrity'*"
+        $null = $artifactFile.Remove('integrity')
         $definitionInfo.Document = ConvertTo-TestPsObject -InputObject $definitionDocument
-        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw '*packageFile.authenticode*'
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw "*retired property 'authenticode'*"
     }
 
-    It 'rejects incomplete packageFile.contentHash and publisherSignature metadata' {
+    It 'rejects incomplete artifact-file contentHash and publisherSignature metadata' {
         $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64' -FileName 'VSCode-win32-x64-2.0.0.zip' -AcquisitionCandidates @(
             @{
                 kind         = 'packageDepot'
@@ -529,27 +531,105 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - defini
                 verification = @{ mode = 'required' }
             }
         )
-        $release.packageFile | Add-Member -NotePropertyName contentHash -NotePropertyValue @{
-            algorithm = 'sha256'
-        }
         $definitionDocument = New-TestVSCodeDefinitionDocument -Releases @($release)
         $artifact = $definitionDocument.artifacts.releases[0].targetArtifacts['vsCode-win-x64-stable']
+        $artifactFile = $artifact.artifactFiles.package
+        $artifactFile.contentHash = @{ algorithm = 'sha256' }
         $definitionInfo = [pscustomobject]@{
             Path     = Join-Path $TestDrive 'VSCodeRuntime.json'
             Document = ConvertTo-TestPsObject -InputObject $definitionDocument
         }
 
-        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw '*packageFile.contentHash without value*'
-        $null = $artifact.Remove('contentHash')
-        $artifact.contentHash = @{
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw '*contentHash without value*'
+        $artifactFile.contentHash = @{
             algorithm = 'sha256'
             value     = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
         }
-        $artifact.publisherSignature = @{
+        $artifactFile.publisherSignature = @{
             requireValid = $true
         }
         $definitionInfo.Document = ConvertTo-TestPsObject -InputObject $definitionDocument
-        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw '*packageFile.publisherSignature without kind*'
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionInfo -DefinitionId 'VSCodeRuntime' } | Should -Throw '*publisherSignature without kind*'
+    }
+
+    It 'accepts a schema 2.0 split-installer artifact file set with exact target and release IDs' {
+        $release = New-TestPackageRelease -Id 'split-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -FileName 'setup-2.0.0.exe' -AcquisitionCandidates @(
+            @{ kind = 'packageDepot'; searchOrder = 100; verification = @{ mode = 'required' } }
+        )
+        $definition = New-TestVSCodeDefinitionDocument -Releases @($release)
+        $target = $definition.artifacts.targets[0]
+        $target.artifactFiles.part001 = @{
+            relativePathTemplate = 'parts/setup-{version}.001'
+            acquisitionCandidates = @(@{ kind = 'packageDepot'; searchOrder = 100; verification = @{ mode = 'required' } })
+        }
+        $releaseArtifact = $definition.artifacts.releases[0].targetArtifacts['split-win-x64-stable']
+        $releaseArtifact.artifactFiles.part001 = @{}
+        $definition.packageOperations.assigned.install.artifactFileId = 'package'
+        $info = [pscustomobject]@{ Path = 'split.json'; Document = ConvertTo-TestPsObject $definition }
+
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $info -DefinitionId 'VSCodeRuntime' } | Should -Not -Throw
+    }
+
+    It 'rejects mismatched artifact file-ID sets and missing operation file IDs' {
+        $release = New-TestPackageRelease -Id 'split-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -FileName 'setup.exe' -AcquisitionCandidates @(
+            @{ kind = 'packageDepot'; searchOrder = 100; verification = @{ mode = 'required' } }
+        )
+        $definition = New-TestVSCodeDefinitionDocument -Releases @($release)
+        $definition.artifacts.targets[0].artifactFiles.part001 = @{
+            relativePathTemplate = 'setup.001'
+            acquisitionCandidates = @(@{ kind = 'packageDepot'; searchOrder = 100; verification = @{ mode = 'required' } })
+        }
+        $info = [pscustomobject]@{ Path = 'mismatch.json'; Document = ConvertTo-TestPsObject $definition }
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $info -DefinitionId 'VSCodeRuntime' } | Should -Throw '*artifactFiles must exactly match target files*part001*'
+
+        $definition.packageOperations.assigned.install.artifactFileId = 'missing'
+        $info.Document = ConvertTo-TestPsObject $definition
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $info -DefinitionId 'VSCodeRuntime' } | Should -Throw "*artifactFileId 'missing' is not declared*"
+    }
+
+    It 'rejects unsafe and case-insensitively colliding artifact paths' {
+        $release = New-TestPackageRelease -Id 'split-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -FileName 'setup.exe' -AcquisitionCandidates @(
+            @{ kind = 'packageDepot'; searchOrder = 100; verification = @{ mode = 'required' } }
+        )
+        $definition = New-TestVSCodeDefinitionDocument -Releases @($release)
+        $definition.artifacts.targets[0].artifactFiles.package.relativePathTemplate = '../setup.exe'
+        $info = [pscustomobject]@{ Path = 'unsafe.json'; Document = ConvertTo-TestPsObject $definition }
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $info -DefinitionId 'VSCodeRuntime' } | Should -Throw '*unsafe path segment*'
+
+        $definition.artifacts.targets[0].artifactFiles.package.relativePathTemplate = 'Setup.exe'
+        $definition.artifacts.targets[0].artifactFiles.part001 = @{
+            relativePathTemplate = 'setup.EXE'
+            acquisitionCandidates = @(@{ kind = 'packageDepot'; searchOrder = 100; verification = @{ mode = 'required' } })
+        }
+        $definition.artifacts.releases[0].targetArtifacts['split-win-x64-stable'].artifactFiles.part001 = @{}
+        $info.Document = ConvertTo-TestPsObject $definition
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $info -DefinitionId 'VSCodeRuntime' } | Should -Throw '*colliding artifact file path template*'
+    }
+
+    It 'rejects missing archiveEntry references and dependency cycles before acquisition' {
+        $release = New-TestPackageRelease -Id 'derived-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -FileName 'module.nupkg' -AcquisitionCandidates @(
+            @{ kind = 'packageDepot'; searchOrder = 100; verification = @{ mode = 'required' } }
+        )
+        $definition = New-TestVSCodeDefinitionDocument -Releases @($release)
+        $target = $definition.artifacts.targets[0]
+        $target.artifactFiles.bootstrap = @{
+            relativePathTemplate = 'Bootstrap/bootstrap.ps1'
+            acquisitionCandidates = @(@{
+                    kind = 'archiveEntry'; sourceArtifactFileId = 'missing'; entryPath = 'Bootstrap/bootstrap.ps1'
+                    searchOrder = 900; verification = @{ mode = 'required' }
+                })
+        }
+        $definition.artifacts.releases[0].targetArtifacts['derived-win-x64-stable'].artifactFiles.bootstrap = @{}
+        $info = [pscustomobject]@{ Path = 'missing-reference.json'; Document = ConvertTo-TestPsObject $definition }
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $info -DefinitionId 'VSCodeRuntime' } | Should -Throw "*references unknown sourceArtifactFileId 'missing'*"
+
+        $target.artifactFiles.bootstrap.acquisitionCandidates[0].sourceArtifactFileId = 'package'
+        $target.artifactFiles.package.acquisitionCandidates = @(@{
+                kind = 'archiveEntry'; sourceArtifactFileId = 'bootstrap'; entryPath = 'module.nupkg'
+                searchOrder = 900; verification = @{ mode = 'required' }
+            })
+        $info.Document = ConvertTo-TestPsObject $definition
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $info -DefinitionId 'VSCodeRuntime' } | Should -Throw '*dependency cycle*'
     }
 
 }

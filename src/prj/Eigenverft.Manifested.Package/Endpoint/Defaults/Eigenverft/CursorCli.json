@@ -1,11 +1,11 @@
 {
-  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json",
-  "schemaVersion": "1.9",
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-2.0.schema.json",
+  "schemaVersion": "2.0",
   "definitionPublication": {
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "CursorCli",
-    "definitionRevision": 6,
+    "definitionRevision": 7,
     "publishedAtUtc": "2026-07-14T04:55:50.4324908Z",
     "definitionSignature": {
       "kind": "signed",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-14T04:56:26.3122760Z",
-      "signatureValue": "R/8/fEcNOdgNb0g71SUIiTwlp4KXm4CG4x+P6xw2QFVCkYUoBZwoku4v96BCL7+EQ6KxWLJvTkglib9caIAe5/cT9aWWxBq8ZEzV9imsogNFbAqAeszGg5YdEES9cAk1lOmyeOAmbB7uq5ZvizVtB7ehU9lySyCGzCdmbflNWg518ZPIZ0CwAqaEBENpV2qynJNsbaHbYvgS4Jy34dYMmdqWxS7K8uD4+QihkHJR+gClf7t8T2+uuqXyIXu6w6O2vUzom7GJkLlD/lwg4JT5AJjhGcr5OW9u6MDL2jaTMuS8sjZp3EcUrz3ktPdtjru+3mY01xY03SaZtTloDph676LD0Uu2WU4EndEttgN5uhtfo6PkNB19Skawy/AZnNMBEOTDEu+6raB2QL1LvH0gLxxIx1hj765bnPsb40PBlebS0lIruHxsO4sN8a/vSUzOIq0jb6d2LhOVQcKXeTNiUmV8YdjPtmq4KXM1kUOfveDNqJRzJbQiG42R3+SFL1dV"
+      "signedAtUtc": "2026-07-17T06:16:18.9263104Z",
+      "signatureValue": "Uqv9VoopAUDuYh7Jhx0fMbuFuoTmaFGTzehne5/b/Fjn23fvUYMVT0VQjBUl3cqQoaIsQ/OOmq2H+HzD8eZ8nUJrfaZW6QxFZ0o2jrJMFeEAv1WHwljXA8FdYBpjCBpD/S6AWe2Y//Enskj4pe/C812ATxyxjPxRoidCkKC8lU15jD2f7pwgDDdCW0qBHwO59F7vPQ6ZlURjFJEDIE0Y5ApgOJLTlswCB7OZQyBLsqI41vMdCISQOgq+KzZxiIWKIWXGL/+qdH6mEwsvan76NEdiR9CllgYJU5WcZmPT5bPdomycLxZ/n494dEDTxLPM1T9iHVZCC9+Ne02HXHCD7NYI3Zt5LCSziH+9PmZbDNDis3xj4DvX4pM64zy/a8G/RVuV46K0vor7yPbuYT+fG5Smz+Nd0+Ju/lxfKZJvj1Nk5eMUDXwU06M/eU8iheBJIxdVMj346vcCWYD3QCgroHZgfNDh+7pvDPu1miWqbkrUh14p81RpNwwvGPigUgRM"
     }
   },
   "display": {
@@ -55,25 +55,29 @@
           "strategy": "latestByVersion",
           "allowPrerelease": false
         },
-        "fileNameTemplate": "agent-cli-package-{version}-{artifactDistributionVariant}.zip",
-        "acquisitionCandidates": [
-          {
-            "kind": "packageDepot",
-            "searchOrder": 100,
-            "verification": {
-              "mode": "optional"
-            }
-          },
-          {
-            "kind": "vendorDownload",
-            "sourceId": "cursorAgentCliLab",
-            "sourcePath": "{version}/windows/x64/agent-cli-package.zip",
-            "searchOrder": 900,
-            "verification": {
-              "mode": "required"
-            }
+        "artifactFiles": {
+          "package": {
+            "relativePathTemplate": "agent-cli-package-{version}-{artifactDistributionVariant}.zip",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "optional"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "sourceId": "cursorAgentCliLab",
+                "sourcePath": "{version}/windows/x64/agent-cli-package.zip",
+                "searchOrder": 900,
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
           }
-        ]
+        }
       },
       {
         "id": "CursorCli-win32-arm64-stable",
@@ -91,25 +95,29 @@
           "strategy": "latestByVersion",
           "allowPrerelease": false
         },
-        "fileNameTemplate": "agent-cli-package-{version}-{artifactDistributionVariant}.zip",
-        "acquisitionCandidates": [
-          {
-            "kind": "packageDepot",
-            "searchOrder": 100,
-            "verification": {
-              "mode": "optional"
-            }
-          },
-          {
-            "kind": "vendorDownload",
-            "sourceId": "cursorAgentCliLab",
-            "sourcePath": "{version}/windows/arm64/agent-cli-package.zip",
-            "searchOrder": 900,
-            "verification": {
-              "mode": "required"
-            }
+        "artifactFiles": {
+          "package": {
+            "relativePathTemplate": "agent-cli-package-{version}-{artifactDistributionVariant}.zip",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "optional"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "sourceId": "cursorAgentCliLab",
+                "sourcePath": "{version}/windows/arm64/agent-cli-package.zip",
+                "searchOrder": 900,
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
           }
-        ]
+        }
       }
     ],
     "releases": [
@@ -121,16 +129,24 @@
         "targetArtifacts": {
           "CursorCli-win32-x64-stable": {
             "artifactId": "cursor-cli-runtime-win32-x64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "9379c6f6fcac1d863c9fd578602a1b3e6d99634c599e74bf101003371ff59c10"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "9379c6f6fcac1d863c9fd578602a1b3e6d99634c599e74bf101003371ff59c10"
+                }
+              }
             }
           },
           "CursorCli-win32-arm64-stable": {
             "artifactId": "cursor-cli-runtime-win32-arm64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "9a9c5dced83765c8579b27e01419c2b1fe09857bd715267cf03bd55d16d53aa4"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "9a9c5dced83765c8579b27e01419c2b1fe09857bd715267cf03bd55d16d53aa4"
+                }
+              }
             }
           }
         }
@@ -142,18 +158,26 @@
         ],
         "targetArtifacts": {
           "CursorCli-win32-x64-stable": {
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "44ce4fa81079c7d32c7731596e4fcdafd5b5c1310c8ab468673ff2b95958356b"
-            },
-            "artifactId": "cursor-cli-runtime-win32-x64-stable"
+            "artifactId": "cursor-cli-runtime-win32-x64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "44ce4fa81079c7d32c7731596e4fcdafd5b5c1310c8ab468673ff2b95958356b"
+                }
+              }
+            }
           },
           "CursorCli-win32-arm64-stable": {
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "2e8af57a520d9945bf1aecc9c0e78d040cce0ee324c40f2f2507c7a85e46e789"
-            },
-            "artifactId": "cursor-cli-runtime-win32-arm64-stable"
+            "artifactId": "cursor-cli-runtime-win32-arm64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "2e8af57a520d9945bf1aecc9c0e78d040cce0ee324c40f2f2507c7a85e46e789"
+                }
+              }
+            }
           }
         }
       },
@@ -165,16 +189,24 @@
         "targetArtifacts": {
           "CursorCli-win32-x64-stable": {
             "artifactId": "cursor-cli-runtime-win32-x64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "9acfc6043f021508bb91badc8b8d6c34ef00bd3389907d8930514f1c8b52f03c"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "9acfc6043f021508bb91badc8b8d6c34ef00bd3389907d8930514f1c8b52f03c"
+                }
+              }
             }
           },
           "CursorCli-win32-arm64-stable": {
             "artifactId": "cursor-cli-runtime-win32-arm64-stable",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "9b622fb0d7f51f8e1bfa5dcb840a5c5eaaf4829fda588e653fc04e3c83dbd1ac"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "9b622fb0d7f51f8e1bfa5dcb840a5c5eaaf4829fda588e653fc04e3c83dbd1ac"
+                }
+              }
             }
           }
         }
@@ -246,7 +278,8 @@
         "kind": "expandArchive",
         "installDirectory": "cursor-cli-runtime/{releaseTrack}/{version}/{artifactDistributionVariant}",
         "expandedRoot": "dist-package",
-        "createDirectories": []
+        "createDirectories": [],
+        "artifactFileId": "package"
       },
       "readyStateCheck": {
         "use": "discovery.presence",

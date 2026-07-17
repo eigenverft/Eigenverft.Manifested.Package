@@ -164,7 +164,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - source
         { Get-PackageConfig -DefinitionId 'VSCodeRuntime' } | Should -Throw '*requires releaseTag*'
     }
 
-    It 'resolves a GitHub release asset URL from releaseTag and packageFile.fileName' {
+    It 'resolves a GitHub release asset URL from releaseTag and an artifact relative path' {
         $rootPath = Join-Path $TestDrive 'github-release-resolve'
         $release = New-TestPackageRelease -Id 'llama-cpu-x64-stable' -Version '0.0.1' -ReleaseTag 'b8863' -Architecture 'x64' -ArtifactDistributionVariant 'win-cpu-x64' -FileName 'llama-b8863-bin-win-cpu-x64.zip' -AcquisitionCandidates @(
             @{
@@ -201,7 +201,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - source
         $result = New-PackageResult -PackageConfig $config
         $result = Resolve-PackagePackage -PackageResult $result
         $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $config -SourceRef ([pscustomobject]@{ scope = 'definition'; id = 'llamaCppGitHub' })
-        $resolvedSource = Resolve-PackageSource -SourceDefinition $sourceDefinition -AcquisitionCandidate $result.Package.acquisitionCandidates[0] -Package $result.Package
+        $artifactFile = $result.Package.artifactFiles[0]
+        $resolvedSource = Resolve-PackageSource -SourceDefinition $sourceDefinition -AcquisitionCandidate $artifactFile.acquisitionCandidates[0] -Package $result.Package -ArtifactFile $artifactFile
 
         $resolvedSource.Kind | Should -Be 'download'
         $resolvedSource.ResolvedSource | Should -Be 'https://example.invalid/ggml-org/llama.cpp/releases/download/b8863/llama-b8863-bin-win-cpu-x64.zip'
@@ -267,9 +268,9 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - source
         $package = ConvertTo-TestPsObject @{
             id         = 'llama-cpu-x64-stable'
             releaseTag = 'b8863'
-            packageFile = @{
-                fileName = 'llama-b8863-bin-win-cpu-x64.zip'
-            }
+            artifactFiles = @(
+                @{ id = 'package'; relativePath = 'llama-b8863-bin-win-cpu-x64.zip' }
+            )
         }
         $candidate = ConvertTo-TestPsObject @{
             kind     = 'vendorDownload'
@@ -290,7 +291,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - source
             }
         }
 
-        { Resolve-PackageSource -SourceDefinition $sourceDefinition -AcquisitionCandidate $candidate -Package $package } | Should -Throw '*does not contain asset*llama-b8863-bin-win-cpu-x64.zip*'
+        { Resolve-PackageSource -SourceDefinition $sourceDefinition -AcquisitionCandidate $candidate -Package $package -ArtifactFile $package.artifactFiles[0] } | Should -Throw '*does not contain asset*llama-b8863-bin-win-cpu-x64.zip*'
     }
 
     It 'builds an effective release from shared defaults and uses ReleaseTrack in path resolution' {
@@ -316,11 +317,11 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - source
         $result.Package.assigned.install.kind | Should -Be 'expandArchive'
         $result.Package.readiness.commandChecks[0].expectedValue | Should -Be '{version}'
         $result.PackageWorkSlotDirectory | Should -Match '^VSCodeRuntime-[0-9a-f]{8}$'
-        $result.PackageFilePath | Should -Match '\\FileStage\\VSCodeRuntime-[0-9a-f]{8}\\'
+        $result.ArtifactFiles[0].StagingPath | Should -Match '\\FileStage\\VSCodeRuntime-[0-9a-f]{8}\\'
         $result.PackageInstallStageDirectory | Should -Match '\\InstStage\\VSCodeRuntime-[0-9a-f]{8}$'
-        (Split-Path -Leaf $result.PackageFileStagingDirectory) | Should -Be (Split-Path -Leaf $result.PackageInstallStageDirectory)
+        (Split-Path -Leaf $result.ArtifactStagingDirectory) | Should -Be (Split-Path -Leaf $result.PackageInstallStageDirectory)
         $result.PackageDepotRelativeDirectory | Should -Be 'VSCodeRuntime\stable\2.0.0\win32-x64'
-        $result.DefaultPackageDepotFilePath | Should -Match '\\stable\\2\.0\.0\\win32-x64\\'
+        $result.ArtifactFiles[0].DefaultDepotPath | Should -Match '\\stable\\2\.0\.0\\win32-x64\\'
     }
 
     It 'writes resolved paths as separate console lines' {
@@ -348,11 +349,11 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - source
         $null = Resolve-PackagePaths -PackageResult $result
 
         @($messages) | Should -Contain '[STATE] Resolved paths:'
-        @($messages | Where-Object { $_.StartsWith('[PATH] Package file staging:') }).Count | Should -Be 1
+        @($messages | Where-Object { $_.StartsWith('[PATH] Artifact staging:') }).Count | Should -Be 1
         @($messages | Where-Object { $_.StartsWith('[PATH] Package install stage:') }).Count | Should -Be 1
         @($messages | Where-Object { $_.StartsWith('[PATH] Target install directory:') }).Count | Should -Be 1
-        @($messages | Where-Object { $_.StartsWith('[PATH] Package file:') }).Count | Should -Be 1
-        @($messages | Where-Object { $_.StartsWith('[PATH] Default package depot file:') }).Count | Should -Be 1
+        @($messages | Where-Object { $_.StartsWith('[PATH] Artifact files:') }).Count | Should -Be 1
+        @($messages | Where-Object { $_.StartsWith('[PATH] Operation artifact file:') }).Count | Should -Be 1
     }
 
 }

@@ -306,7 +306,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depend
         Mock Find-PackageExistingPackage { $PackageResult }
         Mock Set-PackageExistingPackage { $PackageResult }
         Mock Resolve-PackageExistingPackageDecision { $PackageResult }
-        Mock Resolve-PackageInstallFile { $PackageResult }
+        Mock Resolve-PackageArtifactFiles { $PackageResult }
         Mock Invoke-PackageDepotDistribution { $PackageResult }
         Mock Invoke-PackageNpmMaterialization { $PackageResult }
         Mock Set-PackageAssignedState {

@@ -216,7 +216,9 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - owners
             targetArtifacts = @{
                 'opencode-runtime-win32-x64-stable' = @{
                     artifactId = 'opencode-runtime-win32-x64-stable'
-                    fileName   = 'opencode-1.14.46.zip'
+                    artifactFiles = @{
+                        package = @{}
+                    }
                 }
             }
         }
@@ -386,9 +388,9 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - owners
         $result = Resolve-PackagePaths -PackageResult $result
         $result = Build-PackageAcquisitionPlan -PackageResult $result
 
-        $null = New-Item -ItemType Directory -Path (Split-Path -Parent $result.DefaultPackageDepotFilePath) -Force
-        Copy-Item -LiteralPath $packageArchive.ZipPath -Destination $result.DefaultPackageDepotFilePath -Force
-        $result = Resolve-PackageInstallFile -PackageResult $result
+        $null = New-Item -ItemType Directory -Path (Split-Path -Parent $result.ArtifactFiles[0].DefaultDepotPath) -Force
+        Copy-Item -LiteralPath $packageArchive.ZipPath -Destination $result.ArtifactFiles[0].DefaultDepotPath -Force
+        $result = Resolve-PackageArtifactFiles -PackageResult $result
         $result = Set-PackageAssignedState -PackageResult $result
 
         Remove-Item -LiteralPath (Join-Path $result.InstallDirectory 'data') -Recurse -Force
@@ -400,7 +402,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - owners
         $rerun = Find-PackageExistingPackage -PackageResult $rerun
         $rerun = Set-PackageExistingPackage -PackageResult $rerun
         $rerun = Resolve-PackageExistingPackageDecision -PackageResult $rerun
-        $rerun = Resolve-PackageInstallFile -PackageResult $rerun
+        $rerun = Resolve-PackageArtifactFiles -PackageResult $rerun
         $rerun = Set-PackageAssignedState -PackageResult $rerun
 
         $rerun.ExistingPackage.SearchKind | Should -Be 'packageTargetInstallPath'

@@ -498,13 +498,37 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
     }
 }
 
+function Resolve-PackageArtifactChildPath {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$RootPath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$RelativePath,
+
+        [string]$ArtifactFileId = '<artifact-set>'
+    )
+
+    $root = [System.IO.Path]::GetFullPath($RootPath).TrimEnd('\')
+    $normalizedRelativePath = $RelativePath.Trim() -replace '/', '\'
+    if ([System.IO.Path]::IsPathRooted($normalizedRelativePath)) {
+        throw "Artifact file '$ArtifactFileId' must use a relative path."
+    }
+    $candidate = [System.IO.Path]::GetFullPath((Join-Path $root $normalizedRelativePath))
+    if (-not $candidate.StartsWith($root + '\', [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Artifact file '$ArtifactFileId' path '$RelativePath' escapes its artifact root."
+    }
+    return $candidate
+}
+
 function Resolve-PackagePaths {
 <#
 .SYNOPSIS
-Resolves the concrete package-file workspace/depot and install paths for a selected release.
+    Resolves the concrete artifact-file workspace/depot and install paths for a selected release.
 
 .DESCRIPTION
-Builds the shared relative package-file directory for depot and workspace
+    Builds the shared relative artifact directory for depot and workspace
 storage from the selected release identity, resolves the effective install
 directory template, and attaches the resolved directories to the Package
 result object.
@@ -565,7 +589,7 @@ Resolve-PackagePaths -PackageResult $result
         throw "Package definition '$($definition.id)' must use a relative package work slot directory."
     }
 
-    $packageFileStagingDirectory = [System.IO.Path]::GetFullPath((Join-Path $packageConfig.PackageFileStagingRootDirectory $normalizedPackageWorkSlotDirectory))
+    $artifactStagingDirectory = [System.IO.Path]::GetFullPath((Join-Path $packageConfig.PackageFileStagingRootDirectory $normalizedPackageWorkSlotDirectory))
     $packageInstallStageDirectory = [System.IO.Path]::GetFullPath((Join-Path $packageConfig.PackageInstallStageRootDirectory $normalizedPackageWorkSlotDirectory))
 
     $installDirectory = $null
@@ -579,36 +603,56 @@ Resolve-PackagePaths -PackageResult $result
         }
     }
 
-    $packageFilePath = $null
-    $defaultPackageDepotFilePath = $null
-    if ($package.PSObject.Properties['packageFile'] -and
-        $package.packageFile -and
-        $package.packageFile.PSObject.Properties['fileName'] -and
-        -not [string]::IsNullOrWhiteSpace([string]$package.packageFile.fileName)) {
-        $packageFilePath = Join-Path $packageFileStagingDirectory ([string]$package.packageFile.fileName)
-        if (-not [string]::IsNullOrWhiteSpace([string]$packageConfig.DefaultPackageDepotDirectory)) {
-            $defaultPackageDepotDirectory = [System.IO.Path]::GetFullPath((Join-Path $packageConfig.DefaultPackageDepotDirectory $normalizedPackageDepotRelativeDirectory))
-            $defaultPackageDepotFilePath = Join-Path $defaultPackageDepotDirectory ([string]$package.packageFile.fileName)
+    $defaultPackageDepotDirectory = if (-not [string]::IsNullOrWhiteSpace([string]$packageConfig.DefaultPackageDepotDirectory)) {
+        [System.IO.Path]::GetFullPath((Join-Path $packageConfig.DefaultPackageDepotDirectory $normalizedPackageDepotRelativeDirectory))
+    }
+    else { $null }
+    $artifactFileResults = @(
+        foreach ($artifactFile in @($package.artifactFiles)) {
+            $stagingPath = Resolve-PackageArtifactChildPath -RootPath $artifactStagingDirectory -RelativePath ([string]$artifactFile.relativePath) -ArtifactFileId ([string]$artifactFile.id)
+            $defaultDepotPath = if ($defaultPackageDepotDirectory) {
+                Resolve-PackageArtifactChildPath -RootPath $defaultPackageDepotDirectory -RelativePath ([string]$artifactFile.relativePath) -ArtifactFileId ([string]$artifactFile.id)
+            }
+            else { $null }
+            [pscustomobject]@{
+                Id                    = [string]$artifactFile.id
+                RelativePath          = ([string]$artifactFile.relativePath -replace '/', '\')
+                StagingPath           = $stagingPath
+                DefaultDepotPath      = $defaultDepotPath
+                ContentHash           = $artifactFile.contentHash
+                PublisherSignature    = $artifactFile.publisherSignature
+                AcquisitionCandidates = @($artifactFile.acquisitionCandidates)
+                AcquisitionPlan       = $null
+                Preparation           = $null
+                Verification          = $null
+            }
+        }
+    )
+    $operationArtifactFile = $null
+    if ($assignedInstall -and $assignedInstall.PSObject.Properties['artifactFileId']) {
+        $operationArtifactFile = @($artifactFileResults | Where-Object { [string]::Equals([string]$_.Id, [string]$assignedInstall.artifactFileId, [System.StringComparison]::OrdinalIgnoreCase) }) | Select-Object -First 1
+        if (-not $operationArtifactFile) {
+            throw "Package '$($package.id)' install artifactFileId '$($assignedInstall.artifactFileId)' did not resolve to an artifact file."
         }
     }
 
-    $PackageResult.PackageFileStagingDirectory = $packageFileStagingDirectory
+    $PackageResult.ArtifactStagingDirectory = $artifactStagingDirectory
     $PackageResult.PackageInstallStageDirectory = $packageInstallStageDirectory
     $PackageResult.InstallDirectory = $installDirectory
     $PackageResult.PackageDepotRelativeDirectory = $normalizedPackageDepotRelativeDirectory
     $PackageResult.PackageWorkSlotDirectory = $normalizedPackageWorkSlotDirectory
-    $PackageResult.PackageFilePath = $packageFilePath
-    $PackageResult.DefaultPackageDepotFilePath = $defaultPackageDepotFilePath
+    $PackageResult.DefaultPackageDepotDirectory = $defaultPackageDepotDirectory
+    $PackageResult.ArtifactFiles = @($artifactFileResults)
+    $PackageResult.OperationArtifactFile = $operationArtifactFile
+    $PackageResult.OperationArtifactFilePath = if ($operationArtifactFile) { [string]$operationArtifactFile.StagingPath } else { $null }
 
     $resolvedInstallDirectoryText = if ([string]::IsNullOrWhiteSpace([string]$installDirectory)) { '<none>' } else { $installDirectory }
-    $resolvedPackageFilePathText = if ([string]::IsNullOrWhiteSpace([string]$packageFilePath)) { '<none>' } else { $packageFilePath }
-    $resolvedDefaultDepotFilePathText = if ([string]::IsNullOrWhiteSpace([string]$defaultPackageDepotFilePath)) { '<none>' } else { $defaultPackageDepotFilePath }
     Write-PackageExecutionMessage -Message '[STATE] Resolved paths:'
-    Write-PackageExecutionMessage -Message ("[PATH] Package file staging: {0}" -f $packageFileStagingDirectory)
+    Write-PackageExecutionMessage -Message ("[PATH] Artifact staging: {0}" -f $artifactStagingDirectory)
     Write-PackageExecutionMessage -Message ("[PATH] Package install stage: {0}" -f $packageInstallStageDirectory)
     Write-PackageExecutionMessage -Message ("[PATH] Target install directory: {0}" -f $resolvedInstallDirectoryText)
-    Write-PackageExecutionMessage -Message ("[PATH] Package file: {0}" -f $resolvedPackageFilePathText)
-    Write-PackageExecutionMessage -Message ("[PATH] Default package depot file: {0}" -f $resolvedDefaultDepotFilePathText)
+    Write-PackageExecutionMessage -Message ("[PATH] Artifact files: {0}" -f @($artifactFileResults).Count)
+    Write-PackageExecutionMessage -Message ("[PATH] Operation artifact file: {0}" -f $(if ($operationArtifactFile) { [string]$operationArtifactFile.StagingPath } else { '<none>' }))
 
     return $PackageResult
 }
@@ -704,9 +748,8 @@ New-PackageResult -PackageConfig $config
         CatalogTrustAllowUnsignedPublisherIds = @($PackageConfig.CatalogTrustAllowUnsignedPublisherIds)
         CatalogTrustBlockedPublisherIds  = @($PackageConfig.CatalogTrustBlockedPublisherIds)
         CatalogTrustPayloadVerification  = $PackageConfig.CatalogTrustPayloadVerification
-        PackageFileStagingRootDirectory    = $PackageConfig.PackageFileStagingRootDirectory
+        ArtifactStagingRootDirectory       = $PackageConfig.PackageFileStagingRootDirectory
         PackageInstallStageRootDirectory   = $PackageConfig.PackageInstallStageRootDirectory
-        DefaultPackageDepotDirectory     = $PackageConfig.DefaultPackageDepotDirectory
         PreferredTargetInstallRootDirectory = $PackageConfig.PreferredTargetInstallRootDirectory
         LocalEndpointRoot              = $PackageConfig.LocalEndpointRoot
         ShimDirectory                    = $PackageConfig.ShimDirectory
@@ -718,18 +761,20 @@ New-PackageResult -PackageConfig $config
         PackageId                        = $null
         PackageVersion                   = $null
         Compatibility                    = @()
-        PackageFileStagingDirectory        = $null
+        ArtifactStagingDirectory           = $null
         PackageInstallStageDirectory       = $null
         InstallDirectory                 = $null
         PackageDepotRelativeDirectory    = $null
         PackageWorkSlotDirectory         = $null
-        PackageFilePath                  = $null
-        DefaultPackageDepotFilePath      = $null
-        AcquisitionPlan                  = $null
+        DefaultPackageDepotDirectory     = $null
+        ArtifactFiles                    = @()
+        OperationArtifactFile            = $null
+        OperationArtifactFilePath        = $null
+        ArtifactAcquisitionPlan          = $null
         ExistingPackage                  = $null
         Ownership                        = $null
         InstallOrigin                    = $null
-        PackageFilePreparation                  = $null
+        ArtifactPreparation              = $null
         DepotDistribution                = $null
         Dependencies                     = @()
         Assigned                         = $null

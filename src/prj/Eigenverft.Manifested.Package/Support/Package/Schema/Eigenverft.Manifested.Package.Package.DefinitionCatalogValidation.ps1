@@ -270,7 +270,7 @@ function Test-PackageDefinitionCatalogDocument {
         $entry.SchemaValid = $true
     }
     catch {
-        Add-PackageDefinitionCatalogValidationIssue -Issues $entry.Issues -Issue (New-PackageDefinitionCatalogValidationIssue -Severity Error -Code PackageDefinitionSchemaInvalid -Path $Path -PublisherId ([string]$entry.PublisherId) -DefinitionId ([string]$entry.DefinitionId) -Concept 'schema.1.9' -Message $_.Exception.Message -SuggestedFix 'Update the package-definition JSON to satisfy the current schemaVersion 1.9 wire contract.') | Out-Null
+        Add-PackageDefinitionCatalogValidationIssue -Issues $entry.Issues -Issue (New-PackageDefinitionCatalogValidationIssue -Severity Error -Code PackageDefinitionSchemaInvalid -Path $Path -PublisherId ([string]$entry.PublisherId) -DefinitionId ([string]$entry.DefinitionId) -Concept 'schema.2.0' -Message $_.Exception.Message -SuggestedFix 'Update the package-definition JSON to satisfy the current schemaVersion 2.0 artifact-file-set contract.') | Out-Null
     }
 
     try {
@@ -635,7 +635,7 @@ function Test-PackageDefinitionCatalogStaticReferences {
 
     foreach ($entry in @($schemaValidEntries)) {
         $sourceKey = ConvertTo-PackageDefinitionCatalogIdentityKey -PublisherId ([string]$entry.PublisherId) -DefinitionId ([string]$entry.DefinitionId)
-        $dependencyModel = Get-PackageDefinitionDependencyModel_1_9 -Definition $entry.Document -DefinitionId ([string]$entry.DefinitionId)
+        $dependencyModel = Get-PackageDefinitionDependencyModel_2_0 -Definition $entry.Document -DefinitionId ([string]$entry.DefinitionId)
         $dependencyIndex = 0
         foreach ($dependency in @($dependencyModel.Requires)) {
             if ($null -eq $dependency) {
@@ -729,7 +729,7 @@ function Add-PackageDefinitionCatalogMixedSchemaVersionIssues {
     $severity = if ($StrictSchemaVersion.IsPresent) { 'Error' } else { 'Warning' }
     $message = "Package-definition catalog contains mixed schemaVersion values: $($schemaVersions -join ', ')."
     foreach ($entry in @($Entries | Where-Object { [bool]$_.Parsed -and -not [string]::IsNullOrWhiteSpace([string]$_.SchemaVersion) })) {
-        Add-PackageDefinitionCatalogValidationIssue -Issues $entry.Issues -Issue (New-PackageDefinitionCatalogValidationIssue -Severity $severity -Code CatalogMixedSchemaVersion -Path ([string]$entry.Path) -PublisherId ([string]$entry.PublisherId) -DefinitionId ([string]$entry.DefinitionId) -JsonPath 'schemaVersion' -Concept 'catalog.schemaVersion' -Message $message -SuggestedFix 'Use one supported schemaVersion across the endpoint folder, currently schemaVersion 1.9.') | Out-Null
+        Add-PackageDefinitionCatalogValidationIssue -Issues $entry.Issues -Issue (New-PackageDefinitionCatalogValidationIssue -Severity $severity -Code CatalogMixedSchemaVersion -Path ([string]$entry.Path) -PublisherId ([string]$entry.PublisherId) -DefinitionId ([string]$entry.DefinitionId) -JsonPath 'schemaVersion' -Concept 'catalog.schemaVersion' -Message $message -SuggestedFix 'Use one supported schemaVersion across the endpoint folder, currently schemaVersion 2.0.') | Out-Null
     }
 }
 

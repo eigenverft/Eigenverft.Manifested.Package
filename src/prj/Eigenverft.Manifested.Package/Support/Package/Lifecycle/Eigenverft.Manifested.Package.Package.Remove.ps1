@@ -59,7 +59,7 @@ function Get-PackageInventoryDependentBlockingRecords {
         }
 
         $definition = $definitionDocumentInfo.Document
-        $dependencyModel = Get-PackageDefinitionDependencyModel_1_9 -Definition $definition -DefinitionId $parentDefinitionId
+        $dependencyModel = Get-PackageDefinitionDependencyModel_2_0 -Definition $definition -DefinitionId $parentDefinitionId
         if (@($dependencyModel.Requires).Count -eq 0) {
             continue
         }
@@ -600,11 +600,11 @@ function Invoke-PackageRegistryUninstaller {
 
     foreach ($argument in @($Operation.commandArguments)) {
         $resolvedArgument = Resolve-PackageTemplateText -Text ([string]$argument) -PackageConfig $PackageResult.PackageConfig -Package $PackageResult.Package -ExtraTokens @{
-            packageFilePath                = $PackageResult.PackageFilePath
+            operationArtifactFilePath      = $PackageResult.OperationArtifactFilePath
             installDirectory               = $PackageResult.InstallDirectory
-            packageFileStagingDirectory    = $PackageResult.PackageFileStagingDirectory
+            artifactStagingDirectory       = $PackageResult.ArtifactStagingDirectory
             packageInstallStageDirectory   = $PackageResult.PackageInstallStageDirectory
-            downloadDirectory              = $PackageResult.PackageFileStagingDirectory
+            artifactDownloadDirectory      = $PackageResult.ArtifactStagingDirectory
         }
         if (Test-PackageProcessArgumentPresent -Arguments @($argumentTexts.ToArray()) -Argument $resolvedArgument) {
             continue
@@ -686,11 +686,11 @@ function Invoke-PackageMsiRegistryUninstaller {
 
     foreach ($argument in @($Operation.commandArguments)) {
         $resolvedArgument = Resolve-PackageTemplateText -Text ([string]$argument) -PackageConfig $PackageResult.PackageConfig -Package $PackageResult.Package -ExtraTokens @{
-            packageFilePath                = $PackageResult.PackageFilePath
+            operationArtifactFilePath      = $PackageResult.OperationArtifactFilePath
             installDirectory               = $PackageResult.InstallDirectory
-            packageFileStagingDirectory    = $PackageResult.PackageFileStagingDirectory
+            artifactStagingDirectory       = $PackageResult.ArtifactStagingDirectory
             packageInstallStageDirectory   = $PackageResult.PackageInstallStageDirectory
-            downloadDirectory              = $PackageResult.PackageFileStagingDirectory
+            artifactDownloadDirectory      = $PackageResult.ArtifactStagingDirectory
         }
         if (Test-PackageProcessArgumentPresent -Arguments @($argumentTexts.ToArray()) -Argument $resolvedArgument) {
             continue

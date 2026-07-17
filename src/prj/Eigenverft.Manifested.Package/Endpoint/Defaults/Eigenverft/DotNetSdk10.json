@@ -1,11 +1,11 @@
 {
-  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json",
-  "schemaVersion": "1.9",
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-2.0.schema.json",
+  "schemaVersion": "2.0",
   "definitionPublication": {
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "DotNetSdk10",
-    "definitionRevision": 5,
+    "definitionRevision": 6,
     "publishedAtUtc": "2026-07-14T04:55:50.4324908Z",
     "definitionSignature": {
       "kind": "signed",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-14T04:56:26.4723580Z",
-      "signatureValue": "GiMJPUrqskA0h4M+AfmC/vMUleYMzi8tJkYFgrYcvSNZPf9vWrKW3XxjFwmeszhDc0qCbbx5m6dIsdYQqgUiNWAPRV6Za7rB4CMQQkAaJky856ACBVbSduDG3vqAIKeEoLQZJ7a5WhdWVJp/fUJk/6FyjQeBGC9qsVEbIH8Dt82nCUJf6KOD//ynaa6CEOx59HwIRY46SbtJF+MZjumtQuFhBX8iVo33mk0dwWvB0uOeDjkgu0Qzuz4j9oPg7h4JUGR3q/HnM9BpXs5Vtz2vEtMAuENVeRmEw6w4g3J/8WfmINQg2ipU6inDAAr319dcv6IHBpgVTYCXy9zqTlfc6h3FpDiRRw1yNbiuEkUCp0w1PS782Dn0UPRKX9S3AkK70ZVMC9Y52aLsMKnEbB5U8QVDXouJnQygYLoj4jL94Oj7T9noXiojoj5rsJh9g7Y3WizRhuvMjVYlc51EyellpH0lhs0kh+m7VqKYvpbVB2sqhPo2sJkTPWUVoC2oJd5/"
+      "signedAtUtc": "2026-07-17T06:16:19.1631882Z",
+      "signatureValue": "WQ+JCklRrbhwD5wTz/sYHY2atDacHy5D0reoOpc87evqCHuQ9S4aVbjPVHrmAzoa079aJCr+7vsqLsvjY1nPFVQRGthvc1OubklJ75H5/H/OS3drLXLeVXq6MmgsWoZ+BkDE9Bo/PuSAQR+02SF0QJ3gliCiROG6l/RrKe/CwC2Pn77tlx/9JXjM6tCOUn2sQituOIHf8rWjau2v+J1KARc9eChCir/I9deYfLqqFIZpE9hNTXDrc91cEQ9MMbI01B3mK+FW5jplpzRtVOhqmAqZDlJZcyH3YhsQGMKMxX96KzglZsb/r+fTHVOAUGttOaPvLEqWAZ9DtnmkedVsncDKqBBnVyd+K+g94lXTBSRwM6p1Kuli4Xi6ojgGuFZinPTgH2x+TkHVe/tVTV+ftMHfCl+A5hjE9nAGeo3Z2EiDHPmVrAROWv4pM3kT7tva7EBFJQkR04A85qyxcMDg/p906EgdeRh3mglkKX0J81FaB3daXnZImBCxxvi0pV9j"
     }
   },
   "display": {
@@ -54,25 +54,29 @@
           "strategy": "latestByVersion",
           "allowPrerelease": false
         },
-        "fileNameTemplate": "dotnet-sdk-{version}-win-x64.zip",
-        "acquisitionCandidates": [
-          {
-            "kind": "packageDepot",
-            "searchOrder": 100,
-            "verification": {
-              "mode": "optional"
-            }
-          },
-          {
-            "kind": "vendorDownload",
-            "sourceId": "dotNetBuilds",
-            "sourcePath": "Sdk/{version}/dotnet-sdk-{version}-win-x64.zip",
-            "searchOrder": 900,
-            "verification": {
-              "mode": "required"
-            }
+        "artifactFiles": {
+          "package": {
+            "relativePathTemplate": "dotnet-sdk-{version}-win-x64.zip",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "optional"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "sourceId": "dotNetBuilds",
+                "sourcePath": "Sdk/{version}/dotnet-sdk-{version}-win-x64.zip",
+                "searchOrder": 900,
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
           }
-        ]
+        }
       },
       {
         "id": "DotNetSdk10-win-arm64-stable",
@@ -90,25 +94,29 @@
           "strategy": "latestByVersion",
           "allowPrerelease": false
         },
-        "fileNameTemplate": "dotnet-sdk-{version}-win-arm64.zip",
-        "acquisitionCandidates": [
-          {
-            "kind": "packageDepot",
-            "searchOrder": 100,
-            "verification": {
-              "mode": "optional"
-            }
-          },
-          {
-            "kind": "vendorDownload",
-            "sourceId": "dotNetBuilds",
-            "sourcePath": "Sdk/{version}/dotnet-sdk-{version}-win-arm64.zip",
-            "searchOrder": 900,
-            "verification": {
-              "mode": "required"
-            }
+        "artifactFiles": {
+          "package": {
+            "relativePathTemplate": "dotnet-sdk-{version}-win-arm64.zip",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "optional"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "sourceId": "dotNetBuilds",
+                "sourcePath": "Sdk/{version}/dotnet-sdk-{version}-win-arm64.zip",
+                "searchOrder": 900,
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
           }
-        ]
+        }
       }
     ],
     "releases": [
@@ -124,16 +132,24 @@
         "targetArtifacts": {
           "DotNetSdk10-win-x64-stable": {
             "artifactId": "dotnet-sdk10-win-x64-stable",
-            "contentHash": {
-              "algorithm": "sha512",
-              "value": "38456e992c4df0ff0ac9fc5f28ff09a88543c0fc4e4deedffda9c4ebaf852c4519addacf28814ea77ea42ce2d37db812fae5ba1fe25f06364ca5a6027036387f"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha512",
+                  "value": "38456e992c4df0ff0ac9fc5f28ff09a88543c0fc4e4deedffda9c4ebaf852c4519addacf28814ea77ea42ce2d37db812fae5ba1fe25f06364ca5a6027036387f"
+                }
+              }
             }
           },
           "DotNetSdk10-win-arm64-stable": {
             "artifactId": "dotnet-sdk10-win-arm64-stable",
-            "contentHash": {
-              "algorithm": "sha512",
-              "value": "cd2aabcf089d76c6f904e2b77ed06b9f397e105f8a9b8fb425ce6b8ab01413a01d59a1c298c58c627db3e8d197280825d7c2cfc8b8345a149ed5b86457cf5c5b"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha512",
+                  "value": "cd2aabcf089d76c6f904e2b77ed06b9f397e105f8a9b8fb425ce6b8ab01413a01d59a1c298c58c627db3e8d197280825d7c2cfc8b8345a149ed5b86457cf5c5b"
+                }
+              }
             }
           }
         }
@@ -150,16 +166,24 @@
         "targetArtifacts": {
           "DotNetSdk10-win-x64-stable": {
             "artifactId": "dotnet-sdk10-win-x64-stable",
-            "contentHash": {
-              "algorithm": "sha512",
-              "value": "32446eddffc5a485f58f9d79cdab3a1a9adab4adc2ef0e4c787cfbb2465020d50beaadc54d40f0850e2e0089edd09864d12d6c19c526319819d57a4c00d38518"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha512",
+                  "value": "32446eddffc5a485f58f9d79cdab3a1a9adab4adc2ef0e4c787cfbb2465020d50beaadc54d40f0850e2e0089edd09864d12d6c19c526319819d57a4c00d38518"
+                }
+              }
             }
           },
           "DotNetSdk10-win-arm64-stable": {
             "artifactId": "dotnet-sdk10-win-arm64-stable",
-            "contentHash": {
-              "algorithm": "sha512",
-              "value": "86a6ab513ba16b6dfbe8497c5eb8ee9791819c6a0d8dfffc8eee6c7d6387718f9e486010da24c354e1f4be5f99286e78a799848ee806a67b8b9fec6e4bf773cd"
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha512",
+                  "value": "86a6ab513ba16b6dfbe8497c5eb8ee9791819c6a0d8dfffc8eee6c7d6387718f9e486010da24c354e1f4be5f99286e78a799848ee806a67b8b9fec6e4bf773cd"
+                }
+              }
             }
           }
         }
@@ -234,7 +258,8 @@
         "kind": "expandArchive",
         "installDirectory": "dotnet-sdk10/{releaseTrack}/{version}/{artifactDistributionVariant}",
         "expandedRoot": "auto",
-        "createDirectories": []
+        "createDirectories": [],
+        "artifactFileId": "package"
       },
       "readyStateCheck": {
         "use": "discovery.presence",

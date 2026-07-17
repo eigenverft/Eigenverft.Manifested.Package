@@ -1,11 +1,11 @@
 {
-  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-1.9.schema.json",
-  "schemaVersion": "1.9",
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-2.0.schema.json",
+  "schemaVersion": "2.0",
   "definitionPublication": {
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "VSCodeUser",
-    "definitionRevision": 10,
+    "definitionRevision": 11,
     "publishedAtUtc": "2026-07-14T04:55:50.4324908Z",
     "definitionSignature": {
       "kind": "signed",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-14T04:56:29.3373044Z",
-      "signatureValue": "kcfIHdWSNL0MN1Aan2vYEP3PelX7AW6ak3mfzZeOsdmcSJz00L7IZ6cBsKOP5T/VlUuiXx7prSTfVBuHVorUNvry/Y/8fPmuoKw5vFqrYY4TU797TKQu4OtgoHmFK++FrXiIDOodgZvTcRoQS/ym/AWtp8+YUtFdDdEURt1axcM7aQoCZuelOrMaTuKUKf1ZaBmkDpsADCmJdIf1LvzgrHNjQqEYs967lLGdPKQhdZrnmWfH26mLK30XQxdPHEOS26XKXawSCE8DyFGeWMXbSZlMy0WmgKJ4YqQGnpKo5wx+59oYXQajTydaXWPhu4q2B+3fQkWDU3K7PB8N9+tw1+balOsZ5DT0TkYP2t5ZgwG4rKK3dcYNxuJX7I6g/XQtJVMXxjNig8WKt+H5M1g/4swkFk/AxZo+f1tteLLO51g7zfK18EmpcyK99Qd+TIsyqhZIkNKuK5Qrx3hSkeT+/euz3NlQl4Gv9F8YpOk2YLtmL6x196gmv3OD9P1Venv+"
+      "signedAtUtc": "2026-07-17T06:16:23.1448326Z",
+      "signatureValue": "tV8s1f6PsXpiMAmkGBKVtrLZWOJznaKZGn1L8jbjomJNICQJJ3EhDiMWg91jkfwGmTVcI9Dd7/E2mif0QNVr8G0O0H+v+kufsakL/XrHKTdoqHGZxhHXCdzwT1Agd1VTIFI/z5IBFSKebdn6/4KZQsM0EyJmlp+tXG8IiaNPHL8K7V6R1ru+2ETq9zrS7j3MMrujVXGV7dHZoGw2ImsQIwXwVBM5E1ijwXLbI5igpqNPRSklmHCjtqdlhhHBbBpviEqJKCgxFxuKd7as6JlT8ATk4KUgPXDVXNbB1E/aDpxYCDwXEJgH0djwAu7Y9PXeHGph7LENiCkKxcv450RpG4LNCvWgAyFedOhS02frNPni1TvIk69G8YkSJLchQffI3JSjzLLyRhXYW2jdebDOJt/hRIGy8q3btTGGy+J+UQaKss4uEMlbSAsAXqbEl1aJQOsQSqbyQcK/6afLJn6aABXo3DlRbjDFun7T1nPH+/iBVlnne/iN/Ark/JOtTO+3"
     }
   },
   "display": {
@@ -62,25 +62,29 @@
           "strategy": "latestByVersion",
           "allowPrerelease": false
         },
-        "fileNameTemplate": "VSCodeUserSetup-x64-{version}.exe",
-        "acquisitionCandidates": [
-          {
-            "kind": "packageDepot",
-            "searchOrder": 100,
-            "verification": {
-              "mode": "optional"
-            }
-          },
-          {
-            "kind": "vendorDownload",
-            "sourceId": "vscodeStableUserX64",
-            "sourcePath": "{version}/win32-x64-user/stable",
-            "searchOrder": 900,
-            "verification": {
-              "mode": "required"
-            }
+        "artifactFiles": {
+          "package": {
+            "relativePathTemplate": "VSCodeUserSetup-x64-{version}.exe",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "optional"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "sourceId": "vscodeStableUserX64",
+                "sourcePath": "{version}/win32-x64-user/stable",
+                "searchOrder": 900,
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
           }
-        ]
+        }
       }
     ],
     "releases": [
@@ -92,15 +96,19 @@
         "targetArtifacts": {
           "windows_user_x64": {
             "artifactId": "vscode-user-x64-1.128.0",
-            "fileName": "VSCodeUserSetup-x64-1.128.0.exe",
-            "publisherSignature": {
-              "kind": "authenticode",
-              "requireValid": true,
-              "subjectContains": "Microsoft Corporation"
-            },
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "470f70f66defc978b80e6cba12e7fc8389459e1b259219213a4b840e2bca0050"
+            "artifactFiles": {
+              "package": {
+                "relativePath": "VSCodeUserSetup-x64-1.128.0.exe",
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "470f70f66defc978b80e6cba12e7fc8389459e1b259219213a4b840e2bca0050"
+                },
+                "publisherSignature": {
+                  "kind": "authenticode",
+                  "requireValid": true,
+                  "subjectContains": "Microsoft Corporation"
+                }
+              }
             }
           }
         }
@@ -112,16 +120,20 @@
         ],
         "targetArtifacts": {
           "windows_user_x64": {
-            "fileName": "VSCodeUserSetup-x64-1.125.1.exe",
             "artifactId": "vscode-user-x64-1.125.1",
-            "publisherSignature": {
-              "kind": "authenticode",
-              "requireValid": true,
-              "subjectContains": "Microsoft Corporation"
-            },
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "d2b086b0e03491fb2aac47102e0e167a27f1acac500e2f093c5bc4692d14686e"
+            "artifactFiles": {
+              "package": {
+                "relativePath": "VSCodeUserSetup-x64-1.125.1.exe",
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "d2b086b0e03491fb2aac47102e0e167a27f1acac500e2f093c5bc4692d14686e"
+                },
+                "publisherSignature": {
+                  "kind": "authenticode",
+                  "requireValid": true,
+                  "subjectContains": "Microsoft Corporation"
+                }
+              }
             }
           }
         }
@@ -134,15 +146,19 @@
         "targetArtifacts": {
           "windows_user_x64": {
             "artifactId": "vscode-user-x64-1.124.2",
-            "fileName": "VSCodeUserSetup-x64-1.124.2.exe",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "3c57c743bc8b4571cf2e25674532b4f21e156990c345928aadc3671d309c3b07"
-            },
-            "publisherSignature": {
-              "kind": "authenticode",
-              "requireValid": true,
-              "subjectContains": "Microsoft Corporation"
+            "artifactFiles": {
+              "package": {
+                "relativePath": "VSCodeUserSetup-x64-1.124.2.exe",
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "3c57c743bc8b4571cf2e25674532b4f21e156990c345928aadc3671d309c3b07"
+                },
+                "publisherSignature": {
+                  "kind": "authenticode",
+                  "requireValid": true,
+                  "subjectContains": "Microsoft Corporation"
+                }
+              }
             }
           }
         }
@@ -155,15 +171,19 @@
         "targetArtifacts": {
           "windows_user_x64": {
             "artifactId": "vscode-user-x64-1.123.0",
-            "fileName": "VSCodeUserSetup-x64-1.123.0.exe",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "4ac383d0bd7a950a8cb828fa9fb0fb9de444904d5cdb14bdb8efbde57262bb57"
-            },
-            "publisherSignature": {
-              "kind": "authenticode",
-              "requireValid": true,
-              "subjectContains": "Microsoft Corporation"
+            "artifactFiles": {
+              "package": {
+                "relativePath": "VSCodeUserSetup-x64-1.123.0.exe",
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "4ac383d0bd7a950a8cb828fa9fb0fb9de444904d5cdb14bdb8efbde57262bb57"
+                },
+                "publisherSignature": {
+                  "kind": "authenticode",
+                  "requireValid": true,
+                  "subjectContains": "Microsoft Corporation"
+                }
+              }
             }
           }
         }
@@ -176,10 +196,14 @@
         "targetArtifacts": {
           "windows_user_x64": {
             "artifactId": "vscode-user-x64-1.121.0",
-            "fileName": "VSCodeUserSetup-x64-1.121.0.exe",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "5751cbf2552c8dda452df5720e3228627b3234862d0eb7346f9e57f20386561f"
+            "artifactFiles": {
+              "package": {
+                "relativePath": "VSCodeUserSetup-x64-1.121.0.exe",
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "5751cbf2552c8dda452df5720e3228627b3234862d0eb7346f9e57f20386561f"
+                }
+              }
             }
           }
         }
@@ -192,10 +216,14 @@
         "targetArtifacts": {
           "windows_user_x64": {
             "artifactId": "vscode-user-x64-1.119.0",
-            "fileName": "VSCodeUserSetup-x64-1.119.0.exe",
-            "contentHash": {
-              "algorithm": "sha256",
-              "value": "8c3cf83d67f27a24ecb95812163f928f7404279a87681ec6fdb594095cc8271d"
+            "artifactFiles": {
+              "package": {
+                "relativePath": "VSCodeUserSetup-x64-1.119.0.exe",
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "8c3cf83d67f27a24ecb95812163f928f7404279a87681ec6fdb594095cc8271d"
+                }
+              }
             }
           }
         }
@@ -282,7 +310,8 @@
           "enabled": true,
           "prefix": "/DIR=",
           "quoteValue": true
-        }
+        },
+        "artifactFileId": "package"
       },
       "readyStateCheck": {
         "use": "discovery.presence",

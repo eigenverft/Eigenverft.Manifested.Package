@@ -129,7 +129,7 @@ function Get-PackageSearchTextFields {
             }
         }
     }
-    foreach ($tag in @(Get-PackageDefinitionClassificationTags_1_9 -Definition $Definition)) {
+    foreach ($tag in @(Get-PackageDefinitionClassificationTags_2_0 -Definition $Definition)) {
         if (-not [string]::IsNullOrWhiteSpace([string]$tag)) {
             $fields.Add([string]$tag) | Out-Null
         }
@@ -337,7 +337,7 @@ function Resolve-PackageSearchSelectedVersion {
             Architecture = $Architecture
             ReleaseTrack = $ReleaseTrack
         }
-        $package = Resolve-PackageEffectivePackage_1_9 -PackageConfig $packageConfig
+        $package = Resolve-PackageEffectivePackage_2_0 -PackageConfig $packageConfig
         return [pscustomobject]@{
             Available = $true
             Version   = [string]$package.version
@@ -431,7 +431,7 @@ function Search-Package {
         }
 
         $definition = $definitionInfo.Document
-        $definitionTags = @(Get-PackageDefinitionClassificationTags_1_9 -Definition $definition)
+        $definitionTags = @(Get-PackageDefinitionClassificationTags_2_0 -Definition $definition)
         $fields = @(Get-PackageSearchTextFields -Definition $definition)
         if (-not (Test-PackageSearchQueryMatch -Query $Query -Fields $fields)) {
             continue
