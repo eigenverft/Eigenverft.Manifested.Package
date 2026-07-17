@@ -456,7 +456,7 @@ function Resolve-PackageDependencyPlanNode {
     )
 
     try {
-        $config = Get-PackageConfig -PublisherId $PublisherId -DefinitionId $DefinitionId -DesiredState 'Assigned' -AcceptUnknownSigningKey:([bool]$Context.AcceptUnknownSigningKey) -RequireAlreadyTrusted:([bool]$Context.RequireAlreadyTrusted)
+        $config = Get-PackageConfig -PublisherId $PublisherId -DefinitionId $DefinitionId -DesiredState 'Assigned' -AcceptUnknownSigningKey:([bool]$Context.AcceptUnknownSigningKey) -RequireAlreadyTrusted:([bool]$Context.RequireAlreadyTrusted) -InspectionOnly:([bool]$Context.InspectionOnly)
     }
     catch {
         Add-PackageDependencyPlanViolation -Plan $Context.Plan -Violation (New-PackageDependencyPlanViolation -Reason 'DependencyDefinitionNotFound' -Message $_.Exception.Message -RootDefinitionId $Context.RootDefinitionId -ParentNodeKey $ParentNodeKey -PublisherId $PublisherId -DefinitionId $DefinitionId -VersionRange $VersionRange) | Out-Null
@@ -474,6 +474,10 @@ function Resolve-PackageDependencyPlanNode {
     $node = $null
     if ($Context.Plan.NodeMap.ContainsKey($nodeKey)) {
         $node = $Context.Plan.NodeMap[$nodeKey]
+        if ($IsRoot.IsPresent -and -not [bool]$node.IsRoot) {
+            $node.IsRoot = $true
+            Resolve-PackageDependencyPlanNodeSelection -Context $Context -Node $node
+        }
         if (-not [string]::IsNullOrWhiteSpace($VersionRange) -and -not $node.IncomingVersionRanges.Contains([string]$VersionRange)) {
             $node.IncomingVersionRanges.Add([string]$VersionRange) | Out-Null
             Resolve-PackageDependencyPlanNodeSelection -Context $Context -Node $node
@@ -561,7 +565,9 @@ function New-PackageDependencyPlan {
 
         [switch]$AcceptUnknownSigningKey,
 
-        [switch]$RequireAlreadyTrusted
+        [switch]$RequireAlreadyTrusted,
+
+        [switch]$InspectionOnly
     )
 
     $nodeMap = New-Object 'System.Collections.Generic.Dictionary[string,object]' ([System.StringComparer]::OrdinalIgnoreCase)
@@ -586,6 +592,7 @@ function New-PackageDependencyPlan {
         Plan                            = $plan
         AcceptUnknownSigningKey          = [bool]$AcceptUnknownSigningKey
         RequireAlreadyTrusted            = [bool]$RequireAlreadyTrusted
+        InspectionOnly                   = [bool]$InspectionOnly
         PackageVersion                  = $PackageVersion
         PackageVersionOverrideSpecified = [bool]$PackageVersionOverrideSpecified
         RootDefinitionId                = $null

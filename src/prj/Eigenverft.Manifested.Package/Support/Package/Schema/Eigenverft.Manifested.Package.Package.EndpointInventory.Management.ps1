@@ -118,9 +118,11 @@ function Assert-PackageEndpointInventorySchema {
 
 function Get-PackageEndpointInventoryInfo {
     [CmdletBinding()]
-    param()
+    param(
+        [switch]$InspectionOnly
+    )
 
-    $inventoryPath = Get-PackageEndpointInventoryPath
+    $inventoryPath = Get-PackageEndpointInventoryPath -InspectionOnly:$InspectionOnly
     $documentInfo = Read-PackageJsonDocument -Path $inventoryPath
     Assert-PackageEndpointInventorySchema -EndpointInventoryDocumentInfo $documentInfo
     $documentInfo | Add-Member -MemberType NoteProperty -Name Exists -Value $true -Force

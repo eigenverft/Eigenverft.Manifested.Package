@@ -85,6 +85,7 @@ FunctionsToExport = @(
     'Get-PackageEndpoint',
     'Get-PackagePublisher',
     'Get-PackageSigningProfile',
+    'Get-PackageAssignmentPlan',
     'Get-PackageState',
     'Get-PackageTrust',
     'Invoke-Package',
@@ -148,7 +149,7 @@ PrivateData = @{
         IconUri = 'https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/main/resources/evt-logo_on_light_border_128x128.png'
 
         # ReleaseNotes of this module
-        ReleaseNotes = 'Schema 2.0 adds verified multi-file artifact sets and archive-derived files. The EigenverftManifestedPackage bootstrap seed now supports a self-contained offline install with PackageManagement, PowerShellGet, and adjacent launch scripts. Added Sync-PackageDepot -AllTrusted for confirmed current-platform hydration of already signed-and-trusted catalogs.'
+        ReleaseNotes = 'Schema 2.0 adds verified multi-file artifact sets and archive-derived files. The EigenverftManifestedPackage bootstrap seed now supports a self-contained offline install with PackageManagement, PowerShellGet, and adjacent launch scripts. Added Sync-PackageDepot -AllTrusted for confirmed current-platform hydration of already signed-and-trusted catalogs. Added Get-PackageAssignmentPlan for mutation-free trust, dependency, artifact, depot, and existing-install preflight.'
 
         # Prerelease string of this module
         Prerelease = ''

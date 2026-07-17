@@ -65,6 +65,18 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
         $publicParameterNames | Should -Be @('Raw')
     }
 
+    It 'exports the read-only package assignment-plan interface' {
+        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
+        $command = $module.ExportedCommands['Get-PackageAssignmentPlan']
+
+        $command | Should -Not -BeNullOrEmpty
+        $publicParameterNames = @($command.Parameters.Keys | Where-Object {
+                $_ -notin [System.Management.Automation.PSCmdlet]::CommonParameters -and
+                $_ -notin [System.Management.Automation.PSCmdlet]::OptionalCommonParameters
+            })
+        $publicParameterNames | Should -Be @('PublisherId', 'DefinitionId', 'PackageVersion', 'Offline', 'MaterializeOnly', 'VerifyDepotContent', 'Raw')
+    }
+
     It 'exports only the intended public command surface' {
         $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
 
@@ -77,6 +89,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'Add-TeamPackagePublisher',
             'Block-PackageSigningCertificate',
             'Export-PackageTrust',
+            'Get-PackageAssignmentPlan',
             'Get-PackageDefinitionAuthoringGuide',
             'Get-PackageDepot',
             'Get-PackageEndpoint',
@@ -116,6 +129,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
         $moduleProjectRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'Eigenverft.Manifested.Package'
 
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Package\Eigenverft.Manifested.Package.Cmd.InvokePackage.ps1') -PathType Leaf | Should -BeTrue
+        Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Package\Eigenverft.Manifested.Package.Cmd.GetPackageAssignmentPlan.ps1') -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Package\Eigenverft.Manifested.Package.Cmd.GetPackageState.ps1') -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Package\Eigenverft.Manifested.Package.Cmd.SearchPackage.ps1') -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Depot\Eigenverft.Manifested.Package.Cmd.PackageDepot.ps1') -PathType Leaf | Should -BeTrue

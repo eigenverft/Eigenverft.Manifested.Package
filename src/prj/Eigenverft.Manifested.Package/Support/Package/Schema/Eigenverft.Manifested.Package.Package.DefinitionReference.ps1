@@ -694,11 +694,13 @@ catalog trust eligibility, conflict policy, and then definitionRevision.
         [string]$UnknownSignedKeyPolicy = 'prompt',
 
         [ValidateSet('fail', 'warnFirst', 'first', 'warnLast', 'last')]
-        [string]$DefinitionPublisherConflictMode = 'fail'
+        [string]$DefinitionPublisherConflictMode = 'fail',
+
+        [switch]$InspectionOnly
     )
 
-    $endpointInventoryInfo = Get-PackageEndpointInventoryInfo
-    $trustInventoryInfo = Get-PackageTrustInventoryInfo
+    $endpointInventoryInfo = Get-PackageEndpointInventoryInfo -InspectionOnly:$InspectionOnly
+    $trustInventoryInfo = Get-PackageTrustInventoryInfo -InspectionOnly:$InspectionOnly
     $sourceRows = @(Get-PackageEnabledEndpointSources -EndpointInventoryDocument $endpointInventoryInfo.Document)
 
     $resolvedLocalEndpointRoot = if ([string]::IsNullOrWhiteSpace($LocalEndpointRoot)) {
@@ -708,7 +710,8 @@ catalog trust eligibility, conflict policy, and then definitionRevision.
         [string]$LocalEndpointRoot
     }
 
-    if ([string]::Equals($EndpointMaterializationMode, 'endpointFocused', [System.StringComparison]::OrdinalIgnoreCase)) {
+    if ((-not $InspectionOnly.IsPresent) -and
+        [string]::Equals($EndpointMaterializationMode, 'endpointFocused', [System.StringComparison]::OrdinalIgnoreCase)) {
         $count = Sync-PackageEndpointCandidateDefinitions -SourceRows $sourceRows -TrustInventoryDocument $trustInventoryInfo.Document -ApplicationRootDirectory $ApplicationRootDirectory -LocalEndpointRoot $resolvedLocalEndpointRoot -CatalogTrustPolicy $CatalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $CatalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $CatalogTrustBlockedPublisherIds -UnknownSignedKeyPolicy $UnknownSignedKeyPolicy -DefinitionPublisherConflictMode $DefinitionPublisherConflictMode
         Write-PackageExecutionMessage -Message ("[STATE] Endpoint-wide definition materialization refreshed {0} Candidate definition file(s)." -f $count)
     }
@@ -720,8 +723,11 @@ catalog trust eligibility, conflict policy, and then definitionRevision.
     }
 
     $selected = Select-PackageDefinitionCandidateWinner -Candidates $candidates -DefinitionId $DefinitionId -PublisherId $PublisherId -CatalogTrustPolicy $CatalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $CatalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $CatalogTrustBlockedPublisherIds -UnknownSignedKeyPolicy $UnknownSignedKeyPolicy -DefinitionPublisherConflictMode $DefinitionPublisherConflictMode
-    $selected = Resolve-PackageSelectedCandidateUnknownSigningKeyTrust -Candidate $selected -TrustInventoryDocumentInfo $trustInventoryInfo -UnknownSignedKeyPolicy $UnknownSignedKeyPolicy
-    $candidateCopy = Copy-PackageDefinitionToLocalDefinitionStore -Role 'Candidate' -SourcePath $selected.DefinitionPath -LocalEndpointRoot $resolvedLocalEndpointRoot -PublisherId $selected.PublisherId -DefinitionId $selected.DefinitionId -DefinitionRevision $selected.DefinitionRevision
+    $candidateCopy = $null
+    if (-not $InspectionOnly.IsPresent) {
+        $selected = Resolve-PackageSelectedCandidateUnknownSigningKeyTrust -Candidate $selected -TrustInventoryDocumentInfo $trustInventoryInfo -UnknownSignedKeyPolicy $UnknownSignedKeyPolicy
+        $candidateCopy = Copy-PackageDefinitionToLocalDefinitionStore -Role 'Candidate' -SourcePath $selected.DefinitionPath -LocalEndpointRoot $resolvedLocalEndpointRoot -PublisherId $selected.PublisherId -DefinitionId $selected.DefinitionId -DefinitionRevision $selected.DefinitionRevision
+    }
     $keyText = if ([string]::IsNullOrWhiteSpace([string]$selected.SignatureKeyThumbprint)) { '<none>' } else { [string]$selected.SignatureKeyThumbprint }
     $signerText = if ([string]::IsNullOrWhiteSpace([string]$selected.SignatureSignerDisplayName)) { '<none>' } else { [string]$selected.SignatureSignerDisplayName }
     Write-PackageExecutionMessage -Message ("[TRUST] Definition signature status='{0}' catalogTrust='{1}' key='{2}' signer='{3}' policy='{4}'." -f [string]$selected.SignatureStatus, [string]$selected.CatalogTrustStatus, $keyText, $signerText, [string]$CatalogTrustPolicy)
@@ -729,20 +735,20 @@ catalog trust eligibility, conflict policy, and then definitionRevision.
     return [pscustomobject]@{
         EndpointName                  = [string]$selected.EndpointName
         DefinitionId                  = [string]$selected.DefinitionId
-        DefinitionPath                = [System.IO.Path]::GetFullPath($candidateCopy.Path)
+        DefinitionPath                = [System.IO.Path]::GetFullPath($(if ($candidateCopy) { $candidateCopy.Path } else { $selected.DefinitionPath }))
         SourceKind                    = [string]$selected.EndpointSourceKind
         SourcePath                    = [string]$selected.DefinitionPath
         SourceDefinitionScanRootPath  = [string]$selected.DefinitionScanRootPath
         SourceHash                    = [string]$selected.SourceHash
-        CandidatePath                 = [System.IO.Path]::GetFullPath($candidateCopy.Path)
-        CandidateHash                 = [string]$candidateCopy.Hash
+        CandidatePath                 = if ($candidateCopy) { [System.IO.Path]::GetFullPath($candidateCopy.Path) } else { $null }
+        CandidateHash                 = if ($candidateCopy) { [string]$candidateCopy.Hash } else { $null }
         SnapshotPath                  = $null
         SnapshotHash                  = $null
         ResolvedAtUtc                 = [DateTime]::UtcNow.ToString('o')
         SnapshotFallback              = $false
         EndpointInventoryPath         = $endpointInventoryInfo.Path
         TrustInventoryPath            = $trustInventoryInfo.Path
-        Trusted                       = $true
+        Trusted                       = [bool]$selected.SignatureTrusted
         CatalogTrustPolicy            = [string]$CatalogTrustPolicy
         CatalogTrustAllowUnsignedPublisherIds = @($CatalogTrustAllowUnsignedPublisherIds)
         CatalogTrustBlockedPublisherIds = @($CatalogTrustBlockedPublisherIds)
@@ -763,7 +769,8 @@ catalog trust eligibility, conflict policy, and then definitionRevision.
         PublisherName                 = [string]$selected.PublisherName
         DefinitionRevision            = [int]$selected.DefinitionRevision
         PublishedAtUtc                = [string]$selected.PublishedAtUtc
-        MaterializationStatus         = [string]$candidateCopy.Status
+        MaterializationStatus         = if ($candidateCopy) { [string]$candidateCopy.Status } else { 'InspectionOnly' }
         EndpointMaterializationMode   = [string]$EndpointMaterializationMode
+        InspectionOnly                = [bool]$InspectionOnly
     }
 }

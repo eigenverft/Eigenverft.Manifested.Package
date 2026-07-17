@@ -337,6 +337,48 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - signin
         { Resolve-PackageDefinitionReference -DefinitionId 'MyPackage' -LocalEndpointRoot (Join-Path $rootPath 'PkgEndpoint') -CatalogTrustPolicy strict -UnknownSignedKeyPolicy fail } | Should -Throw '*signing key is not trusted for this publisher*'
     }
 
+    It 'reports an unknown signing key in assignment planning without prompting or importing trust' {
+        $rootPath = Join-Path $TestDrive 'unknown-key-plan'
+        $pfxPath = Join-Path $rootPath 'team-package-catalog-signing.pfx'
+        $certificatePath = Join-Path $rootPath 'team-package-catalog-signing.cer'
+        $password = ConvertTo-SecureString 'CatalogTrust-Test-Password-123!' -AsPlainText -Force
+        $globalDocument = New-TestPackageGlobalDocument -ApplicationRootDirectory (Join-Path $rootPath 'AppRoot') -CatalogTrustPolicy strict -CatalogTrustUnknownSignedKeyPolicy fail
+        $definition = New-TestVSCodeDefinitionDocument -DefinitionId 'MyPackage' -PublisherId 'My Team' -PublisherName 'My Team' -Releases @(
+            New-TestPackageRelease -Id 'my-package-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+        )
+        $documents = Write-TestPackageDocuments -RootPath $rootPath -GlobalDocument $globalDocument -DefinitionDocument $definition
+
+        $certificate = New-PackageSigningCertificate -PfxPath $pfxPath -CertificatePath $certificatePath -Password $password -Subject 'CN=My Team'
+        $null = Sign-PackageDefinition -Path $documents.DefinitionPath -Cert $pfxPath -Password $password
+        $localTrustPath = Get-PackageLocalTrustInventoryPath
+
+        Mock Get-PackageConfigPath { $documents.GlobalConfigPath }
+        Mock Get-PackageEndpointInventoryPath { $documents.EndpointInventoryPath }
+        Mock Get-PackageDepotInventoryPath { $documents.DepotInventoryPath }
+        Mock Confirm-PackageUnknownSigningKeyTrust { throw 'Assignment planning must not prompt.' }
+
+        $plan = Get-PackageAssignmentPlan -PublisherId 'My Team' -DefinitionId 'MyPackage' -Raw
+
+        $plan.Status | Should -Be 'Blocked'
+        @($plan.Blockers.Code) | Should -Contain 'DefinitionTrustRequired'
+        $plan.TrustActions.Count | Should -Be 1
+        $plan.TrustActions[0].KeyThumbprint | Should -Be $certificate.Thumbprint
+        $plan.TrustActions[0].RecommendedCommand | Should -Be "Import-PackageTrust -Path '<public-signing-cert.cer>'"
+        Assert-MockCalled Confirm-PackageUnknownSigningKeyTrust -Times 0 -Exactly
+        Test-Path -LiteralPath $localTrustPath | Should -BeFalse
+        Test-Path -LiteralPath (Join-Path $rootPath 'AppRoot\PkgEndpoint') | Should -BeFalse
+
+        $tamperedDefinition = Get-Content -LiteralPath $documents.DefinitionPath -Raw | ConvertFrom-Json
+        $tamperedDefinition.display.default.summary = 'Tampered after signing'
+        Write-TestJsonDocument -Path $documents.DefinitionPath -Document $tamperedDefinition
+        $invalidPlan = Get-PackageAssignmentPlan -PublisherId 'My Team' -DefinitionId 'MyPackage' -Raw
+
+        $invalidPlan.Status | Should -Be 'Blocked'
+        @($invalidPlan.Blockers.Code) | Should -Contain 'DefinitionTrustRejected'
+        $invalidPlan.TrustActions.Count | Should -Be 0
+        Test-Path -LiteralPath $localTrustPath | Should -BeFalse
+    }
+
     It 'requires existing signed trust without prompting during trusted depot sync resolution' {
         $rootPath = Join-Path $TestDrive 'already-trusted-only'
         $pfxPath = Join-Path $rootPath 'team-package-catalog-signing.pfx'

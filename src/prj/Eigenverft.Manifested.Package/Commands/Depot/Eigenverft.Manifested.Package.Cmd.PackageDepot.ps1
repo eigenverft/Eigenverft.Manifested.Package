@@ -106,12 +106,15 @@ function Sync-PackageDepot {
     $target = '{0} already trusted current-platform package definition(s)' -f $selected.Count
     if (-not $PSCmdlet.ShouldProcess($target, 'Materialize complete artifact sets into configured package depots')) {
         foreach ($package in $selected) {
+            $assignmentPlan = New-PackageAssignmentPlanCore -PublisherId ([string]$package.PublisherId) -DefinitionId ([string]$package.DefinitionId) -Purpose Inspection -MaterializeOnly -RequireAlreadyTrusted
             [pscustomobject]@{
                 PSTypeName    = 'Eigenverft.Manifested.Package.DepotSyncResult'
                 PublisherId   = [string]$package.PublisherId
                 DefinitionId  = [string]$package.DefinitionId
                 Version       = [string]$package.Version
-                Status        = 'Planned'
+                Status        = if ($assignmentPlan.Accepted) { 'Planned' } else { 'Blocked' }
+                AssignmentPlan = $assignmentPlan
+                BlockerSummary = @($assignmentPlan.Blockers)
                 PackageResult = @()
                 ErrorMessage  = $null
             }
@@ -145,6 +148,8 @@ function Sync-PackageDepot {
             DefinitionId  = [string]$package.DefinitionId
             Version       = [string]$package.Version
             Status        = $status
+            AssignmentPlan = $null
+            BlockerSummary = @()
             PackageResult = @($packageResults)
             ErrorMessage  = $errorMessage
         }

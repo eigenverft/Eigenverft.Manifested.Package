@@ -37,6 +37,10 @@ Write-PackageExecutionMessage -Message '[STEP] ResolvePackage'
         $Message = [string]::Empty
     }
 
+    if ($script:SuppressPackageExecutionMessages) {
+        return
+    }
+
     $resolvedLevel = if ([string]::IsNullOrWhiteSpace($Level)) {
         'INF'
     }

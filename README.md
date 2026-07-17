@@ -104,11 +104,15 @@ Version pinning, depot prep, offline assign, and removal:
 
 ```powershell
 Invoke-Package -DefinitionId NodeRuntime -PackageVersion 26.3.0
+Get-PackageAssignmentPlan -DefinitionId NodeRuntime
 Invoke-Package -DefinitionId LlamaCppRuntime,MiniCPM5_1B_Q8_Model -MaterializeOnly
+Get-PackageAssignmentPlan -DefinitionId EigenverftManifestedPackage -Offline -MaterializeOnly
 Sync-PackageDepot -AllTrusted -WhatIf
 Invoke-Package -DefinitionId NodeRuntime -Offline
 Invoke-Package -DefinitionId SevenZip -DesiredState Removed
 ```
+
+`Get-PackageAssignmentPlan` previews the same dependency, version, target, trust, artifact, depot, and existing-install decisions used by assignment without downloading or changing machine state. Online source reachability is reported as `NotTested`; use `-VerifyDepotContent` to verify present depot files, while `-Offline` always verifies them. Add `-Raw` to suppress the compact tables and return only the structured plan. `NextCommand` contains the exact corresponding `Invoke-Package` command.
 
 `Sync-PackageDepot -AllTrusted` materializes every already signed-and-trusted definition available for the current platform, including its dependencies and complete artifact file set. It requires confirmation, never adds catalog trust, and never prunes depot files. Review with `-WhatIf` first: a trusted catalog can include multi-gigabyte runtimes or models. Use `-PublisherId`, `-Tag`, or `-ExcludeDefinitionId` to narrow the run.
 
@@ -283,6 +287,13 @@ Invoke-Package -DefinitionId A,B,C -FailFast
 - **`-DesiredState`** — `Assigned` (default) or `Removed` when the definition supports removal.
 
 Shipped definitions use publisher `Eigenverft` and live under the shipped `moduleDefaults` endpoint row.
+
+**`Get-PackageAssignmentPlan`** — provides a mutation-free assignment or materialization preflight, including deduplicated dependencies, selected releases, trust actions, artifact candidates, expected depot paths, warnings, blockers, and the exact next command.
+
+```powershell
+Get-PackageAssignmentPlan -DefinitionId CodexCli
+Get-PackageAssignmentPlan -DefinitionId EigenverftManifestedPackage -Offline -MaterializeOnly -Raw
+```
 
 **`Get-PackageState`** — reads local assignment inventory and operation history, reports configured directories, and shows whether install directories still exist.
 

@@ -246,10 +246,12 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
 
         [switch]$AcceptUnknownSigningKey,
 
-        [switch]$RequireAlreadyTrusted
+        [switch]$RequireAlreadyTrusted,
+
+        [switch]$InspectionOnly
     )
 
-    $globalDocumentInfo = Read-PackageJsonDocument -Path (Get-PackageConfigPath)
+    $globalDocumentInfo = Read-PackageJsonDocument -Path (Get-PackageConfigPath -InspectionOnly:$InspectionOnly)
     Assert-PackageConfigSchema -PackageConfigDocumentInfo $globalDocumentInfo
 
     if ($AcceptUnknownSigningKey.IsPresent -and $RequireAlreadyTrusted.IsPresent) {
@@ -333,6 +335,12 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
     elseif ($RequireAlreadyTrusted.IsPresent) {
         $catalogTrustUnknownSignedKeyPolicy = 'fail'
     }
+    $definitionResolutionUnknownSignedKeyPolicy = if ($InspectionOnly.IsPresent -and -not $RequireAlreadyTrusted.IsPresent) {
+        'prompt'
+    }
+    else {
+        $catalogTrustUnknownSignedKeyPolicy
+    }
 
     $packageInventoryFilePath = if ($packageGlobalConfig.packageState.PSObject.Properties['inventoryFilePath'] -and
         -not [string]::IsNullOrWhiteSpace([string]$packageGlobalConfig.packageState.inventoryFilePath)) {
@@ -350,7 +358,7 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
         }
         catch {
             try {
-                $definitionReference = Resolve-PackageDefinitionReference -PublisherId $PublisherId -DefinitionId $DefinitionId -ApplicationRootDirectory $applicationRootDirectory -LocalEndpointRoot $localEndpointRoot -EndpointMaterializationMode $endpointMaterializationMode -CatalogTrustPolicy $catalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $catalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $catalogTrustBlockedPublisherIds -UnknownSignedKeyPolicy $catalogTrustUnknownSignedKeyPolicy -DefinitionPublisherConflictMode $definitionPublisherConflictMode
+                $definitionReference = Resolve-PackageDefinitionReference -PublisherId $PublisherId -DefinitionId $DefinitionId -ApplicationRootDirectory $applicationRootDirectory -LocalEndpointRoot $localEndpointRoot -EndpointMaterializationMode $endpointMaterializationMode -CatalogTrustPolicy $catalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $catalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $catalogTrustBlockedPublisherIds -UnknownSignedKeyPolicy $definitionResolutionUnknownSignedKeyPolicy -DefinitionPublisherConflictMode $definitionPublisherConflictMode -InspectionOnly:$InspectionOnly
             }
             catch {
                 $definitionReference = Resolve-PackageDefinitionSnapshotReference -PublisherId $PublisherId -DefinitionId $DefinitionId -PackageAssignmentInventoryFilePath $packageInventoryFilePath -LiveResolutionError $_.Exception.Message
@@ -359,7 +367,7 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
         }
     }
     else {
-        $definitionReference = Resolve-PackageDefinitionReference -PublisherId $PublisherId -DefinitionId $DefinitionId -ApplicationRootDirectory $applicationRootDirectory -LocalEndpointRoot $localEndpointRoot -EndpointMaterializationMode $endpointMaterializationMode -CatalogTrustPolicy $catalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $catalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $catalogTrustBlockedPublisherIds -UnknownSignedKeyPolicy $catalogTrustUnknownSignedKeyPolicy -DefinitionPublisherConflictMode $definitionPublisherConflictMode
+        $definitionReference = Resolve-PackageDefinitionReference -PublisherId $PublisherId -DefinitionId $DefinitionId -ApplicationRootDirectory $applicationRootDirectory -LocalEndpointRoot $localEndpointRoot -EndpointMaterializationMode $endpointMaterializationMode -CatalogTrustPolicy $catalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $catalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $catalogTrustBlockedPublisherIds -UnknownSignedKeyPolicy $definitionResolutionUnknownSignedKeyPolicy -DefinitionPublisherConflictMode $definitionPublisherConflictMode -InspectionOnly:$InspectionOnly
     }
 
     if ($RequireAlreadyTrusted.IsPresent -and
@@ -370,8 +378,8 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
     $definitionDocumentInfo = Read-PackageJsonDocument -Path $definitionReference.DefinitionPath
     Assert-PackageDefinitionSchema -DefinitionDocumentInfo $definitionDocumentInfo -DefinitionId $DefinitionId -PublisherId $PublisherId
 
-    $endpointInventoryInfo = Get-PackageEndpointInventoryInfo
-    $depotInventoryInfo = Get-PackageDepotInventoryInfo
+    $endpointInventoryInfo = Get-PackageEndpointInventoryInfo -InspectionOnly:$InspectionOnly
+    $depotInventoryInfo = Get-PackageDepotInventoryInfo -InspectionOnly:$InspectionOnly
 
     $runtimeContext = Get-PackageRuntimeContext
     $definition = $definitionDocumentInfo.Document
@@ -499,6 +507,7 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
         CatalogTrustUnknownSignedKeyPolicy = $catalogTrustUnknownSignedKeyPolicy
         AcceptUnknownSigningKey            = [bool]$AcceptUnknownSigningKey.IsPresent
         RequireAlreadyTrusted              = [bool]$RequireAlreadyTrusted.IsPresent
+        InspectionOnly                     = [bool]$InspectionOnly
         CatalogTrustAllowUnsignedPublisherIds = @($catalogTrustAllowUnsignedPublisherIds)
         CatalogTrustBlockedPublisherIds    = @($catalogTrustBlockedPublisherIds)
         CatalogTrustPayloadVerification    = $catalogTrustPayloadVerification

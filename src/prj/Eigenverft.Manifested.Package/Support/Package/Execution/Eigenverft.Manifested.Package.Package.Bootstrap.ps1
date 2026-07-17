@@ -266,9 +266,14 @@ configuration when the local copy does not exist yet.
 Get-PackageConfigPath
 #>
     [CmdletBinding()]
-    param()
+    param(
+        [switch]$InspectionOnly
+    )
 
     $localConfigPath = Get-PackageLocalConfigPath
+    if ($InspectionOnly.IsPresent -and -not (Test-Path -LiteralPath $localConfigPath -PathType Leaf)) {
+        return (Get-PackageShippedConfigPath)
+    }
     if (-not (Test-Path -LiteralPath $localConfigPath -PathType Leaf)) {
         $localConfigDirectory = Split-Path -Parent $localConfigPath
         if (-not [string]::IsNullOrWhiteSpace($localConfigDirectory)) {
@@ -294,9 +299,14 @@ module configuration when the local copy does not exist yet.
 Get-PackageDepotInventoryPath
 #>
     [CmdletBinding()]
-    param()
+    param(
+        [switch]$InspectionOnly
+    )
 
     $localInventoryPath = Get-PackageLocalDepotInventoryPath
+    if ($InspectionOnly.IsPresent -and -not (Test-Path -LiteralPath $localInventoryPath -PathType Leaf)) {
+        return (Get-PackageShippedDepotInventoryPath)
+    }
     if (-not (Test-Path -LiteralPath $localInventoryPath -PathType Leaf)) {
         $localInventoryDirectory = Split-Path -Parent $localInventoryPath
         if (-not [string]::IsNullOrWhiteSpace($localInventoryDirectory)) {
@@ -322,9 +332,14 @@ module configuration when the local copy does not exist yet.
 Get-PackageEndpointInventoryPath
 #>
     [CmdletBinding()]
-    param()
+    param(
+        [switch]$InspectionOnly
+    )
 
     $localInventoryPath = Get-PackageLocalEndpointInventoryPath
+    if ($InspectionOnly.IsPresent -and -not (Test-Path -LiteralPath $localInventoryPath -PathType Leaf)) {
+        return (Get-PackageShippedEndpointInventoryPath)
+    }
     if (-not (Test-Path -LiteralPath $localInventoryPath -PathType Leaf)) {
         $localInventoryDirectory = Split-Path -Parent $localInventoryPath
         if (-not [string]::IsNullOrWhiteSpace($localInventoryDirectory)) {
@@ -343,9 +358,14 @@ function Get-PackageTrustInventoryPath {
 Returns the active PackageTrustInventory.json path.
 #>
     [CmdletBinding()]
-    param()
+    param(
+        [switch]$InspectionOnly
+    )
 
     $localInventoryPath = Get-PackageLocalTrustInventoryPath
+    if ($InspectionOnly.IsPresent -and -not (Test-Path -LiteralPath $localInventoryPath -PathType Leaf)) {
+        return (Get-PackageShippedTrustInventoryPath)
+    }
     if (-not (Test-Path -LiteralPath $localInventoryPath -PathType Leaf)) {
         $localInventoryDirectory = Split-Path -Parent $localInventoryPath
         if (-not [string]::IsNullOrWhiteSpace($localInventoryDirectory)) {

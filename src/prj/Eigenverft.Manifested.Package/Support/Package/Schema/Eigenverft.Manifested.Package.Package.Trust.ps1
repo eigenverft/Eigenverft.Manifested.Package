@@ -980,9 +980,11 @@ function Assert-PackageTrustInventorySchema {
 
 function Get-PackageTrustInventoryInfo {
     [CmdletBinding()]
-    param()
+    param(
+        [switch]$InspectionOnly
+    )
 
-    $inventoryPath = Get-PackageTrustInventoryPath
+    $inventoryPath = Get-PackageTrustInventoryPath -InspectionOnly:$InspectionOnly
     $documentInfo = Read-PackageJsonDocument -Path $inventoryPath
     Assert-PackageTrustInventorySchema -TrustInventoryDocumentInfo $documentInfo
     $documentInfo | Add-Member -MemberType NoteProperty -Name Exists -Value $true -Force

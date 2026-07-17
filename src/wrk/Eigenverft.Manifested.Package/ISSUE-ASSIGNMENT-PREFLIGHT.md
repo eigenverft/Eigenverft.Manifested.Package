@@ -1,8 +1,8 @@
 # Assignment preflight
 
-**Status:** Open
+**Status:** Shipped
 **Priority:** 4/7 Normal
-**Recommendation:** Export a read-only `Get-PackageAssignmentPlan` surface.
+**Delivered:** Exported the read-only `Get-PackageAssignmentPlan` surface.
 
 ## Gap
 
@@ -17,9 +17,9 @@
 
 Do not build a parallel resolver.
 
-## Remaining contract
+## Delivered contract
 
-`Get-PackageAssignmentPlan` should:
+`Get-PackageAssignmentPlan`:
 
 1. Accept the core selection inputs from `Invoke-Package` (`DefinitionId`, optional `PublisherId`, `PackageVersion`, `Offline`, and an assignment/materialization mode).
 2. Return roots, dependency nodes/edges, selected versions/targets, definition trust, source/depot feasibility, existing assignment/adoption state, warnings, blockers, and the exact next command.
@@ -27,12 +27,12 @@ Do not build a parallel resolver.
 4. Use a stable structured result suitable for humans, onboarding-profile validation, and agent review.
 5. Prove planning parity with the plan consumed by `Invoke-Package`.
 
-## Open decisions
+## Resolved decisions
 
-- Command name: `Get-PackageAssignmentPlan` or `Test-PackageAssignmentPlan`.
-- Whether v1 hashes existing depot files or reports candidate/path feasibility only.
-- Assignment/materialize-only first, or removal in the same result model.
-- One multi-root envelope versus root summaries plus a shared graph.
+- The command is `Get-PackageAssignmentPlan`.
+- Online planning checks presence by default and hashes depot content with `-VerifyDepotContent`; offline planning always verifies.
+- Assignment and materialize-only planning are shipped; removal remains out of scope.
+- One multi-root envelope contains root summaries and a shared deduplicated graph.
 
 ## Out of scope
 

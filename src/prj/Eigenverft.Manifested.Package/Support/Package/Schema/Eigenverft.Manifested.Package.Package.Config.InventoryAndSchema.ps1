@@ -148,9 +148,11 @@ shipped module defaults when missing.
 Get-PackageDepotInventoryInfo
 #>
     [CmdletBinding()]
-    param()
+    param(
+        [switch]$InspectionOnly
+    )
 
-    $inventoryPath = Get-PackageDepotInventoryPath
+    $inventoryPath = Get-PackageDepotInventoryPath -InspectionOnly:$InspectionOnly
     $documentInfo = Read-PackageJsonDocument -Path $inventoryPath
     Assert-PackageDepotInventorySchema -DepotInventoryDocumentInfo $documentInfo
     return [pscustomobject]@{

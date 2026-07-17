@@ -54,11 +54,13 @@
 . "$PSScriptRoot\Support\Package\Lifecycle\Eigenverft.Manifested.Package.Package.EntryPoints.ps1"
 . "$PSScriptRoot\Support\Package\Execution\Eigenverft.Manifested.Package.Package.Shims.ps1"
 . "$PSScriptRoot\Support\Package\Execution\Eigenverft.Manifested.Package.Package.PathRegistration.ps1"
+. "$PSScriptRoot\Support\Package\Lifecycle\Eigenverft.Manifested.Package.Package.AssignmentPlan.ps1"
 . "$PSScriptRoot\Support\Package\Lifecycle\Eigenverft.Manifested.Package.Package.CommandFlow.ps1"
 . "$PSScriptRoot\Support\Package\Lifecycle\Eigenverft.Manifested.Package.Package.Remove.ps1"
 
 # Public commands
 . "$PSScriptRoot\Commands\Package\Eigenverft.Manifested.Package.Cmd.GetPackageState.ps1"
+. "$PSScriptRoot\Commands\Package\Eigenverft.Manifested.Package.Cmd.GetPackageAssignmentPlan.ps1"
 . "$PSScriptRoot\Commands\Package\Eigenverft.Manifested.Package.Cmd.InvokePackage.ps1"
 . "$PSScriptRoot\Commands\Package\Eigenverft.Manifested.Package.Cmd.SearchPackage.ps1"
 . "$PSScriptRoot\Commands\Depot\Eigenverft.Manifested.Package.Cmd.PackageDepot.ps1"

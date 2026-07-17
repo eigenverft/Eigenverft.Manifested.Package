@@ -57,11 +57,13 @@ $moduleProjectRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'Eigenverft.Ma
 . "$moduleProjectRoot\Support\Package\Lifecycle\Eigenverft.Manifested.Package.Package.EntryPoints.ps1"
 . "$moduleProjectRoot\Support\Package\Execution\Eigenverft.Manifested.Package.Package.Shims.ps1"
 . "$moduleProjectRoot\Support\Package\Execution\Eigenverft.Manifested.Package.Package.PathRegistration.ps1"
+. "$moduleProjectRoot\Support\Package\Lifecycle\Eigenverft.Manifested.Package.Package.AssignmentPlan.ps1"
 . "$moduleProjectRoot\Support\Package\Lifecycle\Eigenverft.Manifested.Package.Package.CommandFlow.ps1"
 . "$moduleProjectRoot\Support\Package\Lifecycle\Eigenverft.Manifested.Package.Package.Remove.ps1"
 
 # Public commands
 . "$moduleProjectRoot\Commands\Package\Eigenverft.Manifested.Package.Cmd.GetPackageState.ps1"
+. "$moduleProjectRoot\Commands\Package\Eigenverft.Manifested.Package.Cmd.GetPackageAssignmentPlan.ps1"
 . "$moduleProjectRoot\Commands\Package\Eigenverft.Manifested.Package.Cmd.InvokePackage.ps1"
 . "$moduleProjectRoot\Commands\Package\Eigenverft.Manifested.Package.Cmd.SearchPackage.ps1"
 . "$moduleProjectRoot\Commands\Depot\Eigenverft.Manifested.Package.Cmd.PackageDepot.ps1"

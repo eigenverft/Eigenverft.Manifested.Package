@@ -65,7 +65,8 @@ function Invoke-Package {
     $shouldPlanDependencies = $MaterializeOnly.IsPresent -or [string]::Equals($DesiredState, 'Assigned', [System.StringComparison]::OrdinalIgnoreCase)
     if ($shouldPlanDependencies) {
         Write-PackageExecutionMessage -Message ("[STEP] Planning package dependencies for {0} root definition(s)." -f @($DefinitionId).Count)
-        $dependencyPlan = New-PackageDependencyPlan -PublisherId $PublisherId -DefinitionId $DefinitionId -DesiredState 'Assigned' -PackageVersion $normalizedPackageVersion -PackageVersionOverrideSpecified $packageVersionOverrideSpecified -AcceptUnknownSigningKey:$AcceptUnknownSigningKey -RequireAlreadyTrusted:$RequireAlreadyTrusted
+        $assignmentPlanCore = New-PackageAssignmentPlanCore -PublisherId $PublisherId -DefinitionId $DefinitionId -PackageVersion $normalizedPackageVersion -PackageVersionOverrideSpecified $packageVersionOverrideSpecified -Purpose Execution -AcceptUnknownSigningKey:$AcceptUnknownSigningKey -RequireAlreadyTrusted:$RequireAlreadyTrusted -Offline:$Offline -MaterializeOnly:$MaterializeOnly
+        $dependencyPlan = $assignmentPlanCore.DependencyPlan
         if (-not $dependencyPlan.Accepted) {
             Write-PackageExecutionMessage -Level 'ERR' -Message ("[FAIL] Dependency plan rejected with {0} violation(s)." -f $dependencyPlan.Violations.Count)
             New-PackageDependencyPlanFailureResults -Plan $dependencyPlan -DesiredState $DesiredState -Offline:$Offline -MaterializeOnly:$MaterializeOnly -PackageVersion $normalizedPackageVersion

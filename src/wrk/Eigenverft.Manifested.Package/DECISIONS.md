@@ -8,6 +8,7 @@ This is a compact index of completed work that still explains the active backlog
 | Definition trust | Signed definitions, trust inventory, strict/allow-unsigned policy, and explicit unknown-key handling are shipped. |
 | Catalog validation | `Test-PackageDefinitionCatalog` validates the schema-2.0 catalog and trust. |
 | Dependencies | `Invoke-Package` builds one dependency plan for assigned and materialize-only roots. |
+| Assignment preflight | `Get-PackageAssignmentPlan` reuses the execution resolver to preview trust, dependencies, selected releases, artifacts, depot readiness, and existing-install actions without network or persisted mutation. |
 | Artifact file sets | Schema 2.0 supports required multi-file distributions and `archiveEntry`-derived files. |
 | Durable materialization | `-MaterializeOnly` verifies the complete artifact set, repairs missing/invalid members, and distributes verified files to filesystem depots. |
 | Trusted depot sync | `Sync-PackageDepot -AllTrusted` confirms and materializes deduplicated current-platform definitions only when every planned definition is already `signedTrusted`; it does not mutate trust or prune files. |

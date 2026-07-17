@@ -65,16 +65,27 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
             )
         }
         Mock Invoke-Package { throw 'must not execute' }
+        $trustedPlan = [pscustomobject]@{
+            Accepted = $true
+            Status = 'Ready'
+            Blockers = @()
+        }
+        Mock New-PackageAssignmentPlanCore { $trustedPlan }
 
         $result = @(Sync-PackageDepot -AllTrusted -PublisherId 'Eigenverft' -Tag 'bootstrap' -ExcludeDefinitionId 'SkipMe' -WhatIf)
 
         $result.Count | Should -Be 1
         $result[0].DefinitionId | Should -Be 'Alpha'
         $result[0].Status | Should -Be 'Planned'
+        $result[0].AssignmentPlan | Should -Be $trustedPlan
+        $result[0].BlockerSummary.Count | Should -Be 0
         Assert-MockCalled Search-Package -Times 1 -Exactly -ParameterFilter {
             $CurrentPlatformOnly -and $IncludeIneligible -and $PublisherId -eq 'Eigenverft' -and $Tag -eq 'bootstrap'
         }
         Assert-MockCalled Invoke-Package -Times 0 -Exactly
+        Assert-MockCalled New-PackageAssignmentPlanCore -Times 1 -Exactly -ParameterFilter {
+            $PublisherId -eq 'Eigenverft' -and $DefinitionId -eq 'Alpha' -and $Purpose -eq 'Inspection' -and $MaterializeOnly -and $RequireAlreadyTrusted
+        }
     }
 
     It 'adds a filesystem depot with safe read-only defaults' {
