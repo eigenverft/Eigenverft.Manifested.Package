@@ -33,9 +33,9 @@ $requiredArtifacts = @(
     [pscustomobject]@{
         Id                   = 'package'
         ModuleName           = 'Eigenverft.Manifested.Package'
-        RequiredVersion      = '1.20264.4270'
-        FileName             = 'Eigenverft.Manifested.Package.1.20264.4270.nupkg'
-        Sha256               = '961a858dd15fa835edcc681243d05bbc970130c0c290af23f9289956d3fec3c8'
+        RequiredVersion      = '1.20264.4323'
+        FileName             = 'Eigenverft.Manifested.Package.1.20264.4323.nupkg'
+        Sha256               = '59de7e2d2514d80ab917b9e22e369a0379c867c3d56a3f87e9f37ede1a294c89'
         AllowClobber         = $true
         SkipPublisherCheck   = $false
         RequireNuGetProvider = $false
