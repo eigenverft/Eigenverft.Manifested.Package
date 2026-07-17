@@ -15,6 +15,7 @@ The product sits between public package managers and heavy endpoint-management s
 - Versioned, reviewable package-definition JSON with authoring guidance, validation, signing, and verification
 - File-based depots for reusing installers, archives, npm tarballs, models, and runtime payloads
 - Team endpoints and depots for shared catalogs and artifact reuse
+- Self-contained package-engine bootstrap from one pre-materialized folder for internet-isolated Windows machines
 - Proxy-aware downloads through `Invoke-WebRequestEx` for managed or corporate Windows environments
 
 ## Motivation
@@ -141,6 +142,28 @@ Get-PackageDepot
 Get-PackageEndpoint
 Get-PackageTrust
 ```
+
+### Offline first install on a clean Windows machine
+
+`EigenverftManifestedPackage` is a special self-bootstrap package. Unlike a normal package definition, its materialized artifact directory includes the package engine itself, its PackageManagement and PowerShellGet prerequisites, and the two bootstrap launch files needed by a machine where Eigenverft is not installed yet.
+
+Prepare this package once with `-MaterializeOnly` on a connected machine that already has Eigenverft.Manifested.Package. In the default per-user configuration, the files are stored below:
+
+`%LOCALAPPDATA%\Programs\Evf.Package\PkgDepot\EigenverftManifestedPackage\stable\<version>\psmodule-any\`
+
+This normally resolves to `C:\Users\<user>\AppData\Local\Programs\Evf.Package\PkgDepot\...`. A configured team depot may contain the same relative package directory under its own depot root.
+
+The materialized directory contains the Eigenverft, PackageManagement, and PowerShellGet nupkgs together with `Eigenverft.Manifested.Package.Bootstrap.cmd` and `.ps1`. Expose that directory through a Windows file share, or copy it unchanged to removable or VM-mounted storage.
+
+On the clean target machine:
+
+1. Open the materialized directory in Windows File Explorer.
+2. Double-click `Eigenverft.Manifested.Package.Bootstrap.cmd` once.
+3. After installation, the same window displays `Get-PackageVersion` and remains at a ready PowerShell prompt. Continue there with `Invoke-Package`, or type `exit` to close it.
+
+This is a one-time manual bootstrap. The target needs Windows PowerShell 5.1 and read access to the folder; it does not need internet access, PowerShell Gallery access, or a preinstalled Eigenverft module. The connected machine's signed-definition materialization is the verification boundary, so keep the shared directory unchanged and preferably read-only. The bootstrap installs for the current user by default, preserves a newer installed module version when one exists, and otherwise installs the bundled seed.
+
+This is useful for clean PCs, isolated VMs, and restricted Windows networks where a team share is available but public internet access is not.
 
 ### Corporate / constrained network
 
@@ -271,7 +294,7 @@ Get-PackageState -Raw    # full inventories, config objects, directory summaries
 | Developer tools | `GitRuntime`, `GHCli`, `VSCodeRuntime`, `VSCodeUser`, `NotepadPlusPlus`, `SevenZip` |
 | CLI agents | `CodexCli`, `OpenCodeCli`, `CursorCli` |
 | Local AI / runtime resources | `LlamaCppRuntime`, `Qwen35_9B_Q6_K_Model`, `MiniCPM5_1B_Q8_Model` |
-| PowerShell bootstrap modules | `PackageManagement`, `PowerShellGet`, `EigenverftManifestedAgent` |
+| PowerShell bootstrap modules | `PackageManagement`, `PowerShellGet`, `EigenverftManifestedAgent`, `EigenverftManifestedPackage` |
 
 After assignment, packages can expose commands such as `python`, `pwsh`, `git`, `gh`, `code`, `notepad++`, `node`, `npm`, `npx`, `dotnet`, `7z`, `opencode`, `codex`, Cursor's `agent`, and llama.cpp tools — depending on the definition.
 
@@ -342,6 +365,8 @@ Maintainer validation: `Test-PackageDefinitionCatalog`, `Verify-PackageDefinitio
 ## Windows Sandbox
 
 For disposable fresh-machine bring-up, use the [Eigenverft.Manifested.Sandbox](https://github.com/eigenverft/Eigenverft.Manifested.Sandbox) `.wsb` profile — it installs this module from [PSGallery](https://www.powershellgallery.com/packages/Eigenverft.Manifested.Package) and leaves you in PowerShell ready for `Invoke-Package`.
+
+For a sandbox or VM without public internet access, mount a previously materialized `EigenverftManifestedPackage` directory, open it in File Explorer, and double-click `Eigenverft.Manifested.Package.Bootstrap.cmd` once.
 
 ---
 

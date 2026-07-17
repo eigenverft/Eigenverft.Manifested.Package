@@ -69,7 +69,7 @@ exit 0
         $bootstrapCommandPath = Join-Path $script:ModuleProjectRoot 'Bootstrap\Eigenverft.Manifested.Package.Bootstrap.cmd'
         $content = Get-Content -LiteralPath $bootstrapCommandPath -Raw
 
-        $content | Should -Match 'powershell\.exe\s+-NoLogo\s+-NoProfile\s+-ExecutionPolicy\s+Bypass\s+-File\s+"%~dp0Eigenverft\.Manifested\.Package\.Bootstrap\.ps1"\s+%\*'
+        $content | Should -Match 'powershell\.exe\s+-NoLogo\s+-NoProfile\s+-ExecutionPolicy\s+Bypass\s+-NoExit\s+-File\s+"%~dp0Eigenverft\.Manifested\.Package\.Bootstrap\.ps1"\s+%\*'
         $content | Should -Match 'exit /b %ERRORLEVEL%'
     }
 
@@ -97,11 +97,15 @@ exit 0
             Should -Be ([string]$releaseArtifact.artifactFiles.bootstrapCommand.contentHash.value)
 
         $bootstrapContent = Get-Content -LiteralPath $bootstrapScriptPath -Raw
+        $bootstrapContent | Should -Match 'function Get-BootstrapNupkgMetadata'
+        $bootstrapContent | Should -Match 'function Find-LatestInstalledBootstrapModule'
+        $bootstrapContent | Should -Match 'Import-Module -Name \$packageCheck\.Path -Force -ErrorAction Stop'
+        $bootstrapContent | Should -Match 'Write-Host \(Get-PackageVersion\)'
         foreach ($packageArtifactId in @('package', 'packageManagementPackage', 'powerShellGetPackage')) {
             $packageFile = ([string]$target.artifactFiles.$packageArtifactId.relativePathTemplate).Replace('{version}', [string]$definition.artifacts.releases[0].version)
             $packageHash = [string]$releaseArtifact.artifactFiles.$packageArtifactId.contentHash.value
-            $bootstrapContent | Should -Match ([regex]::Escape($packageFile))
-            $bootstrapContent | Should -Match ([regex]::Escape($packageHash))
+            $bootstrapContent | Should -Not -Match ([regex]::Escape($packageFile))
+            $bootstrapContent | Should -Not -Match ([regex]::Escape($packageHash))
         }
     }
 
@@ -118,7 +122,171 @@ exit 0
         $text = $output -join [Environment]::NewLine
         $text | Should -Match 'packageManagementPackage'
         $text | Should -Match 'powerShellGetPackage'
-        $text | Should -Match "Missing required artifact 'package'"
+        $text | Should -Match "artifact 'package'"
+    }
+
+    It 'selects the highest materialized nupkg version from package metadata' {
+        $windowsPowerShellPath = Join-Path $env:WINDIR 'System32\WindowsPowerShell\v1.0\powershell.exe'
+        if (-not (Test-Path -LiteralPath $windowsPowerShellPath -PathType Leaf)) {
+            return
+        }
+
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        $bundlePath = Join-Path $TestDrive 'bootstrap-multiple-versions'
+        $null = New-Item -ItemType Directory -Path $bundlePath -Force
+        $bootstrapScriptPath = Join-Path $script:ModuleProjectRoot 'Bootstrap\Eigenverft.Manifested.Package.Bootstrap.ps1'
+        $bundleScriptPath = Join-Path $bundlePath 'Eigenverft.Manifested.Package.Bootstrap.ps1'
+        Copy-Item -LiteralPath $bootstrapScriptPath -Destination $bundleScriptPath
+
+        function New-BootstrapTestNupkg {
+            param(
+                [string]$Id,
+                [string]$Version,
+                [bool]$IncludeInstallerHelper = $false
+            )
+
+            $layoutPath = Join-Path $TestDrive ('nupkg-' + [Guid]::NewGuid().ToString('N'))
+            $null = New-Item -ItemType Directory -Path $layoutPath -Force
+            @"
+<?xml version="1.0" encoding="utf-8"?>
+<package><metadata><id>$Id</id><version>$Version</version></metadata></package>
+"@ | Set-Content -LiteralPath (Join-Path $layoutPath ($Id + '.nuspec')) -Encoding UTF8
+            if ($IncludeInstallerHelper) {
+                $helperPath = Join-Path $layoutPath 'Support\Package\Execution\Invoke-PackagePowerShellModuleInstall.ps1'
+                $null = New-Item -ItemType Directory -Path (Split-Path -Parent $helperPath) -Force
+                'param()' | Set-Content -LiteralPath $helperPath -Encoding UTF8
+            }
+
+            $packagePath = Join-Path $bundlePath ("$Id.$Version.nupkg")
+            [System.IO.Compression.ZipFile]::CreateFromDirectory($layoutPath, $packagePath)
+        }
+
+        New-BootstrapTestNupkg -Id 'PackageManagement' -Version '1.4.8.1'
+        New-BootstrapTestNupkg -Id 'PackageManagement' -Version '1.5.0'
+        New-BootstrapTestNupkg -Id 'PowerShellGet' -Version '2.2.5'
+        New-BootstrapTestNupkg -Id 'Eigenverft.Manifested.Package' -Version '1.0.0' -IncludeInstallerHelper $true
+        New-BootstrapTestNupkg -Id 'Eigenverft.Manifested.Package' -Version '2.0.0' -IncludeInstallerHelper $true
+
+        $output = @(& $windowsPowerShellPath -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $bundleScriptPath -ValidateOnly 2>&1)
+
+        $LASTEXITCODE | Should -Be 0 -Because ($output -join [Environment]::NewLine)
+        $text = $output -join [Environment]::NewLine
+        $text | Should -Match 'Selected PackageManagement 1\.5\.0 '
+        $text | Should -Match 'Selected Eigenverft\.Manifested\.Package 2\.0\.0 '
+    }
+
+    It 'selects the highest installed module version from multiple version directories' {
+        $moduleName = 'BootstrapVersionSelectionTest'
+        $moduleRoot = Join-Path $TestDrive 'Modules'
+        foreach ($version in @('1.0.0', '3.0.0', '2.0.0')) {
+            $versionRoot = Join-Path $moduleRoot (Join-Path $moduleName $version)
+            $null = New-Item -ItemType Directory -Path $versionRoot -Force
+            New-ModuleManifest -Path (Join-Path $versionRoot ($moduleName + '.psd1')) -ModuleVersion $version
+        }
+
+        $bootstrapScriptPath = Join-Path $script:ModuleProjectRoot 'Bootstrap\Eigenverft.Manifested.Package.Bootstrap.ps1'
+        $tokens = $null
+        $parseErrors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseFile($bootstrapScriptPath, [ref]$tokens, [ref]$parseErrors)
+        $parseErrors | Should -BeNullOrEmpty
+        $functionAst = $ast.Find({
+                param($node)
+                $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                    $node.Name -eq 'Find-LatestInstalledBootstrapModule'
+            }, $true)
+        $functionAst | Should -Not -BeNullOrEmpty
+
+        $originalModulePath = $env:PSModulePath
+        try {
+            $env:PSModulePath = $moduleRoot
+            $latest = & $functionAst.Body.GetScriptBlock() -Name $moduleName
+        }
+        finally {
+            $env:PSModulePath = $originalModulePath
+        }
+
+        $latest.Version.ToString() | Should -Be '3.0.0'
+        $latest.ModuleBase | Should -Be (Join-Path $moduleRoot (Join-Path $moduleName '3.0.0'))
+    }
+
+    It 'shows the installed package version summary before returning an interactive prompt' {
+        $windowsPowerShellPath = Join-Path $env:WINDIR 'System32\WindowsPowerShell\v1.0\powershell.exe'
+        if (-not (Test-Path -LiteralPath $windowsPowerShellPath -PathType Leaf)) {
+            return
+        }
+
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        $bundlePath = Join-Path $TestDrive 'bootstrap-ready-console'
+        $moduleRoot = Join-Path $TestDrive 'bootstrap-ready-modules'
+        $null = New-Item -ItemType Directory -Path $bundlePath -Force
+        $bootstrapScriptPath = Join-Path $script:ModuleProjectRoot 'Bootstrap\Eigenverft.Manifested.Package.Bootstrap.ps1'
+        $bundleScriptPath = Join-Path $bundlePath 'Eigenverft.Manifested.Package.Bootstrap.ps1'
+        Copy-Item -LiteralPath $bootstrapScriptPath -Destination $bundleScriptPath
+
+        function New-ReadyConsoleTestNupkg {
+            param(
+                [string]$Id,
+                [bool]$IncludeInstallerHelper = $false
+            )
+
+            $layoutPath = Join-Path $TestDrive ('ready-nupkg-' + [Guid]::NewGuid().ToString('N'))
+            $null = New-Item -ItemType Directory -Path $layoutPath -Force
+            "<package><metadata><id>$Id</id><version>1.0.0</version></metadata></package>" |
+                Set-Content -LiteralPath (Join-Path $layoutPath ($Id + '.nuspec')) -Encoding UTF8
+            if ($IncludeInstallerHelper) {
+                $helperPath = Join-Path $layoutPath 'Support\Package\Execution\Invoke-PackagePowerShellModuleInstall.ps1'
+                $null = New-Item -ItemType Directory -Path (Split-Path -Parent $helperPath) -Force
+                'param()' | Set-Content -LiteralPath $helperPath -Encoding UTF8
+            }
+            [System.IO.Compression.ZipFile]::CreateFromDirectory($layoutPath, (Join-Path $bundlePath ($Id + '.1.0.0.nupkg')))
+        }
+
+        function New-ReadyConsoleTestModule {
+            param(
+                [string]$Name,
+                [bool]$PackageModule = $false
+            )
+
+            $versionRoot = Join-Path $moduleRoot (Join-Path $Name '2.0.0')
+            $null = New-Item -ItemType Directory -Path $versionRoot -Force
+            $rootModuleName = $Name + '.psm1'
+            $rootModulePath = Join-Path $versionRoot $rootModuleName
+            $functionsToExport = @()
+            if ($PackageModule) {
+                @'
+function Get-PackageVersion { 'BOOTSTRAP_VERSION_SUMMARY' }
+function Invoke-Package { }
+Export-ModuleMember -Function Get-PackageVersion,Invoke-Package
+'@ | Set-Content -LiteralPath $rootModulePath -Encoding UTF8
+                $functionsToExport = @('Get-PackageVersion', 'Invoke-Package')
+            }
+            else {
+                '' | Set-Content -LiteralPath $rootModulePath -Encoding UTF8
+            }
+            New-ModuleManifest -Path (Join-Path $versionRoot ($Name + '.psd1')) -RootModule $rootModuleName -ModuleVersion '2.0.0' -FunctionsToExport $functionsToExport
+        }
+
+        New-ReadyConsoleTestNupkg -Id 'PackageManagement'
+        New-ReadyConsoleTestNupkg -Id 'PowerShellGet'
+        New-ReadyConsoleTestNupkg -Id 'Eigenverft.Manifested.Package' -IncludeInstallerHelper $true
+        New-ReadyConsoleTestModule -Name 'PackageManagement'
+        New-ReadyConsoleTestModule -Name 'PowerShellGet'
+        New-ReadyConsoleTestModule -Name 'Eigenverft.Manifested.Package' -PackageModule $true
+
+        $originalModulePath = $env:PSModulePath
+        try {
+            $env:PSModulePath = $moduleRoot
+            $output = @(& $windowsPowerShellPath -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $bundleScriptPath 2>&1)
+        }
+        finally {
+            $env:PSModulePath = $originalModulePath
+        }
+
+        $LASTEXITCODE | Should -Be 0 -Because ($output -join [Environment]::NewLine)
+        $text = $output -join [Environment]::NewLine
+        $text | Should -Match 'BOOTSTRAP_VERSION_SUMMARY'
+        $text | Should -Match 'The package console is ready'
+        $text | Should -Match 'You can now run Invoke-Package'
     }
 }
 

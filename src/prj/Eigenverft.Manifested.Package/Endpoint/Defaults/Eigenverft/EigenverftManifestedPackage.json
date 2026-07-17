@@ -5,8 +5,8 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "EigenverftManifestedPackage",
-    "definitionRevision": 6,
-    "publishedAtUtc": "2026-07-17T09:39:28.3991107Z",
+    "definitionRevision": 8,
+    "publishedAtUtc": "2026-07-17T10:10:27.0082036Z",
     "definitionSignature": {
       "kind": "signed",
       "format": "embedded-json-rsa-sha256-v1",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-17T09:39:57.7225192Z",
-      "signatureValue": "xgJGQioJFXPePCWVq83zxuy2dkbu1AVtN/mugYdxSCxcaGdufUzpncJ+U+H+NiGzXBOaVd7osMac6Q53mStShRonySgMpKi+3nXVv9hbW4qcBFsCH99d6JPIj9MW/CwVLRwrQo7EI8w+sN/ZTgdv0KJx0SKvJP76MCfXAteLJ5xo8Z4h6mLtNhHNkIuKyhknyFkcq5TD2FPn+pvOAQkBsrza1wWpHw12l44vYmc6dulLfCO5yyAbzNAipZGPqyHxbkkOTTkEtNm8/gFG1Kyb0CT2sYobtDoJhwvyp6/gDPblbUjIklBDJGQ9HM865vblKfqxSAQXj9E0ejjZuEuGKA16cGQbsJ7ErWR43150/pDMHIRaszIivglJ0YpStkNMUsmrT1zBoYmi0fWrUqs033eXmhB8bmAbqTkD9t3aCL4oeAtyCP2PdKsgDzNFMMDYkJ6gLHbdvJlXkSMaCHWQkyY5ZyyaAi5Hj8iibLsMKcMsBTMcZFYO2VverPGEkBXN"
+      "signedAtUtc": "2026-07-17T10:10:44.8623297Z",
+      "signatureValue": "F9BFRbqSXi41MnPzX8AL641cFY8lQ6pycnJwiIA1oL+9QJJdAw6nR7UoGvEjrqV9HfGNGZzrvYjFSd+MZhDpEwDw/gTVhcn+cUwjt6QB2QEZu2lFg7MKmm4XbsUPMVc4Acy+SlEB8XAkss2Z4p6n01Uy7rXJPVl+fu46LX6rFgvQz2swMO5lpTIuUNSdZz74GG/uPHc2S4IJ+78KKONoME9xgDy2oh+z28mmTbpqb7X/8fe3kpBAkmfhr4qrjVj/x1Eq75vmHUy2RnsJKH+GpFJZUzkFSqNhuNDdKu7avGGTPeaaWUmq9xytYbyWkvOytbPfgbxWD1Xbe8YhV18iDe0eucfVq1jvDLQhyNB55A3Wb+THXrexAcPZ1RsFkSJ1/2dXAYGScdCL7JwqCzUYnutIPYJWPZnDKLqUik8Il0FOMU8lV0TCzjYunLjnJFm6HWQWphRkPWl9kibxy4GJt1LinJtVMpS/VPzLXlDNRDhKDFWW7T4icQ1tIZHMLlog"
     }
   },
   "display": {
@@ -199,14 +199,14 @@
                 "url": "https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/refs/heads/main/src/prj/Eigenverft.Manifested.Package/Bootstrap/Eigenverft.Manifested.Package.Bootstrap.cmd",
                 "contentHash": {
                   "algorithm": "sha256",
-                  "value": "ea643896dd04b8243d48e1a8bf189021c8f7fd12665d44a1452df897e9f31a46"
+                  "value": "1bd294dc0b6522974d069af7a8b78a0c672fb264de18e73e78a1fb6596a880ab"
                 }
               },
               "bootstrapPowerShell": {
                 "url": "https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/refs/heads/main/src/prj/Eigenverft.Manifested.Package/Bootstrap/Eigenverft.Manifested.Package.Bootstrap.ps1",
                 "contentHash": {
                   "algorithm": "sha256",
-                  "value": "73d25051bd717046a3674b7eae4237f572a8185f8f42ce3683d351cefc04d760"
+                  "value": "e95fef7395f2919cac48b6cccf8d5e3e0b051bc75cbf3077ddabd37813da573b"
                 }
               }
             }

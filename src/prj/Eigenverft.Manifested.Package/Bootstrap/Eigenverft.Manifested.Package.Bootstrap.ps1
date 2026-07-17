@@ -13,9 +13,6 @@ $requiredArtifacts = @(
     [pscustomobject]@{
         Id                   = 'packageManagementPackage'
         ModuleName           = 'PackageManagement'
-        RequiredVersion      = '1.4.8.1'
-        FileName             = 'PackageManagement.1.4.8.1.nupkg'
-        Sha256               = '7e1f8a75b6bc8a83d8abff79f6690fc1dfbd534fd3e5733d97e19bcb5954c13e'
         AllowClobber         = $true
         SkipPublisherCheck   = $true
         RequireNuGetProvider = $true
@@ -23,9 +20,6 @@ $requiredArtifacts = @(
     [pscustomobject]@{
         Id                   = 'powerShellGetPackage'
         ModuleName           = 'PowerShellGet'
-        RequiredVersion      = '2.2.5'
-        FileName             = 'PowerShellGet.2.2.5.nupkg'
-        Sha256               = '6b8cebf2a464eaeb31b0a6d627355c30d9d1899dba0ce3bdd0d4e7afca148673'
         AllowClobber         = $true
         SkipPublisherCheck   = $false
         RequireNuGetProvider = $false
@@ -33,9 +27,6 @@ $requiredArtifacts = @(
     [pscustomobject]@{
         Id                   = 'package'
         ModuleName           = 'Eigenverft.Manifested.Package'
-        RequiredVersion      = '1.20264.4323'
-        FileName             = 'Eigenverft.Manifested.Package.1.20264.4323.nupkg'
-        Sha256               = '59de7e2d2514d80ab917b9e22e369a0379c867c3d56a3f87e9f37ede1a294c89'
         AllowClobber         = $true
         SkipPublisherCheck   = $false
         RequireNuGetProvider = $false
@@ -51,6 +42,49 @@ function Assert-BootstrapHost {
     }
 }
 
+function Get-BootstrapNupkgMetadata {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $archive = [System.IO.Compression.ZipFile]::OpenRead($Path)
+    try {
+        $nuspecEntry = $archive.Entries |
+            Where-Object { $_.FullName -notmatch '[/\\]' -and [string]::Equals([System.IO.Path]::GetExtension($_.FullName), '.nuspec', [System.StringComparison]::OrdinalIgnoreCase) } |
+            Select-Object -First 1
+        if (-not $nuspecEntry) {
+            throw "Package '$Path' does not contain a root .nuspec file."
+        }
+
+        $reader = New-Object System.IO.StreamReader($nuspecEntry.Open())
+        try {
+            [xml]$nuspec = $reader.ReadToEnd()
+        }
+        finally {
+            $reader.Dispose()
+        }
+
+        $packageId = [string]$nuspec.package.metadata.id
+        $versionText = [string]$nuspec.package.metadata.version
+        $version = $null
+        if ([string]::IsNullOrWhiteSpace($packageId) -or -not [Version]::TryParse($versionText, [ref]$version)) {
+            throw "Package '$Path' has invalid id or version metadata in '$($nuspecEntry.FullName)'."
+        }
+
+        return [pscustomobject]@{
+            PackageId = $packageId
+            Version   = $version
+            FileName  = [System.IO.Path]::GetFileName($Path)
+            Path      = [System.IO.Path]::GetFullPath($Path)
+        }
+    }
+    finally {
+        $archive.Dispose()
+    }
+}
+
 function Resolve-BootstrapArtifacts {
     param(
         [Parameter(Mandatory = $true)]
@@ -60,28 +94,33 @@ function Resolve-BootstrapArtifacts {
         [object[]]$Artifacts
     )
 
+    $packageMetadata = @(
+        Get-ChildItem -LiteralPath $ArtifactDirectory -Filter '*.nupkg' -File -ErrorAction SilentlyContinue |
+            ForEach-Object { Get-BootstrapNupkgMetadata -Path $_.FullName }
+    )
     $resolvedArtifacts = New-Object System.Collections.Generic.List[object]
     $validationErrors = New-Object System.Collections.Generic.List[string]
     foreach ($artifact in $Artifacts) {
-        $path = [System.IO.Path]::GetFullPath((Join-Path $ArtifactDirectory ([string]$artifact.FileName)))
-        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
-            $validationErrors.Add("Missing required artifact '$($artifact.Id)': $path") | Out-Null
+        $matches = @(
+            $packageMetadata |
+                Where-Object { [string]::Equals([string]$_.PackageId, [string]$artifact.ModuleName, [System.StringComparison]::OrdinalIgnoreCase) } |
+                Sort-Object -Property Version -Descending
+        )
+        if ($matches.Count -eq 0) {
+            $validationErrors.Add("Missing required package '$($artifact.ModuleName)' for artifact '$($artifact.Id)' in '$ArtifactDirectory'.") | Out-Null
             continue
         }
 
-        $actualHash = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant()
-        if (-not [string]::Equals($actualHash, [string]$artifact.Sha256, [System.StringComparison]::OrdinalIgnoreCase)) {
-            $validationErrors.Add("Artifact '$($artifact.Id)' failed SHA-256 verification. Expected '$($artifact.Sha256)', found '$actualHash'.") | Out-Null
-            continue
-        }
+        $selected = $matches[0]
+        Write-Host "Selected $($artifact.ModuleName) $($selected.Version) from '$($selected.FileName)'."
 
         $resolvedArtifacts.Add([pscustomobject]@{
             Id                   = [string]$artifact.Id
             ModuleName           = [string]$artifact.ModuleName
-            RequiredVersion      = [string]$artifact.RequiredVersion
-            FileName             = [string]$artifact.FileName
-            Path                 = $path
-            Sha256               = [string]$artifact.Sha256
+            RequiredVersion      = [string]$selected.Version
+            RequiredVersionValue = [Version]$selected.Version
+            FileName             = [string]$selected.FileName
+            Path                 = [string]$selected.Path
             AllowClobber         = [bool]$artifact.AllowClobber
             SkipPublisherCheck   = [bool]$artifact.SkipPublisherCheck
             RequireNuGetProvider = [bool]$artifact.RequireNuGetProvider
@@ -93,6 +132,17 @@ function Resolve-BootstrapArtifacts {
     }
 
     return @($resolvedArtifacts.ToArray())
+}
+
+function Find-LatestInstalledBootstrapModule {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name
+    )
+
+    return Get-Module -ListAvailable -Name $Name -ErrorAction SilentlyContinue |
+        Sort-Object -Property Version -Descending |
+        Select-Object -First 1
 }
 
 function Expand-BootstrapInstallerHelper {
@@ -216,7 +266,7 @@ try {
     $helperPath = Expand-BootstrapInstallerHelper -PackagePath $packageArtifact.Path -DestinationPath (Join-Path $workDirectory 'Invoke-PackagePowerShellModuleInstall.ps1')
 
     if ($ValidateOnly.IsPresent) {
-        Write-Host "Eigenverft offline bootstrap bundle is valid. Verified $($artifacts.Count) module packages."
+        Write-Host "Eigenverft offline bootstrap bundle is valid. Discovered $($artifacts.Count) module packages."
         return [pscustomobject]@{
             Status            = 'Valid'
             ArtifactDirectory = $artifactDirectory
@@ -227,33 +277,38 @@ try {
 
     $installedModules = New-Object System.Collections.Generic.List[object]
     foreach ($artifact in $artifacts) {
-        Write-Host "Checking $($artifact.ModuleName) $($artifact.RequiredVersion)..."
-        $check = Invoke-BootstrapInstallerHelper -Operation Check -Artifact $artifact -HelperPath $helperPath -WorkDirectory $workDirectory -NugetDirectory $nugetDirectory -ProviderDirectory $providerDirectory -InstallScope $Scope
-        if (-not [bool]$check.installed) {
+        $latestInstalled = Find-LatestInstalledBootstrapModule -Name $artifact.ModuleName
+        if (-not $latestInstalled -or $latestInstalled.Version -lt $artifact.RequiredVersionValue) {
             Write-Host "Installing $($artifact.ModuleName) $($artifact.RequiredVersion) from the offline bundle..."
-            $install = Invoke-BootstrapInstallerHelper -Operation Install -Artifact $artifact -HelperPath $helperPath -WorkDirectory $workDirectory -NugetDirectory $nugetDirectory -ProviderDirectory $providerDirectory -InstallScope $Scope
-            if (-not [bool]$install.installed) {
+            $null = Invoke-BootstrapInstallerHelper -Operation Install -Artifact $artifact -HelperPath $helperPath -WorkDirectory $workDirectory -NugetDirectory $nugetDirectory -ProviderDirectory $providerDirectory -InstallScope $Scope
+            $latestInstalled = Find-LatestInstalledBootstrapModule -Name $artifact.ModuleName
+            if (-not $latestInstalled -or $latestInstalled.Version -lt $artifact.RequiredVersionValue) {
                 throw "PowerShell module '$($artifact.ModuleName)' version '$($artifact.RequiredVersion)' was not installed."
             }
-            $check = $install
         }
         else {
-            Write-Host "Found $($artifact.ModuleName) $($artifact.RequiredVersion)."
+            Write-Host "Using installed $($artifact.ModuleName) $($latestInstalled.Version); bundled seed is $($artifact.RequiredVersion)."
         }
         $installedModules.Add([pscustomobject]@{
             Name       = [string]$artifact.ModuleName
-            Version    = [string]$artifact.RequiredVersion
-            ModuleBase = if ($check.PSObject.Properties['moduleBase']) { [string]$check.moduleBase } else { $null }
-            Status     = [string]$check.status
+            Version    = [string]$latestInstalled.Version
+            ModuleBase = [string]$latestInstalled.ModuleBase
+            Status     = if ($latestInstalled.Version -gt $artifact.RequiredVersionValue) { 'UsingNewerInstalledVersion' } else { 'UsingBundledVersion' }
         }) | Out-Null
     }
 
-    $packageCheck = Invoke-BootstrapInstallerHelper -Operation Check -Artifact $packageArtifact -HelperPath $helperPath -WorkDirectory $workDirectory -NugetDirectory $nugetDirectory -ProviderDirectory $providerDirectory -InstallScope $Scope
-    if (-not [bool]$packageCheck.installed) {
+    $packageCheck = Find-LatestInstalledBootstrapModule -Name $packageArtifact.ModuleName
+    if (-not $packageCheck -or $packageCheck.Version -lt $packageArtifact.RequiredVersionValue) {
         throw "Eigenverft.Manifested.Package $($packageArtifact.RequiredVersion) was not discoverable after installation."
     }
 
-    Write-Host "Eigenverft.Manifested.Package $($packageArtifact.RequiredVersion) offline bootstrap completed successfully."
+    Write-Host "Eigenverft.Manifested.Package $($packageCheck.Version) offline bootstrap completed successfully."
+    Import-Module -Name $packageCheck.Path -Force -ErrorAction Stop
+    Write-Host ''
+    Write-Host 'The package console is ready:'
+    Write-Host (Get-PackageVersion)
+    Write-Host ''
+    Write-Host 'You can now run Invoke-Package or any other command listed above. Type exit to close this window.'
     return [pscustomobject]@{
         Status            = 'Installed'
         ArtifactDirectory = $artifactDirectory
