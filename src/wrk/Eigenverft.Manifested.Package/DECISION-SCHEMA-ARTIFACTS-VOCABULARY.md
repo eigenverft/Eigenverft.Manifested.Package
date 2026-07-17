@@ -1,24 +1,14 @@
-# Decision — Keep `artifacts` / `targetArtifacts` on wire 1.8
+# Decision — Keep `artifacts` / `targetArtifacts` vocabulary
 
-**Status:** Draft — not product sign-off (see [TODO-INDEX.md](TODO-INDEX.md))  
-**Date:** 2026-05-30  
-**Recorded from:** closed wrk issue (Choose Option A) — see [DECISIONS.md](DECISIONS.md)
+**Status:** Implemented in schema 2.0
+**Recorded:** 2026-05-30; reconciled with source 2026-07-17
 
-## Decision
+Schema 2.0 retains:
 
-Keep top-level **`artifacts`** and per-release **`targetArtifacts`** on wire **1.8** until a future breaking schema version. Do not rename in the shipped catalog or runtime without a planned schema break.
+- top-level `artifacts` for targets and sources;
+- per-release `targetArtifacts` keyed by target ID;
+- target/release `artifactFiles` keyed by stable file ID.
 
-## Rationale
+The schema 2.0 breaking change replaced the singular package-file model with artifact file sets without renaming these established containers. `artifactsByTarget` remains invalid.
 
-- All **18** shipped definitions already use this vocabulary successfully.
-- Rename would touch schema, wire asserts, acquisition helpers, every definition, and tests — high cost for speculative benefit.
-- `artifactsByTarget` remains rejected at validation time; authors must use `targetArtifacts`.
-
-## Reopen when
-
-- A new package kind cannot be modeled clearly under `artifacts` / `targetArtifacts`, or
-- A schema break (1.9+) is scheduled and rename migration is in scope.
-
-## Out of scope
-
-- Implementing rename or migration tooling in this decision.
+Reopen only if a future package kind cannot be represented clearly or another deliberate schema break is scheduled.

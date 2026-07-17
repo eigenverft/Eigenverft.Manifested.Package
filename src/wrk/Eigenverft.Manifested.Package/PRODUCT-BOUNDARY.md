@@ -59,7 +59,7 @@ AI-scalable catalog growth is a main product feature: package JSON should be mai
 - Keep package definitions declarative: install logic belongs in the engine, not hidden inside each JSON file.
 - Keep install actions schema-bound: do not add generic pre-install or post-install hooks as a shortcut.
 - Keep package JSON agent-friendly: LLMs should be able to generate and update definitions, but validation and review must remain part of the flow.
-- Keep team catalog trust stronger than naming alone: publisher identity should eventually bind to signed definitions, not only self-declared JSON fields.
+- Keep team catalog trust stronger than naming alone: publisher identity binds to signed definitions and explicit local trust policy, not only self-declared JSON fields.
 - Keep runtime flows separated by installer kind when behavior is materially different.
 - Keep release selection explainable: latest, previous, pinned, skipped, and replaced versions should be clear in results and logs.
 - Keep agent-generated definitions reviewable by humans before install.

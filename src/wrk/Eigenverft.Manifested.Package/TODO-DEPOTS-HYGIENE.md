@@ -1,246 +1,44 @@
-# TODO DEPOTS HYGIENE
+# Filesystem depot hygiene
 
-Design scratchpad for **filesystem depot layout hygiene validation**.
+**Status:** Open, reduced after artifact-file-set implementation
+**Priority:** 2/7 Backlog
+**Recommendation:** Add an on-demand `Test-PackageDepot` audit; do not scan every depot during every assignment.
 
-Issue ratings and definitions follow [PROJECT-ISSUE-FRAMEWORK.md](PROJECT-ISSUE-FRAMEWORK.md) (V1.8): rating and option-profile tables with short rationales; **Option Kind** in each option heading; **💶 Value Assessment** after Options with **✅ Good Result**; **📬 Stakeholder Success Note** after Recommendation; one **Prefer/Choose Option X** per issue with required author and `YYYY-MM-DD HH:mm`. Facts re-verified against the repo on **2026-05-30**.
+## Already shipped
 
-Open issues in this file are scheduled here.
+- Artifact files have safe, unique relative paths.
+- Acquisition uses temporary staging files and independently verifies every required member.
+- Existing valid depot members are reused; missing or invalid members are reacquired.
+- Materialize-only succeeds only when a complete verified artifact set exists in a durable depot.
+- Distribution compares known source/target files and repairs mismatches.
 
-**Related (not duplicate):**
+These behaviors close the former "partial artifact set is durable" gap. They do not identify unrelated or interrupted files elsewhere in a depot.
 
-| Topic | Where |
-|-------|--------|
-| HTTP(S) depot transport | [TODO-DEPOTS-HTTP.md](TODO-DEPOTS-HTTP.md) |
-| Supply chain / acquisition | [TODO-SUPPLY-CHAIN.md](TODO-SUPPLY-CHAIN.md) |
+## Remaining gap
 
----
+There is no standalone depot-wide audit for:
 
-## Open Issues
+- orphaned files outside known package layouts;
+- interrupted `.partial`/`.tmp` or malformed paths;
+- duplicate case-insensitive paths;
+- invalid known artifacts not currently selected by an invocation;
+- incomplete package-version directories;
+- unsafe or unexpected links/reparse points.
 
-Sorted by **Priority** (higher urgency first), then higher **Benefit**, then lower **Effort** within the same priority.
+## Remaining contract
 
-**Priority 2/7 - Backlog**
+1. Export `Test-PackageDepot` for selected or all configured filesystem depots.
+2. Return structured findings with depot ID, path, severity, rule, and remediation.
+3. Default to read-only inspection; never delete automatically.
+4. Derive expected layout and verification facts from package definitions/depot conventions rather than hard-coded filenames.
+5. Decide separately whether mirror writes need temp-then-rename protection against interrupted copies.
 
-*Context: **endpoints** discover signed package-definition JSON; **depots** supply artifact bytes. File-share channels exist; HTTP/HTTPS variants are backlog.*
+## Open decisions
 
----
----
+- Audit only reachable/current catalog versions or all physical depot content.
+- Which reparse-point and orphan rules are warnings versus errors.
+- Whether a later explicit repair command quarantines files; deletion must never be implicit.
 
-## 📌 Add depot layout hygiene validation (filesystem depots)
+## Acceptance
 
-- 🏷 Rating
-
-| Field | Rating | Meter | Rationale |
-| --- | --- | --- | --- |
-| 🚦 Priority | 2/7 Backlog | ▰▰▱▱▱▱▱ | useful cleanup, safely deferrable |
-| 🛠 Effort | 2/4 Moderate | ▰▰▱▱ | one cmdlet or warning path plus tests |
-| 🧠 Complexity | 2/5 Normal | ▰▰▱▱▱ | mirror behavior is understandable |
-| 🌍 Benefit | 1/4 Producer | ▰▱▱▱ | mainly maintainers and support benefit |
-| 📦 Shape | 1/4 Focused | ▰▱▱▱ | one depot hygiene outcome |
-| 🎯 Quality | 📡 Operability | - | improves troubleshooting and operations |
-| 🚧 Readiness | 🟢 Ready | - | enough facts exist to start validator |
-
-### 📝 Statement
-
-`Invoke-PackageDepotDistribution` mirrors artifacts into writable depots, but nothing validates depot folders for incomplete downloads, stray sidecars, or stale layouts before acquisition fails with ambiguous errors.
-
-### 🧭 Related Context
-
-Related Issues:
-- [`TODO-DEPOTS-HTTP.md`](TODO-DEPOTS-HTTP.md).
-
-Affected Areas:
-- Depot folders; mirror reconcile; acquisition paths.
-
-Dependencies:
-- None known.
-
-### 🎯 Required Outcome
-
-Validation or maintenance tooling flags depot layout problems before ambiguous acquisition or mirror behavior.
-
-### 🔎 Facts
-
-Known:
-- **Depot management commands** exist (`Cmd.PackageDepot.ps1`).
-- **Mirror step in assign flow:** `[STEP] Reconciling package file depot mirrors` → `Invoke-PackageDepotDistribution` (copies verified artifacts to writable mirror targets).
-- **`Test-PackageDepotDistributionFileMatches`** exists for mirror byte/compare during distribution (`Package.Source.ps1`) - not a layout or orphan-file validator.
-- **No depot layout hygiene command** (no `Test-PackageDepotLayout`, incomplete-download detection, or stray sidecar rules).
-- Default depot path pattern: `{applicationRootDirectory}/PkgDepot` (`PackageDepotInventory.json`).
-
-Unknown:
-- Which depot IDs/paths and artifact layouts the first validation pass should cover (default only vs site/corp paths).
-
----
-
-### 🧩 Options
-
-#### Option A - `Test-PackageDepot` maintainer cmdlet (Implementation Option)
-
-- 🧾 Option Profile
-
-| Field | Rating | Meter | Rationale |
-| --- | --- | --- | --- |
-| 🧭 Resolution | 🟢 Full | ▰▰▰▰▰ | gives standalone hygiene audit |
-| 🛠 Option Effort | 2/4 Moderate | ▰▰▱▱ | cmdlet, rules, messages, and tests |
-| 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | rules need real depot layouts |
-| 🔮 Future Impact | 🟢 -1 Improves | ▰▰▱▱▱ | support path improves without assign noise |
-| ↩️ Reversibility | 🟢 Easy | ▰▱▱▱ | command can evolve safely |
-| 🧬 Integration | 🟢 Compatible | - | fits depot management commands |
-| 🤖 Agent Difficulty | 2/4 Guided | ▰▰▱▱ | local code with testable rules |
-| 🧾 Agent Work | 💻 Local Code | - | bounded validation behavior |
-
-Description:
-Add an on-demand validator (orphan files, incomplete temp names, expected mirror layout) operators run before troubleshooting acquisition.
-
-Current State:
-Failures surface late during assign/mirror.
-
-Resulting State:
-Explicit pass/fail with remediation hints; assign flow unchanged.
-
-Solves:
-- Clear depot hygiene without slowing every assign.
-
-Leaves Open:
-- Does not auto-repair depots.
-
-Risks:
-- Rule tuning against real depot layouts.
-
-Later Cost:
-- Ongoing rule maintenance as artifact kinds grow.
-
----
-
-#### Option B - Warnings during `Invoke-PackageDepotDistribution` (Implementation Option)
-
-- 🧾 Option Profile
-
-| Field | Rating | Meter | Rationale |
-| --- | --- | --- | --- |
-| 🧭 Resolution | 🟡 Partial | ▰▰▰▰▱ | no standalone audit path |
-| 🛠 Option Effort | 2/4 Moderate | ▰▰▱▱ | mirror warnings and rule tuning |
-| 🧠 Option Complexity | 2/5 Normal | ▰▰▱▱▱ | warning timing needs care |
-| 🔮 Future Impact | ⚪ 0 Neutral | ▰▰▰▱▱ | no major design shift |
-| ↩️ Reversibility | 🟢 Easy | ▰▱▱▱ | warnings can be adjusted |
-| 🧬 Integration | 🔵 Local | - | only affects mirror reconcile |
-| 🤖 Agent Difficulty | 2/4 Guided | ▰▰▱▱ | warning noise needs review |
-| 🧾 Agent Work | 💻 Local Code | - | bounded mirror warnings |
-
-Description:
-Emit warnings when mirror reconcile detects suspicious files; no separate command.
-
-Current State:
-Distribution only compares source/target pairs it knows about.
-
-Resulting State:
-Operators see hints during normal assign without a new cmdlet.
-
-Solves:
-- Surfaces problems in the common workflow.
-
-Leaves Open:
-- No standalone audit path.
-
-Risks:
-- Warning noise on legitimate partial mirrors.
-
-Later Cost:
-- May still need Option A for support scenarios.
-
----
-
-#### Option C - Maintainer doc only (defer code) (Defer Option)
-
-- 🧾 Option Profile
-
-| Field | Rating | Meter | Rationale |
-| --- | --- | --- | --- |
-| 🧭 Resolution | ⚪ Defer | ▰▱▱▱▱ | only documents manual cleanup |
-| 🛠 Option Effort | 1/4 Trivial | ▰▱▱▱ | small documentation update |
-| 🧠 Option Complexity | 1/5 Simple | ▰▱▱▱▱ | no behavior change |
-| 🔮 Future Impact | 🟠 +1 Adds Debt | ▰▰▰▰▱ | failures remain opaque |
-| ↩️ Reversibility | 🟢 Easy | ▰▱▱▱ | docs can be replaced by code |
-| 🧬 Integration | 🔵 Local | - | no runtime contract change |
-| 🤖 Agent Difficulty | 1/4 Routine | ▰▱▱▱ | simple writing task |
-| 🧾 Agent Work | 📝 Writing / Docs | - | manual guidance only |
-
-Description:
-Document expected depot folder layout and manual cleanup; no automated checks.
-
-Current State:
-Tribal knowledge only.
-
-Resulting State:
-Written expectations; ambiguous failures remain until code lands.
-
-Solves:
-- Fast, zero-risk guidance.
-
-Leaves Open:
-- No automated detection.
-
-Risks:
-- Doc drift from actual mirror behavior.
-
-Later Cost:
-- Option A or B still needed for enforcement.
-
----
-
-### 💶 Value Assessment
-
-- 💎 Value Type: 🧱 Maintenance Effort Reduced · 🛟 Support Effort Reduced
-- 🧭 Value Direction: 💰 Cost / Efficiency · 🛡 Risk / Protection
-- 🧾 Value Mechanism: Surfaces orphan and incomplete depot files before assign or mirror fails opaquely; reduces diagnosis time for maintainers and support.
-- ⚖️ Option Value Summary:
-  - Option A - `Test-PackageDepot` maintainer cmdlet (Implementation Option)
-    - 🧭 Resolution: 🟢 Full ▰▰▰▰▰
-    - 🛠 Option Effort: 2/4 Moderate ▰▰▱▱
-    - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-    - 🔮 Future Impact: 🟢 -1 Improves ▰▰▱▱▱
-    - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
-    - 🧾 Decision Note: Best support and maintenance value without warning noise on every assign; no auto-repair.
-  - Option B - Warnings during `Invoke-PackageDepotDistribution` (Implementation Option)
-    - 🧭 Resolution: 🟡 Partial ▰▰▰▰▱
-    - 🛠 Option Effort: 2/4 Moderate ▰▰▱▱
-    - 🧠 Option Complexity: 2/5 Normal ▰▰▱▱▱
-    - 🔮 Future Impact: ⚪ 0 Neutral ▰▰▰▱▱
-    - 🤖 Agent Difficulty: 2/4 Guided ▰▰▱▱
-    - 🧾 Decision Note: Surfaces problems in common assign flow; warning-noise risk; no standalone audit path.
-  - Option C - Maintainer doc only (defer code) (Defer Option)
-    - 🧭 Resolution: ⚪ Defer ▰▱▱▱▱
-    - 🛠 Option Effort: 1/4 Trivial ▰▱▱▱
-    - 🧠 Option Complexity: 1/5 Simple ▰▱▱▱▱
-    - 🔮 Future Impact: 🟠 +1 Adds Debt ▰▰▰▰▱
-    - 🤖 Agent Difficulty: 1/4 Routine ▰▱▱▱
-    - 🧾 Decision Note: Fast zero-risk guidance; ambiguous failures remain until code lands.
-- ✅ Good Result: Maintainers detect layout problems with explicit pass/fail or warnings before acquisition errors.
-
----
-
-### 🏁 Recommendation
-
-- [2026-05-30 16:00 | Author: Composer | Recommendation: Prefer Option A | Support: 2/3 Reasoned ▰▰▱]
-
-Reasoning:
-Hygiene is operability for maintainers; a dedicated test command matches depot management commands and avoids warning spam on every assign. Option B is a reasonable add-on after Option A rules exist.
-
-Required Checks:
-- Sample default and corp depot layouts from a real assign run before locking rules.
-
-### 📬 Stakeholder Success Note
-
-- 👥 Stakeholder Role: 🔧 Engineering · 🛟 Support / Customer Success
-- 🗣 Communication Lens: 🛟 Support Summary
-- 📬 Success Note: Depot layout problems can be detected before assign fails with unclear errors. Maintainers get explicit hygiene checks or guidance for mirror folders. Assign behavior stays unchanged unless a chosen option adds warnings during mirror.
-
-### ❓ Open Decisions
-
-- Option A only vs A plus B warnings?
-
-### 🚫 Out of Scope
-
-- Auto-deleting depot content without explicit maintainer action.
-- HTTPS depot transport (separate backlog issue).
+Maintainers can distinguish a complete verified package directory from stray, interrupted, unsafe, or corrupt depot content without running an installation.

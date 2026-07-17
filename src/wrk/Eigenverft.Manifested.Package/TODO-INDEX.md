@@ -1,75 +1,36 @@
-# Work index - Eigenverft.Manifested.Package
+# Work index — Eigenverft.Manifested.Package
 
-**Source of truth:** one open issue per topic in `TODO-<topic>.md` or `ISSUE-<topic>.md` below. Issue format: [PROJECT-ISSUE-FRAMEWORK.md](PROJECT-ISSUE-FRAMEWORK.md) (V1.8).
+Only genuine remaining work is listed here. Shipped behavior is summarized in [DECISIONS.md](DECISIONS.md); Git and tests retain implementation history. General framework files are reference-only.
 
-**Removed rollup:** `PROJECT-TODO.md` duplicated domain files and listed stale/done work; do not restore it.
+**Scope:** `src/prj/Eigenverft.Manifested.Package` and [PRODUCT-BOUNDARY.md](PRODUCT-BOUNDARY.md).
 
-**Scope:** `src/prj/Eigenverft.Manifested.Package` · also [PRODUCT-BOUNDARY.md](PRODUCT-BOUNDARY.md)
+## Open backlog
 
----
+| Priority | Topic | Remaining outcome |
+|---|---|---|
+| 5/7 | [Release-age policy](TODO-SUPPLY-CHAIN.md) | Filter automatic selection using authored upstream release dates and explain skipped versions. |
+| 4/7 | [Hybrid documentation](TODO-DOCUMENTATION.md) | Markdown source, offline HTML bundle, opener command, and release gates. |
+| 4/7 | [Assignment preflight](ISSUE-ASSIGNMENT-PREFLIGHT.md) | Export a read-only assignment/dependency/trust/acquisition plan. |
+| 3/7 | [Ownership guide](TODO-OWNERSHIP.md) | Explain adoption/removal policy and add focused author guidance. |
+| 3/7 | [Onboarding profiles](ISSUE-ONBOARDING-PROFILES.md) | Define reviewable named `DefinitionId` bundles and examples. |
+| 3/7 | [Agent operability](ISSUE-AGENT-OPERABILITY.md) | Persist execution-step logs and expose a read/guide surface. |
+| 2/7 | [Catalog manifest](TODO-ENDPOINTS-MANIFEST.md) | Define large-catalog discovery contract when a concrete scale target exists. |
+| 2/7 | [HTTPS catalog](TODO-ENDPOINTS-HTTPS.md) | Implement read-only `httpsCatalog` transport. |
+| 2/7 | [HTTP depots](TODO-DEPOTS-HTTP.md) | Add read-only HTTP(S) artifact acquisition after fetch requirements are known. |
+| 2/7 | [Depot hygiene](TODO-DEPOTS-HYGIENE.md) | Add a standalone audit for orphaned or suspicious filesystem-depot content. |
 
-## Duplicate audit (2026-05-30)
+## Decisions and boundaries
 
-`PROJECT-TODO.md` (uncommitted delete) vs domain `TODO-*.md`:
+- [Endpoint discovery](DECISION-ENDPOINT-DISCOVERY-V1.md)
+- [Artifact vocabulary](DECISION-SCHEMA-ARTIFACTS-VOCABULARY.md)
+- [Product boundary](PRODUCT-BOUNDARY.md)
 
-| Issue in `PROJECT-TODO.md` | Authoritative location | Status |
-|----------------------------|------------------------|--------|
-| Publish ownership / adoption guide | [TODO-OWNERSHIP.md](TODO-OWNERSHIP.md) | **Duplicate** - keep domain file |
-| Keep `artifacts` / `targetArtifacts` | [DECISION-SCHEMA-ARTIFACTS-VOCABULARY.md](DECISION-SCHEMA-ARTIFACTS-VOCABULARY.md) | **Draft decision only** - not a TODO; needs your sign-off |
-| Define catalog manifest contract | [TODO-ENDPOINTS-MANIFEST.md](TODO-ENDPOINTS-MANIFEST.md) | **Duplicate** |
-| Implement `httpsCatalog` | [TODO-ENDPOINTS-HTTPS.md](TODO-ENDPOINTS-HTTPS.md) | **Duplicate** |
-| Read-only HTTP/HTTPS depots | [TODO-DEPOTS-HTTP.md](TODO-DEPOTS-HTTP.md) | **Duplicate** |
-| Depot layout hygiene | [TODO-DEPOTS-HYGIENE.md](TODO-DEPOTS-HYGIENE.md) | **Duplicate** |
-| ExecutionCore header comments | [DECISIONS.md](DECISIONS.md) (shipped) | **Stale** - done in code |
-| Scannability / help / state / catalog docs | [TODO-DOCUMENTATION.md](TODO-DOCUMENTATION.md) + shipped state/outcome | **Stale / split** - use documentation TODO; state/outcome shipped |
-| `[OUTCOME]` version-change story | [DECISIONS.md](DECISIONS.md) (shipped) | **Stale** - done in code |
+## Idea notes
 
-**Only in domain files (missing from `PROJECT-TODO.md` rollup):**
+- [Agent-scaled catalog operations](IDEA-AGENT-SCALES-PRODUCT.md)
 
-| File | Issue |
-|------|--------|
-| [TODO-SUPPLY-CHAIN.md](TODO-SUPPLY-CHAIN.md) | Vendor release-age policy on version selection |
-| [TODO-DOCUMENTATION.md](TODO-DOCUMENTATION.md) | Hybrid product documentation |
-| Agent authoring skill | Shipped `Get-PackageDefinitionAuthoringGuide` / `PackageDefinitionAuthoring.md` |
+## Reconciliation facts
 
-**Cross-file duplicates among open issue files:** none - each 📌 title appears in exactly one domain/issue file.
-
-**Deleted split parent:** `TODO-COMMANDS.md` (state/outcome/search polish shipped - see [DECISIONS.md](DECISIONS.md)).
-
-**Deleted completed dependency track:** the dependency issue and implementation artifacts were removed after the dependency planner and schema 1.9 wire shipped.
-
-**Deleted completed catalog-validation track:** the catalog-validation planning artifacts were removed after `Test-PackageDefinitionCatalog` shipped.
-
-**Completed catalog-agent track:** the old catalog-agent planning files were removed after `Get-PackageDefinitionAuthoringGuide` and `PackageDefinitionAuthoring.md` shipped.
-
----
-
-## Open backlog (by priority)
-
-| P | File | Topic |
-|---|------|--------|
-| 5 | [TODO-SUPPLY-CHAIN.md](TODO-SUPPLY-CHAIN.md) | Release-age / cooling window on version selection |
-| 4 | [TODO-DOCUMENTATION.md](TODO-DOCUMENTATION.md) | Hybrid docs (repo → module HTML → command) |
-| 4 | [ISSUE-ASSIGNMENT-PREFLIGHT.md](ISSUE-ASSIGNMENT-PREFLIGHT.md) | Read-only assignment plan before mutation |
-| 3 | [TODO-OWNERSHIP.md](TODO-OWNERSHIP.md) | Ownership / adoption guide |
-| 3 | [ISSUE-ONBOARDING-PROFILES.md](ISSUE-ONBOARDING-PROFILES.md) | Role-based onboarding profiles (DefinitionId bundles) |
-| 3 | [ISSUE-AGENT-OPERABILITY.md](ISSUE-AGENT-OPERABILITY.md) | Execution logs, operability guide cmd, failure recovery (agent operability) |
-| 2 | [TODO-ENDPOINTS-MANIFEST.md](TODO-ENDPOINTS-MANIFEST.md) | Catalog manifest contract |
-| 2 | [TODO-ENDPOINTS-HTTPS.md](TODO-ENDPOINTS-HTTPS.md) | `httpsCatalog` endpoint kind |
-| 2 | [TODO-DEPOTS-HTTP.md](TODO-DEPOTS-HTTP.md) | HTTP(S) depot fetch |
-| 2 | [TODO-DEPOTS-HYGIENE.md](TODO-DEPOTS-HYGIENE.md) | Depot layout hygiene |
-
----
-
-## Draft decisions (not product sign-off)
-
-Agent-written; confirm or edit before treating as binding:
-
-- [DECISION-ENDPOINT-DISCOVERY-V1.md](DECISION-ENDPOINT-DISCOVERY-V1.md)
-- [DECISION-SCHEMA-ARTIFACTS-VOCABULARY.md](DECISION-SCHEMA-ARTIFACTS-VOCABULARY.md)
-
-Shipped polish (code): [DECISIONS.md](DECISIONS.md).
-
-## Idea notes (not scheduled issues)
-
-- [IDEA-AGENT-SCALES-PRODUCT.md](IDEA-AGENT-SCALES-PRODUCT.md) - agent scales catalog operations, not machine/fleet mutation. Onboarding profiles → [ISSUE-ONBOARDING-PROFILES.md](ISSUE-ONBOARDING-PROFILES.md). Operability / diagnosis → [ISSUE-AGENT-OPERABILITY.md](ISSUE-AGENT-OPERABILITY.md).
+- Catalog: 21 signed schema-2.0 definitions.
+- Exported command surface: 38 functions.
+- Search, trust, dependency planning, artifact file sets, complete depot materialization, authoring guidance, and the offline bootstrap are shipped and are not backlog items.
