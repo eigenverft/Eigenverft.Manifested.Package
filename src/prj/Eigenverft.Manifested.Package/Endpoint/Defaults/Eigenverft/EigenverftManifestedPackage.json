@@ -5,8 +5,8 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "EigenverftManifestedPackage",
-    "definitionRevision": 3,
-    "publishedAtUtc": "2026-07-17T08:08:38.2588442Z",
+    "definitionRevision": 5,
+    "publishedAtUtc": "2026-07-17T08:55:13.2682642Z",
     "definitionSignature": {
       "kind": "signed",
       "format": "embedded-json-rsa-sha256-v1",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-17T08:09:15.9334793Z",
-      "signatureValue": "W2Vwl4RgyBpyPH0xrbcGany09aDs2l//UppMSyOBCwcYDvKoABMaOgNTw2GIREl/ot2URG4iAV7BjbNZ/m9oMpO0WG+fLo/urJwS11IXzcajbz/VbjOzmQ4f1IgdY72PyXEI72LHjO54lutUnOhsYvbOSW6VIXhQGfApk0oaUHrF1nF/hndqA9VkrRxGCZSLf7bssO9inUXPgEu2rhtBRnZUVBDu9azTCDsG0QDocJ4WOqAs5d/NbDdn7vQItQ97a+fvDWXNmRyfcElmVY689r/zuOI5CsY85Tp+fj0EThlZfoH25zinKmmMf0CTRuPojNmQ6ZDeoVhVdWaM3KuA3f38VnnCbNnh1q1zjdPanAjxV5kkKrt2ifD6mzNf8khJxJspoOvEcBnd9cCEALDGWGoeILNcA3tUKdzXUzx0z/hs2FF5kbmfHRjx3xjYdBQMybftmEGWpSr0AS2VUya+3pCfIA39fYidK2HKeemeQ4an+B4WZiG1Rd/Uxeo0O1lh"
+      "signedAtUtc": "2026-07-17T08:56:21.9702681Z",
+      "signatureValue": "R8pBZOxr4i8hIsywE7zab4zkwpP0wFc7kCe21am934V17/wPTuiVQEJ97US/6Z2IZxdVbP4a7hc30Hzgj3QnH9bvp9bbXBnsicXhDPaDb5v8RgDMFoQqlSZ7fgZuvNyE0Zt4RZiI/1H4ynvpITeKGT162F6DQg9pPc+b47YyLQhd/mFawM8GMYaQiujQjAXNMSJjByuZ2W4910GFPnxtdpq5c8DBUrTfr+olcFxYeAc6WEqIin5uqN6SmxnnARRT/kHKiqoeQnAji9mjjLRzkwjSSWGd8i8EKB7bMvqsfn49MhH4S2lxvvdTG8wmPLdxaV/e2Cgf0DrLVRHOmz9aXGIZ7eEYVlPaNPRYH5YhGcqtm2iavI9HOo8+eQ5zESgRRuFTY7wf8eJohFybex21WnCROgFNos5Mz2POi3FMOU928jKkI4RflAVXnvHBbp4wTMiZcGkX/+FoR1SQmfKcFeIlaZ0gP/4XuGAwRrj0AFalHCUhJB8dLH3gd1vMpkA6"
     }
   },
   "display": {
@@ -84,6 +84,48 @@
               }
             ]
           },
+          "packageManagementPackage": {
+            "relativePathTemplate": "PackageManagement.1.4.8.1.nupkg",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "required"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "sourceId": "powerShellGalleryPackageApi",
+                "sourcePath": "PackageManagement/1.4.8.1",
+                "searchOrder": 900,
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
+          },
+          "powerShellGetPackage": {
+            "relativePathTemplate": "PowerShellGet.2.2.5.nupkg",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "required"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "sourceId": "powerShellGalleryPackageApi",
+                "sourcePath": "PowerShellGet/2.2.5",
+                "searchOrder": 900,
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
+          },
           "bootstrapCommand": {
             "relativePathTemplate": "Eigenverft.Manifested.Package.Bootstrap.cmd",
             "acquisitionCandidates": [
@@ -127,7 +169,7 @@
     ],
     "releases": [
       {
-        "version": "1.20264.57",
+        "version": "1.20264.4270",
         "releaseTracks": [
           "stable"
         ],
@@ -138,21 +180,33 @@
               "package": {
                 "contentHash": {
                   "algorithm": "sha256",
-                  "value": "5be57bf2264061203cd6f72a48ce9057c597d14be75c67c627846b2b64e4d909"
+                  "value": "961a858dd15fa835edcc681243d05bbc970130c0c290af23f9289956d3fec3c8"
+                }
+              },
+              "packageManagementPackage": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "7e1f8a75b6bc8a83d8abff79f6690fc1dfbd534fd3e5733d97e19bcb5954c13e"
+                }
+              },
+              "powerShellGetPackage": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "6b8cebf2a464eaeb31b0a6d627355c30d9d1899dba0ce3bdd0d4e7afca148673"
                 }
               },
               "bootstrapCommand": {
                 "url": "https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/refs/heads/main/src/prj/Eigenverft.Manifested.Package/Bootstrap/Eigenverft.Manifested.Package.Bootstrap.cmd",
                 "contentHash": {
                   "algorithm": "sha256",
-                  "value": "187975c53c7c8e439d88e318c9e360a78b37d9dceb1087a8f659d6997d5b4287"
+                  "value": "ea643896dd04b8243d48e1a8bf189021c8f7fd12665d44a1452df897e9f31a46"
                 }
               },
               "bootstrapPowerShell": {
                 "url": "https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/refs/heads/main/src/prj/Eigenverft.Manifested.Package/Bootstrap/Eigenverft.Manifested.Package.Bootstrap.ps1",
                 "contentHash": {
                   "algorithm": "sha256",
-                  "value": "318a8f4321184fadcc13422957b03de426c079c0225c61752c14daaf5baeabf9"
+                  "value": "edd6c462a45b1122061219cd4ab3fd8cb7180d41482f1263a0fbbefb16420948"
                 }
               }
             }
@@ -180,7 +234,7 @@
       "powerShellModules": [
         {
           "name": "Eigenverft.Manifested.Package",
-          "requiredVersion": "1.20264.57",
+          "requiredVersion": "1.20264.4270",
           "scope": "CurrentUser",
           "requiredForState": true
         }
@@ -194,7 +248,7 @@
           "kind": "powershellModule",
           "searchOrder": 100,
           "name": "Eigenverft.Manifested.Package",
-          "requiredVersion": "1.20264.57",
+          "requiredVersion": "1.20264.4270",
           "scope": "CurrentUser"
         }
       ],
@@ -222,7 +276,7 @@
       "install": {
         "kind": "powershellModuleInstaller",
         "moduleName": "Eigenverft.Manifested.Package",
-        "requiredVersion": "1.20264.57",
+        "requiredVersion": "1.20264.4270",
         "scope": "CurrentUser",
         "allowClobber": true,
         "skipPublisherCheck": false,

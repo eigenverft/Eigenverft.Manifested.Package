@@ -280,9 +280,9 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - artifa
         $result.Materialization.Status | Should -Be 'Durable'
         ($result.ArtifactFiles | Where-Object Id -eq bootstrapPowerShell).Preparation.Status | Should -Be 'ExtractedArchiveEntry'
         ($result.ArtifactFiles | Where-Object Id -eq bootstrapPowerShell).Verification.Status | Should -Be 'VerificationPassed'
-        Get-Content -LiteralPath ($result.ArtifactFiles | Where-Object Id -eq bootstrapPowerShell).DefaultDepotPath -Raw | Should -Match 'Hello from Eigenverft\.Manifested\.Package bootstrap\.'
+        Get-Content -LiteralPath ($result.ArtifactFiles | Where-Object Id -eq bootstrapPowerShell).DefaultDepotPath -Raw | Should -Match 'function Invoke-BootstrapInstallerHelper'
         ($result.ArtifactFiles | Where-Object Id -eq bootstrapCommand).Preparation.Status | Should -Be 'ExtractedArchiveEntry'
-        Get-Content -LiteralPath ($result.ArtifactFiles | Where-Object Id -eq bootstrapCommand).DefaultDepotPath -Raw | Should -Match 'echo Hello from Eigenverft\.Manifested\.Package bootstrap\.'
+        Get-Content -LiteralPath ($result.ArtifactFiles | Where-Object Id -eq bootstrapCommand).DefaultDepotPath -Raw | Should -Match 'powershell\.exe.+Eigenverft\.Manifested\.Package\.Bootstrap\.ps1'
 
         @($result.ArtifactFiles | Where-Object { -not (Test-Path -LiteralPath $_.DefaultDepotPath -PathType Leaf) }).Count | Should -Be 0
 
