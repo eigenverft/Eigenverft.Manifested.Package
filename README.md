@@ -2,7 +2,9 @@
 
 [![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/Eigenverft.Manifested.Package?label=PSGallery&logo=powershell)](https://www.powershellgallery.com/packages/Eigenverft.Manifested.Package) [![PowerShell Gallery Downloads](https://img.shields.io/powershellgallery/dt/Eigenverft.Manifested.Package?label=Downloads&logo=powershell)](https://www.powershellgallery.com/packages/Eigenverft.Manifested.Package) [![PowerShell Support](https://img.shields.io/badge/PowerShell-5.1%2B%20Desktop%2FCore-5391FE?logo=powershell&logoColor=white)](#requirements) [![Build Status](https://img.shields.io/github/actions/workflow/status/eigenverft/Eigenverft.Manifested.Package/cicd.yml?branch=main&label=build)](https://github.com/eigenverft/Eigenverft.Manifested.Package/actions/workflows/cicd.yml) [![License](https://img.shields.io/github/license/eigenverft/Eigenverft.Manifested.Package?logo=mit)](LICENSE) [![Windows Sandbox profile](https://img.shields.io/badge/Windows%20Sandbox-profile-0078D4?logo=windows)](https://github.com/eigenverft/Eigenverft.Manifested.Sandbox)
 
-Windows-focused PowerShell package engine for repeatable developer-machine setup. It uses explicit signed package-definition JSON, trusted signing keys, configurable package endpoints, reusable depots, and local inventory so a toolchain can be assigned, rerun, audited, and removed with predictable behavior.
+Windows-focused PowerShell package-assignment engine for signed catalogs, verified multi-file artifacts, shared depots, and offline developer-machine bootstrap.
+
+It uses explicit package-definition JSON, trusted signing keys, configurable package endpoints, reusable depots, and local inventory so a toolchain can be assigned, rerun, audited, and removed with predictable behavior.
 
 The product sits between public package managers and heavy endpoint-management systems: more governed than ad-hoc installer scripts, more local and team-owned than a public community bucket, and intentionally smaller than a fleet rollout controller.
 
@@ -103,9 +105,12 @@ Version pinning, depot prep, offline assign, and removal:
 ```powershell
 Invoke-Package -DefinitionId NodeRuntime -PackageVersion 26.3.0
 Invoke-Package -DefinitionId LlamaCppRuntime,MiniCPM5_1B_Q8_Model -MaterializeOnly
+Sync-PackageDepot -AllTrusted -WhatIf
 Invoke-Package -DefinitionId NodeRuntime -Offline
 Invoke-Package -DefinitionId SevenZip -DesiredState Removed
 ```
+
+`Sync-PackageDepot -AllTrusted` materializes every already signed-and-trusted definition available for the current platform, including its dependencies and complete artifact file set. It requires confirmation, never adds catalog trust, and never prunes depot files. Review with `-WhatIf` first: a trusted catalog can include multi-gigabyte runtimes or models. Use `-PublisherId`, `-Tag`, or `-ExcludeDefinitionId` to narrow the run.
 
 ### Team member — share or NAS
 
@@ -115,6 +120,8 @@ Team onboarding is small: add a depot for package payloads, add an endpoint for 
 Add-TeamPackageDepot -BasePath '\\team-share\PackageDepot'
 Add-TeamPackageEndpoint -BasePath '\\team-share\PackageEndpoint'
 
+Sync-PackageDepot -AllTrusted -WhatIf
+Sync-PackageDepot -AllTrusted
 Invoke-Package -DefinitionId 'MyTeamPackage'
 Get-PackageState
 ```
@@ -145,7 +152,9 @@ Get-PackageTrust
 
 ### Offline first install on a clean Windows machine
 
-`EigenverftManifestedPackage` is a special self-bootstrap package. Unlike a normal package definition, its materialized artifact directory includes the package engine itself, its PackageManagement and PowerShellGet prerequisites, and the two bootstrap launch files needed by a machine where Eigenverft is not installed yet.
+`EigenverftManifestedPackage` is a special offline bootstrap seed. Unlike a normal package definition, its materialized artifact directory includes a pinned package-engine seed, its PackageManagement and PowerShellGet prerequisites, and the two bootstrap launch files needed by a machine where Eigenverft is not installed yet.
+
+The seed has its own definition release version and can intentionally trail the latest Gallery module. Embedding the exact current module nupkg hash inside that same module package would be circular. The bootstrap therefore installs the newest available version between the verified bundled seed and any already installed copy; update the module normally after connectivity becomes available.
 
 Prepare this package once with `-MaterializeOnly` on a connected machine that already has Eigenverft.Manifested.Package. In the default per-user configuration, the files are stored below:
 

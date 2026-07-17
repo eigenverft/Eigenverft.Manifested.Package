@@ -117,7 +117,14 @@ exit 0
         }
 
         $bootstrapScriptPath = Join-Path $script:ModuleProjectRoot 'Bootstrap\Eigenverft.Manifested.Package.Bootstrap.ps1'
-        $output = @(& $windowsPowerShellPath -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $bootstrapScriptPath -ValidateOnly 2>&1)
+        $previousErrorActionPreference = $ErrorActionPreference
+        try {
+            $ErrorActionPreference = 'Continue'
+            $output = @(& $windowsPowerShellPath -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $bootstrapScriptPath -ValidateOnly 2>&1)
+        }
+        finally {
+            $ErrorActionPreference = $previousErrorActionPreference
+        }
 
         $LASTEXITCODE | Should -Be 1
         $text = $output -join [Environment]::NewLine

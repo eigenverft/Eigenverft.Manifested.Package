@@ -28,9 +28,53 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
     It 'exports depot management commands' {
         $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
 
-        foreach ($commandName in @('Get-PackageDepot', 'Add-PackageDepot', 'Add-TeamPackageDepot', 'Set-PackageDepot', 'Remove-PackageDepot')) {
+        foreach ($commandName in @('Get-PackageDepot', 'Add-PackageDepot', 'Add-TeamPackageDepot', 'Set-PackageDepot', 'Remove-PackageDepot', 'Sync-PackageDepot')) {
             $module.ExportedCommands.Keys | Should -Contain $commandName
         }
+    }
+
+    It 'syncs only deduplicated already trusted current-platform definitions' {
+        Mock Search-Package {
+            @(
+                [pscustomobject]@{ PublisherId = 'Eigenverft'; DefinitionId = 'Alpha'; Version = '2.0'; CatalogTrustStatus = 'signedTrusted'; EndpointSearchOrder = 100; DefinitionRevision = 2 },
+                [pscustomobject]@{ PublisherId = 'Eigenverft'; DefinitionId = 'Alpha'; Version = '1.0'; CatalogTrustStatus = 'signedTrusted'; EndpointSearchOrder = 200; DefinitionRevision = 1 },
+                [pscustomobject]@{ PublisherId = 'Eigenverft'; DefinitionId = 'Beta'; Version = '3.0'; CatalogTrustStatus = 'signedUnknownKeyPrompt'; EndpointSearchOrder = 100; DefinitionRevision = 1 },
+                [pscustomobject]@{ PublisherId = 'Eigenverft'; DefinitionId = 'Gamma'; Version = '4.0'; CatalogTrustStatus = 'unsignedConfigTrust'; EndpointSearchOrder = 100; DefinitionRevision = 1 }
+            )
+        }
+        Mock Invoke-Package {
+            [pscustomobject]@{ Status = 'Materialized' }
+        }
+
+        $result = @(Sync-PackageDepot -AllTrusted -Confirm:$false)
+
+        $result.Count | Should -Be 1
+        $result[0].DefinitionId | Should -Be 'Alpha'
+        $result[0].Status | Should -Be 'Materialized'
+        Assert-MockCalled Search-Package -Times 1 -Exactly -ParameterFilter { $CurrentPlatformOnly -and $IncludeIneligible }
+        Assert-MockCalled Invoke-Package -Times 1 -Exactly -ParameterFilter {
+            $PublisherId -eq 'Eigenverft' -and $DefinitionId -eq 'Alpha' -and $MaterializeOnly -and $RequireAlreadyTrusted
+        }
+    }
+
+    It 'supports trusted sync filters, exclusions, and WhatIf planning without acquisition' {
+        Mock Search-Package {
+            @(
+                [pscustomobject]@{ PublisherId = 'Eigenverft'; DefinitionId = 'Alpha'; Version = '2.0'; CatalogTrustStatus = 'signedTrusted'; EndpointSearchOrder = 100; DefinitionRevision = 2 },
+                [pscustomobject]@{ PublisherId = 'Eigenverft'; DefinitionId = 'SkipMe'; Version = '1.0'; CatalogTrustStatus = 'signedTrusted'; EndpointSearchOrder = 100; DefinitionRevision = 1 }
+            )
+        }
+        Mock Invoke-Package { throw 'must not execute' }
+
+        $result = @(Sync-PackageDepot -AllTrusted -PublisherId 'Eigenverft' -Tag 'bootstrap' -ExcludeDefinitionId 'SkipMe' -WhatIf)
+
+        $result.Count | Should -Be 1
+        $result[0].DefinitionId | Should -Be 'Alpha'
+        $result[0].Status | Should -Be 'Planned'
+        Assert-MockCalled Search-Package -Times 1 -Exactly -ParameterFilter {
+            $CurrentPlatformOnly -and $IncludeIneligible -and $PublisherId -eq 'Eigenverft' -and $Tag -eq 'bootstrap'
+        }
+        Assert-MockCalled Invoke-Package -Times 0 -Exactly
     }
 
     It 'adds a filesystem depot with safe read-only defaults' {

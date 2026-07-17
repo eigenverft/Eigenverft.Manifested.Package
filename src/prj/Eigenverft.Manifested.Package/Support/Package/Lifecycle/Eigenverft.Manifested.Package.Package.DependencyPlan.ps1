@@ -456,7 +456,7 @@ function Resolve-PackageDependencyPlanNode {
     )
 
     try {
-        $config = Get-PackageConfig -PublisherId $PublisherId -DefinitionId $DefinitionId -DesiredState 'Assigned' -AcceptUnknownSigningKey:([bool]$Context.AcceptUnknownSigningKey)
+        $config = Get-PackageConfig -PublisherId $PublisherId -DefinitionId $DefinitionId -DesiredState 'Assigned' -AcceptUnknownSigningKey:([bool]$Context.AcceptUnknownSigningKey) -RequireAlreadyTrusted:([bool]$Context.RequireAlreadyTrusted)
     }
     catch {
         Add-PackageDependencyPlanViolation -Plan $Context.Plan -Violation (New-PackageDependencyPlanViolation -Reason 'DependencyDefinitionNotFound' -Message $_.Exception.Message -RootDefinitionId $Context.RootDefinitionId -ParentNodeKey $ParentNodeKey -PublisherId $PublisherId -DefinitionId $DefinitionId -VersionRange $VersionRange) | Out-Null
@@ -559,7 +559,9 @@ function New-PackageDependencyPlan {
 
         [bool]$PackageVersionOverrideSpecified = $false,
 
-        [switch]$AcceptUnknownSigningKey
+        [switch]$AcceptUnknownSigningKey,
+
+        [switch]$RequireAlreadyTrusted
     )
 
     $nodeMap = New-Object 'System.Collections.Generic.Dictionary[string,object]' ([System.StringComparer]::OrdinalIgnoreCase)
@@ -583,6 +585,7 @@ function New-PackageDependencyPlan {
     $context = [pscustomobject]@{
         Plan                            = $plan
         AcceptUnknownSigningKey          = [bool]$AcceptUnknownSigningKey
+        RequireAlreadyTrusted            = [bool]$RequireAlreadyTrusted
         PackageVersion                  = $PackageVersion
         PackageVersionOverrideSpecified = [bool]$PackageVersionOverrideSpecified
         RootDefinitionId                = $null

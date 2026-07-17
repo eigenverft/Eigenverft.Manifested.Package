@@ -478,6 +478,8 @@ function Invoke-PackageDefinitionCommandCore {
 
         [switch]$AcceptUnknownSigningKey,
 
+        [switch]$RequireAlreadyTrusted,
+
         [switch]$Offline,
 
         [switch]$MaterializeOnly,
@@ -526,7 +528,7 @@ function Invoke-PackageDefinitionCommandCore {
         }
     }
 
-    $packageConfig = Get-PackageConfig -PublisherId $PublisherId -DefinitionId $DefinitionId -DesiredState $DesiredState -AcceptUnknownSigningKey:$AcceptUnknownSigningKey
+    $packageConfig = Get-PackageConfig -PublisherId $PublisherId -DefinitionId $DefinitionId -DesiredState $DesiredState -AcceptUnknownSigningKey:$AcceptUnknownSigningKey -RequireAlreadyTrusted:$RequireAlreadyTrusted
     $newResultParams = @{
         DesiredState   = $DesiredState
         CommandMode    = if ($MaterializeOnly.IsPresent) { 'MaterializeOnly' } else { $DesiredState }

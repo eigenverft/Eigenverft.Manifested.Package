@@ -101,6 +101,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'Set-PackageEndpoint',
             'Set-PackagePublisher',
             'Sign-PackageDefinition',
+            'Sync-PackageDepot',
             'Test-PackageDefinitionCatalog',
             'Trust-PackageSigningCertificate',
             'Untrust-PackageSigningCertificate',

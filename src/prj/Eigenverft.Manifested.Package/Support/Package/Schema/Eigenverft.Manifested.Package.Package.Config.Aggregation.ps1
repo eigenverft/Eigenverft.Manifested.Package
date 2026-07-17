@@ -244,11 +244,17 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
         [ValidateSet('Assigned', 'Removed')]
         [string]$DesiredState = 'Assigned',
 
-        [switch]$AcceptUnknownSigningKey
+        [switch]$AcceptUnknownSigningKey,
+
+        [switch]$RequireAlreadyTrusted
     )
 
     $globalDocumentInfo = Read-PackageJsonDocument -Path (Get-PackageConfigPath)
     Assert-PackageConfigSchema -PackageConfigDocumentInfo $globalDocumentInfo
+
+    if ($AcceptUnknownSigningKey.IsPresent -and $RequireAlreadyTrusted.IsPresent) {
+        throw 'AcceptUnknownSigningKey and RequireAlreadyTrusted are mutually exclusive trust modes.'
+    }
 
     $packageGlobalConfig = $globalDocumentInfo.Document.package
     $applicationRootDirectory = Resolve-PackageApplicationRootDirectory -PackageConfiguration $packageGlobalConfig
@@ -324,6 +330,9 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
     if ($AcceptUnknownSigningKey.IsPresent) {
         $catalogTrustUnknownSignedKeyPolicy = 'trust'
     }
+    elseif ($RequireAlreadyTrusted.IsPresent) {
+        $catalogTrustUnknownSignedKeyPolicy = 'fail'
+    }
 
     $packageInventoryFilePath = if ($packageGlobalConfig.packageState.PSObject.Properties['inventoryFilePath'] -and
         -not [string]::IsNullOrWhiteSpace([string]$packageGlobalConfig.packageState.inventoryFilePath)) {
@@ -351,6 +360,11 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
     }
     else {
         $definitionReference = Resolve-PackageDefinitionReference -PublisherId $PublisherId -DefinitionId $DefinitionId -ApplicationRootDirectory $applicationRootDirectory -LocalEndpointRoot $localEndpointRoot -EndpointMaterializationMode $endpointMaterializationMode -CatalogTrustPolicy $catalogTrustPolicy -CatalogTrustAllowUnsignedPublisherIds $catalogTrustAllowUnsignedPublisherIds -CatalogTrustBlockedPublisherIds $catalogTrustBlockedPublisherIds -UnknownSignedKeyPolicy $catalogTrustUnknownSignedKeyPolicy -DefinitionPublisherConflictMode $definitionPublisherConflictMode
+    }
+
+    if ($RequireAlreadyTrusted.IsPresent -and
+        -not [string]::Equals([string]$definitionReference.CatalogTrustStatus, 'signedTrusted', [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Package definition '$DefinitionId' is not already signed and trusted. Sync-PackageDepot -AllTrusted does not prompt for trust, import keys, or accept unsigned definitions."
     }
 
     $definitionDocumentInfo = Read-PackageJsonDocument -Path $definitionReference.DefinitionPath
@@ -484,6 +498,7 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
         CatalogTrustPolicy                 = $catalogTrustPolicy
         CatalogTrustUnknownSignedKeyPolicy = $catalogTrustUnknownSignedKeyPolicy
         AcceptUnknownSigningKey            = [bool]$AcceptUnknownSigningKey.IsPresent
+        RequireAlreadyTrusted              = [bool]$RequireAlreadyTrusted.IsPresent
         CatalogTrustAllowUnsignedPublisherIds = @($catalogTrustAllowUnsignedPublisherIds)
         CatalogTrustBlockedPublisherIds    = @($catalogTrustBlockedPublisherIds)
         CatalogTrustPayloadVerification    = $catalogTrustPayloadVerification

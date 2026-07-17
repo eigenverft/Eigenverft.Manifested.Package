@@ -138,6 +138,19 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depend
         $plan.Violations.Count | Should -Be 0
     }
 
+    It 'requires every dependency-plan definition to be already trusted when requested' {
+        $configs = @{
+            CodexCli    = New-TestDependencyPlannerConfig -DefinitionId 'CodexCli' -Dependencies @([pscustomobject]@{ definitionId = 'NodeRuntime' }) -InventoryPath (Join-Path $TestDrive 'planner-trusted-inventory.json')
+            NodeRuntime = New-TestDependencyPlannerConfig -DefinitionId 'NodeRuntime' -Versions @('1.0.0') -InventoryPath (Join-Path $TestDrive 'planner-trusted-inventory.json')
+        }
+        Mock Get-PackageConfig { $configs[$DefinitionId] }
+
+        $plan = New-PackageDependencyPlan -DefinitionId 'CodexCli' -RequireAlreadyTrusted
+
+        $plan.Accepted | Should -BeTrue
+        Assert-MockCalled Get-PackageConfig -Times 2 -Exactly -ParameterFilter { $RequireAlreadyTrusted }
+    }
+
     It 'dedupes shared dependencies and selects the newest version satisfying all incoming ranges' {
         $configs = @{
             RootA      = New-TestDependencyPlannerConfig -DefinitionId 'RootA' -Dependencies @([pscustomobject]@{ definitionId = 'SharedRuntime'; versionRange = '>=1.0.0 <3.0.0' }) -InventoryPath (Join-Path $TestDrive 'planner-dedupe-inventory.json')

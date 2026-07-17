@@ -21,6 +21,141 @@ function Get-PackageDepot {
     return $match
 }
 
+function Sync-PackageDepot {
+    <#
+    .SYNOPSIS
+        Materializes every already trusted package available for the current platform.
+
+    .DESCRIPTION
+        Discovers package definitions whose effective catalog status is signedTrusted,
+        deduplicates their publisher/definition identities, and materializes each package
+        plus its dependencies into configured depots. The command never prompts for new
+        catalog trust, imports signing keys, accepts unsigned definitions, or removes files.
+
+    .PARAMETER AllTrusted
+        Confirms that the complete already-trusted current-platform catalog is the sync scope.
+
+    .PARAMETER ExcludeDefinitionId
+        Omits matching definition ids from this sync run.
+
+    .PARAMETER FailFast
+        Stops after the first package that does not materialize successfully.
+    #>
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
+    param(
+        [Parameter(Mandatory = $true)]
+        [switch]$AllTrusted,
+
+        [AllowNull()]
+        [string]$PublisherId = $null,
+
+        [AllowNull()]
+        [string[]]$Tag = @(),
+
+        [AllowNull()]
+        [string[]]$ExcludeDefinitionId = @(),
+
+        [switch]$FailFast
+    )
+
+    if (-not $AllTrusted.IsPresent) {
+        throw 'Sync-PackageDepot currently requires -AllTrusted.'
+    }
+
+    $searchParameters = @{
+        CurrentPlatformOnly = $true
+        IncludeIneligible   = $true
+    }
+    if (-not [string]::IsNullOrWhiteSpace($PublisherId)) {
+        $searchParameters.PublisherId = $PublisherId
+    }
+    $normalizedTags = @($Tag | ForEach-Object { ([string]$_).Trim() } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($normalizedTags.Count -gt 0) {
+        $searchParameters.Tag = $normalizedTags
+    }
+
+    $excluded = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($definitionId in @($ExcludeDefinitionId)) {
+        $normalizedDefinitionId = ([string]$definitionId).Trim()
+        if (-not [string]::IsNullOrWhiteSpace($normalizedDefinitionId)) {
+            $excluded.Add($normalizedDefinitionId) | Out-Null
+        }
+    }
+
+    $trustedCandidates = @(
+        Search-Package @searchParameters |
+            Where-Object {
+                [string]::Equals([string]$_.CatalogTrustStatus, 'signedTrusted', [System.StringComparison]::OrdinalIgnoreCase) -and
+                -not $excluded.Contains([string]$_.DefinitionId)
+            }
+    )
+
+    $selected = @(
+        $trustedCandidates |
+            Sort-Object -Property PublisherId, DefinitionId, EndpointSearchOrder, @{ Expression = 'DefinitionRevision'; Descending = $true } |
+            Group-Object -Property { Get-PackageDependencyReferenceKey -PublisherId ([string]$_.PublisherId) -DefinitionId ([string]$_.DefinitionId) } |
+            ForEach-Object { $_.Group | Select-Object -First 1 } |
+            Sort-Object -Property PublisherId, DefinitionId
+    )
+
+    if ($selected.Count -eq 0) {
+        Write-Verbose 'No already signed-and-trusted package definitions are available for the requested current-platform scope.'
+        return
+    }
+
+    $target = '{0} already trusted current-platform package definition(s)' -f $selected.Count
+    if (-not $PSCmdlet.ShouldProcess($target, 'Materialize complete artifact sets into configured package depots')) {
+        foreach ($package in $selected) {
+            [pscustomobject]@{
+                PSTypeName    = 'Eigenverft.Manifested.Package.DepotSyncResult'
+                PublisherId   = [string]$package.PublisherId
+                DefinitionId  = [string]$package.DefinitionId
+                Version       = [string]$package.Version
+                Status        = 'Planned'
+                PackageResult = @()
+                ErrorMessage  = $null
+            }
+        }
+        return
+    }
+
+    foreach ($package in $selected) {
+        $packageResults = @()
+        $errorMessage = $null
+        try {
+            $packageResults = @(Invoke-Package -PublisherId ([string]$package.PublisherId) -DefinitionId ([string]$package.DefinitionId) -MaterializeOnly -RequireAlreadyTrusted)
+        }
+        catch {
+            $errorMessage = $_.Exception.Message
+        }
+
+        $failedResults = @($packageResults | Where-Object {
+                -not ([string]$_.Status -in @('Ready', 'Materialized'))
+            })
+        $status = if (-not [string]::IsNullOrWhiteSpace($errorMessage) -or $failedResults.Count -gt 0 -or $packageResults.Count -eq 0) {
+            'Failed'
+        }
+        else {
+            'Materialized'
+        }
+
+        $syncResult = [pscustomobject]@{
+            PSTypeName    = 'Eigenverft.Manifested.Package.DepotSyncResult'
+            PublisherId   = [string]$package.PublisherId
+            DefinitionId  = [string]$package.DefinitionId
+            Version       = [string]$package.Version
+            Status        = $status
+            PackageResult = @($packageResults)
+            ErrorMessage  = $errorMessage
+        }
+        $syncResult
+
+        if ($FailFast.IsPresent -and [string]::Equals($status, 'Failed', [System.StringComparison]::OrdinalIgnoreCase)) {
+            break
+        }
+    }
+}
+
 function Add-PackageDepot {
     [CmdletBinding(SupportsShouldProcess = $true)]
     param(

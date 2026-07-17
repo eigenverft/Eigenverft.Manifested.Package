@@ -337,6 +337,30 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - signin
         { Resolve-PackageDefinitionReference -DefinitionId 'MyPackage' -LocalEndpointRoot (Join-Path $rootPath 'PkgEndpoint') -CatalogTrustPolicy strict -UnknownSignedKeyPolicy fail } | Should -Throw '*signing key is not trusted for this publisher*'
     }
 
+    It 'requires existing signed trust without prompting during trusted depot sync resolution' {
+        $rootPath = Join-Path $TestDrive 'already-trusted-only'
+        $pfxPath = Join-Path $rootPath 'team-package-catalog-signing.pfx'
+        $certificatePath = Join-Path $rootPath 'team-package-catalog-signing.cer'
+        $password = ConvertTo-SecureString 'CatalogTrust-Test-Password-123!' -AsPlainText -Force
+        $globalDocument = New-TestPackageGlobalDocument -ApplicationRootDirectory (Join-Path $rootPath 'AppRoot') -CatalogTrustPolicy strict -CatalogTrustUnknownSignedKeyPolicy prompt
+        $definition = New-TestVSCodeDefinitionDocument -DefinitionId 'MyPackage' -PublisherId 'My Team' -PublisherName 'My Team' -Releases @(
+            New-TestPackageRelease -Id 'my-package-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+        )
+        $documents = Write-TestPackageDocuments -RootPath $rootPath -GlobalDocument $globalDocument -DefinitionDocument $definition
+
+        $null = New-PackageSigningCertificate -PfxPath $pfxPath -CertificatePath $certificatePath -Password $password -Subject 'CN=My Team'
+        $null = Sign-PackageDefinition -Path $documents.DefinitionPath -Cert $pfxPath -Password $password
+
+        Mock Get-PackageConfigPath { $documents.GlobalConfigPath }
+        Mock Get-PackageEndpointInventoryPath { $documents.EndpointInventoryPath }
+        Mock Get-PackageDepotInventoryPath { $documents.DepotInventoryPath }
+        Mock Confirm-PackageUnknownSigningKeyTrust { throw 'trusted sync must not prompt' }
+
+        { Get-PackageConfig -DefinitionId 'MyPackage' -PublisherId 'My Team' -RequireAlreadyTrusted } | Should -Throw '*signing key is not trusted for this publisher*'
+        Assert-MockCalled Confirm-PackageUnknownSigningKeyTrust -Times 0 -Exactly
+        @(Get-PackageTrust -PublisherId 'My Team').Count | Should -Be 0
+    }
+
     It 'prompts for a valid embedded unknown signing key and imports trust only when accepted' {
         $rootPath = Join-Path $TestDrive 'unknown-key-prompt'
         $pfxPath = Join-Path $rootPath 'team-package-catalog-signing.pfx'

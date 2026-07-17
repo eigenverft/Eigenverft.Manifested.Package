@@ -266,7 +266,10 @@ function Expand-BootstrapInstallerHelper {
     $archive = [System.IO.Compression.ZipFile]::OpenRead($PackagePath)
     try {
         $entry = $archive.Entries |
-            Where-Object { [string]::Equals($_.FullName, $entryPath, [System.StringComparison]::OrdinalIgnoreCase) } |
+            Where-Object {
+                $normalizedEntryPath = ([string]$_.FullName).Replace('\', '/')
+                [string]::Equals($normalizedEntryPath, $entryPath, [System.StringComparison]::OrdinalIgnoreCase)
+            } |
             Select-Object -First 1
         if (-not $entry) {
             throw "Eigenverft package '$PackagePath' does not contain installer helper '$entryPath'."

@@ -128,12 +128,17 @@ dependency logic can extend this function without changing the command flow.
         $PackageResult.PackageConfig -and
         $PackageResult.PackageConfig.PSObject.Properties['AcceptUnknownSigningKey'] -and
         [bool]$PackageResult.PackageConfig.AcceptUnknownSigningKey
+    $requireAlreadyTrusted = $PackageResult.PSObject.Properties['PackageConfig'] -and
+        $PackageResult.PackageConfig -and
+        $PackageResult.PackageConfig.PSObject.Properties['RequireAlreadyTrusted'] -and
+        [bool]$PackageResult.PackageConfig.RequireAlreadyTrusted
 
     $invokeParams = @{
         PublisherId             = $PublisherId
         DefinitionId            = $DefinitionId
         DesiredState            = 'Assigned'
         AcceptUnknownSigningKey = $acceptUnknownSigningKey
+        RequireAlreadyTrusted   = $requireAlreadyTrusted
         DependencyStack         = $DependencyStack
     }
     if ($PackageResult.PSObject.Properties['Offline'] -and [bool]$PackageResult.Offline) {

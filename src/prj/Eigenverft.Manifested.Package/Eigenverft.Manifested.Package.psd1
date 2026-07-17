@@ -31,7 +31,7 @@ CompanyName = 'Eigenverft'
 Copyright = 'Copyright (c) 2026 Eigenverft'
 
 # Description of the functionality provided by this module
-Description = 'Windows-focused PowerShell package engine for repeatable developer-tool assignment using trusted package definitions, endpoints, depots, and local inventory.'
+Description = 'Windows-focused PowerShell package-assignment engine for signed catalogs, verified multi-file artifacts, shared depots, and offline developer-machine bootstrap.'
 
 # Minimum version of the PowerShell engine required by this module
 PowerShellVersion = '5.1'
@@ -99,6 +99,7 @@ FunctionsToExport = @(
     'Resign-PackageDefinition',
     'Revoke-PackageSigningCertificate',
     'Search-Package',
+    'Sync-PackageDepot',
     'Set-PackageDepot',
     'Set-PackageEndpoint',
     'Set-PackagePublisher',
@@ -147,7 +148,7 @@ PrivateData = @{
         IconUri = 'https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/main/resources/evt-logo_on_light_border_128x128.png'
 
         # ReleaseNotes of this module
-        ReleaseNotes = 'Added Get-PackageDefinitionAuthoringGuide for installed-module package-definition authoring discovery. Endpoint inventory supports authoringTarget metadata with Add-PackageEndpoint, Set-PackageEndpoint, and Get-PackageEndpoint AuthoringTarget visibility.'
+        ReleaseNotes = 'Schema 2.0 adds verified multi-file artifact sets and archive-derived files. The EigenverftManifestedPackage bootstrap seed now supports a self-contained offline install with PackageManagement, PowerShellGet, and adjacent launch scripts. Added Sync-PackageDepot -AllTrusted for confirmed current-platform hydration of already signed-and-trusted catalogs.'
 
         # Prerelease string of this module
         Prerelease = ''

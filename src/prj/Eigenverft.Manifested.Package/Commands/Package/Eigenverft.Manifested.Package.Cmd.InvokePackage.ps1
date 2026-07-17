@@ -35,6 +35,9 @@ function Invoke-Package {
 
         [switch]$AcceptUnknownSigningKey,
 
+        [Parameter(DontShow = $true)]
+        [switch]$RequireAlreadyTrusted,
+
         [switch]$Offline,
 
         [switch]$MaterializeOnly,
@@ -44,6 +47,10 @@ function Invoke-Package {
 
     $packageVersionOverrideSpecified = $PSBoundParameters.ContainsKey('PackageVersion') -and -not [string]::IsNullOrWhiteSpace([string]$PackageVersion)
     $normalizedPackageVersion = if ($packageVersionOverrideSpecified) { ([string]$PackageVersion).Trim() } else { $null }
+
+    if ($AcceptUnknownSigningKey.IsPresent -and $RequireAlreadyTrusted.IsPresent) {
+        throw 'AcceptUnknownSigningKey and RequireAlreadyTrusted are mutually exclusive trust modes.'
+    }
 
     if ([string]::Equals($DesiredState, 'Removed', [System.StringComparison]::OrdinalIgnoreCase) -and
         $packageVersionOverrideSpecified -and
@@ -58,7 +65,7 @@ function Invoke-Package {
     $shouldPlanDependencies = $MaterializeOnly.IsPresent -or [string]::Equals($DesiredState, 'Assigned', [System.StringComparison]::OrdinalIgnoreCase)
     if ($shouldPlanDependencies) {
         Write-PackageExecutionMessage -Message ("[STEP] Planning package dependencies for {0} root definition(s)." -f @($DefinitionId).Count)
-        $dependencyPlan = New-PackageDependencyPlan -PublisherId $PublisherId -DefinitionId $DefinitionId -DesiredState 'Assigned' -PackageVersion $normalizedPackageVersion -PackageVersionOverrideSpecified $packageVersionOverrideSpecified -AcceptUnknownSigningKey:$AcceptUnknownSigningKey
+        $dependencyPlan = New-PackageDependencyPlan -PublisherId $PublisherId -DefinitionId $DefinitionId -DesiredState 'Assigned' -PackageVersion $normalizedPackageVersion -PackageVersionOverrideSpecified $packageVersionOverrideSpecified -AcceptUnknownSigningKey:$AcceptUnknownSigningKey -RequireAlreadyTrusted:$RequireAlreadyTrusted
         if (-not $dependencyPlan.Accepted) {
             Write-PackageExecutionMessage -Level 'ERR' -Message ("[FAIL] Dependency plan rejected with {0} violation(s)." -f $dependencyPlan.Violations.Count)
             New-PackageDependencyPlanFailureResults -Plan $dependencyPlan -DesiredState $DesiredState -Offline:$Offline -MaterializeOnly:$MaterializeOnly -PackageVersion $normalizedPackageVersion
@@ -73,6 +80,7 @@ function Invoke-Package {
             DefinitionId             = $definition
             DesiredState             = $DesiredState
             AcceptUnknownSigningKey  = $AcceptUnknownSigningKey
+            RequireAlreadyTrusted    = $RequireAlreadyTrusted
             Offline                  = $Offline
             MaterializeOnly          = $MaterializeOnly
         }
