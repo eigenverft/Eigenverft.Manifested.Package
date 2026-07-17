@@ -5,8 +5,8 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "EigenverftManifestedPackage",
-    "definitionRevision": 2,
-    "publishedAtUtc": "2026-07-17T04:39:49.8313681Z",
+    "definitionRevision": 3,
+    "publishedAtUtc": "2026-07-17T08:08:38.2588442Z",
     "definitionSignature": {
       "kind": "signed",
       "format": "embedded-json-rsa-sha256-v1",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-17T06:16:19.6186614Z",
-      "signatureValue": "JyyDHWbidiemEXlKHo9YmI/Iw7OUn+/zmqzcavnQ95RGGpJDf81FLcApCLZGXVQpsunW8e4rSNWw+RbKCyk2zcMVNvJZuf/cc89ZbM0h2oNpkJE/EsvoPUZeB6klhAwFfBEHUE3E4FLrPObD5dsJdI62tKPAw9JkP6XaVEBgN18bQHXeKaX8CBe1E/1xD8yP0Q3ZYXxQzpH44ucgyPjZb8yVfAeLg0kzBIvH2DLlfbcc9oJnP8/NxYg14S9uU/CswfEug2ivSaFqqivCCLektjc2fnykR4/Dt6iWWeLKV4EfiirrliIKFXvp1+dEnK/3SisHDZpzA1X7qXDBaUKoLcpy1UfieBg0wrO8qsmrMUSfgjkgIsJsCb2JMMmUPlVoqYxmNlJMj3+gPDIUXGS8DPxWIEl+8OUynTaRvUqWZ9kjU4s8WZLomB1X9R/K3N23FFu0OqPD6IzBkl8jzDbx9El7Qx6FwJsWV8AVYcjV/ZeqnA0Wd8o2gN0Vu6Tez6gL"
+      "signedAtUtc": "2026-07-17T08:09:15.9334793Z",
+      "signatureValue": "W2Vwl4RgyBpyPH0xrbcGany09aDs2l//UppMSyOBCwcYDvKoABMaOgNTw2GIREl/ot2URG4iAV7BjbNZ/m9oMpO0WG+fLo/urJwS11IXzcajbz/VbjOzmQ4f1IgdY72PyXEI72LHjO54lutUnOhsYvbOSW6VIXhQGfApk0oaUHrF1nF/hndqA9VkrRxGCZSLf7bssO9inUXPgEu2rhtBRnZUVBDu9azTCDsG0QDocJ4WOqAs5d/NbDdn7vQItQ97a+fvDWXNmRyfcElmVY689r/zuOI5CsY85Tp+fj0EThlZfoH25zinKmmMf0CTRuPojNmQ6ZDeoVhVdWaM3KuA3f38VnnCbNnh1q1zjdPanAjxV5kkKrt2ifD6mzNf8khJxJspoOvEcBnd9cCEALDGWGoeILNcA3tUKdzXUzx0z/hs2FF5kbmfHRjx3xjYdBQMybftmEGWpSr0AS2VUya+3pCfIA39fYidK2HKeemeQ4an+B4WZiG1Rd/Uxeo0O1lh"
     }
   },
   "display": {
@@ -83,6 +83,44 @@
                 }
               }
             ]
+          },
+          "bootstrapCommand": {
+            "relativePathTemplate": "Eigenverft.Manifested.Package.Bootstrap.cmd",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "required"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "searchOrder": 900,
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
+          },
+          "bootstrapPowerShell": {
+            "relativePathTemplate": "Eigenverft.Manifested.Package.Bootstrap.ps1",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "required"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "searchOrder": 900,
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
           }
         }
       }
@@ -101,6 +139,20 @@
                 "contentHash": {
                   "algorithm": "sha256",
                   "value": "5be57bf2264061203cd6f72a48ce9057c597d14be75c67c627846b2b64e4d909"
+                }
+              },
+              "bootstrapCommand": {
+                "url": "https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/refs/heads/main/src/prj/Eigenverft.Manifested.Package/Bootstrap/Eigenverft.Manifested.Package.Bootstrap.cmd",
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "187975c53c7c8e439d88e318c9e360a78b37d9dceb1087a8f659d6997d5b4287"
+                }
+              },
+              "bootstrapPowerShell": {
+                "url": "https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/refs/heads/main/src/prj/Eigenverft.Manifested.Package/Bootstrap/Eigenverft.Manifested.Package.Bootstrap.ps1",
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "318a8f4321184fadcc13422957b03de426c079c0225c61752c14daaf5baeabf9"
                 }
               }
             }
