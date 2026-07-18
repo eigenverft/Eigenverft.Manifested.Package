@@ -1,4 +1,4 @@
-# Eigenverft.Manifested.Package
+# 📦 Eigenverft.Manifested.Package
 
 [![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/Eigenverft.Manifested.Package?label=PSGallery&logo=powershell)](https://www.powershellgallery.com/packages/Eigenverft.Manifested.Package) [![PowerShell Gallery Downloads](https://img.shields.io/powershellgallery/dt/Eigenverft.Manifested.Package?label=Downloads&logo=powershell)](https://www.powershellgallery.com/packages/Eigenverft.Manifested.Package) [![PowerShell Support](https://img.shields.io/badge/PowerShell-5.1%2B%20Desktop%2FCore-5391FE?logo=powershell&logoColor=white)](#requirements) [![Build Status](https://img.shields.io/github/actions/workflow/status/eigenverft/Eigenverft.Manifested.Package/cicd.yml?branch=main&label=build)](https://github.com/eigenverft/Eigenverft.Manifested.Package/actions/workflows/cicd.yml) [![License](https://img.shields.io/github/license/eigenverft/Eigenverft.Manifested.Package?logo=mit)](LICENSE) [![Windows Sandbox profile](https://img.shields.io/badge/Windows%20Sandbox-profile-0078D4?logo=windows)](https://github.com/eigenverft/Eigenverft.Manifested.Sandbox)
 
@@ -20,7 +20,7 @@ The product sits between public package managers and heavy endpoint-management s
 - Self-contained package-engine bootstrap from one pre-materialized folder for internet-isolated Windows machines
 - Proxy-aware downloads through `Invoke-WebRequestEx` for managed or corporate Windows environments
 
-## Motivation
+## 💡 Motivation
 
 Preparing a Windows development environment should not depend on a long sequence of hand-maintained install notes. Teams need a way to say which signed catalogs are trusted, where package definitions come from, where package payloads are cached, and what happened during the last run.
 
@@ -28,14 +28,14 @@ This project packages that workflow as a local PowerShell engine. A human or age
 
 <a id="requirements"></a>
 
-## Requirements
+## ⚙️ Requirements
 
 - Windows PowerShell 5.1 or PowerShell 7+
 - Windows 10/11
 - Network access to configured package sources, or a depot that already contains the needed payloads
 - Administrator rights only for package definitions that require machine-level installers or prerequisites
 
-## Install
+## 📥 Install
 
 Install once, then run exported commands directly (no `Import-Module` needed):
 
@@ -60,9 +60,9 @@ Get-PackageVersion
 | `Search-Package` | Find a package when you know a name or command but not the `DefinitionId` |
 | `Get-PackageState` | What is assigned on this machine; recent run outcomes; key local paths |
 
-## Documentation
+## 📚 Documentation
 
-The documentation is available through two matching entry points:
+The same documentation set is available online and inside the installed module:
 
 - **Online:** [Eigenverft.Manifested.Package on GitHub Pages](https://eigenverft.github.io/Eigenverft.Manifested.Package/)
 - **Installed and offline:** open the documentation packaged with the exact active module version:
@@ -73,15 +73,17 @@ Open-PackageDocumentation
 
 `Open-PackageDocumentation` resolves the versioned module path automatically and opens its local `Documentation\index.html`. Use `-Browser Edge`, `-BrowserPath <path>`, or `-Wait` when needed. The packaged pages carry their own styles, fonts, Markdown renderer, diagrams, and copy behavior, so reviewing them requires no CDN, Markdown download, local web server, or network connection.
 
+For the connected-host → shared-depot → clean-machine workflow, see the [offline Windows setup guide](https://eigenverft.github.io/Eigenverft.Manifested.Package/OfflineBootstrap.html). The same guide is available from the Documentation menu in the packaged offline pages.
+
 See [How assignment works](#how-assignment-works) for `Search-Package` and `Get-PackageState` in detail.
 
 ---
 
-## Pick your path
+## 🚀 Pick your path
 
 Examples first — choose the lane that matches you, then read [How assignment works](#how-assignment-works) when you want the mechanics.
 
-### Personal setup — “just get my machine ready”
+### 🛠️ Personal setup — “just get my machine ready”
 
 ```powershell
 Invoke-Package -DefinitionId SevenZip,GitRuntime,NodeRuntime,CodexCli
@@ -95,7 +97,7 @@ Search-Package -Query gh
 
 `Invoke-Package` is idempotent for each definition: rerunning tends to reuse, repair, or report already-satisfied state rather than blindly reinstalling. Pass multiple definition ids in one call (`-DefinitionId A,B`) or run separate invocations; dependency order is resolved by the engine.
 
-### Example bundles
+### 📦 Example bundles
 
 ```powershell
 # Everyday dev
@@ -129,7 +131,7 @@ Invoke-Package -DefinitionId SevenZip -DesiredState Removed
 
 `Sync-PackageDepot -AllTrusted` materializes every already signed-and-trusted definition available for the current platform, including its dependencies and complete artifact file set. It requires confirmation, never adds catalog trust, and never prunes depot files. Review with `-WhatIf` first: a trusted catalog can include multi-gigabyte runtimes or models. Use `-PublisherId`, `-Tag`, or `-ExcludeDefinitionId` to narrow the run.
 
-### Team member — share or NAS
+### 🤝 Team member — share or NAS
 
 Team onboarding is small: add a depot for package payloads, add an endpoint for signed package-definition JSON, then invoke the package.
 
@@ -167,31 +169,11 @@ Get-PackageEndpoint
 Get-PackageTrust
 ```
 
-### Offline first install on a clean Windows machine
+### 📥 Offline first install on a clean Windows machine
 
-`EigenverftManifestedPackage` is a special offline bootstrap seed. Unlike a normal package definition, its materialized artifact directory includes a pinned package-engine seed, its PackageManagement and PowerShellGet prerequisites, and the two bootstrap launch files needed by a machine where Eigenverft is not installed yet.
+See [Offline Windows setup from one shared depot](https://eigenverft.github.io/Eigenverft.Manifested.Package/OfflineBootstrap.html) for host preparation, folder sharing, and the one-time bootstrap on a clean machine.
 
-The seed has its own definition release version and can intentionally trail the latest Gallery module. Embedding the exact current module nupkg hash inside that same module package would be circular. The bootstrap therefore installs the newest available version between the verified bundled seed and any already installed copy; update the module normally after connectivity becomes available.
-
-Prepare this package once with `-MaterializeOnly` on a connected machine that already has Eigenverft.Manifested.Package. In the default per-user configuration, the files are stored below:
-
-`%LOCALAPPDATA%\Programs\Evf.Package\PkgDepot\EigenverftManifestedPackage\stable\<version>\psmodule-any\`
-
-This normally resolves to `C:\Users\<user>\AppData\Local\Programs\Evf.Package\PkgDepot\...`. A configured team depot may contain the same relative package directory under its own depot root.
-
-The materialized directory contains the Eigenverft, PackageManagement, and PowerShellGet nupkgs together with `Eigenverft.Manifested.Package.Bootstrap.cmd` and `.ps1`. Expose that directory through a Windows file share, or copy it unchanged to removable or VM-mounted storage.
-
-On the clean target machine:
-
-1. Open the materialized directory in Windows File Explorer.
-2. Double-click `Eigenverft.Manifested.Package.Bootstrap.cmd` once.
-3. After installation, the same window displays `Get-PackageVersion` and remains at a ready PowerShell prompt. Continue there with `Invoke-Package`, or type `exit` to close it.
-
-This is a one-time manual bootstrap. The target needs Windows PowerShell 5.1 and read access to the folder; it does not need internet access, PowerShell Gallery access, or a preinstalled Eigenverft module. The connected machine's signed-definition materialization is the verification boundary, so keep the shared directory unchanged and preferably read-only. The bootstrap installs for the current user by default, preserves a newer installed module version when one exists, and otherwise installs the bundled seed.
-
-This is useful for clean PCs, isolated VMs, and restricted Windows networks where a team share is available but public internet access is not.
-
-### Corporate / constrained network
+### 🔧 Corporate / constrained network
 
 When TLS interception or missing trust roots break a normal Gallery install on Windows PowerShell 5.1, use `iwr/bootstrapper.ps1` once, then run commands as usual:
 
@@ -218,7 +200,7 @@ $env:EVF_DEPOT_SITE_CODE = 'BER;BER-ENG'
 Invoke-Package -DefinitionId NodeRuntime
 ```
 
-### Catalog maintainer — publish package JSON
+### 📝 Catalog maintainer — publish package JSON
 
 ```powershell
 Get-PackageDefinitionAuthoringGuide -For 'MyPackage'
@@ -266,7 +248,7 @@ Draft-only authoring (unsigned JSON): `Get-PackageDefinitionAuthoringGuide -For 
 
 <a id="how-assignment-works"></a>
 
-## How assignment works
+## 🔄 How assignment works
 
 The module centers on **`Invoke-Package`** for assignment and removal, plus helpers for search, state, team depots/endpoints, and catalog trust.
 
@@ -333,7 +315,7 @@ To add an installed documentation page, copy `Documentation\DocTemplate.html`, r
 
 ---
 
-## Shipped catalog (`moduleDefaults`)
+## 📦 Shipped catalog (`moduleDefaults`)
 
 | Area | Definition IDs |
 | --- | --- |
@@ -357,7 +339,7 @@ After assignment, packages can expose commands such as `python`, `pwsh`, `git`, 
 
 ---
 
-## When something fails
+## 🐛 When something fails
 
 ```powershell
 Get-PackageState
@@ -374,7 +356,7 @@ Get-PackageState -Raw
 
 ---
 
-## Package vocabulary
+## 📄 Package vocabulary
 
 | Term | Meaning |
 | --- | --- |
@@ -388,7 +370,7 @@ Get-PackageState -Raw
 | **Package assignment inventory** | Current tracked assigned package facts: definition, selected version, install directory, ownership kind, and definition snapshot. |
 | **Operation history** | Append-only history of package command runs, including successes, skips, and failures. |
 
-## Package files and state
+## 📊 Package files and state
 
 Local application root (default): `%LOCALAPPDATA%\Programs\Evf.Package\`
 
@@ -409,7 +391,7 @@ Maintainer validation: `Test-PackageDefinitionCatalog`, `Verify-PackageDefinitio
 
 ---
 
-## Windows Sandbox
+## 🛠️ Windows Sandbox
 
 For disposable fresh-machine bring-up, use the [Eigenverft.Manifested.Sandbox](https://github.com/eigenverft/Eigenverft.Manifested.Sandbox) `.wsb` profile — it installs this module from [PSGallery](https://www.powershellgallery.com/packages/Eigenverft.Manifested.Package) and leaves you in PowerShell ready for `Invoke-Package`.
 
@@ -417,7 +399,7 @@ For a sandbox or VM without public internet access, mount a previously materiali
 
 ---
 
-## Usage tips
+## 💡 Usage tips
 
 - Run `Get-PackageDefinitionAuthoringGuide -For '<DefinitionId>'` before creating or updating catalog JSON.
 - Run `Get-PackageState` after assignment when you want the quickest view of package records, recent operations, depot paths, and install directories.
@@ -425,17 +407,17 @@ For a sandbox or VM without public internet access, mount a previously materiali
 - Use `Invoke-Package -MaterializeOnly` to hydrate verified depot artifacts and npm tarballs before an offline assignment run.
 - Run `Invoke-Package -DefinitionId VisualCppRedistributable` in an elevated PowerShell session if the Microsoft Visual C++ Redistributable needs installation or repair.
 
-## Product boundaries
+## ⚙️ Product boundaries
 
 This package engine is intentionally local. It is not a central enterprise package manager, a fleet-wide rollout controller, a replacement for WinGet or Intune, a public community app store, or a background auto-update service.
 
 Good changes make one user profile easier to prepare, make package definitions safer and clearer, improve depot reuse, strengthen catalog trust, or make generated package JSON easier to validate and review. Fleet orchestration belongs in a separate manager product that can build on this engine's state and endpoint primitives.
 
-## License
+## 📄 License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
-## Contact & support
+## 📫 Contact & support
 
 - 🐛 Open an [issue](https://github.com/eigenverft/Eigenverft.Manifested.Package/issues) in this repository
 - 🤝 Submit a [pull request](https://github.com/eigenverft/Eigenverft.Manifested.Package/pulls) with improvements

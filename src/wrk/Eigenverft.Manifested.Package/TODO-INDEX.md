@@ -9,7 +9,6 @@ Only genuine remaining work is listed here. Shipped behavior is summarized in [D
 | Priority | Topic | Remaining outcome |
 |---|---|---|
 | 5/7 | [Release-age policy](TODO-SUPPLY-CHAIN.md) | Filter automatic selection using authored upstream release dates and explain skipped versions. |
-| 4/7 | [Hybrid documentation](TODO-DOCUMENTATION.md) | Markdown source, complete offline HTML bundle, and release gates. |
 | 3/7 | [Ownership guide](TODO-OWNERSHIP.md) | Explain adoption/removal policy and add focused author guidance. |
 | 3/7 | [Onboarding profiles](ISSUE-ONBOARDING-PROFILES.md) | Define reviewable named `DefinitionId` bundles and examples. |
 | 3/7 | [Agent operability](ISSUE-AGENT-OPERABILITY.md) | Persist execution-step logs and expose a read/guide surface. |

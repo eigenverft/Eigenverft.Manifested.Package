@@ -303,6 +303,19 @@
     }
   }
 
+  function highlightCodeBlocks(target) {
+    if (!window.hljs || typeof window.hljs.highlightElement !== 'function') {
+      if (window.console && typeof window.console.warn === 'function') {
+        window.console.warn('The packaged syntax highlighter could not be loaded.');
+      }
+      return;
+    }
+
+    Array.prototype.forEach.call(target.querySelectorAll('pre > code'), function (codeBlock) {
+      window.hljs.highlightElement(codeBlock);
+    });
+  }
+
   function renderDocumentation() {
     var source = document.getElementById('documentation-markdown');
     var config = getDocumentationConfig();
@@ -327,6 +340,7 @@
       addHeadingAnchors(target);
       applyBootstrapContentStyles(target);
       renderMermaidDiagrams(target);
+      highlightCodeBlocks(target);
       addCodeCopyButtons(target);
     } catch (error) {
       showRenderError(target, 'The packaged documentation could not be rendered.');

@@ -8,6 +8,9 @@
     'documentation.pages.js',
     'bootstrap.bundle.min.js',
     'marked.umd.js',
+    'highlight.min.js',
+    'highlight.powershell.min.js',
+    'highlight.dos.min.js',
     'clipboard.min.js',
     'mermaid.min.js',
     'documentation.js'

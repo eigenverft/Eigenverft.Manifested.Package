@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Documentation</title>
+  <link rel="stylesheet" href="./css/documentation.css">
+  <script src="./js/documentation.loader.js" defer></script>
+</head>
+<body>
+  <script id="documentation-markdown" type="text/markdown">
+# 📦 Offline Windows setup from one shared depot
+
+Prepare the package depot once on a connected Windows host, map that folder into a clean or isolated machine, double-click the bootstrap command, and continue with normal Eigenverft package commands.
+
+The target does not need Internet access, PowerShell Gallery access, or Eigenverft.Manifested.Package already installed.
+
+```mermaid
+flowchart LR
+  H[Connected host] -->|Sync trusted packages| D[Shared package depot]
+  D -->|Map or attach folder| W[Offline Windows machine]
+  W -->|Double-click Bootstrap.cmd| P[Ready PowerShell console]
+  P -->|Invoke-Package -Offline| A[Packages installed]
+```
+
+## 1. 📥 Fill the depot on the connected host
+
+Open PowerShell on a host that already has Eigenverft.Manifested.Package. Preview the trusted package set, then materialize it:
+
+```powershell
+Sync-PackageDepot -AllTrusted -WhatIf
+Sync-PackageDepot -AllTrusted
+```
+
+Confirm the synchronization when prompted. It prepares every already trusted package definition available for the current Windows platform, including complete artifact sets and dependencies. The preview matters because the set can include large runtimes or models.
+
+If you want only the package-engine bootstrap instead of the complete trusted catalog:
+
+```powershell
+Invoke-Package -DefinitionId EigenverftManifestedPackage -MaterializeOnly
+```
+
+See where the host stores and mirrors package files:
+
+```powershell
+Get-PackageDepot
+```
+
+The default per-user depot is:
+
+```text
+%LOCALAPPDATA%\Programs\Evf.Package\PkgDepot
+```
+
+## 2. 📦 Give the offline machine that folder
+
+Share or attach the **complete depot root**, not only an individual `.nupkg`. Suitable choices include:
+
+- a Windows Sandbox mapped folder;
+- a VirtualBox, VMware, or other hypervisor shared folder;
+- removable storage or an attached ISO;
+- a team/LAN share when the machine has local-network access but no usable Internet.
+
+Mapping the full depot to the target user's default depot path is the easiest option: bootstrap finds its files, and later `Invoke-Package -Offline` calls find the other synchronized packages in the same place.
+
+### 🛠️ Minimal Windows Sandbox example
+
+Replace `HOST_USER` with the Windows profile name on the preparation host:
+
+```xml
+<Configuration>
+  <Networking>Disable</Networking>
+  <MappedFolders>
+    <MappedFolder>
+      <HostFolder>C:\Users\HOST_USER\AppData\Local\Programs\Evf.Package\PkgDepot</HostFolder>
+      <SandboxFolder>C:\Users\WDAGUtilityAccount\AppData\Local\Programs\Evf.Package\PkgDepot</SandboxFolder>
+      <ReadOnly>true</ReadOnly>
+    </MappedFolder>
+  </MappedFolders>
+</Configuration>
+```
+
+Double-click the `.wsb` file to start Sandbox. This example disables guest networking and exposes the host depot read-only. Other Sandbox hardware and redirection settings are independent and can be added when needed.
+
+See Microsoft's [Windows Sandbox configuration reference](https://learn.microsoft.com/windows/security/application-security/application-isolation/windows-sandbox/windows-sandbox-configure-using-wsb-file) for the complete `.wsb` options.
+
+## 3. 🚀 Double-click the bootstrap command
+
+On the clean target, open File Explorer and browse inside the mapped depot:
+
+```text
+EigenverftManifestedPackage\stable\{newest-seed-version}\psmodule-any
+```
+
+Double-click:
+
+```text
+Eigenverft.Manifested.Package.Bootstrap.cmd
+```
+
+That one launch installs the bundled package-engine prerequisites and Eigenverft.Manifested.Package for the current user. No administrator prompt is normally required.
+
+When it finishes, the same window displays `Get-PackageVersion` and stays open at a ready PowerShell prompt.
+
+## 4. 📥 Install packages from the offline depot
+
+Continue in the ready console exactly as you would on the host, but use `-Offline` to require depot-only acquisition:
+
+```powershell
+Search-Package -Query git
+
+Invoke-Package -DefinitionId SevenZip,GitRuntime,NodeRuntime -Offline
+
+Get-PackageState
+```
+
+Or assign a larger development setup that was included by the trusted sync:
+
+```powershell
+Invoke-Package -DefinitionId PowerShell7,GitRuntime,GHCli,VSCodeRuntime,NodeRuntime,SevenZip,DotNetSdk10 -Offline
+```
+
+Only definitions and artifacts prepared in the shared depot can be assigned offline. If a package reports a missing artifact, return to the connected host, materialize it, and expose the refreshed depot again.
+
+## 🔄 Day-to-day workflow
+
+The simple loop is:
+
+1. Run `Sync-PackageDepot -AllTrusted` on the connected host whenever you want to refresh the shared package set.
+2. Keep the shared depot mounted at the target user's default depot path.
+3. On a brand-new Windows target, double-click the bootstrap `.cmd` once.
+4. Use `Search-Package`, `Invoke-Package -Offline`, and `Get-PackageState`.
+
+Existing targets do not need the bootstrap again unless their user profile is reset. They can reuse the same read-only depot for later package assignments.
+
+## 🐛 Quick fixes
+
+- **Bootstrap folder not found:** open the newest directory below `EigenverftManifestedPackage\stable`.
+- **A required bootstrap package is missing:** the seed directory was copied incompletely; synchronize or materialize it again on the host.
+- **An offline package is missing:** it was not included in the shared depot; materialize it on the connected host.
+- **An older seed reports a NuGet provider error:** synchronize again and use the newest seed version.
+- **You need an all-users install:** open an elevated console and run `Eigenverft.Manifested.Package.Bootstrap.cmd -Scope AllUsers`; the normal double-click installs for the current user.
+- **The machine has no virtual NIC:** use a Sandbox/hypervisor folder mapping, removable storage, or an ISO. An SMB share still needs local-network connectivity.
+  </script>
+  <noscript>This packaged documentation requires JavaScript enabled for local files.</noscript>
+</body>
+</html>

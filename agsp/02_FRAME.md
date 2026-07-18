@@ -127,7 +127,6 @@ AI defs bypassing validation, live upstream metadata at selection time.
 | P | Track | Product why | wrk |
 |---|-------|-------------|-----|
 | 5 | Release-age cooling | PR-06, SC-01/04/05 — governed auto-selection | TODO-SUPPLY-CHAIN.md |
-| 4 | Hybrid offline docs | PR-02, SC-02 — Gallery-only users need guide | TODO-DOCUMENTATION.md |
 | 4 | Assignment preflight | PR-02/07/11/13, SC-01/04/07/09 — plan before mutation | ISSUE-ASSIGNMENT-PREFLIGHT.md |
 | 3 | Ownership guide | PR-02/04, SC-02 — adoption rules opaque today | TODO-OWNERSHIP.md |
 | 3 | Onboarding profiles | PR-11, SC-07 — role bundles without fleet invoke | ISSUE-ONBOARDING-PROFILES.md |

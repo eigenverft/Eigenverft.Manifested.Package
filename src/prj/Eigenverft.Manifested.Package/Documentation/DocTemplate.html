@@ -25,9 +25,9 @@ The initial task is only to bootstrap this documentation shell. Produce the exac
 Use this short path for the initial task; the rest of the file contains the referenced payloads and later authoring guidance:
 
 1. Locate and read `Required result`, `Capability preflight`, `Bootstrap sequence`, `Fast route selector`, the one selected acquisition option, `Canonical file mapping`, every `File payload` section, and `Validation checklist`. Read targeted sections by heading if a tool truncates the full file.
-2. Do not process `Later page-authoring rules`, `Maintain the page array`, or `Visual and interaction rules` as initial-task instructions. They remain reference material for later work.
+2. Do not process `Future documentation writing guide`, `Maintain the page array`, or `Visual and interaction rules` as initial-task instructions. They remain reference material for later work.
 3. Keep every output write beneath the supplied documentation root. Keep acquisition writes beneath one recorded OS-temporary staging root.
-4. Produce exactly the 19 files in the required tree, including only two HTML pages.
+4. Produce exactly the 25 files in the required tree, including only two HTML pages.
 5. Copy file payloads verbatim. Re-extract every named payload and compare it with its destination after normalizing line endings; an empty or partial file fails. Then validate, remove the staging root, report any unavailable interactive checks, and stop.
 
 The required tree, pinned versions, canonical source-to-destination mappings, integrity meaning, embedded payload content, cleanup outcome, and validation result are fixed contracts. The acquisition tool, temporary-directory implementation, archive command, cryptographic implementation, and browser capability are host-specific choices. Inspect the actual platform and project policy at those choice points; do not turn an example for one environment into a universal requirement.
@@ -79,6 +79,8 @@ Create this relative layout beneath the documentation root:
 │   ├── documentation.css
 │   ├── bootstrap.min.css
 │   ├── bootstrap-icons.min.css
+│   ├── highlight.github.min.css
+│   ├── highlight.github-dark.min.css
 │   └── fonts/
 │       └── bootstrap-icons.woff2
 ├── js/
@@ -87,17 +89,21 @@ Create this relative layout beneath the documentation root:
 │   ├── documentation.js
 │   ├── bootstrap.bundle.min.js
 │   ├── marked.umd.js
+│   ├── highlight.min.js
+│   ├── highlight.powershell.min.js
+│   ├── highlight.dos.min.js
 │   ├── clipboard.min.js
 │   └── mermaid.min.js
 └── licenses/
     ├── bootstrap.LICENSE.txt
     ├── bootstrap-icons.LICENSE.txt
     ├── clipboard.LICENSE.txt
+    ├── highlight.LICENSE.txt
     ├── marked.LICENSE.txt
     └── mermaid.LICENSE.txt
 ```
 
-This 19-file tree is the complete initial result, not a starting point for sample content. Do not add other HTML pages, package-manager manifests, dependency directories, downloaded archives, validation tools, or staging files. All HTML, CSS, font, JavaScript, and license paths must remain relative.
+This 25-file tree is the complete initial result, not a starting point for sample content. Do not add other HTML pages, package-manager manifests, dependency directories, downloaded archives, validation tools, or staging files. All HTML, CSS, font, JavaScript, and license paths must remain relative.
 
 ## Hard requirements
 
@@ -164,7 +170,7 @@ This is the default when npm is available and the repository has no established 
 $documentationVendorStage = Join-Path ([System.IO.Path]::GetTempPath()) ("documentation-vendor-" + [guid]::NewGuid().ToString("N"))
 try {
     New-Item -ItemType Directory -Path $documentationVendorStage | Out-Null
-    npm install --prefix $documentationVendorStage --no-save --ignore-scripts --package-lock=false bootstrap@5.3.8 bootstrap-icons@1.13.1 clipboard@2.0.11 marked@18.0.6 mermaid@11.16.0
+    npm install --prefix $documentationVendorStage --no-save --ignore-scripts --package-lock=false bootstrap@5.3.8 bootstrap-icons@1.13.1 clipboard@2.0.11 @highlightjs/cdn-assets@11.11.1 marked@18.0.6 mermaid@11.16.0
 
     # Copy and verify the canonical files below while still inside this block.
 }
@@ -200,6 +206,11 @@ Use this option only when the repository already uses LibMan or explicitly requi
       "library": "clipboard@2.0.11",
       "destination": ".documentation-vendor/libman/clipboard/",
       "files": ["dist/clipboard.min.js", "LICENSE"]
+    },
+    {
+      "library": "@highlightjs/cdn-assets@11.11.1",
+      "destination": ".documentation-vendor/libman/highlightjs/",
+      "files": ["highlight.min.js", "languages/powershell.min.js", "languages/dos.min.js", "styles/github.min.css", "styles/github-dark.min.css", "LICENSE"]
     },
     {
       "library": "marked@18.0.6",
@@ -245,6 +256,12 @@ Copy these package-relative files without modifying them. Archive/package paths 
 | `bootstrap-icons/LICENSE` | `licenses/bootstrap-icons.LICENSE.txt` |
 | `clipboard/dist/clipboard.min.js` | `js/clipboard.min.js` |
 | `clipboard/LICENSE` | `licenses/clipboard.LICENSE.txt` |
+| `@highlightjs/cdn-assets/highlight.min.js` | `js/highlight.min.js` |
+| `@highlightjs/cdn-assets/languages/powershell.min.js` | `js/highlight.powershell.min.js` |
+| `@highlightjs/cdn-assets/languages/dos.min.js` | `js/highlight.dos.min.js` |
+| `@highlightjs/cdn-assets/styles/github.min.css` | `css/highlight.github.min.css` |
+| `@highlightjs/cdn-assets/styles/github-dark.min.css` | `css/highlight.github-dark.min.css` |
+| `@highlightjs/cdn-assets/LICENSE` | `licenses/highlight.LICENSE.txt` |
 | `marked/lib/marked.umd.js` | `js/marked.umd.js` |
 | `marked/LICENSE` | `licenses/marked.LICENSE.txt` |
 | `mermaid/dist/mermaid.min.js` | `js/mermaid.min.js` |
@@ -252,20 +269,111 @@ Copy these package-relative files without modifying them. Archive/package paths 
 
 Before validation completes, remove every disposable staging directory and acquisition artifact created by the task. A successful final documentation tree contains only the required result above. Existing repository-managed asset infrastructure may remain only when it predated the bootstrap or was explicitly requested.
 
-## Later page-authoring rules
+## Future documentation writing guide
 
-The initial bootstrap stops before this workflow. Apply these rules only when a later task explicitly requests real documentation content.
+The initial bootstrap stops before this workflow. Apply this guide only when a later task explicitly requests real documentation content.
+
+### Write for the person using the product
+
+- Start each page with one sentence stating what the reader can accomplish.
+- Put the shortest successful path before background, architecture, or edge cases.
+- Prefer task-oriented sections such as install, configure, run, verify, update, and troubleshoot.
+- Make commands copyable and explain the expected result immediately after them.
+- Use short paragraphs, direct verbs, concrete names, and examples that can be adapted without decoding project history.
+- Keep implementation detail in maintainer or reference sections unless a user must understand it to make a decision.
+- Avoid repeating the same explanation across pages; link to one canonical section instead.
+
+### Keep page structure consistent
 
 - Begin every page with exactly one `#` heading. This is the visible page title.
 - Set the browser-tab title in `documentation.pages.js`; keep the HTML fallback title as `Documentation`.
 - Use `##` and `###` in order. The runtime adds stable heading anchors.
-- Use fenced code blocks for commands. Copy-button typography intentionally inherits the code-block font and size.
-- Use a fenced `mermaid` block for diagrams. Mermaid runs with `securityLevel: 'strict'`.
 - Keep all HTML pages on the identical shell. Only embedded Markdown differs.
 - Register every HTML page exactly once. With this fixed `./css` and `./js` shell, keep every HTML page at the documentation-directory root; nested HTML paths are not supported.
 - Keep online destinations in `onlineLinks`. They open in a new tab with `noopener noreferrer` and are visually separated from offline pages.
 - Do not place an HTML script-closing sequence in embedded Markdown because the browser parses this element as raw script text.
 - Do not replace embedded Markdown with a separately fetched file. Relative local-file fetches are unreliable in Chromium-family browsers.
+
+### Use Unicode symbols with intent
+
+Use meaningful Unicode symbols to make documentation easier to scan and less visually monotonous while retaining a professional tone. Symbols are encouraged in headings, callouts, status lines, and compact lists, but they must support the words rather than replace them.
+
+- Normally use one meaningful symbol before a major heading: `## 🚀 Quick start`.
+- Keep the same symbol meaning consistent across the site.
+- Always include a text label so the meaning remains clear when a font, screen reader, or monochrome display handles the symbol differently.
+- Do not decorate every paragraph or combine many unrelated symbols in one heading.
+- Do not place decorative symbols inside commands, file paths, identifiers, or copied configuration.
+
+Suggested vocabulary:
+
+| Symbol | Suitable meaning |
+| --- | --- |
+| 🚀 | Quick start, launch, first success |
+| 📥 | Install, download, import |
+| 🔧 | Configure, customize |
+| 📚 | Guides, concepts, learning |
+| 🔄 | Update, refresh, repeatable workflow |
+| 💡 | Tip, idea, useful context |
+| 📊 | Status, results, reporting |
+| ⚙️ | Advanced behavior, internals |
+| 🛠️ | Troubleshooting, repair, maintenance |
+| 📅 | Releases, schedule, lifecycle |
+| 📦 | Packages, artifacts, distribution |
+| 📝 | Tutorial, example, authoring |
+| 📄 | Reference, files, contracts |
+| 📫 | Support, contact, feedback |
+| 🐛 | Known issue, defect, debugging |
+| 🤝 | Contribution, collaboration, team workflow |
+
+Example page outline:
+
+```markdown
+# 📚 Product guide
+
+## 🚀 Quick start
+
+## 📥 Install
+
+## 🔧 Configure
+
+## 💡 Useful tips
+
+## 🛠️ Troubleshooting
+```
+
+Symbols also work in concise callouts:
+
+```markdown
+> 💡 **Tip:** Keep the verified package directory read-only.
+
+> ⚠️ **Important:** Review the plan before a large synchronization.
+```
+
+### Use code, diagrams, and links deliberately
+
+- Use fenced code blocks with the exact language identifier. The common Highlight.js browser build covers broadly useful languages including Bash/shell, C, C++, C#, CSS, JavaScript, JSON, Markdown, SQL, XML, and YAML. The packaged extra grammars add PowerShell and DOS/CMD.
+- Prefer identifiers such as `powershell`, `bash`, `cmd`, `csharp`, `json`, and `xml`; do not label executable code as plain text.
+- Local GitHub light and dark themes follow `prefers-color-scheme`. Copy-button typography inherits the code-block font and size.
+- Use a fenced `mermaid` block only when a diagram makes a relationship or sequence clearer than short prose. Mermaid runs with `securityLevel: 'strict'`.
+- Keep link text descriptive. Make a page useful offline even when an optional external link cannot be opened.
+
+These compact blocks are intentional syntax-highlighting smoke tests for common application and automation documentation:
+
+```csharp
+Console.WriteLine("Documentation is ready.");
+```
+
+```powershell
+Get-ChildItem -Path . | Select-Object -First 3
+```
+
+```bash
+printf '%s\n' "Documentation is ready."
+```
+
+```cmd
+@echo Documentation is ready.
+```
 
 ## Maintain the page array
 
@@ -293,9 +401,9 @@ For each new page:
 - Navigation icons use the theme accent at `1.1em`; active dropdown icons inherit the active text color.
 - The home label uses normal weight so it aligns visually with Documentation and Online.
 - Light and dark colors come from `prefers-color-scheme`; retain readable text, border, surface, code, and accent contrast in both modes.
-- Code-copy controls use ClipboardJS. Do not add handwritten clipboard fallbacks.
+- Code highlighting uses the local Highlight.js common build plus its PowerShell and DOS/CMD grammars. Code-copy controls use ClipboardJS. Do not add handwritten highlighting or clipboard fallbacks.
 - Bootstrap and Bootstrap Icons are local. No icon or component may depend on network access.
-- The loader preserves dependency order: page configuration, Bootstrap, Marked, ClipboardJS, Mermaid, then the documentation runtime.
+- The loader preserves dependency order: page configuration, Bootstrap, Marked, Highlight.js plus its extra grammars, ClipboardJS, Mermaid, then the documentation runtime.
 
 ### Built-in Mermaid smoke test
 
@@ -311,6 +419,8 @@ flowchart LR
 ```css
 @import url("./bootstrap.min.css");
 @import url("./bootstrap-icons.min.css");
+@import url("./highlight.github.min.css") screen and (prefers-color-scheme: light);
+@import url("./highlight.github-dark.min.css") screen and (prefers-color-scheme: dark);
 
 :root {
   color-scheme: light dark;
@@ -460,6 +570,12 @@ pre code {
   padding: 0;
 }
 
+pre code.hljs {
+  overflow-x: visible;
+  background: transparent;
+  padding: 0;
+}
+
 .code-block {
   position: relative;
   margin-block: 1rem;
@@ -586,6 +702,9 @@ blockquote p {
     'documentation.pages.js',
     'bootstrap.bundle.min.js',
     'marked.umd.js',
+    'highlight.min.js',
+    'highlight.powershell.min.js',
+    'highlight.dos.min.js',
     'clipboard.min.js',
     'mermaid.min.js',
     'documentation.js'
@@ -950,6 +1069,19 @@ Available icons come from the vendored Bootstrap Icons font. Prefer a simple, re
     }
   }
 
+  function highlightCodeBlocks(target) {
+    if (!window.hljs || typeof window.hljs.highlightElement !== 'function') {
+      if (window.console && typeof window.console.warn === 'function') {
+        window.console.warn('The packaged syntax highlighter could not be loaded.');
+      }
+      return;
+    }
+
+    Array.prototype.forEach.call(target.querySelectorAll('pre > code'), function (codeBlock) {
+      window.hljs.highlightElement(codeBlock);
+    });
+  }
+
   function renderDocumentation() {
     var source = document.getElementById('documentation-markdown');
     var config = getDocumentationConfig();
@@ -974,6 +1106,7 @@ Available icons come from the vendored Bootstrap Icons font. Prefer a simple, re
       addHeadingAnchors(target);
       applyBootstrapContentStyles(target);
       renderMermaidDiagrams(target);
+      highlightCodeBlocks(target);
       addCodeCopyButtons(target);
     } catch (error) {
       showRenderError(target, 'The packaged documentation could not be rendered.');
@@ -1005,6 +1138,7 @@ The packaged documentation vendors these unmodified browser distributions for of
 | Bootstrap | 5.3.8 | MIT — `licenses/bootstrap.LICENSE.txt` |
 | Bootstrap Icons | 1.13.1 | MIT — `licenses/bootstrap-icons.LICENSE.txt` |
 | ClipboardJS | 2.0.11 | MIT — `licenses/clipboard.LICENSE.txt` |
+| Highlight.js | 11.11.1 | BSD-3-Clause — `licenses/highlight.LICENSE.txt` |
 | Marked | 18.0.6 | MIT — `licenses/marked.LICENSE.txt` |
 | Mermaid | 11.16.0 | MIT — `licenses/mermaid.LICENSE.txt` |
 
@@ -1021,12 +1155,13 @@ The project-owned `documentation.*` files remain visibly distinct from these ven
 - If real optional online links were explicitly configured later, confirm they are under the separate Online menu and open a new tab. Otherwise this check is not applicable.
 - Confirm the navbar remains usable at desktop and mobile widths.
 - Confirm light and dark modes preserve readable colors and visible icons.
+- Confirm fenced `csharp`, `powershell`, `bash`, and `cmd` blocks receive Highlight.js token markup and readable light/dark theme colors.
 - On `DocTemplate.html`, confirm code-copy buttons copy only their code block and show Copied feedback.
 - On `DocTemplate.html`, confirm the built-in Mermaid smoke diagram renders without loading a remote resource.
 - Confirm switching between the minimal `index.html` and long `DocTemplate.html` does not move the horizontal layout.
 - Confirm every vendored version and license in `THIRD-PARTY-NOTICES.md` matches the selected pinned package source.
 - Check live HTML and CSS for remote runtime `src`, `href`, font, or import dependencies. In each HTML file, inspect the actual `<head>` before `<body>`; do not scan the raw `documentation-markdown` element or its fenced examples as though they were live HTML. Search only `js/documentation.loader.js`, `js/documentation.pages.js`, and `js/documentation.js` for unintended `fetch()` calls; required unmodified vendor distributions may contain dormant internal code.
-- Confirm the browser console contains no missing-file, script, font, Markdown, or Mermaid errors.
+- Confirm the browser console contains no missing-file, script, font, Markdown, syntax-highlighting, or Mermaid errors.
 - Follow the browser decision established during capability preflight. Do not call a browser-control API merely to discover its common `file:` restriction. When direct local-file access was accepted, perform the interactive checks with that capability. Otherwise do not retry or install browser automation; complete the static checks, list the unperformed interactive checks, and leave no validation artifacts.
   </script>
   <noscript>This packaged documentation requires JavaScript enabled for local files.</noscript>

@@ -1,5 +1,7 @@
 @import url("./bootstrap.min.css");
 @import url("./bootstrap-icons.min.css");
+@import url("./highlight.github.min.css") screen and (prefers-color-scheme: light);
+@import url("./highlight.github-dark.min.css") screen and (prefers-color-scheme: dark);
 
 :root {
   color-scheme: light dark;
@@ -146,6 +148,12 @@ pre {
 }
 
 pre code {
+  padding: 0;
+}
+
+pre code.hljs {
+  overflow-x: visible;
+  background: transparent;
   padding: 0;
 }
 
