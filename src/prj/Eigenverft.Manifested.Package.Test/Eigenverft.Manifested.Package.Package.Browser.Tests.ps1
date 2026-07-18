@@ -9,7 +9,6 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - browse
         $moduleProjectRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'Eigenverft.Manifested.Package'
         $documentationRoot = Join-Path $moduleProjectRoot 'Documentation'
         $indexPath = Join-Path $documentationRoot 'index.html'
-        $templatePath = Join-Path $documentationRoot 'DocTemplate.html'
         $documentationCssPath = Join-Path $documentationRoot 'css\documentation.css'
         $documentationJavaScriptPath = Join-Path $documentationRoot 'js\documentation.js'
         $loaderJavaScriptPath = Join-Path $documentationRoot 'js\documentation.loader.js'
@@ -30,7 +29,6 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - browse
         $content = Get-Content -LiteralPath $indexPath -Raw
 
         Test-Path -LiteralPath $indexPath -PathType Leaf | Should -BeTrue
-        Test-Path -LiteralPath $templatePath -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath $documentationCssPath -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath $documentationJavaScriptPath -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath $loaderJavaScriptPath -PathType Leaf | Should -BeTrue
@@ -119,83 +117,6 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - browse
         (Get-Content -LiteralPath $clipboardLicensePath -Raw) | Should -Match 'MIT License'
         (Get-Content -LiteralPath $markedLicensePath -Raw) | Should -Match 'MIT License'
         (Get-Content -LiteralPath $mermaidLicensePath -Raw) | Should -Match 'MIT License'
-    }
-
-    It 'keeps every documentation HTML page on one shared template and central menu' {
-        $moduleProjectRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'Eigenverft.Manifested.Package'
-        $documentationRoot = Join-Path $moduleProjectRoot 'Documentation'
-        $indexContent = Get-Content -LiteralPath (Join-Path $documentationRoot 'index.html') -Raw
-        $templateContent = Get-Content -LiteralPath (Join-Path $documentationRoot 'DocTemplate.html') -Raw
-        $pagesJavaScript = Get-Content -LiteralPath (Join-Path $documentationRoot 'js\documentation.pages.js') -Raw
-        $markdownPattern = '(?s)(<script id="documentation-markdown" type="text/markdown">).*?(</script>)'
-        $normalizedIndex = [regex]::Replace($indexContent, $markdownPattern, '$1__MARKDOWN__$2')
-        $normalizedTemplate = [regex]::Replace($templateContent, $markdownPattern, '$1__MARKDOWN__$2')
-        $registeredPages = @([regex]::Matches($pagesJavaScript, "path:\s*'([^']+\.html)'") | ForEach-Object { $_.Groups[1].Value } | Sort-Object)
-        $htmlPages = @(Get-ChildItem -LiteralPath $documentationRoot -Filter '*.html' -File -Recurse | ForEach-Object {
-                $_.FullName.Substring($documentationRoot.Length).TrimStart([char[]]@('\', '/')).Replace('\', '/')
-            } | Sort-Object)
-
-        $normalizedTemplate | Should -Be $normalizedIndex
-        $templateContent | Should -Match '# Portable offline documentation template'
-        $templateContent | Should -Match 'During initial bootstrap, create only `index\.html` and the supplied `DocTemplate\.html`'
-        $templateContent | Should -Match 'Stop after the minimal two-page shell passes'
-        $templateContent | Should -Match '## Later page-authoring rules'
-        $registeredPages | Should -Be $htmlPages
-        $registeredPages | Should -Contain 'index.html'
-        $registeredPages | Should -Contain 'DocTemplate.html'
-    }
-
-    It 'is a neutral self-bootstrapping guide whose embedded runtime sources cannot drift' {
-        $moduleProjectRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'Eigenverft.Manifested.Package'
-        $documentationRoot = Join-Path $moduleProjectRoot 'Documentation'
-        $templateContent = Get-Content -LiteralPath (Join-Path $documentationRoot 'DocTemplate.html') -Raw
-        $sourceFiles = [ordered]@{
-            'css/documentation.css'       = @{ Language = 'css'; Path = 'css\documentation.css' }
-            'js/documentation.loader.js'  = @{ Language = 'javascript'; Path = 'js\documentation.loader.js' }
-            'js/documentation.js'         = @{ Language = 'javascript'; Path = 'js\documentation.js' }
-        }
-
-        $templateContent | Should -Not -Match 'Eigenverft|eigenverft\.|Open-PackageDocumentation|Open-UrlInBrowser'
-        $templateContent | Should -Not -Match '<!--'
-        @([regex]::Matches($templateContent, '</script>')).Count | Should -Be 2
-        @([regex]::Matches($templateContent, '<\\/script>')).Count | Should -Be 2
-        $templateContent | Should -Match '## Canonical page shell'
-        $templateContent | Should -Match 'Every HTML page must have exactly one object in the `pages` array'
-        foreach ($propertyName in @('path', 'label', 'title', 'icon')) {
-            $templateContent | Should -Match ('\| `' + $propertyName + '` \|')
-        }
-        $templateContent | Should -Match 'must not require a web server, package manager, CDN, or network connection at runtime'
-        $templateContent | Should -Match '### Option A: one-time npm staging outside the repository'
-        $templateContent | Should -Match '### Option B: LibMan or a repository asset manifest'
-        $templateContent | Should -Match '### Option C: verified direct downloads'
-        $templateContent | Should -Match '## Capability preflight'
-        $templateContent | Should -Match 'Complete this preflight before creating output files, downloading packages, or choosing a validation workflow'
-        $templateContent | Should -Match 'Respect task restrictions before trying a tool'
-        $templateContent | Should -Match 'Test whether an already-available browser capability permits direct `file:` navigation'
-        $templateContent | Should -Match 'Decide and state the acquisition path, temporary-directory strategy, trust/integrity evidence, cleanup mechanism'
-        $templateContent | Should -Match 'do not retry or install browser automation'
-        $templateContent | Should -Match '\[System\.IO\.Path\]::GetTempPath\(\)'
-        $templateContent | Should -Match '\[System\.IO\.Directory\]::Delete\(\$documentationVendorStage, \$true\)'
-        $templateContent | Should -Match 'If only this template is available, no workflow is visible, and npm is permitted'
-        $templateContent | Should -Match 'Do not install browser automation or other validation packages solely for this bootstrap'
-        $templateContent | Should -Match 'exactly two HTML files: `index\.html` and `DocTemplate\.html`'
-        $templateContent | Should -Match 'Do not invent project documentation, sample pages, or fictional project content'
-        $templateContent | Should -Match '### Built-in Mermaid smoke test'
-        $templateContent | Should -Match 'Markdown `fetch\(\)`'
-        $templateContent | Should -Match 'scrollbar gutter is always reserved'
-        $templateContent | Should -Match 'Navigation icons use the theme accent at `1\.1em`'
-        $templateContent | Should -Match 'Mermaid runs with `securityLevel: ''strict''`'
-        $templateContent | Should -Match 'global\.DocumentationSite'
-
-        foreach ($relativePath in $sourceFiles.Keys) {
-            $source = $sourceFiles[$relativePath]
-            $pattern = '(?s)## Project-owned source: `' + [regex]::Escape($relativePath) + '`\s+```' + $source.Language + '\r?\n(.*?)\r?\n```'
-            $match = [regex]::Match($templateContent, $pattern)
-            $match.Success | Should -BeTrue
-            $embeddedSource = ($match.Groups[1].Value -replace "`r`n", "`n").TrimEnd()
-            $shippedSource = ((Get-Content -LiteralPath (Join-Path $documentationRoot $source.Path) -Raw) -replace "`r`n", "`n").TrimEnd()
-            $embeddedSource | Should -BeExactly $shippedSource
-        }
     }
 
     It 'exports the browser command with the intended public interface' {

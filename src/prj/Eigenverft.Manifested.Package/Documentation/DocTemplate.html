@@ -14,9 +14,32 @@
 
 This file is both a page template and a complete bootstrap guide for a coding agent or language model. Use it to create a static documentation site that opens directly from a local or shared folder and has the same navigation, light/dark styling, Markdown rendering, diagrams, and copy controls as this page.
 
+Treat the directory containing the supplied `DocTemplate.html` as the documentation root. Keep `DocTemplate.html`, `index.html`, and every later HTML page at that root; do not move the template into a new nested directory.
+
 The finished site must not require a web server, package manager, CDN, or network connection at runtime. Acquisition tools such as npm or LibMan are authoring-time choices only; every method must produce the same checked-in offline files and licenses.
 
 The initial task is only to bootstrap this documentation shell. Produce the exact minimal result below, verify navigation between its two pages, remove every temporary acquisition file, and stop. Do not invent project documentation, sample pages, or fictional project content during bootstrap.
+
+## Initial bootstrap action card
+
+Use this short path for the initial task; the rest of the file contains the referenced payloads and later authoring guidance:
+
+1. Locate and read `Required result`, `Capability preflight`, `Bootstrap sequence`, `Fast route selector`, the one selected acquisition option, `Canonical file mapping`, every `File payload` section, and `Validation checklist`. Read targeted sections by heading if a tool truncates the full file.
+2. Do not process `Later page-authoring rules`, `Maintain the page array`, or `Visual and interaction rules` as initial-task instructions. They remain reference material for later work.
+3. Keep every output write beneath the supplied documentation root. Keep acquisition writes beneath one recorded OS-temporary staging root.
+4. Produce exactly the 19 files in the required tree, including only two HTML pages.
+5. Copy file payloads verbatim. Re-extract every named payload and compare it with its destination after normalizing line endings; an empty or partial file fails. Then validate, remove the staging root, report any unavailable interactive checks, and stop.
+
+The required tree, pinned versions, canonical source-to-destination mappings, integrity meaning, embedded payload content, cleanup outcome, and validation result are fixed contracts. The acquisition tool, temporary-directory implementation, archive command, cryptographic implementation, and browser capability are host-specific choices. Inspect the actual platform and project policy at those choice points; do not turn an example for one environment into a universal requirement.
+
+### Platform compatibility contract
+
+- Support agents running on Windows, Linux, or macOS. Do not assume a drive letter, backslash separator, `/tmp`, PowerShell, a POSIX shell, or a case-insensitive filesystem.
+- Resolve and join filesystem paths with capabilities native to the selected host. Package-relative archive paths and browser-relative URLs use `/`; translate only at the filesystem API boundary.
+- Preserve every required destination name and its letter case exactly. This is mandatory even when the current filesystem is case-insensitive.
+- Copy vendored JavaScript, CSS, fonts, and licenses without transformation. File payload text may use the host's normal line endings, but compare it after line-ending normalization. Compare binary assets byte-for-byte.
+- Create a unique staging directory through the host's safe temporary-directory mechanism. Guarantee cleanup with the available shell or runtime mechanism, such as `finally`, `defer`, or a signal/exit trap.
+- Treat interactive `file:` browsing as an optional host capability. Static validation remains required when local-file browser access is unavailable or policy-blocked.
 
 ## Canonical page shell
 
@@ -45,10 +68,10 @@ The backslash in the raw reference prevents this guide from closing its own Mark
 
 ## Required result
 
-Create this relative layout beneath the chosen documentation directory:
+Create this relative layout beneath the documentation root:
 
 ```text
-Documentation/
+<documentation-root>/
 ├── index.html
 ├── DocTemplate.html
 ├── THIRD-PARTY-NOTICES.md
@@ -74,11 +97,11 @@ Documentation/
     └── mermaid.LICENSE.txt
 ```
 
-Use the same layout if the directory has another name. This is the complete initial result, not a starting point for sample content. Do not add other HTML pages, package-manager manifests, dependency directories, downloaded archives, validation tools, or staging files. All HTML, CSS, font, JavaScript, and license paths must remain relative.
+This 19-file tree is the complete initial result, not a starting point for sample content. Do not add other HTML pages, package-manager manifests, dependency directories, downloaded archives, validation tools, or staging files. All HTML, CSS, font, JavaScript, and license paths must remain relative.
 
 ## Hard requirements
 
-- Read this complete guide before creating files.
+- Follow the initial bootstrap action card. Locate its named sections directly; do not repeatedly dump or reason through the complete file when a reader truncates it.
 - Keep the copied HTML shell unchanged except for Markdown inside the `documentation-markdown` element.
 - Every page contains exactly one local stylesheet link and one local loader script.
 - Do not use CDNs, remote fonts, remote APIs, runtime package installation, Markdown `fetch()`, or a required local web server.
@@ -92,20 +115,20 @@ Use the same layout if the directory has another name. This is the complete init
 
 ## Capability preflight
 
-Complete this preflight before creating output files, downloading packages, or choosing a validation workflow:
+Complete this short preflight before creating output files or downloading packages:
 
-1. Inspect only target-project files already in scope for an established asset workflow and applicable project policy.
-2. Inventory already-available acquisition capabilities such as npm, an existing repository asset manager, approved direct HTTP download, archive extraction, and SHA-256 hashing. Do not install a new package manager merely to bootstrap the documentation.
-3. Respect task restrictions before trying a tool. Do not probe or invoke a method that the task or project policy forbids.
-4. Test whether an already-available browser capability permits direct `file:` navigation to the supplied `DocTemplate.html`. This is only a capability check; missing documentation assets are expected at this point. Do not install browser automation.
-5. Decide and state the acquisition path, temporary-directory strategy, trust/integrity evidence, cleanup mechanism, and feasible static or interactive validation checks before executing the bootstrap.
-6. If interactive local-file access is blocked, plan static validation and do not retry the blocked browser through another surface or workaround after the build.
+1. Treat the directory containing `DocTemplate.html` as the documentation root. Inspect only in-scope project policy and any asset workflow already used by that project.
+2. Read the task restrictions first. Choose the first permitted acquisition route in the route selector below; never probe a forbidden tool.
+3. Check only the capabilities required by that route. Do not install a package manager, browser automation, or validation tool merely for this bootstrap.
+4. Resolve planned write destinations before writing. Every output must be beneath the documentation root and every acquisition artifact beneath one recorded OS-temporary staging root. Do not use a repository-scoped patch or edit helper to write into an external target because it may redirect relative paths to its workspace.
+5. Record how the host's guaranteed-cleanup mechanism will delete the staging root on success or failure and how pinned inputs and copied outputs will be verified.
+6. Inspect browser capability without creating a profile or navigating. Browser-control APIs commonly reject `file:` URLs: attempt interactive validation only when a local-file tab is already open or the capability explicitly guarantees arbitrary local-file navigation. Otherwise select static-only validation immediately. If an attempted navigation is blocked, do not retry through another browser or workaround.
 
-Prefer the capable route with the least temporary state and fewest extra operations. Capability discovery is read-only and must not itself leave files, configuration, downloads, or installed tools.
+This preflight is read-only and must leave no files, configuration, downloads, or installed tools. Once a route is selected, execute it without exploring the other routes.
 
 ## Bootstrap sequence
 
-1. Copy this file to the chosen documentation directory as `DocTemplate.html`.
+1. Keep this file at the documentation root as `DocTemplate.html`.
 2. Copy `DocTemplate.html` to `index.html`. Replace only its embedded Markdown with this deliberately minimal content:
 
 ```markdown
@@ -113,9 +136,9 @@ Prefer the capable route with the least temporary state and fewest extra operati
 ```
 
 3. Create the `css`, `css/fonts`, `js`, and `licenses` directories shown above.
-4. Follow the acquisition and validation decisions made during capability preflight. If only this template is available, no workflow is visible, and npm is permitted, use the one-time system-temporary npm method below. Do not search outside the target project or create a permanent asset workflow only for this bootstrap.
+4. Follow the route selected during capability preflight. Do not search outside the target project or create a permanent asset workflow only for this bootstrap.
 5. Acquire the pinned vendor packages in a unique system temporary directory outside the target repository. Copy and verify only the canonical files below, then remove the entire temporary directory in guaranteed cleanup.
-6. Create each project-owned `documentation.*` file from the source blocks in this guide.
+6. Create each project-owned `documentation.*` file from its `File payload` block in this guide, then compare the complete extracted payload with the destination after normalizing line endings. Do not accept existence, size, or a negative text search as proof of a correct copy.
 7. Customize only the identity in `js/documentation.pages.js` when a real project identity is already available. Otherwise retain the neutral identity; never invent one. Keep exactly the two supplied page entries and do not invent online links.
 8. Perform every validation check at the end of this guide, including exact file-set and cleanup checks.
 9. Stop after the minimal two-page shell passes. Documentation authoring is a separate task.
@@ -124,9 +147,18 @@ Prefer the capable route with the least temporary state and fewest extra operati
 
 Use the approved method selected during capability preflight. Reuse a repository asset workflow only when one already exists and is intended to remain. For a one-time bootstrap with no established workflow, use unique system-temporary staging and leave no acquisition state in the repository. Do not mix versions or leave runtime references to the acquisition source. The canonical destination mapping below is the contract.
 
+### Fast route selector
+
+Choose exactly one route and ignore the others:
+
+1. If the project already uses LibMan or another permanent asset manifest intended for these files, use Option B.
+2. Otherwise, if npm is permitted and available, use Option A.
+3. Otherwise, if approved HTTPS download, archive extraction, and hashing are available, use Option C.
+4. If none is permitted and available, stop and report the missing capability. Do not install or invent another acquisition system.
+
 ### Option A: one-time npm staging outside the repository
 
-This is the default when npm is available and the repository has no established asset workflow. Use a unique directory beneath the operating system's temporary root, not a child of the documentation directory or repository. Keep acquisition, canonical copying, hash comparison, and cleanup in one `try`/`finally` operation:
+This is the default when npm is available and the repository has no established asset workflow. Use a unique directory beneath the operating system's temporary root, not a child of the documentation directory or repository. Keep acquisition, canonical copying, hash comparison, and cleanup in one guaranteed-cleanup operation. The following is a PowerShell example, not a platform requirement:
 
 ```powershell
 $documentationVendorStage = Join-Path ([System.IO.Path]::GetTempPath()) ("documentation-vendor-" + [guid]::NewGuid().ToString("N"))
@@ -143,7 +175,7 @@ finally {
 }
 ```
 
-The package roots are beneath `$documentationVendorStage/node_modules`. If the selected shell has an equivalent safe temporary-directory and guaranteed-cleanup mechanism, use it instead. Do not install browser automation or other validation packages solely for this bootstrap.
+The package roots are beneath the selected npm staging root's `node_modules` directory. Use the host shell or runtime's safe temporary-directory and guaranteed-cleanup mechanism. Do not install PowerShell, browser automation, or other validation tooling solely for this bootstrap.
 
 ### Option B: LibMan or a repository asset manifest
 
@@ -187,11 +219,21 @@ Run `libman restore`, then normalize the restored files to the canonical destina
 
 ### Option C: verified direct downloads
 
-Use direct downloads only when the package manager is unavailable or repository policy requires them. Download the exact versioned release archives, npm package archives, or individual distribution files from approved official locations. Record the resolved source URL and integrity evidence, acquire the matching license from the same release or package, extract into a unique system temporary directory outside the repository, and normalize the files to the canonical destinations below. Never use an unversioned latest URL. Remove every downloaded archive and extracted temporary file in guaranteed cleanup.
+Use direct downloads only when the package manager is unavailable, forbidden, or repository policy requires them. For the npm packages pinned in this guide, the deterministic direct route is:
+
+1. Read the exact-version registry metadata at `https://registry.npmjs.org/<package>/<version>`.
+2. Download only the returned `dist.tarball` URL. Never use an unversioned latest URL.
+3. Verify the downloaded bytes against `dist.integrity` using the algorithm named by that value (normally SHA-512) and compare the Base64 digest exactly.
+4. Extract only the canonical mapped file and matching `LICENSE` from that package archive.
+5. Compare a cryptographic hash of each staged source with its copied destination.
+
+Before downloading, inspect the actual host platform and the cryptographic capabilities already available there. Choose a supported implementation from the operating system, shell, runtime standard library, or an existing trusted tool; do not install one only for this bootstrap and do not assume that an API exists without checking it. The implementation must hash the archive bytes using the algorithm named before the hyphen in `dist.integrity`, Base64-encode the raw digest bytes rather than hexadecimal text, prepend the same algorithm name, and compare the complete value exactly. Stop before copying vendor files when no available capability can perform that contract.
+
+When project policy instead supplies an approved versioned release archive or individual distribution URL, apply the same rules: record the exact URL and published integrity evidence, obtain the license from the same release, and verify each copied destination. Keep every archive and extraction root beneath one unique system temporary directory outside the repository and delete that directory in guaranteed cleanup. Report the resolved URLs and verification results in the task result; do not create an evidence file in the documentation tree.
 
 ### Canonical file mapping
 
-Copy these package-relative files without modifying them. For the one-time npm method, prefix the source with `$documentationVendorStage/node_modules/`. Other mechanisms may stage them elsewhere, but the destination must be identical.
+Copy these package-relative files without modifying them. Archive/package paths in this table use `/` on every platform; use host-native path joining only when addressing extracted filesystem files. For the PowerShell npm example, prefix the source with `$documentationVendorStage/node_modules/`. Other mechanisms may stage them elsewhere, but destination names and case must be identical.
 
 | Package-relative source | Documentation file |
 | --- | --- |
@@ -264,7 +306,7 @@ flowchart LR
     T[DocTemplate.html] --> I[index.html]
 ```
 
-## Project-owned source: `css/documentation.css`
+## File payload: `css/documentation.css`
 
 ```css
 @import url("./bootstrap.min.css");
@@ -531,7 +573,7 @@ blockquote p {
 }
 ```
 
-## Project-owned source: `js/documentation.loader.js`
+## File payload: `js/documentation.loader.js`
 
 ```javascript
 (function () {
@@ -578,9 +620,7 @@ blockquote p {
 }());
 ```
 
-## Project-owned source: `js/documentation.pages.js`
-
-Use this neutral two-page configuration during bootstrap. Change the identity only when the real project name is already known from the target repository; otherwise do not invent one. Additional pages and online links require a later explicit authoring task:
+## File payload: `js/documentation.pages.js`
 
 ```javascript
 (function (global) {
@@ -598,9 +638,11 @@ Use this neutral two-page configuration during bootstrap. Change the identity on
 }(window));
 ```
 
+Use this neutral two-page configuration during bootstrap. Change the identity only when the real project name is already known from the target repository; otherwise do not invent one. Additional pages and online links require a later explicit authoring task.
+
 Available icons come from the vendored Bootstrap Icons font. Prefer a simple, recognizable icon and keep `onlineLinks` empty unless a real, approved project destination is already known.
 
-## Project-owned source: `js/documentation.js`
+## File payload: `js/documentation.js`
 
 ```javascript
 (function () {
@@ -951,7 +993,7 @@ Available icons come from the vendored Bootstrap Icons font. Prefer a simple, re
 }());
 ```
 
-## Third-party notice: `THIRD-PARTY-NOTICES.md`
+## File payload: `THIRD-PARTY-NOTICES.md`
 
 ```markdown
 # Third-party browser assets
@@ -972,9 +1014,9 @@ The project-owned `documentation.*` files remain visibly distinct from these ven
 ## Validation checklist
 
 - Confirm the documentation directory contains exactly the required result and exactly two HTML files: `index.html` and `DocTemplate.html`.
+- For every `File payload` heading, confirm its destination is non-empty and its complete content exactly equals the fenced payload after line-ending normalization. This must catch empty, truncated, or partly extracted project-owned files.
 - Confirm no `.documentation-vendor`, `node_modules`, package manifest, lock file, downloaded archive, validation-tool installation, or task-created browser profile remains in the repository or at the recorded temporary path.
-- Open `index.html` directly from a local path beginning with `file:`; no server is allowed for this check.
-- Confirm the page renders with networking disabled.
+- When capability preflight established supported local-file browser access, open `index.html` directly from a path beginning with `file:` and confirm it renders with networking disabled. Otherwise record both checks as unavailable and use the static checks below; no server is allowed as a substitute.
 - Switch between `index.html` and `DocTemplate.html`; confirm each current page is active and both registered pages appear exactly once.
 - If real optional online links were explicitly configured later, confirm they are under the separate Online menu and open a new tab. Otherwise this check is not applicable.
 - Confirm the navbar remains usable at desktop and mobile widths.
@@ -983,9 +1025,9 @@ The project-owned `documentation.*` files remain visibly distinct from these ven
 - On `DocTemplate.html`, confirm the built-in Mermaid smoke diagram renders without loading a remote resource.
 - Confirm switching between the minimal `index.html` and long `DocTemplate.html` does not move the horizontal layout.
 - Confirm every vendored version and license in `THIRD-PARTY-NOTICES.md` matches the selected pinned package source.
-- Search all HTML and CSS for remote runtime `src`, `href`, font, or import dependencies. Search only project-owned JavaScript for unintended `fetch()` calls; required unmodified vendor distributions may contain dormant internal code.
+- Check live HTML and CSS for remote runtime `src`, `href`, font, or import dependencies. In each HTML file, inspect the actual `<head>` before `<body>`; do not scan the raw `documentation-markdown` element or its fenced examples as though they were live HTML. Search only `js/documentation.loader.js`, `js/documentation.pages.js`, and `js/documentation.js` for unintended `fetch()` calls; required unmodified vendor distributions may contain dormant internal code.
 - Confirm the browser console contains no missing-file, script, font, Markdown, or Mermaid errors.
-- Follow the browser decision established during capability preflight. When direct local-file access was accepted, perform the interactive checks with that already-available capability. When it was blocked, do not retry or install browser automation; complete the planned static checks, report the unperformed interactive checks, and leave no validation artifacts.
+- Follow the browser decision established during capability preflight. Do not call a browser-control API merely to discover its common `file:` restriction. When direct local-file access was accepted, perform the interactive checks with that capability. Otherwise do not retry or install browser automation; complete the static checks, list the unperformed interactive checks, and leave no validation artifacts.
   </script>
   <noscript>This packaged documentation requires JavaScript enabled for local files.</noscript>
 </body>
