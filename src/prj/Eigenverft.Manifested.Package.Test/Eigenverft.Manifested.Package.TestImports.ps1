@@ -71,6 +71,8 @@ $moduleProjectRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'Eigenverft.Ma
 . "$moduleProjectRoot\Commands\Publisher\Eigenverft.Manifested.Package.Cmd.PackagePublisher.ps1"
 . "$moduleProjectRoot\Commands\Trust\Eigenverft.Manifested.Package.Cmd.PackageTrust.ps1"
 . "$moduleProjectRoot\Commands\Trust\Eigenverft.Manifested.Package.Cmd.PackageCatalogValidation.ps1"
+. "$moduleProjectRoot\Commands\Web\Eigenverft.Manifested.Package.Cmd.OpenUrlInBrowser.ps1"
+. "$moduleProjectRoot\Commands\Web\Eigenverft.Manifested.Package.Cmd.OpenPackageDocumentation.ps1"
 . "$moduleProjectRoot\Commands\Web\Eigenverft.Manifested.Package.Cmd.InvokeWebRequestEx.ps1"
 . "$moduleProjectRoot\Commands\Module\Eigenverft.Manifested.Package.Cmd.Module.ps1"
 

@@ -302,6 +302,20 @@ Get-PackageState
 Get-PackageState -Raw    # full inventories, config objects, directory summaries
 ```
 
+**`Open-PackageDocumentation`** opens the offline documentation index belonging to the active installed module version. It resolves the versioned module path automatically:
+
+```powershell
+Open-PackageDocumentation
+```
+
+Use `-Browser Edge`, `-BrowserPath <path>`, or `-Wait` when needed. The underlying **`Open-UrlInBrowser`** command remains available for arbitrary HTTP/HTTPS URLs and existing local files.
+
+The packaged index is self-contained: Bootstrap 5.3.8 provides component/layout capability and local navigation, Bootstrap Icons 1.13.1 supplies local menu icons, Marked 18.0.6 renders embedded Markdown, Mermaid 11.16.0 renders fenced `mermaid` diagrams, and ClipboardJS 2.0.11 provides slim code-copy behavior. Local pages appear under “Documentation”; the separate “Online” dropdown opens GitHub, issues, or PowerShell Gallery only when selected. Project-owned behavior and styling use neutral `documentation.*` names; no CDN, remote Markdown fetch, or local web server is required.
+
+To add an installed documentation page, copy `Documentation\DocTemplate.html`, replace only its `documentation-markdown` content, then register the file, menu label, browser title, and icon once in `Documentation\js\documentation.pages.js`. Every page keeps one stylesheet link and one loader script; the shared runtime builds the shell and menu from central sources.
+
+`DocTemplate.html` is also a portable bootstrap guide for unrelated projects. Its visible Markdown contains the complete relative file layout, npm, LibMan/repository-manifest, and verified direct-download acquisition choices, canonical license mappings, exact neutral project-owned CSS/JavaScript sources, page-authoring rules, visual quirks, and offline validation checklist. It deliberately does not prescribe how another product opens its documentation.
+
 **`Get-PackageDefinitionAuthoringGuide`** prints the active authoring endpoint, schema path, validation workflow, signing steps, and trusted catalog checks for maintainers writing package-definition JSON.
 
 ---

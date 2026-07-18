@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Documentation</title>
+  <link rel="stylesheet" href="./css/documentation.css">
+  <script src="./js/documentation.loader.js" defer></script>
+</head>
+<body>
+  <script id="documentation-markdown" type="text/markdown">
+# Packaged documentation works offline
+
+This page, its navigation, styles, Markdown renderer, copy behavior, and diagram renderer are installed with the module. It requires no network resources and can be opened directly from a shared or local folder.
+
+## Start here
+
+Open the packaged index belonging to the active installed module version:
+
+```powershell
+Open-PackageDocumentation
+```
+
+The complete product guide is still being assembled. The current page establishes the stable offline entry point and shared assets that future documentation pages can reuse.
+
+## Rendering pipeline
+
+```mermaid
+flowchart LR
+  A["Packaged Markdown"] --> B["Marked 18.0.6"]
+  B --> C["Bootstrap 5.3.8"]
+  B --> D["Mermaid 11.16.0"]
+  C --> E["Offline index"]
+  D --> E
+```
+
+## Packaged assets
+
+| Packaged asset | Purpose |
+| --- | --- |
+| `css/bootstrap.min.css` | Bootstrap layout and component styles |
+| `css/bootstrap-icons.min.css` | Local navigation icon font styles |
+| `css/fonts/bootstrap-icons.woff2` | Local Bootstrap Icons font |
+| `css/documentation.css` | Project-owned documentation styles |
+| `js/documentation.loader.js` | Ordered local dependency loading |
+| `js/documentation.pages.js` | Shared documentation metadata and page menu |
+| `js/bootstrap.bundle.min.js` | Bootstrap components with bundled Popper |
+| `js/marked.umd.js` | Pinned Marked Markdown renderer |
+| `js/clipboard.min.js` | Pinned ClipboardJS code-copy behavior |
+| `js/mermaid.min.js` | Pinned Mermaid diagram renderer |
+| `js/documentation.js` | Project-owned shell initialization and rendering |
+
+> The embedded Markdown and Mermaid definitions are trusted module content. No remote scripts, styles, fonts, or APIs are used.
+  </script>
+  <noscript>This packaged documentation requires JavaScript enabled for local files.</noscript>
+</body>
+</html>

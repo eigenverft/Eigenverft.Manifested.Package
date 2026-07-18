@@ -15,5 +15,6 @@ This is a compact index of completed work that still explains the active backlog
 | Authoring | `Get-PackageDefinitionAuthoringGuide` and `AgentSkills/PackageDefinitionAuthoring.md` provide the LLM-oriented authoring flow. |
 | Offline bootstrap | `EigenverftManifestedPackage` is an independently versioned seed that materializes the module, PackageManagement, PowerShellGet, and bootstrap scripts for a clean Windows machine. |
 | State and outcome | `Get-PackageState`, operation-history summaries, and `[OUTCOME]` messages are shipped. |
+| Browser opening | `Open-UrlInBrowser` opens arbitrary local files or HTTP(S) URLs; `Open-PackageDocumentation` resolves the exact active module version's `Documentation/index.html`. Minimal HTML pages differ only in embedded Markdown, use one stylesheet and one sequential local loader, while neutral `documentation.*` assets build an icon-backed page dropdown plus explicit online project links without fetch or CDN dependencies. `DocTemplate.html` visibly carries the complete portable bootstrap contract and source blueprints without prescribing another project's launch mechanism. |
 
 Remaining work is indexed in [TODO-INDEX.md](TODO-INDEX.md). The accepted local-search design does not imply HTTPS transport or a manifest; those remain separate backlog items.

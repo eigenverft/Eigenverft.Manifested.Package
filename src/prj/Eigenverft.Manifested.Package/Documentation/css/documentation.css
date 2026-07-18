@@ -1,0 +1,262 @@
+@import url("./bootstrap.min.css");
+@import url("./bootstrap-icons.min.css");
+
+:root {
+  color-scheme: light dark;
+  --page-background: #f4f7fb;
+  --surface: #ffffff;
+  --text: #182230;
+  --muted: #5d6b7a;
+  --accent: #265fba;
+  --accent-soft: #e8f0fc;
+  --border: #ccd6e2;
+  --code-background: #eef2f7;
+  --shadow: 0 1rem 2.5rem rgba(21, 37, 57, 0.1);
+  font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page-background: #10151d;
+    --surface: #171f2a;
+    --text: #edf3fa;
+    --muted: #aab8c8;
+    --accent: #82b2ff;
+    --accent-soft: #20385b;
+    --border: #354252;
+    --code-background: #202a36;
+    --shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.28);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--page-background);
+  color: var(--text);
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--page-background);
+  color: var(--text);
+  line-height: 1.65;
+}
+
+.page-width {
+  width: min(100% - 2rem, 58rem);
+  margin-inline: auto;
+}
+
+.documentation-navbar .navbar-brand {
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.documentation-navbar .nav-link {
+  font-size: 0.88rem;
+}
+
+.documentation-navbar .bi {
+  display: inline-block;
+  margin-right: 0.4rem;
+  color: var(--accent);
+  font-size: 1.1em;
+  line-height: 1;
+  vertical-align: -0.075em;
+}
+
+.documentation-navbar .dropdown-item .bi {
+  width: 1.1em;
+  text-align: center;
+}
+
+.documentation-navbar .dropdown-item.active .bi,
+.documentation-navbar .dropdown-item:active .bi {
+  color: currentColor;
+}
+
+.documentation-navbar .dropdown-item {
+  font-size: 0.88rem;
+}
+
+.documentation-content {
+  margin-block: 2rem 4rem;
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: clamp(1.25rem, 4vw, 3rem);
+}
+
+.documentation-content > :first-child {
+  margin-top: 0;
+}
+
+.documentation-content > :last-child {
+  margin-bottom: 0;
+}
+
+.documentation-content h1,
+.documentation-content h2,
+.documentation-content h3 {
+  scroll-margin-top: 4.5rem;
+  line-height: 1.25;
+}
+
+.documentation-content h1 {
+  margin: 0 0 1.25rem;
+  font-size: clamp(1.75rem, 4vw, 2.4rem);
+  letter-spacing: -0.025em;
+}
+
+.documentation-content h2 {
+  margin: 2rem 0 0.75rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.documentation-content h3 {
+  margin: 2rem 0 0.75rem;
+  font-size: 1.25rem;
+}
+
+a {
+  color: var(--accent);
+}
+
+code {
+  border-radius: 0.25rem;
+  background: var(--code-background);
+  padding: 0.15rem 0.35rem;
+  font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.92em;
+}
+
+pre {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--code-background);
+  padding: 1rem;
+}
+
+pre code {
+  padding: 0;
+}
+
+.code-block {
+  position: relative;
+  margin-block: 1rem;
+  font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.92em;
+}
+
+.code-block pre {
+  margin: 0;
+  padding-right: 4.5rem;
+}
+
+.code-block pre,
+.code-block code,
+.code-block .copy-button {
+  font: inherit;
+}
+
+.copy-button {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  border: 1px solid transparent;
+  border-radius: 0.3rem;
+  background: transparent;
+  color: var(--muted);
+  padding: 0.25rem 0.4rem;
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.78;
+  user-select: none;
+}
+
+.copy-button:hover,
+.copy-button:focus-visible {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text);
+  opacity: 1;
+}
+
+.copy-button[data-copy-state="copied"] {
+  color: var(--bs-success-text-emphasis);
+}
+
+.copy-button[data-copy-state="failed"] {
+  color: var(--bs-danger-text-emphasis);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-block: 1.25rem;
+}
+
+th,
+td {
+  border: 1px solid var(--border);
+  padding: 0.65rem 0.8rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: var(--accent-soft);
+}
+
+blockquote {
+  margin: 1.5rem 0;
+  border-left: 0.3rem solid var(--accent);
+  background: var(--accent-soft);
+  padding: 0.8rem 1rem;
+}
+
+blockquote p {
+  margin: 0;
+}
+
+.loading-message {
+  color: var(--muted);
+}
+
+.warning-panel {
+  border-color: var(--accent);
+}
+
+.mermaid {
+  overflow-x: auto;
+  margin-block: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--surface);
+  padding: 1rem;
+  text-align: center;
+}
+
+.mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: 36rem) {
+  .documentation-content {
+    border-radius: 0;
+  }
+
+  .documentation-navbar .page-width {
+    width: calc(100% - 1rem);
+  }
+}

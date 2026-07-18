@@ -92,6 +92,8 @@ FunctionsToExport = @(
     'Invoke-WebRequestEx',
     'Import-PackageTrust',
     'New-PackageSigningCertificate',
+    'Open-PackageDocumentation',
+    'Open-UrlInBrowser',
     'Remove-PackageDepot',
     'Remove-PackageDefinitionSignature',
     'Remove-PackageEndpoint',
@@ -137,7 +139,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @('Eigenverft', 'Manifested', 'Package', 'Endpoint', 'Depot', 'PowerShell', 'Bootstrap', 'Python', 'Node.js', 'Git', 'VSCode', 'Codex', 'OpenCode', 'Qwen', 'Windows')
+        Tags = @('Eigenverft', 'Manifested', 'Package', 'Endpoint', 'Depot', 'PowerShell', 'Documentation', 'Bootstrap', 'Python', 'Node.js', 'Git', 'VSCode', 'Codex', 'OpenCode', 'Qwen', 'Windows')
 
         # A URL to the license for this module.
         LicenseUri = 'https://github.com/eigenverft/Eigenverft.Manifested.Package/blob/main/LICENSE'
@@ -149,7 +151,7 @@ PrivateData = @{
         IconUri = 'https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/main/resources/evt-logo_on_light_border_128x128.png'
 
         # ReleaseNotes of this module
-        ReleaseNotes = 'Schema 2.0 adds verified multi-file artifact sets and archive-derived files. The EigenverftManifestedPackage bootstrap seed now supports a self-contained offline install with PackageManagement, PowerShellGet, and adjacent launch scripts. Added Sync-PackageDepot -AllTrusted for confirmed current-platform hydration of already signed-and-trusted catalogs. Added Get-PackageAssignmentPlan for mutation-free trust, dependency, artifact, depot, and existing-install preflight.'
+        ReleaseNotes = 'Schema 2.0 adds verified multi-file artifact sets and archive-derived files. The EigenverftManifestedPackage bootstrap seed now supports a self-contained offline install with PackageManagement, PowerShellGet, and adjacent launch scripts. Added Sync-PackageDepot -AllTrusted for confirmed current-platform hydration of already signed-and-trusted catalogs. Added Get-PackageAssignmentPlan for mutation-free trust, dependency, artifact, depot, and existing-install preflight. Added Open-UrlInBrowser, Open-PackageDocumentation, and packaged offline documentation with local Bootstrap, Bootstrap Icons, Marked, Mermaid, ClipboardJS, a generated shell, minimal page template, central page/project menu, and one-link/one-script bootstrap.'
 
         # Prerelease string of this module
         Prerelease = ''

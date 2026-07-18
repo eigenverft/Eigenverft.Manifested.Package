@@ -102,6 +102,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'Invoke-Package',
             'Invoke-WebRequestEx',
             'New-PackageSigningCertificate',
+            'Open-PackageDocumentation',
+            'Open-UrlInBrowser',
             'Remove-PackageDefinitionSignature',
             'Remove-PackageDepot',
             'Remove-PackageEndpoint',
@@ -138,6 +140,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Trust\Eigenverft.Manifested.Package.Cmd.PackageTrust.ps1') -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Trust\Eigenverft.Manifested.Package.Cmd.PackageCatalogValidation.ps1') -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Module\Eigenverft.Manifested.Package.Cmd.Module.ps1') -PathType Leaf | Should -BeTrue
+        Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Web\Eigenverft.Manifested.Package.Cmd.OpenPackageDocumentation.ps1') -PathType Leaf | Should -BeTrue
+        Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Web\Eigenverft.Manifested.Package.Cmd.OpenUrlInBrowser.ps1') -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath (Join-Path $moduleProjectRoot 'Commands\Web\Eigenverft.Manifested.Package.Cmd.InvokeWebRequestEx.ps1') -PathType Leaf | Should -BeTrue
     }
 

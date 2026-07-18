@@ -9,7 +9,7 @@ Only genuine remaining work is listed here. Shipped behavior is summarized in [D
 | Priority | Topic | Remaining outcome |
 |---|---|---|
 | 5/7 | [Release-age policy](TODO-SUPPLY-CHAIN.md) | Filter automatic selection using authored upstream release dates and explain skipped versions. |
-| 4/7 | [Hybrid documentation](TODO-DOCUMENTATION.md) | Markdown source, offline HTML bundle, opener command, and release gates. |
+| 4/7 | [Hybrid documentation](TODO-DOCUMENTATION.md) | Markdown source, complete offline HTML bundle, and release gates. |
 | 3/7 | [Ownership guide](TODO-OWNERSHIP.md) | Explain adoption/removal policy and add focused author guidance. |
 | 3/7 | [Onboarding profiles](ISSUE-ONBOARDING-PROFILES.md) | Define reviewable named `DefinitionId` bundles and examples. |
 | 3/7 | [Agent operability](ISSUE-AGENT-OPERABILITY.md) | Persist execution-step logs and expose a read/guide surface. |
@@ -31,5 +31,5 @@ Only genuine remaining work is listed here. Shipped behavior is summarized in [D
 ## Reconciliation facts
 
 - Catalog: 21 signed schema-2.0 definitions.
-- Exported command surface: 39 functions.
+- Exported command surface: 42 functions.
 - Search, trust, dependency and assignment planning, artifact file sets, complete depot materialization, authoring guidance, and the offline bootstrap are shipped and are not backlog items.

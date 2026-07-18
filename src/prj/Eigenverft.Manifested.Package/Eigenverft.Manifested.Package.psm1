@@ -68,6 +68,8 @@
 . "$PSScriptRoot\Commands\Publisher\Eigenverft.Manifested.Package.Cmd.PackagePublisher.ps1"
 . "$PSScriptRoot\Commands\Trust\Eigenverft.Manifested.Package.Cmd.PackageTrust.ps1"
 . "$PSScriptRoot\Commands\Trust\Eigenverft.Manifested.Package.Cmd.PackageCatalogValidation.ps1"
+. "$PSScriptRoot\Commands\Web\Eigenverft.Manifested.Package.Cmd.OpenUrlInBrowser.ps1"
+. "$PSScriptRoot\Commands\Web\Eigenverft.Manifested.Package.Cmd.OpenPackageDocumentation.ps1"
 . "$PSScriptRoot\Commands\Web\Eigenverft.Manifested.Package.Cmd.InvokeWebRequestEx.ps1"
 . "$PSScriptRoot\Commands\Module\Eigenverft.Manifested.Package.Cmd.Module.ps1"
 
