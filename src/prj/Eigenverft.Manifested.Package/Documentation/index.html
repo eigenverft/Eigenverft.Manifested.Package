@@ -72,6 +72,19 @@ Get-PackageVersion
 | `Search-Package` | Find a package when you know a name or command but not the `DefinitionId` |
 | `Get-PackageState` | What is assigned on this machine; recent run outcomes; key local paths |
 
+## Documentation
+
+The documentation is available through two matching entry points:
+
+- **Online:** [Eigenverft.Manifested.Package on GitHub Pages](https://eigenverft.github.io/Eigenverft.Manifested.Package/)
+- **Installed and offline:** open the documentation packaged with the exact active module version:
+
+```powershell
+Open-PackageDocumentation
+```
+
+`Open-PackageDocumentation` resolves the versioned module path automatically and opens its local `Documentation\index.html`. Use `-Browser Edge`, `-BrowserPath <path>`, or `-Wait` when needed. The packaged pages carry their own styles, fonts, Markdown renderer, diagrams, and copy behavior, so reviewing them requires no CDN, Markdown download, local web server, or network connection.
+
 See [How assignment works](#how-assignment-works) for `Search-Package` and `Get-PackageState` in detail.
 
 ---

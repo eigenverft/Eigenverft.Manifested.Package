@@ -48,6 +48,9 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - browse
         Test-Path -LiteralPath $mermaidLicensePath -PathType Leaf | Should -BeTrue
         $content | Should -Match '<!doctype html>'
         $content | Should -Match '# Eigenverft\.Manifested\.Package'
+        $content | Should -Match '## Documentation'
+        $content | Should -Match 'https://eigenverft\.github\.io/Eigenverft\.Manifested\.Package/'
+        $content | Should -Match 'Open-PackageDocumentation'
         $content | Should -Match 'href="\./css/documentation\.css"'
         $content | Should -Match 'src="\./js/documentation\.loader\.js"'
         @([regex]::Matches($content, '<link\s+rel="stylesheet"')).Count | Should -Be 1
