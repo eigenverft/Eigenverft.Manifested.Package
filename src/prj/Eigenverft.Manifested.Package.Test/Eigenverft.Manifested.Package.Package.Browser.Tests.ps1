@@ -47,13 +47,12 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - browse
         Test-Path -LiteralPath $markedLicensePath -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath $mermaidLicensePath -PathType Leaf | Should -BeTrue
         $content | Should -Match '<!doctype html>'
-        $content | Should -Match 'Packaged documentation works offline'
+        $content | Should -Match '# Eigenverft\.Manifested\.Package'
         $content | Should -Match 'href="\./css/documentation\.css"'
         $content | Should -Match 'src="\./js/documentation\.loader\.js"'
         @([regex]::Matches($content, '<link\s+rel="stylesheet"')).Count | Should -Be 1
         @([regex]::Matches($content, '<script\s+src=')).Count | Should -Be 1
         $content | Should -Not -Match '<(?:main|nav|header)\b'
-        $content | Should -Match '```mermaid'
         $content | Should -Not -Match '(?i)(src|href)\s*=\s*["'']https?://'
         $content | Should -Not -Match '(?i)(jquery|markdown-it)'
         $documentationJavaScript = Get-Content -LiteralPath $documentationJavaScriptPath -Raw
