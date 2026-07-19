@@ -47,6 +47,15 @@ artifactFileId = file consumed by the install operation
 
 The target chooses machine suitability and reusable file rules. The release contributes exact version facts and trust evidence. A selected distribution is complete only when every declared artifact file is verified.
 
+Version identity rules:
+
+- `releases[].version` is the selectable artifact identity: `latestByVersion`, `-PackageVersion` pins, dependency ranges, install/depot path segments, inventory `currentVersion`, and replace-vs-reuse decisions.
+- Any payload change that must upgrade already-owned installs requires a **new release row with a new `version`**. Never silently overwrite `releaseTag`, hashes, or paths under an existing selectable version.
+- Use optional `reportedVersion` only when the installed program reports text that differs from the selectable `version` (for readiness `{reportedVersion}` tokens). It is not a selector.
+- `releaseTag` and release `relativePath` are source facts. A filename that does not equal `version` is not automatically malformed when templates or overrides resolve correctly.
+
+Version sanity check: before updating a release, compare `version`, `releaseTag`, every exact artifact filename, and the value captured and expected by readiness side by side. If a numeric component or rebuild marker appears in only some of them, stop the mechanical update and decide explicitly whether it belongs in the unique selectable `version`, in `reportedVersion`, or only in source naming; never leave a payload-changing rebuild visible only in tag, path, or hash.
+
 ## 3. Hard stop conditions
 
 Stop and ask the user or report the blocker when:
@@ -71,7 +80,7 @@ Never run `setup.exe`, `msiexec`, a vendor bootstrapper, repair/uninstall comman
 7. Increment `definitionPublication.definitionRevision`; keep `definitionSignature.kind` as `unsigned` until signing.
 8. Validate, review every warning, sign when required, then validate trust.
 
-For a version update, research the requested upstream version independently of `versionSelection`, refresh every artifact file's source and trust facts, retain older releases when the package's history policy requires them, and re-sign only after validation.
+For a version update, research the requested upstream version independently of `versionSelection`, add a new release row when the selectable artifact identity changes (including rebuilds that must replace owned installs), refresh every artifact file's source and trust facts, set `reportedVersion` when readiness must match a different installed report string, retain older releases when the package's history policy requires them, and re-sign only after validation.
 
 ## 5. Artifact file-set rules
 
