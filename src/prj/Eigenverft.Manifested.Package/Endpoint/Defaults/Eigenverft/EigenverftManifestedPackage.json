@@ -5,8 +5,8 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "EigenverftManifestedPackage",
-    "definitionRevision": 10,
-    "publishedAtUtc": "2026-07-17T12:33:10.8854674Z",
+    "definitionRevision": 11,
+    "publishedAtUtc": "2026-07-19T05:09:24.2549705Z",
     "definitionSignature": {
       "kind": "signed",
       "format": "embedded-json-rsa-sha256-v1",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-17T12:40:33.9473558Z",
-      "signatureValue": "ONYvyvVuLRWjKtLT4rucWzSV+uiXV8RXAoUwsth1m70qL7CB5gjfwjf11yANrlZgfRH99afvQGGvkc/D8IUQ0lgNKYTahwc8EV/Orher0nSGTPr1RaLB4QHEEvjcmFCz2HEHShCEyp5k2dqC6py0II84jUFbMa3B1UCMlk7wmhY3xt+70fhZ7MrgdrkQjGxINZtugTmxp3ABMxU9UNKW28eabWOYeB08CfQk2VCJ6bJgMeG5LL/ysp1++na7DnrhUliRGwi3fl3+x4aLZjS2HE2Tmb58p5tigADESYPlAO8X3JFq2iTkmNFhAP9fg0XiLfN6TATC9CRt/jXCRf/a8S8U1PsVJBosJtXyE+9S1DBmTUqmAmPeO91aiPpVYeBOKh7je18R7Y/YHPnw088Xj6dz7m0NSNVSWiKhZAR3bWyQe6gwEo+XNZl3bX6ZTz6lqIJOdjneuMO1iJyCrnWHW15jLoRd6yU85/N86J4Fo1q2Mzk9WRJ3ExTv8kP+mss9"
+      "signedAtUtc": "2026-07-19T05:10:56.4260441Z",
+      "signatureValue": "lL6UIiVe7fIk5YEum6f4r5dCs1uvP0iw+/+ZTcFvhC0iix6etYGwWjwzinOqdm/3sS2WGbsbd8WYqbLlDxIdQn25h1f9WZlsNNqXJfbkRtS1WD95fm4QzopkcAMQjwXfw6bHDjgY34iOMv7vLNMvjhB8POlK8DhjheiEkj9fY/I2RpCRd7x5N1BalEqHjH1wzwssPPAEb7zsIBn/7fhOeoDj2RvpyWPQhe67DCViZzOk4uzYEI/qyXuJ7QoGnEAoxB+MO0MyyhXiGhuJWI006xNJvUH6J3hOX4XcW8sWYTpdFnDRDwmygucK5oam4BTO9PMDGsWW8wLx76D7AyZ63Bnz7AD08SvuKIdqfaw117mpk+hpwE2qQTyaNyz3SqnuL06yaP2xx/jUXGAbLSBQBfwMaoRvvU9v8Np+kusEtQ3PABNHre3mWGflkH6NFBVbGtMHdXQkTciXVU3ncAIPJJcgQmYLFxGrb+ODezwQrOl4HAW1UmPsqTBHhAUJy7OG"
     }
   },
   "display": {
@@ -173,6 +173,51 @@
     ],
     "releases": [
       {
+        "version": "1.20264.5748",
+        "releaseTracks": [
+          "stable"
+        ],
+        "targetArtifacts": {
+          "EigenverftManifestedPackage-psmodule-stable": {
+            "artifactId": "eigenverft-manifested-package-psmodule-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "62f180d0c855cb92dcdae66195fc2ccb81b74c199b22be26ac6d5f9054f9c69b"
+                }
+              },
+              "packageManagementPackage": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "7e1f8a75b6bc8a83d8abff79f6690fc1dfbd534fd3e5733d97e19bcb5954c13e"
+                }
+              },
+              "powerShellGetPackage": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "6b8cebf2a464eaeb31b0a6d627355c30d9d1899dba0ce3bdd0d4e7afca148673"
+                }
+              },
+              "bootstrapCommand": {
+                "url": "https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/refs/heads/main/src/prj/Eigenverft.Manifested.Package/Bootstrap/Eigenverft.Manifested.Package.Bootstrap.cmd",
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "1bd294dc0b6522974d069af7a8b78a0c672fb264de18e73e78a1fb6596a880ab"
+                }
+              },
+              "bootstrapPowerShell": {
+                "url": "https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/refs/heads/main/src/prj/Eigenverft.Manifested.Package/Bootstrap/Eigenverft.Manifested.Package.Bootstrap.ps1",
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "f89ecd624ee437b37dbb9b99d9a8e23ab9e830d3c6473bc1f52d95a2327b04e3"
+                }
+              }
+            }
+          }
+        }
+      },
+      {
         "version": "1.20264.4323",
         "releaseTracks": [
           "stable"
@@ -238,7 +283,7 @@
       "powerShellModules": [
         {
           "name": "Eigenverft.Manifested.Package",
-          "requiredVersion": "1.20264.4323",
+          "requiredVersion": "1.20264.5748",
           "scope": "CurrentUser",
           "requiredForState": true
         }
@@ -252,7 +297,7 @@
           "kind": "powershellModule",
           "searchOrder": 100,
           "name": "Eigenverft.Manifested.Package",
-          "requiredVersion": "1.20264.4323",
+          "requiredVersion": "1.20264.5748",
           "scope": "CurrentUser"
         }
       ],
@@ -280,7 +325,7 @@
       "install": {
         "kind": "powershellModuleInstaller",
         "moduleName": "Eigenverft.Manifested.Package",
-        "requiredVersion": "1.20264.4323",
+        "requiredVersion": "1.20264.5748",
         "scope": "CurrentUser",
         "allowClobber": true,
         "skipPublisherCheck": false,

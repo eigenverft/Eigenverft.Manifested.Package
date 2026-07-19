@@ -5,8 +5,8 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "CodexCli",
-    "definitionRevision": 10,
-    "publishedAtUtc": "2026-07-14T04:55:50.4324908Z",
+    "definitionRevision": 11,
+    "publishedAtUtc": "2026-07-19T05:12:28.0123282Z",
     "definitionSignature": {
       "kind": "signed",
       "format": "embedded-json-rsa-sha256-v1",
@@ -15,8 +15,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-17T06:16:18.5308181Z",
-      "signatureValue": "IKfvpYvMgmZiF3W/sFBA6UvTcjz8JCImGFoQjXB1sssx5olkhP1SvvmiGAxoMwM1vqBoJzKufGaOvGfwiBueVYssMiWSqdKkpdiB+NRJsr99XUewlcr7G7vkUVzPdyK1xycnqCxfMqOstuo27Cc67HgrMsqEhaoyBYCnWNpuA0O8/Go9TXK+Ite/rQYgwikM4SpqTmcCD34y8/nvHL+wsFURQq+VQuyuo07grncTK3Th4YWeJe8107W0A5as3lVFb8oXHl2uAjykRIScPJtRtx7n4Nu6Dul4QoHa7tGUhdqbcJgav+tA+Vwiv4CfdPBWfVtjXMOGH6aKOgMxTY3Zr2xxpSLCAl/kTwzwGTPdYY8qrx/hvdab/HEM2MU94W+OR8HkDOn0uSH13Ju8d1yv8u7QFCX4RmqonK1Sxox1Af6lt4N9apIkdOz2VuuTK3iRI4lprDV5VFueMh82dYbzSDGASgaVqTCNXz9ELXCdQZlCgvjFhcZH0q6qCeiPCc5P"
+      "signedAtUtc": "2026-07-19T05:12:28.9266089Z",
+      "signatureValue": "FAtPh3v4x7WixCij5qR1bQIiwUnnn7GUyK7XtoaxlkEm5uMz+JSYiZB5hZgcNIhotWTW65j5MxZANgUZFNi2dGplIq95/MrAX80t5bWCEBZZBUum5H8TSWoIJbSWV+MQUonntJOHuuVVk5SO8+pJLnt4YCJX/njAAwYv1JF5c7/gwPjKvI1Ah4IKW9cwWONDfuAIEiSP0KGj64QHpdOYqUGU2hizeNw5YW5EASTAY/xYGRuLLjZPJ1aMBscqpj4NdnWg2uBn8H+7O9+SvcekufbdpFKoSMBQZEnDzWYiW2TvbaqMEqS01mxuV5bkN2F5fIwdQvRjRvQxr129HtjXQptr6nmotd/jwHOFl2p3QvUfhOdR9RvBENul5WGr1Q3yUdom2uoCc/sLHWhehtcFCl0dFserU5IGKsjlBoiDXOzUjnGAL8DI5Iqbp8DipPr/zgrNSTpMemCOZ2UgXN1DNf7vn1KFqskI2NNp8hqCUN44aOjhsvMRLg/6/Wmk5IWg"
     }
   },
   "display": {
@@ -84,6 +84,20 @@
       }
     ],
     "releases": [
+      {
+        "version": "0.144.6",
+        "releaseTracks": [
+          "stable"
+        ],
+        "targetArtifacts": {
+          "CodexCli-win32-x64-stable": {
+            "artifactId": "codex-runtime-win32-x64-stable"
+          },
+          "CodexCli-win32-arm64-stable": {
+            "artifactId": "codex-runtime-win32-arm64-stable"
+          }
+        }
+      },
       {
         "version": "0.143.0",
         "releaseTracks": [
