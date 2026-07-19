@@ -157,6 +157,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
         $text | Should -Match 'target = distribution suitable for the machine'
         $text | Should -Match 'artifactFiles = every required file in that distribution'
         $text | Should -Match 'artifactFileId = file consumed by the install operation'
+        $text | Should -Match 'Version sanity check'
         $text | Should -Match '### Split installer'
         $text | Should -Match '### Archive-derived bootstrap files'
         $text | Should -Not -Match 'eigenverft-module-package-definition-1\.9\.schema\.json'
@@ -209,6 +210,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'artifactFiles = every required file in that distribution',
             'acquisitionCandidates = fallback ways to obtain one file',
             'artifactFileId = file consumed by the install operation',
+            'Version sanity check',
             'Hard stop conditions',
             'Never run `setup.exe`',
             'Authoring sequence',

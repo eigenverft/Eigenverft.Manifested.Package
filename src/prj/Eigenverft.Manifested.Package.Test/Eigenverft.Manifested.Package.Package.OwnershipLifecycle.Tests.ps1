@@ -410,4 +410,96 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - owners
         $rerun.Assigned.Status | Should -Be 'RepairedPackageOwnedInstall'
     }
 
+    It 'replaces owned GitRuntime installs when selected MinGit rebuild version advances' {
+        $rootPath = Join-Path $TestDrive 'gitruntime-rebuild-replace'
+        $preferredInstallRoot = Join-Path $rootPath 'installs'
+        $packageStateIndexPath = Join-Path $rootPath 'PackageAssignmentInventory.json'
+        $configProbe = Get-PackageConfig -DefinitionId 'GitRuntime'
+        $variant = if ([string]::Equals([string]$configProbe.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) { 'arm64' } else { '64-bit' }
+        $releaseId = if ([string]::Equals([string]$configProbe.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) { 'git-runtime-win-arm64-stable' } else { 'git-runtime-win-x64-stable' }
+        $installSlotId = "GitRuntime:stable:$variant"
+
+        foreach ($ownedVersion in @('2.55.0', '2.55.0.2')) {
+            $oldInstallRoot = Join-Path $preferredInstallRoot "git-runtime\stable\$ownedVersion\$variant"
+            $null = New-Item -ItemType Directory -Path (Join-Path $oldInstallRoot 'cmd') -Force
+            Write-TestTextFile -Path (Join-Path $oldInstallRoot 'cmd\git.cmd') -Content "@echo off`r`necho git version 2.55.0.windows.2`r`n"
+            Write-TestJsonDocument -Path $packageStateIndexPath -Document @{
+                records = @(
+                    @{
+                        installSlotId                 = $installSlotId
+                        definitionId                  = 'GitRuntime'
+                        releaseTrack                  = 'stable'
+                        artifactDistributionVariant   = $variant
+                        currentReleaseId              = $releaseId
+                        currentVersion                = $ownedVersion
+                        installDirectory              = $oldInstallRoot
+                        ownershipKind                 = 'PackageInstalled'
+                        updatedAtUtc                  = [DateTime]::UtcNow.ToString('o')
+                    }
+                )
+            }
+
+            $documents = Write-TestPackageDocuments -RootPath $rootPath -GlobalDocument (New-TestPackageGlobalDocument -PreferredTargetInstallDirectory $preferredInstallRoot -PackageAssignmentInventoryFilePath $packageStateIndexPath) -DefinitionDocument (New-TestVSCodeDefinitionDocument -Releases @(New-TestPackageRelease -Id 'placeholder-win-x64-stable' -Version '0.0.1' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64')) -EndpointInventoryDocument (New-TestEndpointInventoryDocument)
+            Mock Get-PackageConfigPath { $documents.GlobalConfigPath }
+
+            $config = Get-PackageConfig -DefinitionId 'GitRuntime'
+            $result = New-PackageResult -PackageConfig $config
+            $result = Resolve-PackagePackage -PackageResult $result
+            $result = Resolve-PackagePaths -PackageResult $result
+            $result = Find-PackageExistingPackage -PackageResult $result
+            $result = Set-PackageExistingPackage -PackageResult $result
+            $result = Resolve-PackageExistingPackageDecision -PackageResult $result
+
+            $result.Package.version | Should -Be '2.55.0.3'
+            $result.ExistingPackage.Decision | Should -Be 'ReplacePackageOwnedInstall'
+            $result.ExistingPackage.InstallDirectory | Should -Be ([System.IO.Path]::GetFullPath($oldInstallRoot))
+        }
+    }
+
+    It 'reuses an owned GitRuntime install already at the selected MinGit rebuild' {
+        $rootPath = Join-Path $TestDrive 'gitruntime-rebuild-reuse'
+        $preferredInstallRoot = Join-Path $rootPath 'installs'
+        $packageStateIndexPath = Join-Path $rootPath 'PackageAssignmentInventory.json'
+        $configProbe = Get-PackageConfig -DefinitionId 'GitRuntime'
+        $variant = if ([string]::Equals([string]$configProbe.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) { 'arm64' } else { '64-bit' }
+        $releaseId = if ([string]::Equals([string]$configProbe.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) { 'git-runtime-win-arm64-stable' } else { 'git-runtime-win-x64-stable' }
+        $installSlotId = "GitRuntime:stable:$variant"
+        $installRoot = Join-Path $preferredInstallRoot "git-runtime\stable\2.55.0.3\$variant"
+        $cmdDir = Join-Path $installRoot 'cmd'
+        $null = New-Item -ItemType Directory -Path $cmdDir -Force
+        Write-TestTextFile -Path (Join-Path $cmdDir 'git.cmd') -Content "@echo off`r`necho git version 2.55.0.windows.3`r`n"
+        Write-TestJsonDocument -Path $packageStateIndexPath -Document @{
+            records = @(
+                @{
+                    installSlotId               = $installSlotId
+                    definitionId                = 'GitRuntime'
+                    releaseTrack                = 'stable'
+                    artifactDistributionVariant = $variant
+                    currentReleaseId            = $releaseId
+                    currentVersion              = '2.55.0.3'
+                    installDirectory            = $installRoot
+                    ownershipKind               = 'PackageInstalled'
+                    updatedAtUtc                = [DateTime]::UtcNow.ToString('o')
+                }
+            )
+        }
+
+        $documents = Write-TestPackageDocuments -RootPath $rootPath -GlobalDocument (New-TestPackageGlobalDocument -PreferredTargetInstallDirectory $preferredInstallRoot -PackageAssignmentInventoryFilePath $packageStateIndexPath) -DefinitionDocument (New-TestVSCodeDefinitionDocument -Releases @(New-TestPackageRelease -Id 'placeholder-win-x64-stable' -Version '0.0.1' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64')) -EndpointInventoryDocument (New-TestEndpointInventoryDocument)
+        Mock Get-PackageConfigPath { $documents.GlobalConfigPath }
+
+        $config = Get-PackageConfig -DefinitionId 'GitRuntime'
+        $result = New-PackageResult -PackageConfig $config
+        $result = Resolve-PackagePackage -PackageResult $result
+        $result = Resolve-PackagePaths -PackageResult $result
+        $result.Package.readiness.commandChecks[0] | Add-Member -MemberType NoteProperty -Name 'relativePath' -Value 'cmd/git.cmd' -Force
+        $result.Package.readiness.files = @('cmd/git.cmd')
+        $result = Find-PackageExistingPackage -PackageResult $result
+        $result = Set-PackageExistingPackage -PackageResult $result
+        $result = Resolve-PackageExistingPackageDecision -PackageResult $result
+
+        $result.Package.version | Should -Be '2.55.0.3'
+        $result.ExistingPackage.Decision | Should -Be 'ReusePackageOwned'
+        $result.InstallOrigin | Should -Be 'PackageReused'
+    }
+
 }

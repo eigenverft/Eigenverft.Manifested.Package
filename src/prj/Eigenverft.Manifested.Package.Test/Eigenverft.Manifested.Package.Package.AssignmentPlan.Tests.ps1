@@ -127,4 +127,46 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - read-o
         @($plan.Edges | Where-Object DefinitionId -EQ 'NodeRuntime').Count | Should -Be 1
         @($plan.Nodes | Where-Object DefinitionId -EQ 'CodexCli')[0].NpmMaterialization.Status | Should -Be 'ResolvableOnline'
     }
+
+    It 'plans Replace for owned GitRuntime when inventory is behind the selected rebuild' {
+        $rootPath = Join-Path $TestDrive 'gitruntime-assignment-replace'
+        $preferredInstallRoot = Join-Path $rootPath 'installs'
+        $packageStateIndexPath = Join-Path $rootPath 'PackageAssignmentInventory.json'
+        $configProbe = Get-PackageConfig -DefinitionId 'GitRuntime'
+        $variant = if ([string]::Equals([string]$configProbe.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) { 'arm64' } else { '64-bit' }
+        $releaseId = if ([string]::Equals([string]$configProbe.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) { 'git-runtime-win-arm64-stable' } else { 'git-runtime-win-x64-stable' }
+        $installSlotId = "GitRuntime:stable:$variant"
+        $oldInstallRoot = Join-Path $preferredInstallRoot "git-runtime\stable\2.55.0.2\$variant"
+        $null = New-Item -ItemType Directory -Path (Join-Path $oldInstallRoot 'cmd') -Force
+        Write-TestJsonDocument -Path $packageStateIndexPath -Document @{
+            records = @(
+                @{
+                    installSlotId               = $installSlotId
+                    definitionId                = 'GitRuntime'
+                    releaseTrack                = 'stable'
+                    artifactDistributionVariant = $variant
+                    currentReleaseId            = $releaseId
+                    currentVersion              = '2.55.0.2'
+                    installDirectory            = $oldInstallRoot
+                    ownershipKind               = 'PackageInstalled'
+                    updatedAtUtc                = [DateTime]::UtcNow.ToString('o')
+                }
+            )
+        }
+
+        $documents = Write-TestPackageDocuments -RootPath $rootPath -GlobalDocument (New-TestPackageGlobalDocument -PreferredTargetInstallDirectory $preferredInstallRoot -PackageAssignmentInventoryFilePath $packageStateIndexPath) -DefinitionDocument (New-TestVSCodeDefinitionDocument -Releases @(New-TestPackageRelease -Id 'placeholder-win-x64-stable' -Version '0.0.1' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64')) -EndpointInventoryDocument (New-TestEndpointInventoryDocument)
+        Mock Get-PackageConfigPath { $documents.GlobalConfigPath }
+        Mock Invoke-WebRequestEx { throw 'Assignment planning must not make HTTP requests.' }
+        Mock Get-GitHubRelease { throw 'Assignment planning must not query GitHub.' }
+
+        $plan = Get-PackageAssignmentPlan -DefinitionId 'GitRuntime' -Raw
+        $node = @($plan.Nodes | Where-Object DefinitionId -EQ 'GitRuntime')[0]
+
+        $plan.MutationFree | Should -BeTrue
+        $node.Version | Should -Be '2.55.0.3'
+        $node.PlannedAction | Should -Be 'Replace'
+        $node.ExistingInstall.Decision | Should -Be 'ReplacePackageOwnedInstall'
+        Assert-MockCalled Invoke-WebRequestEx -Times 0 -Exactly
+        Assert-MockCalled Get-GitHubRelease -Times 0 -Exactly
+    }
 }

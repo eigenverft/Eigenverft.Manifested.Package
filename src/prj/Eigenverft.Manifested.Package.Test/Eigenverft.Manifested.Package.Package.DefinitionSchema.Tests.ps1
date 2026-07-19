@@ -632,4 +632,14 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - defini
         { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $info -DefinitionId 'VSCodeRuntime' } | Should -Throw '*dependency cycle*'
     }
 
+    It 'rejects duplicate release versions case-insensitively' {
+        $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64' -FileName 'VSCode-win32-x64-2.0.0.zip'
+        $definition = New-TestVSCodeDefinitionDocument -Releases @($release)
+        $duplicateRelease = ConvertTo-TestPsObject $definition.artifacts.releases[0]
+        $definition.artifacts.releases = @($definition.artifacts.releases[0], $duplicateRelease)
+        $info = [pscustomobject]@{ Path = 'duplicate-version.json'; Document = ConvertTo-TestPsObject $definition }
+
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $info -DefinitionId 'VSCodeRuntime' } | Should -Throw '*duplicate release version*'
+    }
+
 }

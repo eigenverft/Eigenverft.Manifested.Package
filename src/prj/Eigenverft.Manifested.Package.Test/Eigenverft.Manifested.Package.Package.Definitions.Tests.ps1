@@ -125,9 +125,9 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $sourceDefinition.GitHubOwner | Should -Be 'ggml-org'
         $sourceDefinition.GitHubRepository | Should -Be 'llama.cpp'
         $result.PackageId | Should -Be 'llama-cpp-win-cpu-x64-stable'
-        $result.Package.version | Should -Be '9934'
-        $result.Package.releaseTag | Should -Be 'b9934'
-        $result.Package.artifactFiles[0].relativePath | Should -Be 'llama-b9934-bin-win-cpu-x64.zip'
+        $result.Package.version | Should -Be '10068'
+        $result.Package.releaseTag | Should -Be 'b10068'
+        $result.Package.artifactFiles[0].relativePath | Should -Be 'llama-b10068-bin-win-cpu-x64.zip'
         $result.Package.assigned.pathRegistration.source.kind | Should -Be 'shim'
         $result.Package.assigned.pathRegistration.source.use | Should -Be 'discovery.presence.commands'
         @($config.Definition.discovery.presence.commands.name) | Should -Be @('llama-cli', 'llama-server', 'llama-quantize', 'llama-bench', 'llama-tokenize')
@@ -141,29 +141,32 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $config -SourceRef ([pscustomobject]@{ scope = 'definition'; id = 'gitForWindowsGitHub' })
 
         $expectedFileName = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            'MinGit-2.55.0.2-arm64.zip'
+            'MinGit-2.55.0.3-arm64.zip'
         }
         else {
-            'MinGit-2.55.0.2-64-bit.zip'
+            'MinGit-2.55.0.3-64-bit.zip'
         }
         $expectedSha256 = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            '0b2b81fdce284efd174cbb51b886ccea2fd271679c4b5c21f07d9e03bae51413'
+            'f7748965d5068e81ad93ca1923650db6742d6e22332b1ae7567a841c59f6bde5'
         }
         else {
-            'e3ea2944cea4b3fabcd69c7c1669ef69b1b66c05ac7806d81224d0abad2dec31'
+            'f48e2d2dc74a24454adc6d8fd0ac25bf9c2386f19cfb06202b9465aaad4f9f05'
         }
 
         $config.DefinitionId | Should -Be 'GitRuntime'
         $sourceDefinition.Kind | Should -Be 'githubRelease'
         $sourceDefinition.GitHubOwner | Should -Be 'git-for-windows'
         $sourceDefinition.GitHubRepository | Should -Be 'git'
-        $result.Package.version | Should -Be '2.55.0'
-        $result.Package.releaseTag | Should -Be 'v2.55.0.windows.2'
+        $result.Package.version | Should -Be '2.55.0.3'
+        $result.Package.reportedVersion | Should -Be '2.55.0.windows.3'
+        $result.Package.releaseTag | Should -Be 'v2.55.0.windows.3'
         $result.Package.artifactFiles[0].relativePath | Should -Be $expectedFileName
         $result.Package.artifactFiles[0].contentHash.value | Should -Be $expectedSha256
+        $result.Package.readiness.commandChecks[0].expectedValue | Should -Be '{reportedVersion}'
         $result.Package.assigned.pathRegistration.source.kind | Should -Be 'shim'
         $result.Package.assigned.pathRegistration.source.use | Should -Be 'discovery.presence.commands'
         $config.Definition.discovery.presence.commands[0].name | Should -Be 'git'
+        $config.Definition.discovery.presence.commands[0].stateChecks[0].outputPattern | Should -Match '\\.windows\\.'
     }
 
     It 'loads the shipped GHCli definition and selects the fixed GitHub-backed release' {
@@ -210,22 +213,22 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $config -SourceRef ([pscustomobject]@{ scope = 'definition'; id = 'notepadPlusPlusGitHubRelease' })
 
         $expectedFileName = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            'npp.8.9.6.4.Installer.arm64.exe'
+            'npp.8.9.7.Installer.arm64.exe'
         }
         else {
-            'npp.8.9.6.4.Installer.x64.exe'
+            'npp.8.9.7.Installer.x64.exe'
         }
         $expectedSha256 = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            'c318d51a5777bf3488ca10198f338d3bd92cb5768f49b5350a774c7767035aca'
+            '4bb261857e22505c36e1196b4f6326df41b4c0fffc527dc9933fe0b210f7cb02'
         }
         else {
-            'cb902f8a9628324dbe5233b5202e716ea469720c9a1ac968007df2288e4ed2ea'
+            '1884e093bae261c4942210334e1f2eae71354913e4ded3cc1a4a18c5320741ec'
         }
 
         $config.DefinitionId | Should -Be 'NotepadPlusPlus'
         $sourceDefinition.Kind | Should -Be 'download'
         $sourceDefinition.BaseUri | Should -Be 'https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/'
-        $result.Package.version | Should -Be '8.9.6.4'
+        $result.Package.version | Should -Be '8.9.7'
         $result.Package.assigned.install.kind | Should -Be 'nsisInstaller'
         $result.Package.assigned.install.targetDirectoryArgument.prefix | Should -Be '/D='
         $result.Package.discovery.existingInstall.searchLocations[0].kind | Should -Be 'windowsUninstallRegistryKey'
@@ -319,23 +322,23 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $config -SourceRef ([pscustomobject]@{ scope = 'definition'; id = 'dotNetBuilds' })
 
         $expectedFileName = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            'dotnet-sdk-10.0.301-win-arm64.zip'
+            'dotnet-sdk-10.0.302-win-arm64.zip'
         }
         else {
-            'dotnet-sdk-10.0.301-win-x64.zip'
+            'dotnet-sdk-10.0.302-win-x64.zip'
         }
         $expectedSha512 = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            'cd2aabcf089d76c6f904e2b77ed06b9f397e105f8a9b8fb425ce6b8ab01413a01d59a1c298c58c627db3e8d197280825d7c2cfc8b8345a149ed5b86457cf5c5b'
+            '241abb2b345cff1b32d87a9e29da5e9d52f899f691e7b34661274477564c4717054c489814a9fd7a5526fc9e0d8174a0d951a4a845556eee53add526f71917e7'
         }
         else {
-            '38456e992c4df0ff0ac9fc5f28ff09a88543c0fc4e4deedffda9c4ebaf852c4519addacf28814ea77ea42ce2d37db812fae5ba1fe25f06364ca5a6027036387f'
+            '7d170ed75fa9af34c00646621d92011dbd71943952e2787cd15df9be78e6452b55dadef34d7eff77b802e6af4959e071a55855ac649afeac70901c3a2a258716'
         }
 
         $config.DefinitionId | Should -Be 'DotNetSdk10'
         $sourceDefinition.Kind | Should -Be 'download'
         $sourceDefinition.BaseUri | Should -Be 'https://builds.dotnet.microsoft.com/dotnet/'
-        $result.Package.version | Should -Be '10.0.301'
-        $result.Package.releaseTag | Should -Be '10.0.9'
+        $result.Package.version | Should -Be '10.0.302'
+        $result.Package.releaseTag | Should -Be '10.0.10'
         $result.Package.artifactFiles[0].relativePath | Should -Be $expectedFileName
         $result.Package.artifactFiles[0].contentHash.algorithm | Should -Be 'sha512'
         $result.Package.artifactFiles[0].contentHash.value | Should -Be $expectedSha512
@@ -354,22 +357,22 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $config -SourceRef ([pscustomobject]@{ scope = 'definition'; id = 'cursorAgentCliLab' })
 
         $expectedFileName = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            'agent-cli-package-2026.07.08-0c04a8a-win32-arm64.zip'
+            'agent-cli-package-2026.07.16-899851b-win32-arm64.zip'
         }
         else {
-            'agent-cli-package-2026.07.08-0c04a8a-win32-x64.zip'
+            'agent-cli-package-2026.07.16-899851b-win32-x64.zip'
         }
         $expectedSha256 = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            '9a9c5dced83765c8579b27e01419c2b1fe09857bd715267cf03bd55d16d53aa4'
+            '4918351f7df24c98bedfe83de9e16a46d153e1d09d6e4383f561af3c3a50bb2f'
         }
         else {
-            '9379c6f6fcac1d863c9fd578602a1b3e6d99634c599e74bf101003371ff59c10'
+            '8c31b4420ea1cbc994b5c5e6535897e3c85818dd5f975e252aac69470e589ecf'
         }
 
         $config.DefinitionId | Should -Be 'CursorCli'
         $sourceDefinition.Kind | Should -Be 'download'
         $sourceDefinition.BaseUri | Should -Be 'https://downloads.cursor.com/lab/'
-        $result.Package.version | Should -Be '2026.07.08-0c04a8a'
+        $result.Package.version | Should -Be '2026.07.16-899851b'
         $result.Package.assigned.install.kind | Should -Be 'expandArchive'
         $result.Package.assigned.install.expandedRoot | Should -Be 'dist-package'
         $result.Package.artifactFiles[0].relativePath | Should -Be $expectedFileName
@@ -383,8 +386,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
     It 'loads the shipped materialized npm definitions without authored package-file acquisition' {
 
         $cases = @(
-            [pscustomobject]@{ DefinitionId = 'CodexCli'; PackageSpec = '@openai/codex@{version}'; Version = '0.143.0'; Command = 'codex'; RelativePath = 'codex.cmd'; Dependencies = @('VisualCppRedistributable', 'NodeRuntime') }
-            [pscustomobject]@{ DefinitionId = 'OpenCodeCli'; PackageSpec = 'opencode-ai@{version}'; Version = '1.17.15'; Command = 'opencode'; RelativePath = 'opencode.cmd'; Dependencies = @('NodeRuntime') }
+            [pscustomobject]@{ DefinitionId = 'CodexCli'; PackageSpec = '@openai/codex@{version}'; Version = '0.144.6'; Command = 'codex'; RelativePath = 'codex.cmd'; Dependencies = @('VisualCppRedistributable', 'NodeRuntime') }
+            [pscustomobject]@{ DefinitionId = 'OpenCodeCli'; PackageSpec = 'opencode-ai@{version}'; Version = '1.18.3'; Command = 'opencode'; RelativePath = 'opencode.cmd'; Dependencies = @('NodeRuntime') }
         )
 
         foreach ($case in $cases) {
@@ -425,19 +428,19 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $latest.PackageVersionSelectionSource | Should -Be 'definition'
         $latest.PackageVersionSelector | Should -Be 'latestByVersion'
         $latest.PackageVersionOrderingKind | Should -Be 'normalVersion'
-        $latest.Package.version | Should -Be '1.17.15'
+        $latest.Package.version | Should -Be '1.18.3'
 
         $explicitLatest = New-PackageResult -PackageConfig $config -PackageVersionSelector 'latestByVersion'
         $explicitLatest = Resolve-PackagePackage -PackageResult $explicitLatest
         $explicitLatest.PackageVersionSelectionSource | Should -Be 'command'
         $explicitLatest.PackageVersionSelector | Should -Be 'latestByVersion'
-        $explicitLatest.Package.version | Should -Be '1.17.15'
+        $explicitLatest.Package.version | Should -Be '1.18.3'
 
         $previous = New-PackageResult -PackageConfig $config -PackageVersionSelector 'previousByVersion'
         $previous = Resolve-PackagePackage -PackageResult $previous
         $previous.PackageVersionSelectionSource | Should -Be 'command'
         $previous.PackageVersionSelector | Should -Be 'previousByVersion'
-        $previous.Package.version | Should -Be '1.17.9'
+        $previous.Package.version | Should -Be '1.17.15'
 
         $pinned = New-PackageResult -PackageConfig $config -PackageVersionSelector '1.14.46'
         $pinned = Resolve-PackagePackage -PackageResult $pinned
@@ -459,7 +462,82 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
 
         $result.PackageVersionSelectionSource | Should -Be 'command'
         $result.PackageVersionSelector | Should -Be 'previousByVersion'
-        $result.Package.version | Should -Be '2.54.0'
+        $result.Package.version | Should -Be '2.55.0.2'
+        $result.Package.reportedVersion | Should -Be '2.55.0.windows.2'
+        $result.Package.releaseTag | Should -Be 'v2.55.0.windows.2'
+        $result.Package.artifactFiles[0].relativePath | Should -Match 'MinGit-2\.55\.0\.2-'
+    }
+
+    It 'pins exact GitRuntime MinGit rebuild versions and keeps template paths distinct' {
+
+        $config = Get-PackageConfig -DefinitionId 'GitRuntime'
+
+        $latest = New-PackageResult -PackageConfig $config
+        $latest = Resolve-PackagePackage -PackageResult $latest
+        $latest = Resolve-PackagePaths -PackageResult $latest
+        $latest.Package.version | Should -Be '2.55.0.3'
+        $latest.PackageDepotRelativeDirectory | Should -Match '\\2\.55\.0\.3\\'
+        Resolve-PackageTemplateText -Text '{reportedVersion}' -PackageConfig $config -Package $latest.Package | Should -Be '2.55.0.windows.3'
+
+        $pin25502 = New-PackageResult -PackageConfig $config -PackageVersionSelector '2.55.0.2'
+        $pin25502 = Resolve-PackagePackage -PackageResult $pin25502
+        $pin25502 = Resolve-PackagePaths -PackageResult $pin25502
+        $pin25502.Package.version | Should -Be '2.55.0.2'
+        $pin25502.Package.reportedVersion | Should -Be '2.55.0.windows.2'
+        $pin25502.Package.artifactFiles[0].relativePath | Should -Match 'MinGit-2\.55\.0\.2-'
+        $pin25502.PackageDepotRelativeDirectory | Should -Match '\\2\.55\.0\.2\\'
+        $pin25502.InstallDirectory | Should -Match '\\2\.55\.0\.2\\'
+
+        $pin254 = New-PackageResult -PackageConfig $config -PackageVersionSelector '2.54.0'
+        $pin254 = Resolve-PackagePackage -PackageResult $pin254
+        $pin254.Package.version | Should -Be '2.54.0'
+        $pin254.Package.reportedVersion | Should -Be '2.54.0.windows.1'
+        $pin254.Package.artifactFiles[0].relativePath | Should -Match 'MinGit-2\.54\.0-'
+
+        { Resolve-PackagePackage -PackageResult (New-PackageResult -PackageConfig $config -PackageVersionSelector '2.55.0') } | Should -Throw "*Package version '2.55.0' is not authored*"
+    }
+
+    It 'defaults reportedVersion to version when the release omits it' {
+
+        $rootPath = Join-Path $TestDrive 'reported-version-default'
+        $release = New-TestPackageRelease -Id 'tool-win-x64-stable' -Version '9.8.7' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64' -FileName 'tool-9.8.7.zip' -Readiness (New-TestReadiness -Version '9.8.7')
+        $documents = Write-TestPackageDocuments -RootPath $rootPath -GlobalDocument (New-TestPackageGlobalDocument) -DefinitionDocument (New-TestVSCodeDefinitionDocument -DefinitionId 'ReportedVersionTool' -Releases @($release) -SharedReadiness (New-TestReadiness -Version '9.8.7'))
+        Mock Get-PackageConfigPath { $documents.GlobalConfigPath }
+        Mock Get-PackageDefinitionPath { param($DefinitionId) $documents.DefinitionPath }
+
+        $config = Get-PackageConfig -DefinitionId 'ReportedVersionTool'
+        $result = New-PackageResult -PackageConfig $config
+        $result = Resolve-PackagePackage -PackageResult $result
+
+        $result.Package.version | Should -Be '9.8.7'
+        $result.Package.reportedVersion | Should -Be '9.8.7'
+        Resolve-PackageTemplateText -Text '{reportedVersion}' -PackageConfig $config -Package $result.Package | Should -Be '9.8.7'
+    }
+
+    It 'accepts the selected GitRuntime reportedVersion and rejects another rebuild string' {
+
+        $config = Get-PackageConfig -DefinitionId 'GitRuntime'
+        $result = New-PackageResult -PackageConfig $config -PackageVersionSelector '2.55.0.3'
+        $result = Resolve-PackagePackage -PackageResult $result
+        $result = Resolve-PackagePaths -PackageResult $result
+
+        $installRoot = $result.InstallDirectory
+        $cmdDir = Join-Path $installRoot 'cmd'
+        $null = New-Item -ItemType Directory -Path $cmdDir -Force
+        Write-TestTextFile -Path (Join-Path $cmdDir 'git.cmd') -Content "@echo off`r`necho git version 2.55.0.windows.3`r`n"
+        $result.Package.readiness.commandChecks[0] | Add-Member -MemberType NoteProperty -Name 'relativePath' -Value 'cmd/git.cmd' -Force
+        $result.Package.readiness.files = @('cmd/git.cmd')
+
+        $ready = Test-PackageAssignedReadiness -PackageResult $result
+        $ready.Readiness.Accepted | Should -BeTrue
+        $ready.Readiness.Commands[0].ActualValue | Should -Be '2.55.0.windows.3'
+        $ready.Readiness.Commands[0].ExpectedValue | Should -Be '2.55.0.windows.3'
+
+        Write-TestTextFile -Path (Join-Path $cmdDir 'git.cmd') -Content "@echo off`r`necho git version 2.55.0.windows.2`r`n"
+        $failed = Test-PackageAssignedReadiness -PackageResult $result
+        $failed.Readiness.Accepted | Should -BeFalse
+        $failed.Readiness.Commands[0].ActualValue | Should -Be '2.55.0.windows.2'
+        $failed.Readiness.Commands[0].ExpectedValue | Should -Be '2.55.0.windows.3'
     }
 
     It 'loads shipped depot-backed PowerShell module definitions with package-file acquisition' {

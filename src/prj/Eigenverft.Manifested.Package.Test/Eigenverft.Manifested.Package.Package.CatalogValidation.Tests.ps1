@@ -192,7 +192,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - catalo
 
         $multiArchDefinition = ConvertTo-TestPsObject (New-TestVSCodeDefinitionDocument -DefinitionId 'SharedReadinessMultiArch' -Releases @(
                 New-TestPackageRelease -Id 'multi-arch-win-x64-stable' -Version '1.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
-                New-TestPackageRelease -Id 'multi-arch-win-x86-stable' -Version '1.0.0' -Architecture 'x86' -ArtifactDistributionVariant 'win32-x86'
+                New-TestPackageRelease -Id 'multi-arch-win-x86-stable' -Version '1.0.1' -Architecture 'x86' -ArtifactDistributionVariant 'win32-x86'
             ))
         $multiArchDefinition.discovery.presence.files = @('TOTALCMD64.EXE', 'TOTALCMD.EXE')
         $multiArchDefinition.packageOperations.assigned.readyStateCheck.require.files = $true
