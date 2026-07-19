@@ -106,6 +106,15 @@ function Get-PackageTemplateTokenMap {
         $tokens['releaseId'] = if ($Package.PSObject.Properties['id']) { [string]$Package.id } else { $null }
         $tokens['releaseTrack'] = if ($Package.PSObject.Properties['releaseTrack']) { [string]$Package.releaseTrack } else { $tokens['releaseTrack'] }
         $tokens['version'] = if ($Package.PSObject.Properties['version']) { [string]$Package.version } else { $null }
+        $tokens['reportedVersion'] = if ($Package.PSObject.Properties['reportedVersion'] -and -not [string]::IsNullOrWhiteSpace([string]$Package.reportedVersion)) {
+            [string]$Package.reportedVersion
+        }
+        elseif ($Package.PSObject.Properties['version']) {
+            [string]$Package.version
+        }
+        else {
+            $null
+        }
         $tokens['artifactDistributionVariant'] = if ($Package.PSObject.Properties['artifactDistributionVariant']) { [string]$Package.artifactDistributionVariant } else { $null }
         $tokens['artifactTargetId'] = if ($Package.PSObject.Properties['artifactTargetId']) { [string]$Package.artifactTargetId } else { $null }
     }

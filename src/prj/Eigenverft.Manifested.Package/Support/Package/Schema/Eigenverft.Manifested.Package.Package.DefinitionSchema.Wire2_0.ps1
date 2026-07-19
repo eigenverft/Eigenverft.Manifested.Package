@@ -1092,6 +1092,7 @@ function Assert-PackageDefinitionSchema_2_0 {
         }
     }
 
+    $releaseVersions = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
     foreach ($versionEntry in @($definition.artifacts.releases)) {
         if ($versionEntry.PSObject.Properties['artifactsByTarget']) {
             throw "Package definition '$DefinitionId' release '$($versionEntry.version)' still uses retired property 'artifactsByTarget'."
@@ -1099,6 +1100,9 @@ function Assert-PackageDefinitionSchema_2_0 {
         Assert-PackageDefinitionNoRetiredNestedProperty_2_0 -DefinitionId $DefinitionId -InputObject $versionEntry -PropertyName 'artifactsByTarget' -PropertyPath 'artifacts.releases[].artifactsByTarget' -ReplacementPath 'targetArtifacts'
         if (-not $versionEntry.PSObject.Properties['version'] -or [string]::IsNullOrWhiteSpace([string]$versionEntry.version)) {
             throw "Package definition '$DefinitionId' has release entry without version."
+        }
+        if (-not $releaseVersions.Add([string]$versionEntry.version)) {
+            throw "Package definition '$DefinitionId' has duplicate release version '$($versionEntry.version)'."
         }
         if (-not $versionEntry.PSObject.Properties['releaseTracks'] -or $null -eq $versionEntry.releaseTracks) {
             throw "Package definition '$DefinitionId' release '$($versionEntry.version)' is missing releaseTracks."
@@ -1402,6 +1406,12 @@ function Resolve-PackageEffectivePackage_2_0 {
         id                      = $packageId
         artifactId              = [string]$artifact.artifactId
         version                 = [string]$versionEntry.version
+        reportedVersion         = if ($versionEntry.PSObject.Properties['reportedVersion'] -and -not [string]::IsNullOrWhiteSpace([string]$versionEntry.reportedVersion)) {
+            [string]$versionEntry.reportedVersion
+        }
+        else {
+            [string]$versionEntry.version
+        }
         releaseTag              = if ($upstreamRelease -and $upstreamRelease.PSObject.Properties['releaseTag']) { [string]$upstreamRelease.releaseTag } else { $null }
         releaseTrack            = [string]$target.releaseTrack
         artifactDistributionVariant = [string]$target.artifactDistributionVariant

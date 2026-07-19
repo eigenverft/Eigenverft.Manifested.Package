@@ -503,7 +503,12 @@
         "version": {
           "type": "string",
           "minLength": 1,
-          "description": "Package version used for selection, paths, validation tokens, and inventory."
+          "description": "Selectable artifact identity used for latest selection, -PackageVersion pins, version ranges, install/depot paths, inventory currentVersion, and replace-vs-reuse decisions. Must be unique within the definition (case-insensitive)."
+        },
+        "reportedVersion": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional version text reported by the installed application (for readiness expectedValue tokens). When omitted, the runtime treats reportedVersion as equal to version. Not a selector."
         },
         "releaseTracks": {
           "type": "array",
