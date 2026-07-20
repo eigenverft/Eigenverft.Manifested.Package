@@ -320,8 +320,36 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - source
         $result.ArtifactFiles[0].StagingPath | Should -Match '\\FileStage\\VSCodeRuntime-[0-9a-f]{8}\\'
         $result.PackageInstallStageDirectory | Should -Match '\\InstStage\\VSCodeRuntime-[0-9a-f]{8}$'
         (Split-Path -Leaf $result.ArtifactStagingDirectory) | Should -Be (Split-Path -Leaf $result.PackageInstallStageDirectory)
-        $result.PackageDepotRelativeDirectory | Should -Be 'VSCodeRuntime\stable\2.0.0\win32-x64'
-        $result.ArtifactFiles[0].DefaultDepotPath | Should -Match '\\stable\\2\.0\.0\\win32-x64\\'
+        $result.PackageDepotRelativeDirectory | Should -Be 'default\VSCodeRuntime\stable\2.0.0\win32-x64'
+        $result.ArtifactFiles[0].DefaultDepotPath | Should -Match '\\default\\VSCodeRuntime\\stable\\2\.0\.0\\win32-x64\\'
+    }
+
+    It 'prefixes PackageDepotRelativeDirectory from definitionPublication.depotNamespace' {
+        $rootPath = Join-Path $TestDrive 'depot-namespace-prefix'
+        $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64' -FileName 'VSCode-win32-x64-2.0.0.zip' -AcquisitionCandidates @(
+            @{
+                kind         = 'packageDepot'
+                searchOrder  = 10
+                verification = @{ mode = 'none' }
+            }
+        )
+        $definitionEvf = New-TestVSCodeDefinitionDocument -Releases @($release) -SharedReadiness (New-TestReadiness -Version '2.0.0')
+        $definitionEvf.definitionPublication.depotNamespace = 'evf'
+        $evfDocs = Write-TestPackageDocuments -RootPath (Join-Path $rootPath 'evf') -GlobalDocument (New-TestPackageGlobalDocument) -DefinitionDocument $definitionEvf
+        Mock Get-PackageConfigPath { $evfDocs.GlobalConfigPath }
+        $evfConfig = Get-PackageConfig -DefinitionId 'VSCodeRuntime'
+        $evfResult = Resolve-PackagePaths -PackageResult (Resolve-PackagePackage -PackageResult (New-PackageResult -PackageConfig $evfConfig))
+        $evfResult.PackageDepotRelativeDirectory | Should -Be 'evf\VSCodeRuntime\stable\2.0.0\win32-x64'
+        $evfConfig.DepotNamespace | Should -Be 'evf'
+
+        $definitionCustom = New-TestVSCodeDefinitionDocument -Releases @($release) -SharedReadiness (New-TestReadiness -Version '2.0.0')
+        $definitionCustom.definitionPublication.depotNamespace = 'custom'
+        $customDocs = Write-TestPackageDocuments -RootPath (Join-Path $rootPath 'custom') -GlobalDocument (New-TestPackageGlobalDocument) -DefinitionDocument $definitionCustom
+        Mock Get-PackageConfigPath { $customDocs.GlobalConfigPath }
+        $customConfig = Get-PackageConfig -DefinitionId 'VSCodeRuntime'
+        $customResult = Resolve-PackagePaths -PackageResult (Resolve-PackagePackage -PackageResult (New-PackageResult -PackageConfig $customConfig))
+        $customResult.PackageDepotRelativeDirectory | Should -Be 'custom\VSCodeRuntime\stable\2.0.0\win32-x64'
+        $customConfig.DepotNamespace | Should -Be 'custom'
     }
 
     It 'writes resolved paths as separate console lines' {

@@ -102,7 +102,7 @@ FunctionsToExport = @(
     'Resign-PackageDefinition',
     'Revoke-PackageSigningCertificate',
     'Search-Package',
-    'Sync-PackageDepot',
+    'Invoke-PackageDepotMaterialize',
     'Set-PackageDepot',
     'Set-PackageEndpoint',
     'Set-PackagePublisher',
@@ -122,7 +122,7 @@ CmdletsToExport = @()
 VariablesToExport = @()
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = @()
+AliasesToExport = @('Sync-PackageDepot')
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -151,7 +151,7 @@ PrivateData = @{
         IconUri = 'https://raw.githubusercontent.com/eigenverft/Eigenverft.Manifested.Package/main/resources/evt-logo_on_light_border_128x128.png'
 
         # ReleaseNotes of this module
-        ReleaseNotes = 'Schema 2.0 adds verified multi-file artifact sets and archive-derived files. The EigenverftManifestedPackage bootstrap seed now supports a self-contained offline install with PackageManagement, PowerShellGet, and adjacent launch scripts. Added Sync-PackageDepot -AllTrusted for confirmed current-platform hydration of already signed-and-trusted catalogs. Added Get-PackageAssignmentPlan for mutation-free trust, dependency, artifact, depot, and existing-install preflight. Added Open-UrlInBrowser, Open-PackageDocumentation, and packaged offline documentation with local Bootstrap, Bootstrap Icons, Marked, Mermaid, ClipboardJS, Highlight.js, a generated shell, minimal page template, central page/project menu, and one-link/one-script bootstrap.'
+        ReleaseNotes = 'Schema 2.0 adds verified multi-file artifact sets and archive-derived files. The EigenverftManifestedPackage bootstrap seed now supports a self-contained offline install with PackageManagement, PowerShellGet, and adjacent launch scripts. Catalog fill uses Invoke-PackageDepotMaterialize -AllTrusted (Sync-PackageDepot remains a deprecated alias) for confirmed current-platform hydration of already signed-and-trusted catalogs. Added Get-PackageAssignmentPlan for mutation-free trust, dependency, artifact, depot, and existing-install preflight. Added Open-UrlInBrowser, Open-PackageDocumentation, and packaged offline documentation with local Bootstrap, Bootstrap Icons, Marked, Mermaid, ClipboardJS, Highlight.js, a generated shell, minimal page template, central page/project menu, and one-link/one-script bootstrap.'
 
         # Prerelease string of this module
         Prerelease = ''

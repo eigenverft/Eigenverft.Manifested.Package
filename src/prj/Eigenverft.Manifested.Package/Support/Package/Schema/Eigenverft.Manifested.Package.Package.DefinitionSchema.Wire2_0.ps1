@@ -934,6 +934,10 @@ function Assert-PackageDefinitionSchema_2_0 {
         throw "Package definition '$DefinitionId' definitionPublication.publishedAtUtc must be a valid UTC timestamp."
     }
 
+    if ($definition.definitionPublication.PSObject.Properties['depotNamespace']) {
+        Assert-PackageDefinitionDepotNamespace -DepotNamespace ([string]$definition.definitionPublication.depotNamespace) -DefinitionId $DefinitionId
+    }
+
     Assert-PackageDefinitionClassification_2_0 -Definition $definition -DefinitionId $DefinitionId
 
     if (-not $definition.artifacts.PSObject.Properties['targets']) {

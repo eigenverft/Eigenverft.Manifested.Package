@@ -21,7 +21,7 @@ function Get-PackageDepot {
     return $match
 }
 
-function Sync-PackageDepot {
+function Invoke-PackageDepotMaterialize {
     <#
     .SYNOPSIS
         Materializes every already trusted package available for the current platform.
@@ -32,16 +32,19 @@ function Sync-PackageDepot {
         plus its dependencies into configured depots. The command never prompts for new
         catalog trust, imports signing keys, accepts unsigned definitions, or removes files.
 
+        Sync-PackageDepot is a deprecated alias for this command.
+
     .PARAMETER AllTrusted
-        Confirms that the complete already-trusted current-platform catalog is the sync scope.
+        Confirms that the complete already-trusted current-platform catalog is the materialize scope.
 
     .PARAMETER ExcludeDefinitionId
-        Omits matching definition ids from this sync run.
+        Omits matching definition ids from this run.
 
     .PARAMETER FailFast
         Stops after the first package that does not materialize successfully.
     #>
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
+    [Alias('Sync-PackageDepot')]
     param(
         [Parameter(Mandatory = $true)]
         [switch]$AllTrusted,
@@ -58,8 +61,12 @@ function Sync-PackageDepot {
         [switch]$FailFast
     )
 
+    if ([string]::Equals($MyInvocation.InvocationName, 'Sync-PackageDepot', [System.StringComparison]::OrdinalIgnoreCase)) {
+        Write-Warning "Sync-PackageDepot is deprecated. Use Invoke-PackageDepotMaterialize instead."
+    }
+
     if (-not $AllTrusted.IsPresent) {
-        throw 'Sync-PackageDepot currently requires -AllTrusted.'
+        throw 'Invoke-PackageDepotMaterialize currently requires -AllTrusted.'
     }
 
     $searchParameters = @{

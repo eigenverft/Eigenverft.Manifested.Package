@@ -29,8 +29,8 @@ flowchart LR
 Open PowerShell on a host that already has Eigenverft.Manifested.Package. Preview the trusted package set, then materialize it:
 
 ```powershell
-Sync-PackageDepot -AllTrusted -WhatIf
-Sync-PackageDepot -AllTrusted
+Invoke-PackageDepotMaterialize -AllTrusted -WhatIf
+Invoke-PackageDepotMaterialize -AllTrusted
 ```
 
 Confirm the synchronization when prompted. It prepares every already trusted package definition available for the current Windows platform, including complete artifact sets and dependencies. The preview matters because the set can include large runtimes or models.
@@ -127,7 +127,7 @@ Only definitions and artifacts prepared in the shared depot can be assigned offl
 
 The simple loop is:
 
-1. Run `Sync-PackageDepot -AllTrusted` on the connected host whenever you want to refresh the shared package set.
+1. Run `Invoke-PackageDepotMaterialize -AllTrusted` on the connected host whenever you want to refresh the shared package set.
 2. Keep the shared depot mounted at the target user's default depot path.
 3. On a brand-new Windows target, double-click the bootstrap `.cmd` once.
 4. Use `Search-Package`, `Invoke-Package -Offline`, and `Get-PackageState`.

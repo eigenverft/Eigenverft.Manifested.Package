@@ -165,7 +165,7 @@ function global:New-TestPackageGlobalDocument {
         [string]$ShimDirectory,
         [string]$PackageAssignmentInventoryFilePath,
         [string]$PackageOperationHistoryFilePath,
-        [string]$PackageDepotRelativePath = '{definitionId}/{releaseTrack}/{version}/{artifactDistributionVariant}',
+        [string]$PackageDepotRelativePath = '{depotNamespace}/{definitionId}/{releaseTrack}/{version}/{artifactDistributionVariant}',
         [string]$PackageWorkSlotDirectory = '{definitionId}-{slotHash}',
         [bool]$AllowFallback = $true,
         [AllowNull()]

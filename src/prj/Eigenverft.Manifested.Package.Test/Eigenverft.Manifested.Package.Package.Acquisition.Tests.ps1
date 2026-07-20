@@ -82,7 +82,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - artifa
         $result.ArtifactFiles[0].RelativePath | Should -Be 'installer\setup-2.0.0.exe'
         $result.ArtifactFiles[0].StagingPath | Should -Not -Be $result.ArtifactFiles[0].DefaultDepotPath
         $result.ArtifactFiles[0].StagingPath | Should -Match '[\\]FileStage[\\]ArtifactSet-[0-9a-f]{8}[\\]installer[\\]setup-2\.0\.0\.exe$'
-        $result.ArtifactFiles[0].DefaultDepotPath | Should -Match '[\\]PkgDepot[\\]ArtifactSet[\\]stable[\\]2\.0\.0[\\]win32-x64[\\]installer[\\]setup-2\.0\.0\.exe$'
+        $result.ArtifactFiles[0].DefaultDepotPath | Should -Match '[\\]PkgDepot[\\]default[\\]ArtifactSet[\\]stable[\\]2\.0\.0[\\]win32-x64[\\]installer[\\]setup-2\.0\.0\.exe$'
         $result.OperationArtifactFile.Id | Should -Be 'setup'
         $result.OperationArtifactFilePath | Should -Be $result.ArtifactFiles[0].StagingPath
         @($result.PSObject.Properties.Name) | Should -Contain 'ArtifactStagingDirectory'
@@ -303,5 +303,102 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - artifa
         $result = Invoke-PackageDepotDistribution -PackageResult $result
         $result.DepotDistribution.Status | Should -Be 'Skipped'
         $result.DepotDistribution.Reason | Should -Be 'NoArtifactFiles'
+    }
+
+    # Characterization of today's soft-mirror bug (Phase 2 will invert MaterializeOnly success).
+    It 'characterizes soft distribute failure: FailedCount rises when one mirrorTarget copy fails' {
+        $rootPath = Join-Path $TestDrive 'soft-mirror-fail-distribute'
+        $setupSource = Join-Path $rootPath 'sources\setup.exe'
+        Write-TestTextFile -Path $setupSource -Content 'setup-soft-fail'
+        $teamDepot = Join-Path $rootPath 'TeamDepot'
+        $depotInventory = New-TestDepotInventoryDocument -DefaultPackageDepotDirectory (Join-Path $rootPath 'DefaultDepot') -EnvironmentSources @{
+            teamPackageDepot = @{
+                kind = 'filesystem'; enabled = $true; searchOrder = 150; basePath = $teamDepot
+                readable = $true; writable = $true; mirrorTarget = $true; ensureExists = $true
+            }
+        }
+        $definition = New-TestArtifactSetDefinition -Files @(
+            @{
+                id = 'setup'; relativePath = 'setup.exe'
+                contentHash = @{ algorithm = 'sha256'; value = (Get-FileHash $setupSource -Algorithm SHA256).Hash.ToLowerInvariant() }
+                acquisitionCandidates = @(
+                    @{ kind = 'packageDepot'; searchOrder = 100; verification = @{ mode = 'required' } },
+                    @{ kind = 'vendorDownload'; url = 'https://example.invalid/setup.exe'; searchOrder = 900; verification = @{ mode = 'required' } }
+                )
+            }
+        )
+        Mock Save-PackageDownloadFile {
+            param($Uri, $TargetPath)
+            Copy-Item -LiteralPath $setupSource -Destination $TargetPath -Force
+            return $TargetPath
+        }
+        Mock Copy-FileToPath {
+            param($SourcePath, $TargetPath, $Overwrite)
+            if ([string]$TargetPath -like '*TeamDepot*') {
+                throw 'simulated team mirror failure'
+            }
+            $null = New-Item -ItemType Directory -Path (Split-Path -Parent $TargetPath) -Force
+            Copy-Item -LiteralPath $SourcePath -Destination $TargetPath -Force
+            return $TargetPath
+        }
+
+        $result = Get-TestArtifactSetResult -RootPath $rootPath -Definition $definition -DepotInventory $depotInventory
+        $result = Resolve-PackageArtifactFiles -PackageResult $result
+        $result = Invoke-PackageDepotDistribution -PackageResult $result
+
+        $result.DepotDistribution.FailedCount | Should -BeGreaterThan 0
+        @($result.DepotDistribution.Actions | Where-Object { $_.DepotId -eq 'teamPackageDepot' -and $_.Status -eq 'Failed' }).Count | Should -BeGreaterThan 0
+        @($result.DepotDistribution.Actions | Where-Object { $_.DepotId -eq 'defaultPackageDepot' -and $_.Status -in @('Copied', 'Skipped') }).Count | Should -BeGreaterThan 0
+    }
+
+    It 'characterizes MaterializeOnly still durable when a secondary mirror FailedCount is non-zero' {
+        $rootPath = Join-Path $TestDrive 'soft-mirror-fail-materialize'
+        $setupSource = Join-Path $rootPath 'sources\setup.exe'
+        Write-TestTextFile -Path $setupSource -Content 'setup-soft-materialize'
+        $teamDepot = Join-Path $rootPath 'TeamDepot'
+        $depotInventory = New-TestDepotInventoryDocument -DefaultPackageDepotDirectory (Join-Path $rootPath 'DefaultDepot') -EnvironmentSources @{
+            teamPackageDepot = @{
+                kind = 'filesystem'; enabled = $true; searchOrder = 150; basePath = $teamDepot
+                readable = $true; writable = $true; mirrorTarget = $true; ensureExists = $true
+            }
+        }
+        $definition = New-TestArtifactSetDefinition -Files @(
+            @{
+                id = 'setup'; relativePath = 'setup.exe'
+                contentHash = @{ algorithm = 'sha256'; value = (Get-FileHash $setupSource -Algorithm SHA256).Hash.ToLowerInvariant() }
+                acquisitionCandidates = @(
+                    @{ kind = 'packageDepot'; searchOrder = 100; verification = @{ mode = 'required' } },
+                    @{ kind = 'vendorDownload'; url = 'https://example.invalid/setup.exe'; searchOrder = 900; verification = @{ mode = 'required' } }
+                )
+            }
+        )
+        Mock Save-PackageDownloadFile {
+            param($Uri, $TargetPath)
+            Copy-Item -LiteralPath $setupSource -Destination $TargetPath -Force
+            return $TargetPath
+        }
+        Mock Copy-FileToPath {
+            param($SourcePath, $TargetPath, $Overwrite)
+            if ([string]$TargetPath -like '*TeamDepot*') {
+                throw 'simulated team mirror failure'
+            }
+            $null = New-Item -ItemType Directory -Path (Split-Path -Parent $TargetPath) -Force
+            Copy-Item -LiteralPath $SourcePath -Destination $TargetPath -Force
+            return $TargetPath
+        }
+
+        $result = Get-TestArtifactSetResult -RootPath $rootPath -Definition $definition -DepotInventory $depotInventory
+        $result = Resolve-PackageArtifactFiles -PackageResult $result
+        $result = Invoke-PackageDepotDistribution -PackageResult $result
+        $result.DepotDistribution.FailedCount | Should -BeGreaterThan 0
+
+        # Today's bug: any-readable durability still accepts MaterializeOnly when another depot has the set.
+        $result = Assert-PackageMaterializationDurable -PackageResult $result
+        $result.Materialization.Success | Should -BeTrue
+        $result.Materialization.Status | Should -Be 'Durable'
+
+        $result | Add-Member -MemberType NoteProperty -Name CommandMode -Value 'MaterializeOnly' -Force
+        $result = Complete-PackageResult -PackageResult $result
+        $result.Status | Should -Be 'Materialized'
     }
 }

@@ -137,6 +137,11 @@
           "format": "date-time",
           "description": "UTC timestamp when this definition revision was published. Audit metadata only; revision is the update key."
         },
+        "depotNamespace": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+          "description": "Optional first subdirectory under each package depot basePath for this definition. When omitted or blank, the runtime uses the neutral namespace 'default'. Eigenverft shipped definitions use 'evf'."
+        },
         "definitionSignature": {
           "$ref": "#/$defs/definitionSignature",
           "description": "Catalog trust metadata for this file. Required on every 2.0 definition. Draft authoring: kind=unsigned (no signatureValue). Published strict catalogs: kind=signed after Sign-PackageDefinition or Resign-PackageDefinition. Do not hand-edit signatureValue."

@@ -11,7 +11,7 @@ This is a compact index of completed work that still explains the active backlog
 | Assignment preflight | `Get-PackageAssignmentPlan` reuses the execution resolver to preview trust, dependencies, selected releases, artifacts, depot readiness, and existing-install actions without network or persisted mutation. |
 | Artifact file sets | Schema 2.0 supports required multi-file distributions and `archiveEntry`-derived files. |
 | Durable materialization | `-MaterializeOnly` verifies the complete artifact set, repairs missing/invalid members, and distributes verified files to filesystem depots. |
-| Trusted depot sync | `Sync-PackageDepot -AllTrusted` confirms and materializes deduplicated current-platform definitions only when every planned definition is already `signedTrusted`; it does not mutate trust or prune files. |
+| Trusted catalog materialize | `Invoke-PackageDepotMaterialize -AllTrusted` (deprecated alias: `Sync-PackageDepot`) confirms and materializes deduplicated current-platform definitions only when every planned definition is already `signedTrusted`; it does not mutate trust or prune files. |
 | Authoring | `Get-PackageDefinitionAuthoringGuide` and `AgentSkills/PackageDefinitionAuthoring.md` provide the LLM-oriented authoring flow. |
 | Offline bootstrap | `EigenverftManifestedPackage` is an independently versioned seed that materializes the module, PackageManagement, PowerShellGet, and bootstrap scripts for a clean Windows machine. |
 | State and outcome | `Get-PackageState`, operation-history summaries, and `[OUTCOME]` messages are shipped. |

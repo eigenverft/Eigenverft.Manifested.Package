@@ -134,14 +134,14 @@ Invoke-Package -DefinitionId NodeRuntime -PackageVersion 26.3.0
 Get-PackageAssignmentPlan -DefinitionId NodeRuntime
 Invoke-Package -DefinitionId LlamaCppRuntime,MiniCPM5_1B_Q8_Model -MaterializeOnly
 Get-PackageAssignmentPlan -DefinitionId EigenverftManifestedPackage -Offline -MaterializeOnly
-Sync-PackageDepot -AllTrusted -WhatIf
+Invoke-PackageDepotMaterialize -AllTrusted -WhatIf
 Invoke-Package -DefinitionId NodeRuntime -Offline
 Invoke-Package -DefinitionId SevenZip -DesiredState Removed
 ```
 
 `Get-PackageAssignmentPlan` previews the same dependency, version, target, trust, artifact, depot, and existing-install decisions used by assignment without downloading or changing machine state. Online source reachability is reported as `NotTested`; use `-VerifyDepotContent` to verify present depot files, while `-Offline` always verifies them. Add `-Raw` to suppress the compact tables and return only the structured plan. `NextCommand` contains the exact corresponding `Invoke-Package` command.
 
-`Sync-PackageDepot -AllTrusted` materializes every already signed-and-trusted definition available for the current platform, including its dependencies and complete artifact file set. It requires confirmation, never adds catalog trust, and never prunes depot files. Review with `-WhatIf` first: a trusted catalog can include multi-gigabyte runtimes or models. Use `-PublisherId`, `-Tag`, or `-ExcludeDefinitionId` to narrow the run.
+`Invoke-PackageDepotMaterialize -AllTrusted` materializes every already signed-and-trusted definition available for the current platform, including its dependencies and complete artifact file set. It requires confirmation, never adds catalog trust, and never prunes depot files. Review with `-WhatIf` first: a trusted catalog can include multi-gigabyte runtimes or models. Use `-PublisherId`, `-Tag`, or `-ExcludeDefinitionId` to narrow the run.
 
 ### 🤝 Team member — share or NAS
 
@@ -151,8 +151,8 @@ Team onboarding is small: add a depot for package payloads, add an endpoint for 
 Add-TeamPackageDepot -BasePath '\\team-share\PackageDepot'
 Add-TeamPackageEndpoint -BasePath '\\team-share\PackageEndpoint'
 
-Sync-PackageDepot -AllTrusted -WhatIf
-Sync-PackageDepot -AllTrusted
+Invoke-PackageDepotMaterialize -AllTrusted -WhatIf
+Invoke-PackageDepotMaterialize -AllTrusted
 Invoke-Package -DefinitionId 'MyTeamPackage'
 Get-PackageState
 ```

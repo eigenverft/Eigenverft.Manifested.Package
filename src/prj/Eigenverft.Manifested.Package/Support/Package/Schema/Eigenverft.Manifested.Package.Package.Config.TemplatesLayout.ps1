@@ -85,6 +85,13 @@ function Get-PackageTemplateTokenMap {
         $tokens['platform'] = $PackageConfig.Platform
         $tokens['architecture'] = $PackageConfig.Architecture
         $tokens['releaseTrack'] = $PackageConfig.ReleaseTrack
+        $tokens['depotNamespace'] = if ($PackageConfig.PSObject.Properties['DepotNamespace'] -and
+            -not [string]::IsNullOrWhiteSpace([string]$PackageConfig.DepotNamespace)) {
+            [string]$PackageConfig.DepotNamespace
+        }
+        else {
+            'default'
+        }
         if ($PackageConfig.PSObject.Properties['ApplicationRootDirectory']) {
             $tokens['applicationRootDirectory'] = $PackageConfig.ApplicationRootDirectory
         }
@@ -124,7 +131,7 @@ function Get-PackageTemplateTokenMap {
 
     if ($SanitizePathSegments) {
         foreach ($key in @($tokens.Keys)) {
-            if ($null -eq $tokens[$key]) {
+            if ($null -eq $tokens[$key] -or [string]::IsNullOrWhiteSpace([string]$tokens[$key])) {
                 continue
             }
             $tokens[$key] = ConvertTo-PackageSafePathSegment -Value ([string]$tokens[$key])
@@ -151,18 +158,24 @@ function Resolve-PackageLayoutRelativeDirectory {
 
     $tokens = Get-PackageTemplateTokenMap -PackageConfig $PackageConfig -Package $Package -ExtraTokens $ExtraTokens -SanitizePathSegments
     $resolvedPath = (Resolve-TemplateText -Text $Template -Tokens $tokens).Trim() -replace '/', '\'
-    if ([string]::IsNullOrWhiteSpace($resolvedPath)) {
+    $safeSegments = @(
+        foreach ($segment in @($resolvedPath -split '\\')) {
+            if ([string]::IsNullOrWhiteSpace($segment)) {
+                continue
+            }
+            ConvertTo-PackageSafePathSegment -Value $segment
+        }
+    )
+    if ($safeSegments.Count -eq 0) {
         throw 'Package layout template produced an empty relative path.'
     }
-    if ([System.IO.Path]::IsPathRooted($resolvedPath)) {
-        throw "Package layout template '$Template' produced rooted path '$resolvedPath'. Layout values must be relative."
+
+    $normalizedRelativePath = ($safeSegments -join '\') -replace '/', '\'
+    if ([System.IO.Path]::IsPathRooted($normalizedRelativePath)) {
+        throw "Package layout template '$Template' produced rooted path '$normalizedRelativePath'. Layout values must be relative."
     }
 
-    $safeSegments = foreach ($segment in @($resolvedPath -split '\\')) {
-        ConvertTo-PackageSafePathSegment -Value $segment
-    }
-
-    return (($safeSegments -join '\') -replace '/', '\')
+    return $normalizedRelativePath
 }
 
 function Get-PackagePackageDepotRelativeDirectory {
@@ -197,7 +210,7 @@ Get-PackagePackageDepotRelativeDirectory -PackageConfig $config -Package $packag
         [string]$PackageConfig.PackageDepotRelativePathTemplate
     }
     else {
-        '{definitionId}/{releaseTrack}/{version}/{artifactDistributionVariant}'
+        '{depotNamespace}/{definitionId}/{releaseTrack}/{version}/{artifactDistributionVariant}'
     }
 
     return Resolve-PackageLayoutRelativeDirectory -Template $template -PackageConfig $PackageConfig -Package $Package

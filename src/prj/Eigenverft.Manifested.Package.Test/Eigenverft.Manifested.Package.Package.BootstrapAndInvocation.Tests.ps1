@@ -19,7 +19,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - bootst
         $globalInfo.Document.package.PSObject.Properties.Name | Should -Contain 'shimDirectory'
         $globalInfo.Document.package.shimDirectory | Should -Be '{applicationRootDirectory}/Shims'
         $globalInfo.Document.package.PSObject.Properties.Name | Should -Contain 'layout'
-        $globalInfo.Document.package.layout.packageDepotRelativePath | Should -Be '{definitionId}/{releaseTrack}/{version}/{artifactDistributionVariant}'
+        $globalInfo.Document.package.layout.packageDepotRelativePath | Should -Be '{depotNamespace}/{definitionId}/{releaseTrack}/{version}/{artifactDistributionVariant}'
         $globalInfo.Document.package.layout.packageWorkSlotDirectory | Should -Be '{definitionId}-{slotHash}'
         $globalInfo.Document.package.PSObject.Properties.Name | Should -Contain 'packageState'
         $globalInfo.Document.package.acquisitionEnvironment.stores.PSObject.Properties.Name | Should -Contain 'packageFileStagingDirectory'
@@ -38,6 +38,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - bootst
         $moduleSource = Get-TestEndpointSource -Document $endpointInventoryInfo.Document -SourceId 'moduleDefaults'
         $moduleSource.kind | Should -Be 'moduleLocal'
         $moduleSource.definitionRoot | Should -Be 'Endpoint/Defaults'
+        $moduleSource.PSObject.Properties['depotNamespace'] | Should -BeNullOrEmpty
         $moduleSource.PSObject.Properties['trusted'] | Should -BeNullOrEmpty
         $moduleSource.PSObject.Properties['trustMode'] | Should -BeNullOrEmpty
         $depotInfo = Read-PackageJsonDocument -Path (Get-PackageShippedDepotInventoryPath)

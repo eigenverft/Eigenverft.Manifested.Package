@@ -69,7 +69,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - PowerS
 
         $result.InstallDirectory | Should -BeNullOrEmpty
         $result.OperationArtifactFilePath | Should -Match 'PowerShellGet\.2\.2\.5\.nupkg$'
-        $result.ArtifactFiles[0].DefaultDepotPath | Should -Match 'PkgDepot\\PowerShellGet\\stable\\2\.2\.5\\psmodule-any\\PowerShellGet\.2\.2\.5\.nupkg$'
+        $result.ArtifactFiles[0].DefaultDepotPath | Should -Match 'PkgDepot\\default\\PowerShellGet\\stable\\2\.2\.5\\psmodule-any\\PowerShellGet\.2\.2\.5\.nupkg$'
     }
 
     It 'invokes powershellModuleInstaller through a full helper script path and staged local repository' {

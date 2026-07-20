@@ -83,7 +83,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - browse
         $pagesJavaScript | Should -Match "path:\s*'index\.html'.*title:\s*'Eigenverft\.Manifested\.Package documentation'"
         $pagesJavaScript | Should -Match "path:\s*'OfflineBootstrap\.html'.*label:\s*'Offline setup'.*title:\s*'Offline Windows setup"
         $offlineBootstrapContent | Should -Match '# 📦 Offline Windows setup from one shared depot'
-        $offlineBootstrapContent | Should -Match 'Sync-PackageDepot -AllTrusted'
+        $offlineBootstrapContent | Should -Match 'Invoke-PackageDepotMaterialize -AllTrusted'
         $offlineBootstrapContent | Should -Match '<Networking>Disable</Networking>'
         $offlineBootstrapContent | Should -Match 'Invoke-Package -DefinitionId SevenZip,GitRuntime,NodeRuntime -Offline'
         $offlineBootstrapContent | Should -Match '## 3\. 🚀 Double-click the bootstrap command'

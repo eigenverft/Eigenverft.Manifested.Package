@@ -5,8 +5,9 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "PowerShellGet",
-    "definitionRevision": 6,
-    "publishedAtUtc": "2026-07-14T04:55:50.4324908Z",
+    "definitionRevision": 7,
+    "publishedAtUtc": "2026-07-20T11:35:41.8666864Z",
+    "depotNamespace": "evf",
     "definitionSignature": {
       "kind": "signed",
       "format": "embedded-json-rsa-sha256-v1",
@@ -15,8 +16,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-17T06:16:21.9331952Z",
-      "signatureValue": "NAk7XcrNQBYuSCQo84Q6fCS42E5FmrV8wHF57pXgPO/zU/AJCltHInuyJWUUi+dAzbY7nS1NmyxBrC279U/o+4d+lzlBYG7pDFP0YjpKWAZiHgAmOy2nTKbLLAwNkJHVCnczvdip2TeXDjw7WcXoPhNZT6ur8Ka0A6sk2Cj6HsO8M5TLwzDI1Dfe0CtBlYF/dFURRAK6UndNdRAQm9dk6Of+ZQp/xgXp3cdkYTGmKTx/JeDbZzkjXBDlEdSUd2joVPAZqLFd3+ddiEIy37W7yTqfBHydX7w+ScLIXn2wfj4DzlrpQQssPxg4U1puZZhkQFetwyysKbrD7PLL1m+FXomJKxG218+/vDYa4hSVe0xQQcFBIikXCZ4EfronuNV0rhr34DRs+GJcbOXQee91iwzELTH8w0LVt0iHYrZZHTgpbzasn7MTKyCCB1X+TVHxzukvuVTCcslNANiROKf66JtQUHJn7cCzrPce6PzxM9d9YbvkVQWMG6+V59wcZzLM"
+      "signedAtUtc": "2026-07-20T11:36:12.9336337Z",
+      "signatureValue": "ss9MBbtN5AccXJo4UpFgwOlKUI4kqHfdDLDqBKOPN40E/8kE493i44Eum1K2gTsNwZFy8YX0rkmzD41bp6PNNuxE7nDcOh/8dDG0ZcUrW8EgjoYQHt2sB9qfQDvPRRA+7a4SeFVurdVI7gxXxpbwmGMyOYtdCsZ/UlkSEBVPwJWvqAY46pOGXU5DoumZSUEBdD4sxnJq8fnnsYbaAVpb/282WcmLPqXRAtj5sf7HbTTl0TWZgV0baKFTl/8Gf0Mavce3vlQFz5J8qsuSPBYYCJj/NZF+++Uhnr7zcljYfbKnsfx91pzuM2ix2bvjHJT3hhLKmL4+yNaFUgVf7/LK+EwySVOOUUWaJzYhqFyleeEakQmIISEQznEaJSWXKK2hYz6i4bs9lgRrGUCRY4LtpnVEgsQFxD78iF2vq3HejOShTJ6i919oyfMebYB6M+gAz2tKSToMTbmaYgazd2mE2TJv3x+vrYvTGHp0n24NJAwcbNkNS5NDxeBn1MbB9l8Z"
     }
   },
   "display": {

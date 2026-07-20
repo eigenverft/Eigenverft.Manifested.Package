@@ -28,12 +28,13 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
     It 'exports depot management commands' {
         $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
 
-        foreach ($commandName in @('Get-PackageDepot', 'Add-PackageDepot', 'Add-TeamPackageDepot', 'Set-PackageDepot', 'Remove-PackageDepot', 'Sync-PackageDepot')) {
+        foreach ($commandName in @('Get-PackageDepot', 'Add-PackageDepot', 'Add-TeamPackageDepot', 'Set-PackageDepot', 'Remove-PackageDepot', 'Invoke-PackageDepotMaterialize')) {
             $module.ExportedCommands.Keys | Should -Contain $commandName
         }
+        $module.ExportedAliases.Keys | Should -Contain 'Sync-PackageDepot'
     }
 
-    It 'syncs only deduplicated already trusted current-platform definitions' {
+    It 'materializes only deduplicated already trusted current-platform definitions' {
         Mock Search-Package {
             @(
                 [pscustomobject]@{ PublisherId = 'Eigenverft'; DefinitionId = 'Alpha'; Version = '2.0'; CatalogTrustStatus = 'signedTrusted'; EndpointSearchOrder = 100; DefinitionRevision = 2 },
@@ -46,7 +47,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
             [pscustomobject]@{ Status = 'Materialized' }
         }
 
-        $result = @(Sync-PackageDepot -AllTrusted -Confirm:$false)
+        $result = @(Invoke-PackageDepotMaterialize -AllTrusted -Confirm:$false)
 
         $result.Count | Should -Be 1
         $result[0].DefinitionId | Should -Be 'Alpha'
@@ -57,7 +58,26 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
         }
     }
 
-    It 'supports trusted sync filters, exclusions, and WhatIf planning without acquisition' {
+    It 'keeps Sync-PackageDepot as a deprecated alias of Invoke-PackageDepotMaterialize' {
+        Mock Search-Package {
+            @(
+                [pscustomobject]@{ PublisherId = 'Eigenverft'; DefinitionId = 'Alpha'; Version = '2.0'; CatalogTrustStatus = 'signedTrusted'; EndpointSearchOrder = 100; DefinitionRevision = 2 }
+            )
+        }
+        Mock Invoke-Package {
+            [pscustomobject]@{ Status = 'Materialized' }
+        }
+
+        $warnings = @()
+        $null = @(Sync-PackageDepot -AllTrusted -Confirm:$false -WarningVariable warnings -WarningAction SilentlyContinue)
+
+        $warnings | Should -Match 'deprecated'
+        Assert-MockCalled Invoke-Package -Times 1 -Exactly -ParameterFilter {
+            $PublisherId -eq 'Eigenverft' -and $DefinitionId -eq 'Alpha' -and $MaterializeOnly -and $RequireAlreadyTrusted
+        }
+    }
+
+    It 'supports trusted materialize filters, exclusions, and WhatIf planning without acquisition' {
         Mock Search-Package {
             @(
                 [pscustomobject]@{ PublisherId = 'Eigenverft'; DefinitionId = 'Alpha'; Version = '2.0'; CatalogTrustStatus = 'signedTrusted'; EndpointSearchOrder = 100; DefinitionRevision = 2 },
@@ -72,7 +92,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
         }
         Mock New-PackageAssignmentPlanCore { $trustedPlan }
 
-        $result = @(Sync-PackageDepot -AllTrusted -PublisherId 'Eigenverft' -Tag 'bootstrap' -ExcludeDefinitionId 'SkipMe' -WhatIf)
+        $result = @(Invoke-PackageDepotMaterialize -AllTrusted -PublisherId 'Eigenverft' -Tag 'bootstrap' -ExcludeDefinitionId 'SkipMe' -WhatIf)
 
         $result.Count | Should -Be 1
         $result[0].DefinitionId | Should -Be 'Alpha'

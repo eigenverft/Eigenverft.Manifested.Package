@@ -100,6 +100,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'Get-PackageVersion',
             'Import-PackageTrust',
             'Invoke-Package',
+            'Invoke-PackageDepotMaterialize',
             'Invoke-WebRequestEx',
             'New-PackageSigningCertificate',
             'Open-PackageDocumentation',
@@ -125,6 +126,11 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'Verify-PackageDefinitionSignature'
         )
         Get-Command -Name 'Initialize-ProxyAccessProfile' -Module $module -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
+
+        $syncAlias = Get-Alias -Name Sync-PackageDepot -ErrorAction SilentlyContinue
+        $syncAlias | Should -Not -BeNullOrEmpty
+        $syncAlias.ResolvedCommandName | Should -Be 'Invoke-PackageDepotMaterialize'
+        $module.ExportedAliases.Keys | Should -Contain 'Sync-PackageDepot'
     }
 
     It 'keeps user-facing command files in command folders' {

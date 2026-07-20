@@ -29,6 +29,62 @@ function Get-PackageDefinitionPublication {
         DefinitionId       = [string]$publication.definitionId
         DefinitionRevision = [int]$publication.definitionRevision
         PublishedAtUtc     = [string]$publication.publishedAtUtc
+        DepotNamespace     = Get-PackageDefinitionDepotNamespace -Publication $publication
+    }
+}
+
+function Get-PackageDefinitionDepotNamespace {
+    <#
+    .SYNOPSIS
+    Resolves the optional definitionPublication.depotNamespace used as the first depot subdirectory.
+
+    .DESCRIPTION
+    When omitted or blank, returns the neutral namespace 'default'. Explicit values must be a single
+    safe path segment (letters, digits, '-' or '_', starting with a letter).
+    #>
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [psobject]$Publication = $null,
+
+        [AllowNull()]
+        [psobject]$DefinitionDocument = $null
+    )
+
+    $source = $Publication
+    if ($null -eq $source -and $null -ne $DefinitionDocument -and
+        $DefinitionDocument.PSObject.Properties['definitionPublication']) {
+        $source = $DefinitionDocument.definitionPublication
+    }
+
+    $raw = ''
+    if ($null -ne $source -and $source.PSObject.Properties['depotNamespace']) {
+        $raw = [string]$source.depotNamespace
+    }
+
+    if ([string]::IsNullOrWhiteSpace($raw)) {
+        return 'default'
+    }
+
+    return $raw.Trim()
+}
+
+function Assert-PackageDefinitionDepotNamespace {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [string]$DepotNamespace,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DefinitionId
+    )
+
+    if ([string]::IsNullOrWhiteSpace($DepotNamespace)) {
+        return
+    }
+
+    if ($DepotNamespace -notmatch '^[A-Za-z][A-Za-z0-9_-]*$') {
+        throw "Package definition '$DefinitionId' definitionPublication.depotNamespace '$DepotNamespace' is invalid. Use letters, numbers, '-' or '_' and start with a letter."
     }
 }
 
@@ -165,6 +221,7 @@ function Select-PackageDefinitionCandidatesFromEndpointScanRoot {
             $candidates.Add([pscustomobject]@{
                 EndpointName               = $EndpointName
                 EndpointSourceKind         = [string]$EndpointSource.kind
+                DepotNamespace             = [string]$publication.DepotNamespace
                 DefinitionScanRootPath     = $ScanRootPath
                 DefinitionId               = $docDefinitionId
                 DefinitionPath             = [System.IO.Path]::GetFullPath($definitionPath)
@@ -734,6 +791,7 @@ catalog trust eligibility, conflict policy, and then definitionRevision.
 
     return [pscustomobject]@{
         EndpointName                  = [string]$selected.EndpointName
+        DepotNamespace                = if ($selected.PSObject.Properties['DepotNamespace']) { [string]$selected.DepotNamespace } else { '' }
         DefinitionId                  = [string]$selected.DefinitionId
         DefinitionPath                = [System.IO.Path]::GetFullPath($(if ($candidateCopy) { $candidateCopy.Path } else { $selected.DefinitionPath }))
         SourceKind                    = [string]$selected.EndpointSourceKind

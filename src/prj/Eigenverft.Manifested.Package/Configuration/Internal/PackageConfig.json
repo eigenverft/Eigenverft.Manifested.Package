@@ -5,7 +5,7 @@
     "localEndpointRoot": "{applicationRootDirectory}/PkgEndpoint",
     "shimDirectory": "{applicationRootDirectory}/Shims",
     "layout": {
-      "packageDepotRelativePath": "{definitionId}/{releaseTrack}/{version}/{artifactDistributionVariant}",
+      "packageDepotRelativePath": "{depotNamespace}/{definitionId}/{releaseTrack}/{version}/{artifactDistributionVariant}",
       "packageWorkSlotDirectory": "{definitionId}-{slotHash}"
     },
     "acquisitionEnvironment": {

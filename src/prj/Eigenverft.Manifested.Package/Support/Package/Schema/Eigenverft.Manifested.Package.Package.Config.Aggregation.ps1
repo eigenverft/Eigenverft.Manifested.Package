@@ -372,7 +372,7 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
 
     if ($RequireAlreadyTrusted.IsPresent -and
         -not [string]::Equals([string]$definitionReference.CatalogTrustStatus, 'signedTrusted', [System.StringComparison]::OrdinalIgnoreCase)) {
-        throw "Package definition '$DefinitionId' is not already signed and trusted. Sync-PackageDepot -AllTrusted does not prompt for trust, import keys, or accept unsigned definitions."
+        throw "Package definition '$DefinitionId' is not already signed and trusted. Invoke-PackageDepotMaterialize -AllTrusted does not prompt for trust, import keys, or accept unsigned definitions."
     }
 
     $definitionDocumentInfo = Read-PackageJsonDocument -Path $definitionReference.DefinitionPath
@@ -421,7 +421,7 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
         Resolve-PackageConfiguredPath -PathValue 'Shims' -ApplicationRootDirectory $applicationRootDirectory
     }
 
-    $packageDepotRelativePathTemplate = '{definitionId}/{releaseTrack}/{version}/{artifactDistributionVariant}'
+    $packageDepotRelativePathTemplate = '{depotNamespace}/{definitionId}/{releaseTrack}/{version}/{artifactDistributionVariant}'
     $packageWorkSlotDirectoryTemplate = '{definitionId}-{slotHash}'
     if ($packageGlobalConfig.PSObject.Properties['layout'] -and $packageGlobalConfig.layout) {
         if ($packageGlobalConfig.layout.PSObject.Properties['packageDepotRelativePath'] -and
@@ -432,6 +432,12 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
             -not [string]::IsNullOrWhiteSpace([string]$packageGlobalConfig.layout.packageWorkSlotDirectory)) {
             $packageWorkSlotDirectoryTemplate = [string]$packageGlobalConfig.layout.packageWorkSlotDirectory
         }
+    }
+
+    $depotNamespace = Get-PackageDefinitionDepotNamespace -DefinitionDocument $definition
+    if ($definitionReference.PSObject.Properties['DepotNamespace'] -and
+        -not [string]::IsNullOrWhiteSpace([string]$definitionReference.DepotNamespace)) {
+        $depotNamespace = [string]$definitionReference.DepotNamespace
     }
 
     $definitionWireDefinitionId = if ($definition.PSObject.Properties['definitionPublication'] -and
@@ -469,6 +475,7 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
         DefinitionRevision                 = [int]$definitionReference.DefinitionRevision
         DefinitionPublishedAtUtc           = [string]$definitionReference.PublishedAtUtc
         DefinitionEndpointName             = if ($definitionReference.PSObject.Properties['EndpointName']) { [string]$definitionReference.EndpointName } else { $null }
+        DepotNamespace                     = $depotNamespace
         DefinitionSourceKind               = [string]$definitionReference.SourceKind
         DefinitionSourcePath               = [string]$definitionReference.SourcePath
         DefinitionSourceHash               = [string]$definitionReference.SourceHash
