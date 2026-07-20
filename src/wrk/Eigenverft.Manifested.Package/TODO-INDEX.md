@@ -15,17 +15,13 @@ Only genuine remaining work is listed here. Shipped behavior is summarized in [D
 | 2/7 | [Catalog manifest](TODO-ENDPOINTS-MANIFEST.md) | Define large-catalog discovery contract when a concrete scale target exists. |
 | 2/7 | [HTTPS catalog](TODO-ENDPOINTS-HTTPS.md) | Implement read-only `httpsCatalog` transport. |
 | 2/7 | [HTTP depots](TODO-DEPOTS-HTTP.md) | Add read-only HTTP(S) artifact acquisition after fetch requirements are known. |
-| 2/7 | [Depot hygiene](TODO-DEPOTS-HYGIENE.md) | Add a standalone audit for orphaned or suspicious filesystem-depot content. |
+| 2/7 | [Depot mirror sync](TODO-DEPOTS-HYGIENE.md) | Make Sync publish complete, crash-safe copies into `mirrorTarget` depots; report honestly on failure. |
 
 ## Decisions and boundaries
 
 - [Endpoint discovery](DECISION-ENDPOINT-DISCOVERY-V1.md)
 - [Artifact vocabulary](DECISION-SCHEMA-ARTIFACTS-VOCABULARY.md)
 - [Product boundary](PRODUCT-BOUNDARY.md)
-
-## Idea notes
-
-- [Agent-scaled catalog operations](IDEA-AGENT-SCALES-PRODUCT.md)
 
 ## Reconciliation facts
 
