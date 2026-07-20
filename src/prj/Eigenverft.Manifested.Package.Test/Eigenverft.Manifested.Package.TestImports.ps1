@@ -14,6 +14,7 @@ $moduleProjectRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'Eigenverft.Ma
 . "$moduleProjectRoot\Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.Archive.ps1"
 . "$moduleProjectRoot\Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.CommandResolution.ps1"
 . "$moduleProjectRoot\Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.FileSystem.ps1"
+. "$moduleProjectRoot\Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.ResilientDirectoryTree.ps1"
 . "$moduleProjectRoot\Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.PathTemplate.ps1"
 . "$moduleProjectRoot\Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.Registry.ps1"
 . "$moduleProjectRoot\Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.SystemResources.ps1"

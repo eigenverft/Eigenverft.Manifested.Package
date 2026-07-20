@@ -11,6 +11,7 @@
 . "$PSScriptRoot\Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.Archive.ps1"
 . "$PSScriptRoot\Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.CommandResolution.ps1"
 . "$PSScriptRoot\Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.FileSystem.ps1"
+. "$PSScriptRoot\Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.ResilientDirectoryTree.ps1"
 . "$PSScriptRoot\Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.PathTemplate.ps1"
 . "$PSScriptRoot\Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.Registry.ps1"
 . "$PSScriptRoot\Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.SystemResources.ps1"
