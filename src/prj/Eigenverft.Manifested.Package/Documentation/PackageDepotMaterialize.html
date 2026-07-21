@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Documentation</title>
+  <link rel="stylesheet" href="./css/documentation.css">
+  <script src="./js/documentation.loader.js" defer></script>
+</head>
+<body>
+  <script id="documentation-markdown" type="text/markdown">
+# 🔄 Fill or refresh package depots
+
+`Invoke-PackageDepotMaterialize` fills configured package mirrors with the current-platform packages that are already signed and trusted.
+
+```powershell
+Invoke-PackageDepotMaterialize -AllTrusted
+```
+
+It prepares files only. It does not install packages, change depot configuration, add trust, or delete old depot files.
+
+## ⚙️ What the command does
+
+For each selected package, the command:
+
+1. Selects the applicable version, target, dependencies, and complete artifact file set.
+2. Checks readable depots for already valid files in the authored candidate order.
+3. Acquires only missing files from the next candidate, commonly the vendor source.
+4. Places the complete set in a local staging directory and verifies every file.
+5. Copies that same verified set into every configured `Writable` + `MirrorTarget` depot.
+6. Publishes new or changed files with a full content check. Already-current destinations are recognized by size and timestamp, so a large file is not hashed over the network on every run.
+7. Reports the package as `Materialized` when the complete file set is durable in at least one readable depot. An unavailable secondary mirror is reported as a warning and in `DepotDistribution`.
+8. Continues with the next package after a failure unless `-FailFast` was requested.
+
+A file is downloaded at most once for that package run and then distributed from staging. It is not downloaded again for every depot. When a depot file is read into staging, its authored hash or signature is checked. A real mirror copy also verifies the completed copy; the lightweight size-and-timestamp check is only used to avoid repeatedly reading an already-current destination.
+
+| Effect | Does it happen? |
+| --- | --- |
+| Reads package definitions, trust, and depot configuration | Yes |
+| Reads and verifies existing depot files | Yes |
+| Downloads missing package files | Yes |
+| Copies verified files to writable mirror depots | Yes |
+| Installs or assigns a package | No |
+| Changes depot configuration or trust | No |
+| Deletes old package files | No |
+
+It is not a two-way folder sync and does not blindly copy depot A to depot B.
+
+## 📦 Choose the right scope
+
+### One package or a small set
+
+```powershell
+Invoke-Package `
+  -DefinitionId SevenZip,GitRuntime,NodeRuntime `
+  -MaterializeOnly
+```
+
+This uses the same acquire, verify, stage, and mirror process for only the named packages. Nothing is assigned to the profile.
+
+Preview one package without downloads or writes:
+
+```powershell
+Get-PackageAssignmentPlan `
+  -DefinitionId GitRuntime `
+  -MaterializeOnly `
+  -Raw
+```
+
+### Every already trusted package
+
+Start with a preview because a trusted catalog can include large SDKs or model files:
+
+```powershell
+Invoke-PackageDepotMaterialize -AllTrusted -WhatIf
+Invoke-PackageDepotMaterialize -AllTrusted
+```
+
+The catalog command considers only definitions that are already signed and trusted and that support the current platform. It never prompts for new trust, imports keys, accepts unsigned definitions, or removes depot content.
+
+## 🎯 Materialize as much as possible
+
+By default, `Invoke-PackageDepotMaterialize` tries every selected package. If one package fails, its result is reported and the command continues with the next package.
+
+```powershell
+$results = Invoke-PackageDepotMaterialize -AllTrusted
+$results | Format-Table PublisherId,DefinitionId,Version,Status,ErrorMessage -AutoSize
+```
+
+Use `-FailFast` only when the rest of the catalog should not be attempted after the first failed package:
+
+```powershell
+Invoke-PackageDepotMaterialize -AllTrusted -FailFast
+```
+
+This distinction is useful for offline preparation: one unavailable vendor download should not prevent unrelated packages from reaching the shared depot.
+
+## 🔎 Keep a large run focused
+
+```powershell
+# One publisher
+Invoke-PackageDepotMaterialize -AllTrusted -PublisherId Eigenverft
+
+# Definitions carrying all requested tags
+Invoke-PackageDepotMaterialize -AllTrusted -Tag cli
+
+# Leave out packages you do not want on this depot
+Invoke-PackageDepotMaterialize `
+  -AllTrusted `
+  -ExcludeDefinitionId MiniCPM5_1B_Q8_Model,Qwen35_9B_Q6_K_Model
+```
+
+Filters can be combined. Dependencies required by a selected package are still materialized.
+
+## ✅ Read the result
+
+| Status | Meaning |
+| --- | --- |
+| `Planned` | `-WhatIf` found an accepted mutation-free materialization plan |
+| `Blocked` | `-WhatIf` found blockers such as trust, selection, or offline availability |
+| `Materialized` | The complete artifact set is durable in at least one readable depot; inspect `PackageResult.DepotDistribution` for secondary-mirror warnings |
+| `Failed` | The package did not complete; inspect `ErrorMessage` and `PackageResult` |
+
+The result is one row per package. A failed package does not make already successful rows unusable, and the default run continues with the remaining catalog.
+
+## 📴 About offline preparation
+
+The catalog-fill command intentionally has no `-Offline` switch. Its job is to fill missing content. The shipped definitions try valid depot candidates before their vendor-download fallback, so reruns normally reuse depot content and contact a vendor only for missing files.
+
+To prove that a particular package can run without network access, use the read-only offline plan:
+
+```powershell
+Get-PackageAssignmentPlan `
+  -DefinitionId GitRuntime `
+  -MaterializeOnly `
+  -Offline `
+  -Raw
+```
+
+## 📤 Prepare an offline machine
+
+On the connected host:
+
+```powershell
+Add-TeamPackageDepot -BasePath '\\fileserver\offline\PkgDepot'
+Invoke-PackageDepotMaterialize -AllTrusted -WhatIf
+Invoke-PackageDepotMaterialize -AllTrusted
+```
+
+On a machine that already has the module and can read that share:
+
+```powershell
+Add-PackageDepot -DepotId offlineDepot -BasePath '\\fileserver\offline\PkgDepot'
+Invoke-Package -DefinitionId SevenZip,GitRuntime,NodeRuntime -Offline
+```
+
+For a clean Windows machine where Eigenverft.Manifested.Package is not installed, materialize the special `EigenverftManifestedPackage` seed and follow [Offline Windows setup from one shared depot](./OfflineBootstrap.html).
+
+## 🐛 When a package fails
+
+1. Read that package's `ErrorMessage`; other package results remain useful.
+2. Confirm writable mirror paths with `Get-PackageDepot`.
+3. Re-run only the failed package with `Invoke-Package -DefinitionId <id> -MaterializeOnly` for focused output.
+4. Run the catalog command again after fixing the cause. Already verified files are reused instead of downloaded again.
+
+## 🚀 Continue
+
+- [Understand package depots](./PackageDepots.html)
+- [Manage depot entries](./PackageDepotCommands.html)
+- [Bootstrap a clean offline Windows machine](./OfflineBootstrap.html)
+  </script>
+  <noscript>This packaged documentation requires JavaScript enabled for local files.</noscript>
+</body>
+</html>

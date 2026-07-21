@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Documentation</title>
+  <link rel="stylesheet" href="./css/documentation.css">
+  <script src="./js/documentation.loader.js" defer></script>
+</head>
+<body>
+  <script id="documentation-markdown" type="text/markdown">
+# 🛠️ Package depot commands
+
+Depot commands cover three different jobs: read the current state, change depot configuration, or fill depots with package files. The PowerShell verb alone is not enough to describe the effect, so use this table as the quick contract.
+
+| Command | What it does | Changes files or configuration? |
+| --- | --- | --- |
+| `Get-PackageDepot` | Reads the configured depot entries and their effective paths and roles | Read only |
+| `Get-PackageAssignmentPlan` | Calculates a package/materialization preview without network access | Read only |
+| `Get-PackageState` | Reads package assignments, history, and resolved state paths | Read only |
+| `Add-PackageDepot` / `Add-TeamPackageDepot` | Creates a depot **configuration entry** | Changes configuration; does not fill the depot |
+| `Set-PackageDepot` | Updates a depot **configuration entry** | Changes configuration; does not move package files |
+| `Remove-PackageDepot` | Removes a depot **configuration entry** | Changes configuration; does not delete depot files |
+| `Invoke-Package -MaterializeOnly` | Acquires, verifies, and copies one or more packages into mirrors | Downloads/copies files; does not install |
+| `Invoke-PackageDepotMaterialize` | Runs that materialization workflow for the trusted current-platform catalog | Downloads/copies files; does not change configuration or delete files |
+
+In other words, `Set` here means “update depot configuration,” while `Invoke` means “run a package workflow.” The noun and the description tell you what is created or changed.
+
+## 👀 See the current setup
+
+```powershell
+Get-PackageDepot
+```
+
+The most useful columns are:
+
+| Property | Meaning |
+| --- | --- |
+| `DepotId` | Stable name used by the management commands |
+| `ResolvedBasePath` | Folder Package will actually use |
+| `Enabled` / `Effective` | Whether this entry participates on the current machine and site |
+| `Readable` | Existing verified files may be reused |
+| `Writable` + `MirrorTarget` | Materialization may publish verified files here |
+| `SearchOrder` | Lower numbers are searched first |
+
+Inspect one entry when you know its ID:
+
+```powershell
+Get-PackageDepot -DepotId defaultPackageDepot
+```
+
+These `Get` commands do not repair, download, copy, or delete anything.
+
+## 🤝 Add a team share
+
+For the common writable team-share case, use the shortcut:
+
+```powershell
+Add-TeamPackageDepot -BasePath '\\fileserver\packages\PkgDepot'
+```
+
+It creates `teamPackageDepot` as a readable, writable mirror target and creates the root folder when needed. Give it another ID when one profile uses several shares:
+
+```powershell
+Add-TeamPackageDepot `
+  -DepotId engineeringDepot `
+  -BasePath '\\fileserver\engineering\PkgDepot'
+```
+
+Use `-WhatIf` first if you only want to see the configuration change.
+
+## 📥 Add a read-only source
+
+`Add-PackageDepot` starts read-only unless you explicitly add write roles:
+
+```powershell
+Add-PackageDepot `
+  -DepotId releaseMedia `
+  -BasePath 'E:\PkgDepot' `
+  -SearchOrder 50
+```
+
+This is a good fit for mounted media or a centrally managed share. Package can reuse verified content but will not publish into it.
+
+## 🔧 Change an entry
+
+Disable a share temporarily without forgetting its path:
+
+```powershell
+Set-PackageDepot -DepotId engineeringDepot -Disable
+Set-PackageDepot -DepotId engineeringDepot -Enable
+```
+
+Move it or change when it is searched:
+
+```powershell
+Set-PackageDepot `
+  -DepotId engineeringDepot `
+  -BasePath '\\new-server\engineering\PkgDepot' `
+  -SearchOrder 80
+```
+
+Turn a configured folder into a writable mirror, or back into a read-only source:
+
+```powershell
+Set-PackageDepot -DepotId engineeringDepot -Writable -MirrorTarget -EnsureExists
+Set-PackageDepot -DepotId engineeringDepot -ReadOnly
+```
+
+`-ReadOnly` also clears the mirror-target and ensure-exists roles so Package does not accidentally try to write there.
+
+## 🗑️ Remove configuration safely
+
+```powershell
+Remove-PackageDepot -DepotId engineeringDepot
+```
+
+This removes only the inventory entry. Files already present on the share remain untouched. Removing `defaultPackageDepot` requires `-Force` because that can leave the profile without its normal local durable depot.
+
+## 🐛 Quick checks
+
+| Symptom | Check |
+| --- | --- |
+| Share is configured but unused | `Get-PackageDepot` → confirm `Enabled`, `Effective`, and `Readable` |
+| Materialization does not fill it | Confirm both `Writable` and `MirrorTarget` are true |
+| Package cannot create the folder | Check Windows/SMB permissions; `EnsureExists` is not an ACL grant |
+| Another Windows user cannot see the entry | Configure the depot in that user's profile too |
+| You only want to inspect a future package run | Use `Get-PackageAssignmentPlan -DefinitionId <id> -MaterializeOnly -Raw` |
+
+## 🚀 Continue
+
+- [Understand package depots](./PackageDepots.html)
+- [Fill or refresh depots](./PackageDepotMaterialize.html)
+  </script>
+  <noscript>This packaged documentation requires JavaScript enabled for local files.</noscript>
+</body>
+</html>

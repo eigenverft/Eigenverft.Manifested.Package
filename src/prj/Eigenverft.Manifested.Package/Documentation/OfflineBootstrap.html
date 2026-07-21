@@ -18,7 +18,7 @@ The target does not need Internet access, PowerShell Gallery access, or Eigenver
 
 ```mermaid
 flowchart LR
-  H[Connected host] -->|Sync trusted packages| D[Shared package depot]
+  H[Connected host] -->|Materialize trusted packages| D[Shared package depot]
   D -->|Map or attach folder| W[Offline Windows machine]
   W -->|Double-click Bootstrap.cmd| P[Ready PowerShell console]
   P -->|Invoke-Package -Offline| A[Packages installed]
@@ -33,7 +33,7 @@ Invoke-PackageDepotMaterialize -AllTrusted -WhatIf
 Invoke-PackageDepotMaterialize -AllTrusted
 ```
 
-Confirm the synchronization when prompted. It prepares every already trusted package definition available for the current Windows platform, including complete artifact sets and dependencies. The preview matters because the set can include large runtimes or models.
+Confirm the materialization when prompted. It prepares every already trusted package definition available for the current Windows platform, including complete artifact sets and dependencies. The preview matters because the set can include large runtimes or models. See [Fill or refresh package depots](./PackageDepotMaterialize.html) for filtering, result handling, and retry examples.
 
 If you want only the package-engine bootstrap instead of the complete trusted catalog:
 
@@ -62,7 +62,7 @@ Share or attach the **complete depot root**, not only an individual `.nupkg`. Su
 - removable storage or an attached ISO;
 - a team/LAN share when the machine has local-network access but no usable Internet.
 
-Mapping the full depot to the target user's default depot path is the easiest option: bootstrap finds its files, and later `Invoke-Package -Offline` calls find the other synchronized packages in the same place.
+Mapping the full depot to the target user's default depot path is the easiest option: bootstrap finds its files, and later `Invoke-Package -Offline` calls find the other materialized packages in the same place.
 
 ### 🛠️ Minimal Windows Sandbox example
 
@@ -115,7 +115,7 @@ Invoke-Package -DefinitionId SevenZip,GitRuntime,NodeRuntime -Offline
 Get-PackageState
 ```
 
-Or assign a larger development setup that was included by the trusted sync:
+Or assign a larger development setup that was included by the trusted materialization run:
 
 ```powershell
 Invoke-Package -DefinitionId PowerShell7,GitRuntime,GHCli,VSCodeRuntime,NodeRuntime,SevenZip,DotNetSdk10 -Offline
@@ -137,9 +137,9 @@ Existing targets do not need the bootstrap again unless their user profile is re
 ## 🐛 Quick fixes
 
 - **Bootstrap folder not found:** open the newest directory below `evf\EigenverftManifestedPackage\stable`.
-- **A required bootstrap package is missing:** the seed directory was copied incompletely; synchronize or materialize it again on the host.
+- **A required bootstrap package is missing:** the seed directory was copied incompletely; materialize it again on the host.
 - **An offline package is missing:** it was not included in the shared depot; materialize it on the connected host.
-- **An older seed reports a NuGet provider error:** synchronize again and use the newest seed version.
+- **An older seed reports a NuGet provider error:** materialize again and use the newest seed version.
 - **You need an all-users install:** open an elevated console and run `Eigenverft.Manifested.Package.Bootstrap.cmd -Scope AllUsers`; the normal double-click installs for the current user.
 - **The machine has no virtual NIC:** use a Sandbox/hypervisor folder mapping, removable storage, or an ISO. An SMB share still needs local-network connectivity.
   </script>

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Documentation</title>
+  <link rel="stylesheet" href="./css/documentation.css">
+  <script src="./js/documentation.loader.js" defer></script>
+</head>
+<body>
+  <script id="documentation-markdown" type="text/markdown">
+# 📦 Package depots
+
+A package depot is a reusable folder for verified installers, archives, module packages, model files, and other package payloads. Fill it once, then let the same user, another PC, or an isolated Windows machine reuse those files without downloading them again.
+
+```mermaid
+flowchart LR
+  V[Vendor or existing depot] -->|Acquire and verify| P[Package]
+  P -->|Materialize| L[Local depot]
+  P -->|Materialize| T[Team share]
+  L -->|Reuse| A[Package assignment]
+  T -->|Reuse| B[Other machines]
+```
+
+## 💡 What belongs in a depot
+
+A depot stores **package payloads**. Package-definition JSON is discovered through package endpoints, while installed files and assignment history live elsewhere. Keeping those jobs separate lets one trusted definition describe the same payload on a connected host and on an offline target.
+
+The default per-user depot is:
+
+```text
+%LOCALAPPDATA%\Programs\Evf.Package\PkgDepot
+```
+
+Files are grouped by their definition-owned namespace, package, release track, version, and target. A typical path looks like:
+
+```text
+PkgDepot\evf\GitRuntime\stable\2.55.0.3\64-bit\MinGit-2.55.0.3-64-bit.zip
+```
+
+You normally do not create or rearrange these subfolders yourself. Package definitions provide the layout, and the engine verifies files before reuse.
+
+## 🔄 Three useful depot roles
+
+| What you want | Configuration meaning | Typical use |
+| --- | --- | --- |
+| Reuse files already in a folder | Readable depot | Read-only NAS, mounted media, or a depot prepared by someone else |
+| Keep a local reusable copy | Writable mirror target | The default per-user depot |
+| Fill a shared folder for other machines | Writable mirror target with a UNC path | Team share or offline preparation host |
+
+`EnsureExists` means Package may create the depot root when it writes there. It does not grant Windows permissions; the current user still needs access to the local folder or share.
+
+`SearchOrder` controls where Package looks first. It is not a copy direction. Writing is controlled separately by `Writable` + `MirrorTarget`, so a lower-priority share can still refill a local mirror and a machine may also work with only a readable share and no default local depot.
+
+## 🧭 Choose a simple setup
+
+### One computer
+
+Do nothing. The installed module already has a local depot. Package downloads a required file once and can reuse it later.
+
+### Several computers on one network
+
+Add a team depot on each Windows user profile that should use the share:
+
+```powershell
+Add-TeamPackageDepot -BasePath '\\fileserver\packages\PkgDepot'
+```
+
+This shortcut configures the share as both a readable source and a writable mirror target. Later materialization can fill it, and other configured machines can reuse it.
+
+### Read-only prepared media or share
+
+Use a normal depot entry without the writable switches:
+
+```powershell
+Add-PackageDepot -DepotId preparedMedia -BasePath 'D:\PkgDepot'
+```
+
+Package may read matching files from it but will not try to change it.
+
+### A machine without Internet access
+
+Materialize packages on a connected host, expose the complete depot root to the target, and invoke packages there with `-Offline`. For a clean Windows machine where this module is not installed yet, follow [Offline Windows setup from one shared depot](./OfflineBootstrap.html).
+
+## ✅ What Package checks
+
+- A depot must be enabled and applicable to the current site before Package uses it.
+- Readable depots are searched in `SearchOrder`.
+- Only depots marked both writable and mirror target receive materialized files.
+- Authored hashes and signatures decide whether an existing file may be reused.
+- A package with several artifact files is reusable only when its complete required set is available.
+- `-MaterializeOnly` succeeds when the complete required set is durable in any readable depot. Incomplete secondary mirrors are warnings with per-file results, not a reason to lose an otherwise usable materialization.
+
+## 🚀 Continue
+
+- [Manage depot entries](./PackageDepotCommands.html)
+- [Fill or refresh depots](./PackageDepotMaterialize.html)
+- [Bootstrap a clean offline Windows machine](./OfflineBootstrap.html)
+  </script>
+  <noscript>This packaged documentation requires JavaScript enabled for local files.</noscript>
+</body>
+</html>

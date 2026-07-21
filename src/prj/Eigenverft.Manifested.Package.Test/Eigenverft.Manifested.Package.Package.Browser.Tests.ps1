@@ -9,6 +9,9 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - browse
         $moduleProjectRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'Eigenverft.Manifested.Package'
         $documentationRoot = Join-Path $moduleProjectRoot 'Documentation'
         $indexPath = Join-Path $documentationRoot 'index.html'
+        $packageDepotsPath = Join-Path $documentationRoot 'PackageDepots.html'
+        $packageDepotCommandsPath = Join-Path $documentationRoot 'PackageDepotCommands.html'
+        $packageDepotMaterializePath = Join-Path $documentationRoot 'PackageDepotMaterialize.html'
         $offlineBootstrapPath = Join-Path $documentationRoot 'OfflineBootstrap.html'
         $documentationCssPath = Join-Path $documentationRoot 'css\documentation.css'
         $documentationJavaScriptPath = Join-Path $documentationRoot 'js\documentation.js'
@@ -34,9 +37,15 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - browse
         $markedLicensePath = Join-Path $documentationRoot 'licenses\marked.LICENSE.txt'
         $mermaidLicensePath = Join-Path $documentationRoot 'licenses\mermaid.LICENSE.txt'
         $content = Get-Content -LiteralPath $indexPath -Raw
+        $packageDepotsContent = Get-Content -LiteralPath $packageDepotsPath -Raw
+        $packageDepotCommandsContent = Get-Content -LiteralPath $packageDepotCommandsPath -Raw
+        $packageDepotMaterializeContent = Get-Content -LiteralPath $packageDepotMaterializePath -Raw
         $offlineBootstrapContent = Get-Content -LiteralPath $offlineBootstrapPath -Raw
 
         Test-Path -LiteralPath $indexPath -PathType Leaf | Should -BeTrue
+        Test-Path -LiteralPath $packageDepotsPath -PathType Leaf | Should -BeTrue
+        Test-Path -LiteralPath $packageDepotCommandsPath -PathType Leaf | Should -BeTrue
+        Test-Path -LiteralPath $packageDepotMaterializePath -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath $offlineBootstrapPath -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath $documentationCssPath -PathType Leaf | Should -BeTrue
         Test-Path -LiteralPath $documentationJavaScriptPath -PathType Leaf | Should -BeTrue
@@ -66,6 +75,9 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - browse
         $content | Should -Match '## 📚 Documentation'
         $content | Should -Match 'https://eigenverft\.github\.io/Eigenverft\.Manifested\.Package/'
         $content | Should -Match 'Open-PackageDocumentation'
+        $content | Should -Match '\./PackageDepots\.html'
+        $content | Should -Match '\./PackageDepotCommands\.html'
+        $content | Should -Match '\./PackageDepotMaterialize\.html'
         $content | Should -Match '\./OfflineBootstrap\.html'
         $content | Should -Match 'href="\./css/documentation\.css"'
         $content | Should -Match 'src="\./js/documentation\.loader\.js"'
@@ -81,7 +93,33 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - browse
         $pagesJavaScript | Should -Match "brand:\s*'Eigenverft\.Manifested\.Package'"
         $pagesJavaScript | Should -Not -Match "brand:\s*'Eigenverft\.Package'"
         $pagesJavaScript | Should -Match "path:\s*'index\.html'.*title:\s*'Eigenverft\.Manifested\.Package documentation'"
+        $pagesJavaScript | Should -Match "path:\s*'PackageDepots\.html'.*label:\s*'Package depots'.*title:\s*'Package depots"
+        $pagesJavaScript | Should -Match "path:\s*'PackageDepotCommands\.html'.*label:\s*'Depot commands'.*title:\s*'Package depot commands"
+        $pagesJavaScript | Should -Match "path:\s*'PackageDepotMaterialize\.html'.*label:\s*'Fill depots'.*title:\s*'Fill package depots"
         $pagesJavaScript | Should -Match "path:\s*'OfflineBootstrap\.html'.*label:\s*'Offline setup'.*title:\s*'Offline Windows setup"
+        $packageDepotsContent | Should -Match '# 📦 Package depots'
+        $packageDepotsContent | Should -Match 'Add-TeamPackageDepot'
+        $packageDepotsContent | Should -Match '%LOCALAPPDATA%\\Programs\\Evf\.Package\\PkgDepot'
+        $packageDepotCommandsContent | Should -Match '# 🛠️ Package depot commands'
+        $packageDepotCommandsContent | Should -Match 'Add-PackageDepot'
+        $packageDepotCommandsContent | Should -Match 'Set-PackageDepot'
+        $packageDepotCommandsContent | Should -Match 'Remove-PackageDepot'
+        $packageDepotCommandsContent | Should -Match 'Read only'
+        $packageDepotCommandsContent | Should -Match 'does not delete depot files'
+        $packageDepotMaterializeContent | Should -Match '# 🔄 Fill or refresh package depots'
+        $packageDepotMaterializeContent | Should -Match 'Invoke-PackageDepotMaterialize -AllTrusted -WhatIf'
+        $packageDepotMaterializeContent | Should -Match 'If one package fails, its result is reported and the command continues with the next package'
+        $packageDepotMaterializeContent | Should -Match 'not downloaded again for every depot'
+        $packageDepotMaterializeContent | Should -Match 'durable in at least one readable depot'
+        $packageDepotMaterializeContent | Should -Match '-FailFast'
+        foreach ($documentationPageContent in @($packageDepotsContent, $packageDepotCommandsContent, $packageDepotMaterializeContent)) {
+            $documentationPageContent | Should -Match 'href="\./css/documentation\.css"'
+            $documentationPageContent | Should -Match 'src="\./js/documentation\.loader\.js"'
+            @([regex]::Matches($documentationPageContent, '<link\s+rel="stylesheet"')).Count | Should -Be 1
+            @([regex]::Matches($documentationPageContent, '<script\s+src=')).Count | Should -Be 1
+            $documentationPageContent | Should -Not -Match '<(?:main|nav|header)\b'
+            $documentationPageContent | Should -Not -Match '(?i)(src|href)\s*=\s*["'']https?://'
+        }
         $offlineBootstrapContent | Should -Match '# 📦 Offline Windows setup from one shared depot'
         $offlineBootstrapContent | Should -Match 'Invoke-PackageDepotMaterialize -AllTrusted'
         $offlineBootstrapContent | Should -Match '<Networking>Disable</Networking>'

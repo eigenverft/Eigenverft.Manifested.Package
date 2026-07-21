@@ -75,6 +75,8 @@ Open-PackageDocumentation
 
 For the connected-host → shared-depot → clean-machine workflow, see the [offline Windows setup guide](https://eigenverft.github.io/Eigenverft.Manifested.Package/OfflineBootstrap.html). The same guide is available from the Documentation menu in the packaged offline pages.
 
+Depot guides: [how package depots work](https://eigenverft.github.io/Eigenverft.Manifested.Package/PackageDepots.html), [depot command examples](https://eigenverft.github.io/Eigenverft.Manifested.Package/PackageDepotCommands.html), and [filling or refreshing depots](https://eigenverft.github.io/Eigenverft.Manifested.Package/PackageDepotMaterialize.html).
+
 See [How assignment works](#how-assignment-works) for `Search-Package` and `Get-PackageState` in detail.
 
 ---
