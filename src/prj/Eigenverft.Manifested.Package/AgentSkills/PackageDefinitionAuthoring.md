@@ -16,7 +16,7 @@ The Task normally supplies `definitionPublication.definitionId`. Use the user's 
 
 Use the endpoint's existing flat layout only when the endpoint or user requires it. `definitionPublication.publisherId` and `definitionPublication.definitionId` are authoritative.
 
-Choose `definitionPublication.depotNamespace` as a stable publication-group identifier when definitions may share depots with other catalogs or release groups. It becomes the first depot directory and prevents artifact-path collisions when the remaining definition, track, version, and variant identities overlap. Omitted or empty uses `default`; the shipped Eigenverft catalog uses `evf`. Do not change an established namespace casually because that relocates the definition's durable artifacts.
+Choose `definitionPublication.depotNamespace` as a stable publication-group identifier when definitions may share depots with other catalogs or release groups. It becomes the first depot directory and prevents artifact-path collisions when the remaining definition, track, version, and variant identities overlap. Reuse the namespace already established by the catalog. For a new catalog, prefer a short lowercase ASCII name derived from the authoritative publisher ID or organization, such as `evf`. Do not derive it from a certificate thumbprint or mutable certificate CN/display name: certificates establish trust, not the durable depot path. If publisher ownership is ambiguous, stop and ask instead of inventing a namespace. Omitted or empty uses `default`; the shipped Eigenverft catalog uses `evf`. Do not change an established namespace casually because that relocates the definition's durable artifacts.
 
 ### Authoring Targets And Endpoints
 

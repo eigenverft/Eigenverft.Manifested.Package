@@ -29,10 +29,12 @@ function Invoke-PackageDepotMaterialize {
     .DESCRIPTION
         Discovers package definitions whose effective catalog status is signedTrusted,
         deduplicates their publisher/definition identities, and materializes each package
-        plus its dependencies into configured depots. The command never prompts for new
-        catalog trust, imports signing keys, accepts unsigned definitions, or removes files.
-
-        Sync-PackageDepot is a deprecated alias for this command.
+        plus its dependencies into configured writable mirrors. A package is materialized
+        when its complete file set is durable in at least one readable depot. Incomplete
+        secondary mirrors remain visible in the result without discarding that success. A
+        failed package is reported and the next package is attempted unless FailFast is selected.
+        The command never prompts for new catalog trust, imports signing keys, accepts
+        unsigned definitions, installs packages, changes depot configuration, or removes files.
 
     .PARAMETER AllTrusted
         Confirms that the complete already-trusted current-platform catalog is the materialize scope.
@@ -44,7 +46,6 @@ function Invoke-PackageDepotMaterialize {
         Stops after the first package that does not materialize successfully.
     #>
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
-    [Alias('Sync-PackageDepot')]
     param(
         [Parameter(Mandatory = $true)]
         [switch]$AllTrusted,
@@ -60,10 +61,6 @@ function Invoke-PackageDepotMaterialize {
 
         [switch]$FailFast
     )
-
-    if ([string]::Equals($MyInvocation.InvocationName, 'Sync-PackageDepot', [System.StringComparison]::OrdinalIgnoreCase)) {
-        Write-Warning "Sync-PackageDepot is deprecated. Use Invoke-PackageDepotMaterialize instead."
-    }
 
     if (-not $AllTrusted.IsPresent) {
         throw 'Invoke-PackageDepotMaterialize currently requires -AllTrusted.'
@@ -115,7 +112,7 @@ function Invoke-PackageDepotMaterialize {
         foreach ($package in $selected) {
             $assignmentPlan = New-PackageAssignmentPlanCore -PublisherId ([string]$package.PublisherId) -DefinitionId ([string]$package.DefinitionId) -Purpose Inspection -MaterializeOnly -RequireAlreadyTrusted
             [pscustomobject]@{
-                PSTypeName    = 'Eigenverft.Manifested.Package.DepotSyncResult'
+                PSTypeName    = 'Eigenverft.Manifested.Package.DepotMaterializeResult'
                 PublisherId   = [string]$package.PublisherId
                 DefinitionId  = [string]$package.DefinitionId
                 Version       = [string]$package.Version
@@ -149,8 +146,8 @@ function Invoke-PackageDepotMaterialize {
             'Materialized'
         }
 
-        $syncResult = [pscustomobject]@{
-            PSTypeName    = 'Eigenverft.Manifested.Package.DepotSyncResult'
+        $materializeResult = [pscustomobject]@{
+            PSTypeName    = 'Eigenverft.Manifested.Package.DepotMaterializeResult'
             PublisherId   = [string]$package.PublisherId
             DefinitionId  = [string]$package.DefinitionId
             Version       = [string]$package.Version
@@ -160,7 +157,7 @@ function Invoke-PackageDepotMaterialize {
             PackageResult = @($packageResults)
             ErrorMessage  = $errorMessage
         }
-        $syncResult
+        $materializeResult
 
         if ($FailFast.IsPresent -and [string]::Equals($status, 'Failed', [System.StringComparison]::OrdinalIgnoreCase)) {
             break

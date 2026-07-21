@@ -31,7 +31,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
         foreach ($commandName in @('Get-PackageDepot', 'Add-PackageDepot', 'Add-TeamPackageDepot', 'Set-PackageDepot', 'Remove-PackageDepot', 'Invoke-PackageDepotMaterialize')) {
             $module.ExportedCommands.Keys | Should -Contain $commandName
         }
-        $module.ExportedAliases.Keys | Should -Contain 'Sync-PackageDepot'
+        $module.ExportedAliases.Count | Should -Be 0
     }
 
     It 'materializes only deduplicated already trusted current-platform definitions' {
@@ -50,28 +50,10 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
         $result = @(Invoke-PackageDepotMaterialize -AllTrusted -Confirm:$false)
 
         $result.Count | Should -Be 1
+        $result[0].PSTypeNames[0] | Should -Be 'Eigenverft.Manifested.Package.DepotMaterializeResult'
         $result[0].DefinitionId | Should -Be 'Alpha'
         $result[0].Status | Should -Be 'Materialized'
         Assert-MockCalled Search-Package -Times 1 -Exactly -ParameterFilter { $CurrentPlatformOnly -and $IncludeIneligible }
-        Assert-MockCalled Invoke-Package -Times 1 -Exactly -ParameterFilter {
-            $PublisherId -eq 'Eigenverft' -and $DefinitionId -eq 'Alpha' -and $MaterializeOnly -and $RequireAlreadyTrusted
-        }
-    }
-
-    It 'keeps Sync-PackageDepot as a deprecated alias of Invoke-PackageDepotMaterialize' {
-        Mock Search-Package {
-            @(
-                [pscustomobject]@{ PublisherId = 'Eigenverft'; DefinitionId = 'Alpha'; Version = '2.0'; CatalogTrustStatus = 'signedTrusted'; EndpointSearchOrder = 100; DefinitionRevision = 2 }
-            )
-        }
-        Mock Invoke-Package {
-            [pscustomobject]@{ Status = 'Materialized' }
-        }
-
-        $warnings = @()
-        $null = @(Sync-PackageDepot -AllTrusted -Confirm:$false -WarningVariable warnings -WarningAction SilentlyContinue)
-
-        $warnings | Should -Match 'deprecated'
         Assert-MockCalled Invoke-Package -Times 1 -Exactly -ParameterFilter {
             $PublisherId -eq 'Eigenverft' -and $DefinitionId -eq 'Alpha' -and $MaterializeOnly -and $RequireAlreadyTrusted
         }
@@ -106,6 +88,44 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
         Assert-MockCalled New-PackageAssignmentPlanCore -Times 1 -Exactly -ParameterFilter {
             $PublisherId -eq 'Eigenverft' -and $DefinitionId -eq 'Alpha' -and $Purpose -eq 'Inspection' -and $MaterializeOnly -and $RequireAlreadyTrusted
         }
+    }
+
+    It 'continues catalog materialization after one package fails' {
+        Mock Search-Package {
+            @(
+                [pscustomobject]@{ PublisherId = 'Eigenverft'; DefinitionId = 'Alpha'; Version = '1.0'; CatalogTrustStatus = 'signedTrusted'; EndpointSearchOrder = 100; DefinitionRevision = 1 },
+                [pscustomobject]@{ PublisherId = 'Eigenverft'; DefinitionId = 'Beta'; Version = '2.0'; CatalogTrustStatus = 'signedTrusted'; EndpointSearchOrder = 100; DefinitionRevision = 1 }
+            )
+        }
+        Mock Invoke-Package {
+            if ($DefinitionId -eq 'Alpha') { throw 'simulated mirror failure' }
+            [pscustomobject]@{ Status = 'Materialized' }
+        }
+
+        $result = @(Invoke-PackageDepotMaterialize -AllTrusted -Confirm:$false)
+
+        $result.Count | Should -Be 2
+        ($result | Where-Object DefinitionId -eq Alpha).Status | Should -Be 'Failed'
+        ($result | Where-Object DefinitionId -eq Alpha).ErrorMessage | Should -Match 'simulated mirror failure'
+        ($result | Where-Object DefinitionId -eq Beta).Status | Should -Be 'Materialized'
+        Assert-MockCalled Invoke-Package -Times 2 -Exactly
+    }
+
+    It 'stops catalog materialization after the first failure with FailFast' {
+        Mock Search-Package {
+            @(
+                [pscustomobject]@{ PublisherId = 'Eigenverft'; DefinitionId = 'Alpha'; Version = '1.0'; CatalogTrustStatus = 'signedTrusted'; EndpointSearchOrder = 100; DefinitionRevision = 1 },
+                [pscustomobject]@{ PublisherId = 'Eigenverft'; DefinitionId = 'Beta'; Version = '2.0'; CatalogTrustStatus = 'signedTrusted'; EndpointSearchOrder = 100; DefinitionRevision = 1 }
+            )
+        }
+        Mock Invoke-Package { throw 'simulated mirror failure' }
+
+        $result = @(Invoke-PackageDepotMaterialize -AllTrusted -FailFast -Confirm:$false)
+
+        $result.Count | Should -Be 1
+        $result[0].DefinitionId | Should -Be 'Alpha'
+        $result[0].Status | Should -Be 'Failed'
+        Assert-MockCalled Invoke-Package -Times 1 -Exactly
     }
 
     It 'adds a filesystem depot with safe read-only defaults' {

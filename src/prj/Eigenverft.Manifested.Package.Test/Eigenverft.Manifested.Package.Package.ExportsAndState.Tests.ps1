@@ -117,7 +117,6 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'Set-PackageEndpoint',
             'Set-PackagePublisher',
             'Sign-PackageDefinition',
-            'Sync-PackageDepot',
             'Test-PackageDefinitionCatalog',
             'Trust-PackageSigningCertificate',
             'Untrust-PackageSigningCertificate',
@@ -127,10 +126,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
         )
         Get-Command -Name 'Initialize-ProxyAccessProfile' -Module $module -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
 
-        $syncAlias = Get-Alias -Name Sync-PackageDepot -ErrorAction SilentlyContinue
-        $syncAlias | Should -Not -BeNullOrEmpty
-        $syncAlias.ResolvedCommandName | Should -Be 'Invoke-PackageDepotMaterialize'
-        $module.ExportedAliases.Keys | Should -Contain 'Sync-PackageDepot'
+        $module.ExportedAliases.Count | Should -Be 0
     }
 
     It 'keeps user-facing command files in command folders' {
@@ -164,6 +160,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
         $text | Should -Match 'artifactFiles = every required file in that distribution'
         $text | Should -Match 'artifactFileId = file consumed by the install operation'
         $text | Should -Match 'definitionPublication\.depotNamespace'
+        $text | Should -Match 'certificates establish trust, not the durable depot path'
         $text | Should -Match 'Version sanity check'
         $text | Should -Match '### Split installer'
         $text | Should -Match '### Archive-derived bootstrap files'
@@ -208,6 +205,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'definitionPublication.definitionId',
             'definitionPublication.publisherId',
             'definitionPublication.depotNamespace',
+            'certificates establish trust, not the durable depot path',
             'eigenverft-module-package-definition-2.0.schema.json',
             'x-eigenverftAgentHint',
             'Authoring Targets And Endpoints',
