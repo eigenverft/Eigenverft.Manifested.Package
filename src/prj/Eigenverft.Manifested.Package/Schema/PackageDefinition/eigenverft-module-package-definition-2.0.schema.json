@@ -139,8 +139,8 @@
         },
         "depotNamespace": {
           "type": "string",
-          "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
-          "description": "Optional first subdirectory under each package depot basePath for this definition. When omitted or blank, the runtime uses the neutral namespace 'default'. Eigenverft shipped definitions use 'evf'."
+          "pattern": "^(?:[A-Za-z][A-Za-z0-9_-]*)?$",
+          "description": "Optional stable publication-group namespace used as the first subdirectory under each package depot basePath. It prevents artifact-path collisions when catalogs or release groups reuse definition, track, version, and variant identities. When omitted or empty, the runtime uses the neutral namespace 'default'. Eigenverft shipped definitions use 'evf'."
         },
         "definitionSignature": {
           "$ref": "#/$defs/definitionSignature",

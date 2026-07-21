@@ -352,6 +352,50 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - source
         $customConfig.DepotNamespace | Should -Be 'custom'
     }
 
+    It 'preserves definition depot namespaces with legacy local depot layout templates' {
+        $rootPath = Join-Path $TestDrive 'legacy-depot-layout'
+        $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64' -FileName 'VSCode-win32-x64-2.0.0.zip' -AcquisitionCandidates @(
+            @{
+                kind         = 'packageDepot'
+                searchOrder  = 10
+                verification = @{ mode = 'none' }
+            }
+        )
+        $definition = New-TestVSCodeDefinitionDocument -Releases @($release) -SharedReadiness (New-TestReadiness -Version '2.0.0')
+        $definition.definitionPublication.depotNamespace = 'evf'
+        $globalDocument = New-TestPackageGlobalDocument -PackageDepotRelativePath '{definitionId}/{releaseTrack}/{version}/{artifactDistributionVariant}'
+        $documents = Write-TestPackageDocuments -RootPath $rootPath -GlobalDocument $globalDocument -DefinitionDocument $definition
+        Mock Get-PackageConfigPath { $documents.GlobalConfigPath }
+
+        $config = Get-PackageConfig -DefinitionId 'VSCodeRuntime'
+        $result = Resolve-PackagePaths -PackageResult (Resolve-PackagePackage -PackageResult (New-PackageResult -PackageConfig $config))
+
+        $result.PackageDepotRelativeDirectory | Should -Be 'evf\VSCodeRuntime\stable\2.0.0\win32-x64'
+    }
+
+    It 'rejects rooted traversal and misplaced namespace depot layouts before normalization' {
+        $config = [pscustomobject]@{
+            DefinitionId     = 'Example'
+            DepotNamespace   = 'evf'
+            Platform         = 'windows'
+            Architecture     = 'x64'
+            ReleaseTrack     = 'stable'
+        }
+        $package = [pscustomobject]@{
+            id                          = 'example-win-x64-stable'
+            version                     = '1.0.0'
+            releaseTrack                = 'stable'
+            artifactDistributionVariant = 'win-x64'
+            artifactTargetId            = 'example-win-x64-stable'
+        }
+
+        { Resolve-PackageLayoutRelativeDirectory -Template 'C:\unsafe\{definitionId}' -PackageConfig $config -Package $package } | Should -Throw '*rooted path*'
+        { Resolve-PackageLayoutRelativeDirectory -Template '../unsafe/{definitionId}' -PackageConfig $config -Package $package } | Should -Throw '*traversal segment*'
+
+        $config | Add-Member -MemberType NoteProperty -Name PackageDepotRelativePathTemplate -Value 'legacy/{depotNamespace}/{definitionId}'
+        { Get-PackagePackageDepotRelativeDirectory -PackageConfig $config -Package $package } | Should -Throw '*must place {depotNamespace} as its first directory segment*'
+    }
+
     It 'writes resolved paths as separate console lines' {
         $rootPath = Join-Path $TestDrive 'resolved-path-lines'
         $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64' -FileName 'VSCode-win32-x64-2.0.0.zip' -AcquisitionCandidates @(

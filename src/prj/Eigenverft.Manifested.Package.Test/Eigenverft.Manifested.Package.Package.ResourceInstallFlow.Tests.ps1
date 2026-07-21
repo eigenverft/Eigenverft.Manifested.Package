@@ -286,7 +286,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - resour
             )
         )
         $documents = Write-TestPackageDocuments -RootPath $rootPath -GlobalDocument (New-TestPackageGlobalDocument -PackageFileStagingDirectory $packageFileStagingDirectory -PackageInstallStageDirectory $packageInstallStageDirectory -DefaultPackageDepotDirectory $defaultPackageDepotDirectory -PackageAssignmentInventoryFilePath $packageStateIndexFilePath -PackageOperationHistoryFilePath $operationHistoryFilePath) -DefinitionDocument $definitionDocument
-        $depotFilePath = Join-Path $defaultPackageDepotDirectory 'VSCodeRuntime\stable\2.0.0\win32-x64\VSCode-win32-x64-2.0.0.zip'
+        $depotFilePath = Join-Path $defaultPackageDepotDirectory 'default\VSCodeRuntime\stable\2.0.0\win32-x64\VSCode-win32-x64-2.0.0.zip'
         $null = New-Item -ItemType Directory -Path (Split-Path -Parent $depotFilePath) -Force
         Copy-FileToPath -SourcePath $archiveInfo.ZipPath -TargetPath $depotFilePath -Overwrite | Out-Null
         Mock Get-PackageConfigPath { $documents.GlobalConfigPath }

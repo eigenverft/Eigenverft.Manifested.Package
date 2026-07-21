@@ -16,6 +16,8 @@ The Task normally supplies `definitionPublication.definitionId`. Use the user's 
 
 Use the endpoint's existing flat layout only when the endpoint or user requires it. `definitionPublication.publisherId` and `definitionPublication.definitionId` are authoritative.
 
+Choose `definitionPublication.depotNamespace` as a stable publication-group identifier when definitions may share depots with other catalogs or release groups. It becomes the first depot directory and prevents artifact-path collisions when the remaining definition, track, version, and variant identities overlap. Omitted or empty uses `default`; the shipped Eigenverft catalog uses `evf`. Do not change an established namespace casually because that relocates the definition's durable artifacts.
+
 ### Authoring Targets And Endpoints
 
 Only a `Ready` endpoint marked `authoringTarget: true` is a valid output location. If Runtime endpoint status is absent, run `Get-PackageEndpoint`. Do not guess a repository or installed-module path.
@@ -71,7 +73,7 @@ Never run `setup.exe`, `msiexec`, a vendor bootstrapper, repair/uninstall comman
 
 ## 4. Authoring sequence
 
-1. Confirm `definitionPublication`, display metadata, dependencies, target constraints, `releaseTrack`, and `artifactDistributionVariant`.
+1. Confirm `definitionPublication`, including a stable `depotNamespace`, plus display metadata, dependencies, target constraints, `releaseTrack`, and `artifactDistributionVariant`.
 2. Research the latest requested release and every file in the distribution. Record the resolved source URL/path, version evidence, hash/signature evidence, and installer evidence per file.
 3. Define stable file IDs under target `artifactFiles`. Put reusable `relativePathTemplate` and ordered `acquisitionCandidates` there.
 4. Define the exact same IDs under each release target's `artifactFiles`. Put exact `relativePath`, source overrides, `contentHash`, and `publisherSignature` facts there.

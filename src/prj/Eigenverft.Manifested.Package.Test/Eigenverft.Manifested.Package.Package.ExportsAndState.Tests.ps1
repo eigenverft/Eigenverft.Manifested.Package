@@ -163,6 +163,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
         $text | Should -Match 'target = distribution suitable for the machine'
         $text | Should -Match 'artifactFiles = every required file in that distribution'
         $text | Should -Match 'artifactFileId = file consumed by the install operation'
+        $text | Should -Match 'definitionPublication\.depotNamespace'
         $text | Should -Match 'Version sanity check'
         $text | Should -Match '### Split installer'
         $text | Should -Match '### Archive-derived bootstrap files'
@@ -206,6 +207,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
             'Task and output location',
             'definitionPublication.definitionId',
             'definitionPublication.publisherId',
+            'definitionPublication.depotNamespace',
             'eigenverft-module-package-definition-2.0.schema.json',
             'x-eigenverftAgentHint',
             'Authoring Targets And Endpoints',

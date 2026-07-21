@@ -90,7 +90,7 @@ See Microsoft's [Windows Sandbox configuration reference](https://learn.microsof
 On the clean target, open File Explorer and browse inside the mapped depot:
 
 ```text
-EigenverftManifestedPackage\stable\{newest-seed-version}\psmodule-any
+evf\EigenverftManifestedPackage\stable\{newest-seed-version}\psmodule-any
 ```
 
 Double-click:
@@ -136,7 +136,7 @@ Existing targets do not need the bootstrap again unless their user profile is re
 
 ## 🐛 Quick fixes
 
-- **Bootstrap folder not found:** open the newest directory below `EigenverftManifestedPackage\stable`.
+- **Bootstrap folder not found:** open the newest directory below `evf\EigenverftManifestedPackage\stable`.
 - **A required bootstrap package is missing:** the seed directory was copied incompletely; synchronize or materialize it again on the host.
 - **An offline package is missing:** it was not included in the shared depot; materialize it on the connected host.
 - **An older seed reports a NuGet provider error:** synchronize again and use the newest seed version.

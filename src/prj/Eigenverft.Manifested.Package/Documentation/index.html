@@ -164,7 +164,7 @@ Add-TeamPackageDepot -BasePath '\\homeserver\artifacts\PackageDepot'
 Invoke-Package -DefinitionId SevenZip,DotNetSdk10,PythonRuntime,NodeRuntime
 ```
 
-Later runs reuse files from the depot when the engine finds a matching artifact under `PackageDepot\{definitionId}\{releaseTrack}\{version}\...`. You only need `Add-TeamPackageDepot` again if that Windows user profile has not been configured yet.
+Later runs reuse files from the depot when the engine finds a matching artifact under `PackageDepot\{depotNamespace}\{definitionId}\{releaseTrack}\{version}\...`. The namespace comes from the selected definition and keeps publication groups from colliding; the shipped Eigenverft definitions use `evf`, while an omitted or empty value uses `default`. You only need `Add-TeamPackageDepot` again if that Windows user profile has not been configured yet.
 
 First run on an unknown team catalog may prompt for trust. Admins can preseed trust with a public `.cer`:
 

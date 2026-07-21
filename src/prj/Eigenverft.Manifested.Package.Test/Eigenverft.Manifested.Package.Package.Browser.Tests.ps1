@@ -87,6 +87,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - browse
         $offlineBootstrapContent | Should -Match '<Networking>Disable</Networking>'
         $offlineBootstrapContent | Should -Match 'Invoke-Package -DefinitionId SevenZip,GitRuntime,NodeRuntime -Offline'
         $offlineBootstrapContent | Should -Match '## 3\. 🚀 Double-click the bootstrap command'
+        $offlineBootstrapContent | Should -Match 'evf\\EigenverftManifestedPackage\\stable'
         $offlineBootstrapContent | Should -Match 'Eigenverft\.Manifested\.Package\.Bootstrap\.cmd'
         $offlineBootstrapContent | Should -Not -Match 'Initialize-ProxyCompact|Initialize-Bootstrap|<LogonCommand>'
         $documentationJavaScript | Should -Match "document\.title = currentPage && currentPage\.title \? currentPage\.title : config\.brand \+ ' documentation'"

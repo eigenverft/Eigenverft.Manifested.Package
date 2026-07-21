@@ -1,8 +1,8 @@
-# Better Sync into mirror depots
+# Reliable materialization into mirror depots
 
-**Status:** Open
+**Status:** Open — command prep and the multi-writer filesystem transport proof are complete; distribution wiring and Materialize honesty remain.
 **Priority:** 2/7
-**One-line goal:** When a depot is marked as a mirror, Sync must actually put complete package files there — or fail clearly.
+**One-line goal:** When a depot is marked as a mirror, Materialize must put the complete artifact set there — or fail clearly.
 
 ---
 
@@ -15,7 +15,7 @@ The list of depots is stored in **`PackageDepotInventory.json`** (not in `Packag
 
 That inventory file only stores **settings** for each depot. It does **not** store “we already downloaded GitRuntime 2.55.0.3”. That only exists as files under the depot path.
 
-Package **definitions** (what GitRuntime is, hashes, versions) come from **endpoints**, not from the depot inventory. Sync picks packages from whatever endpoints you have enabled.
+Package **definitions** (what GitRuntime is, hashes, versions) come from **endpoints**, not from the depot inventory. Catalog materialization picks packages from the enabled endpoints.
 
 ---
 
@@ -27,7 +27,7 @@ These four booleans are the usual confusion. Read them as **roles**, not as Wind
 |---|---|---|
 | `readable` | Package may **search/reuse** files already in this folder | Looking for an existing zip before downloading |
 | `writable` | Package is **allowed to create/overwrite** files in this folder | Required before anything is written here |
-| `mirrorTarget` | After a successful acquire, **also copy** the finished files into this folder | Sync / Materialize distribution step |
+| `mirrorTarget` | After a successful acquire, **also copy** the finished files into this folder | Materialize/catalog-fill distribution step |
 | `ensureExists` | Create the depot **root folder** if missing | Only when Package is allowed to write |
 
 ### Legal combinations (engine enforces this)
@@ -35,8 +35,8 @@ These four booleans are the usual confusion. Read them as **roles**, not as Wind
 | `writable` | `mirrorTarget` | `ensureExists` | Meaning |
 |---|---|---|---|
 | `false` | `false` | `false` | **Read-only source.** Use existing files; never write. Typical for site/corp shares someone else fills. |
-| `true` | `false` | true/false | Writable but **not** a Sync mirror. Rare; Package will not publish Materialize results here unless `mirrorTarget` is also true. |
-| `true` | `true` | usually `true` | **Local/team mirror.** Sync/Materialize copies completed packages here. Default `defaultPackageDepot`. |
+| `true` | `false` | true/false | Writable but **not** a Materialize mirror. Rare; Package will not publish Materialize results here unless `mirrorTarget` is also true. |
+| `true` | `true` | usually `true` | **Local/team mirror.** Materialize/catalog fill copies completed packages here. Default `defaultPackageDepot`. |
 | `false` | `true` | anything | **Illegal.** Config validation throws: cannot use `mirrorTarget=true` with `writable=false`. |
 | `false` | anything | `true` | **Illegal.** Cannot `ensureExists` on a non-writable depot. |
 
@@ -52,7 +52,7 @@ means: “If enabled, I may **read** packages from this share. I will **not** tr
 **Rule of thumb:**
 
 - Want Package to **consume** a share → `readable: true`, usually `writable: false`, `mirrorTarget: false`.
-- Want Sync to **fill** a folder → `writable: true` **and** `mirrorTarget: true`.
+- Want Materialize/catalog fill to **fill** a folder → `writable: true` **and** `mirrorTarget: true`.
 - `mirrorTarget` without `writable` is nonsense and is rejected.
 
 Default shipped setup: `defaultPackageDepot` is `readable` + `writable` + `mirrorTarget` + `ensureExists`. Site/corp templates are disabled read-only sources.
@@ -133,7 +133,7 @@ Shows whether artifacts look obtainable / already present for that package. Stil
 
 ---
 
-## What happens step by step (Materialize / Sync)
+## What happens step by step (Materialize / catalog fill)
 
 For each package:
 
@@ -141,28 +141,28 @@ For each package:
 2. Try to get those files (often: already in a readable depot, else download).
 3. Files land first in a **staging** folder (careful write + verify).
 4. Package **copies** each verified file into every `writable` + `mirrorTarget` depot, under something like:
-   - `PkgDepot\GitRuntime\stable\2.55.0.3\64-bit\MinGit-….zip`
+   - `PkgDepot\evf\GitRuntime\stable\2.55.0.3\64-bit\MinGit-….zip`
 5. If size+hash already match in the mirror, copy is skipped.
 6. Materialize is treated as OK when the full file set exists in **at least one** durable depot path.
 7. Staging folders are cleaned after a **successful** run.
 
-That is the whole “sync into mirror” story today.
+That is the whole “materialize into mirrors” story today.
 
 ---
 
 ## What goes wrong today (the real bug for mirrors)
 
-Operators turn on `mirrorTarget` expecting: “after Sync, **this** folder has complete copies.”
+Operators turn on `mirrorTarget` expecting: “after Materialize/catalog fill, **this** folder has complete copies.”
 
 Actual behavior:
 
-1. **Mirror copy can fail and still look like success.** Copy errors are often warnings. If another depot already had the files, Materialize/Sync can still say Materialized while your mirror share is incomplete.
+1. **Mirror copy can fail and still look like success.** Copy errors are often warnings. If another depot already had the files, Materialize/catalog fill can still say Materialized while your mirror share is incomplete.
 2. **Mirror writes are a normal overwrite copy**, not temp-then-rename. A crash mid-copy can leave a truncated file sitting in the mirror path.
 3. **You do not get a clear per-depot result** like: `defaultPackageDepot=OK`, `teamShare=FAILED path=…`.
-4. Sync never repairs “this mirror is missing file X” as its own job beyond that soft copy step.
-5. Sync never removes old versions or junk (fine — but also no honest “mirror incomplete” signal).
+4. Catalog fill never repairs “this mirror is missing file X” as its own job beyond that soft copy step.
+5. Catalog fill never removes old versions or junk (fine — but also no honest “mirror incomplete” signal).
 
-So the markdown problem was earlier: talking about trust/orphans instead of this Sync/mirror publish gap.
+So the markdown problem was earlier: talking about trust/orphans instead of this Materialize/mirror publish gap.
 
 ---
 
@@ -224,7 +224,7 @@ Never run catalog fill automatically on every `Invoke-Package`.
 
 Order: **prep → transport seam + safe filesystem write → logic honesty**. Rename is not blocked on the copy fix.
 
-**0 — Prep (active checklist)**
+**0 — Prep (complete)**
 
 - [x] Rename catalog command to **`Invoke-PackageDepotMaterialize`**; `Sync-PackageDepot` deprecated alias + soft warning; docs / OfflineBootstrap / export allowlist. Behavior unchanged.
 - [x] Characterization / Materialize tests that pin today’s soft success when a secondary mirror fails but another readable depot has the files. Phase 2 flips those expectations.
@@ -240,7 +240,7 @@ Order: **prep → transport seam + safe filesystem write → logic honesty**. Re
 - Prove with TestImports / `Acquisition.Tests`. Public export of distribute can wait.
 - npm softer path: same honesty bar here or immediate follow-up after Phase 2.
 - Do **not** turn on MirrorMode tree cleanup for depot publish.
-- **Definition `depotNamespace`:** optional under `definitionPublication`. First depot subdir. Missing/blank → neutral `default`. Eigenverft shipped defs use `evf`. Not an endpoint-inventory field.
+- [x] **Definition `depotNamespace`:** optional under `definitionPublication` and always the first depot subdirectory. It separates publication/release groups whose remaining artifact identities may overlap. Missing/blank → neutral `default`; Eigenverft shipped definitions use `evf`. It is not an endpoint-inventory field. Legacy local layout templates that predate the token must still be prefixed at runtime.
 
 **2 — Make Materialize / catalog fill honest (logic)**
 

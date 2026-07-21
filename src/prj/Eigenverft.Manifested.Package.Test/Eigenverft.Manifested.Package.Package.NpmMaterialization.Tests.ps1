@@ -122,7 +122,7 @@ exit 0
             PackageId = 'opencode-runtime-win32-x64-stable'
             DefinitionId = 'OpenCodeCli'
             ArtifactStagingDirectory = (Join-Path $rootPath 'FileStage\OpenCodeCli')
-            PackageDepotRelativeDirectory = 'OpenCodeCli\stable\1.14.46\win32-x64'
+            PackageDepotRelativeDirectory = 'default\OpenCodeCli\stable\1.14.46\win32-x64'
             PackageConfig = [pscustomobject]@{
                 DefinitionId = 'OpenCodeCli'
                 Platform = 'windows'
@@ -242,7 +242,7 @@ exit 0
         $rootPath = Join-Path $TestDrive 'npm-materialized-depot-hydration'
         $stageDirectory = Join-Path $rootPath 'FileStage\OpenCodeCli\npm-materialized'
         $defaultDepotRoot = Join-Path $rootPath 'PkgDepot'
-        $depotDirectory = Join-Path $defaultDepotRoot 'OpenCodeCli\stable\1.14.46\win32-x64'
+        $depotDirectory = Join-Path $defaultDepotRoot 'default\OpenCodeCli\stable\1.14.46\win32-x64'
         $rootTarball = Join-Path $depotDirectory 'opencode-ai-1.14.46.tgz'
         $platformTarball = Join-Path $depotDirectory 'opencode-windows-x64-1.14.46.tgz'
         Write-TestNpmPackageTarball -Path $rootTarball -Name 'opencode-ai' -Version '1.14.46' -OptionalDependencies @{ 'opencode-windows-x64' = '1.14.46' }
@@ -252,7 +252,7 @@ exit 0
             PackageId = 'opencode-runtime-win32-x64-stable'
             DefinitionId = 'OpenCodeCli'
             ArtifactStagingDirectory = (Join-Path $rootPath 'FileStage\OpenCodeCli')
-            PackageDepotRelativeDirectory = 'OpenCodeCli\stable\1.14.46\win32-x64'
+            PackageDepotRelativeDirectory = 'default\OpenCodeCli\stable\1.14.46\win32-x64'
             PackageConfig = [pscustomobject]@{
                 DefinitionId = 'OpenCodeCli'
                 Platform = 'windows'
@@ -302,7 +302,7 @@ exit 0
             DefinitionId = 'OpenCodeCli'
             Offline = $true
             ArtifactStagingDirectory = (Join-Path $rootPath 'FileStage\OpenCodeCli')
-            PackageDepotRelativeDirectory = 'OpenCodeCli\stable\1.14.46\win32-x64'
+            PackageDepotRelativeDirectory = 'default\OpenCodeCli\stable\1.14.46\win32-x64'
             PackageConfig = [pscustomobject]@{
                 DefinitionId = 'OpenCodeCli'
                 Platform = 'windows'

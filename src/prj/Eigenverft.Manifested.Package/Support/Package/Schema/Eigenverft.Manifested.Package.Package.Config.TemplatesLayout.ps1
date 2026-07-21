@@ -158,10 +158,17 @@ function Resolve-PackageLayoutRelativeDirectory {
 
     $tokens = Get-PackageTemplateTokenMap -PackageConfig $PackageConfig -Package $Package -ExtraTokens $ExtraTokens -SanitizePathSegments
     $resolvedPath = (Resolve-TemplateText -Text $Template -Tokens $tokens).Trim() -replace '/', '\'
+    if ([System.IO.Path]::IsPathRooted($resolvedPath)) {
+        throw "Package layout template '$Template' produced rooted path '$resolvedPath'. Layout values must be relative."
+    }
+
     $safeSegments = @(
         foreach ($segment in @($resolvedPath -split '\\')) {
             if ([string]::IsNullOrWhiteSpace($segment)) {
                 continue
+            }
+            if ($segment.Trim() -in @('.', '..')) {
+                throw "Package layout template '$Template' produced traversal segment '$segment'. Layout values must be traversal-free."
             }
             ConvertTo-PackageSafePathSegment -Value $segment
         }
@@ -171,10 +178,6 @@ function Resolve-PackageLayoutRelativeDirectory {
     }
 
     $normalizedRelativePath = ($safeSegments -join '\') -replace '/', '\'
-    if ([System.IO.Path]::IsPathRooted($normalizedRelativePath)) {
-        throw "Package layout template '$Template' produced rooted path '$normalizedRelativePath'. Layout values must be relative."
-    }
-
     return $normalizedRelativePath
 }
 
@@ -213,7 +216,30 @@ Get-PackagePackageDepotRelativeDirectory -PackageConfig $config -Package $packag
         '{depotNamespace}/{definitionId}/{releaseTrack}/{version}/{artifactDistributionVariant}'
     }
 
-    return Resolve-PackageLayoutRelativeDirectory -Template $template -PackageConfig $PackageConfig -Package $Package
+    $resolvedDirectory = Resolve-PackageLayoutRelativeDirectory -Template $template -PackageConfig $PackageConfig -Package $Package
+    $depotNamespace = if ($PackageConfig.PSObject.Properties['DepotNamespace'] -and
+        -not [string]::IsNullOrWhiteSpace([string]$PackageConfig.DepotNamespace)) {
+        ([string]$PackageConfig.DepotNamespace).Trim()
+    }
+    else {
+        'default'
+    }
+
+    $firstSegment = @($resolvedDirectory -split '\\', 2)[0]
+    $templateUsesNamespace = $template -match '(?i)\{depotNamespace\}'
+    if ($templateUsesNamespace -and
+        -not [string]::Equals($firstSegment, $depotNamespace, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Package depot layout template '$template' must place {depotNamespace} as its first directory segment."
+    }
+
+    # PackageConfig.json is copied to the user profile once. Prefix legacy local templates that predate
+    # {depotNamespace}, so the definition-owned publication namespace cannot be bypassed after an upgrade.
+    if (-not $templateUsesNamespace -and
+        -not [string]::Equals($firstSegment, $depotNamespace, [System.StringComparison]::OrdinalIgnoreCase)) {
+        return ($depotNamespace + '\' + $resolvedDirectory)
+    }
+
+    return $resolvedDirectory
 }
 
 function Get-PackagePackageWorkSlotDirectory {

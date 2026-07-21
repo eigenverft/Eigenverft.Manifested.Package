@@ -642,4 +642,24 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - defini
         { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $info -DefinitionId 'VSCodeRuntime' } | Should -Throw '*duplicate release version*'
     }
 
+    It 'keeps raw schema and runtime validation aligned for depotNamespace' {
+        $release = New-TestPackageRelease -Id 'vsCode-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+        $definition = New-TestVSCodeDefinitionDocument -Releases @($release)
+        $definition.definitionPublication.depotNamespace = ''
+        $info = [pscustomobject]@{ Path = 'empty-depot-namespace.json'; Document = ConvertTo-TestPsObject $definition }
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $info -DefinitionId 'VSCodeRuntime' } | Should -Not -Throw
+
+        $definition.definitionPublication.depotNamespace = '../evf'
+        $info.Document = ConvertTo-TestPsObject $definition
+        { Assert-PackageDefinitionSchema -DefinitionDocumentInfo $info -DefinitionId 'VSCodeRuntime' } | Should -Throw '*depotNamespace*invalid*'
+
+        $moduleProjectRoot = Join-Path (Split-Path -Parent $PSScriptRoot) 'Eigenverft.Manifested.Package'
+        $schemaPath = Join-Path $moduleProjectRoot 'Schema\PackageDefinition\eigenverft-module-package-definition-2.0.schema.json'
+        $schema = Get-Content -Raw -LiteralPath $schemaPath | ConvertFrom-Json
+        $pattern = [string]$schema.'$defs'.definitionPublication.properties.depotNamespace.pattern
+        ('' -match $pattern) | Should -BeTrue
+        ('evf' -match $pattern) | Should -BeTrue
+        ('../evf' -match $pattern) | Should -BeFalse
+    }
+
 }
