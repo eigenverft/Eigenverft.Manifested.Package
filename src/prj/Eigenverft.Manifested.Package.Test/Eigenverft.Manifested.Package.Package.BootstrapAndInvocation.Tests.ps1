@@ -570,7 +570,13 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - bootst
         Mock Set-PackageExistingPackage { $stepOrder.Add('ClassifyExistingPackage') | Out-Null; $PackageResult }
         Mock Resolve-PackageExistingPackageDecision { $stepOrder.Add('ResolveExistingPackageDecision') | Out-Null; $PackageResult }
         Mock Resolve-PackageArtifactFiles { $stepOrder.Add('PrepareArtifactFiles') | Out-Null; $PackageResult }
-        Mock Invoke-PackageDepotDistribution { $stepOrder.Add('DistributeArtifactFilesToDepots') | Out-Null; $PackageResult }
+        Mock Invoke-PackageDepotDistribution {
+            $stepOrder.Add('DistributeArtifactFilesToDepots') | Out-Null
+            $PackageResult | Add-Member -MemberType NoteProperty -Name DepotDistribution -Value ([pscustomobject]@{
+                    Status = 'Incomplete'; AllMirrorsComplete = $false; TargetCount = 1; FailedCount = 1
+                }) -Force
+            $PackageResult
+        }
         Mock Invoke-PackageNpmMaterialization { $stepOrder.Add('MaterializeNpmPackage') | Out-Null; $PackageResult }
         Mock Set-PackageAssignedState {
             $stepOrder.Add('AssignPackage') | Out-Null
@@ -594,6 +600,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - bootst
 
         $result.DefinitionId | Should -Be 'RootA'
         @($result.Dependencies.DefinitionId) | Should -Be @('VisualRuntime', 'NodeRuntime')
+        $result.DepotDistribution.AllMirrorsComplete | Should -BeFalse
         $stepOrder.IndexOf('ResolveDependencies') | Should -BeLessThan $stepOrder.IndexOf('AssignPackage')
         $stepOrder.IndexOf('AssignPackage') | Should -BeGreaterThan -1
         Assert-MockCalled Set-PackageAssignedState -Times 1

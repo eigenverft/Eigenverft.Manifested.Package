@@ -695,16 +695,6 @@ function Get-PackageDepotDistributionTargets {
     )
 }
 
-function Get-PackageDepotDistributionFileHash {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Path
-    )
-
-    return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
-}
-
 function Test-PackageDepotDistributionFileMatches {
     [CmdletBinding()]
     param(
@@ -731,11 +721,16 @@ function Test-PackageDepotDistributionFileMatches {
         }
     }
 
-    $sourceHash = Get-PackageDepotDistributionFileHash -Path $SourcePath
-    $targetHash = Get-PackageDepotDistributionFileHash -Path $TargetPath
+    if ($sourceItem.LastWriteTimeUtc -ne $targetItem.LastWriteTimeUtc) {
+        return [pscustomobject]@{
+            Matches = $false
+            Reason  = 'LastWriteTimeMismatch'
+        }
+    }
+
     return [pscustomobject]@{
-        Matches = [string]::Equals($sourceHash, $targetHash, [System.StringComparison]::OrdinalIgnoreCase)
-        Reason  = if ([string]::Equals($sourceHash, $targetHash, [System.StringComparison]::OrdinalIgnoreCase)) { 'AlreadyCurrent' } else { 'HashMismatch' }
+        Matches = $true
+        Reason  = 'AlreadyCurrent'
     }
 }
 
@@ -1109,31 +1104,95 @@ function Resolve-PackageArtifactFiles {
     return $PackageResult
 }
 
-function Resolve-PackageDepotDistributionPlan {
+function Get-PackageDepotDistributionMode {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
         [psobject]$PackageResult
     )
 
-    $mode = if ($PackageResult.PackageConfig.PSObject.Properties['DepotDistributionMode'] -and
+    return $(if ($PackageResult.PackageConfig.PSObject.Properties['DepotDistributionMode'] -and
         -not [string]::IsNullOrWhiteSpace([string]$PackageResult.PackageConfig.DepotDistributionMode)) {
         [string]$PackageResult.PackageConfig.DepotDistributionMode
     }
-    else { 'packageFocused' }
+    else { 'packageFocused' })
+}
+
+function Get-PackageDepotDistributionIgnorePatterns {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$SourceDirectory,
+
+        [Parameter(Mandatory = $true)]
+        [object[]]$Files
+    )
+
+    $sourceRoot = [System.IO.Path]::GetFullPath($SourceDirectory).TrimEnd(
+        [System.IO.Path]::DirectorySeparatorChar,
+        [System.IO.Path]::AltDirectorySeparatorChar
+    )
+    $sourcePrefix = $sourceRoot + [System.IO.Path]::DirectorySeparatorChar
+    $declaredPaths = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($file in @($Files)) {
+        $sourcePath = [System.IO.Path]::GetFullPath([string]$file.SourcePath)
+        if (-not $sourcePath.StartsWith($sourcePrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw "Depot distribution source '$sourcePath' is outside the file-set staging directory '$sourceRoot'."
+        }
+        if (-not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) {
+            throw "Depot distribution source file '$sourcePath' is missing."
+        }
+        $null = $declaredPaths.Add($sourcePath)
+    }
+
+    return @(
+        Get-ChildItem -LiteralPath $sourceRoot -Recurse -File -Force -ErrorAction Stop |
+            Where-Object { -not $declaredPaths.Contains([System.IO.Path]::GetFullPath($_.FullName)) } |
+            ForEach-Object {
+                $_.FullName.Substring($sourcePrefix.Length).Replace('/', '\')
+            }
+    )
+}
+
+function New-PackageDepotFileSetDistributionPlan {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$PackageResult,
+
+        [Parameter(Mandatory = $true)]
+        [object[]]$Files,
+
+        [Parameter(Mandatory = $true)]
+        [string]$SourceDirectory,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Scope
+    )
+
+    $mode = Get-PackageDepotDistributionMode -PackageResult $PackageResult
 
     $actions = New-Object System.Collections.Generic.List[object]
-    $result = [pscustomobject]@{ Mode = $mode; Status = 'Skipped'; Reason = $null; Actions = @() }
-    if ([string]::Equals($mode, 'disabled', [System.StringComparison]::OrdinalIgnoreCase)) {
-        $result.Reason = 'DisabledByPolicy'
+    $targetPlans = New-Object System.Collections.Generic.List[object]
+    $result = [pscustomobject]@{
+        Scope              = $Scope
+        Mode               = $mode
+        Status             = 'Skipped'
+        Reason             = $null
+        Actions            = @()
+        Targets            = @()
+        TargetCount        = 0
+        AllMirrorsComplete = $true
+        CopiedCount        = 0
+        FailedCount        = 0
+        SkippedCount       = 0
+    }
+    if (@($Files).Count -eq 0) {
+        $result.Reason = 'NoFiles'
         return $result
     }
-    if (@($PackageResult.ArtifactFiles).Count -eq 0) {
-        $result.Reason = 'NoArtifactFiles'
-        return $result
-    }
-    if (-not $PackageResult.ArtifactPreparation -or -not [bool]$PackageResult.ArtifactPreparation.Success) {
-        throw 'Depot distribution requires the complete verified artifact file set.'
+    if (-not (Test-Path -LiteralPath $SourceDirectory -PathType Container)) {
+        throw "Depot distribution source directory '$SourceDirectory' does not exist."
     }
 
     $targets = @(Get-PackageDepotDistributionTargets -PackageConfig $PackageResult.PackageConfig)
@@ -1142,31 +1201,312 @@ function Resolve-PackageDepotDistributionPlan {
         return $result
     }
 
-    foreach ($artifactFile in @($PackageResult.ArtifactFiles)) {
-        if (-not (Test-Path -LiteralPath $artifactFile.StagingPath -PathType Leaf)) {
-            throw "Verified staging file for artifact '$($artifactFile.Id)' is missing."
+    foreach ($target in $targets) {
+        $transportKind = if ([string]::Equals([string]$target.kind, 'filesystem', [System.StringComparison]::OrdinalIgnoreCase)) {
+            'filesystem'
         }
-        foreach ($target in $targets) {
-            if (-not [string]::Equals([string]$target.kind, 'filesystem', [System.StringComparison]::OrdinalIgnoreCase) -or
-                [string]::IsNullOrWhiteSpace([string]$target.basePath)) {
-                continue
+        else {
+            'unsupported'
+        }
+
+        $destinationDirectory = $null
+        $targetSetupError = $null
+        if ($transportKind -eq 'unsupported') {
+            $targetSetupError = "Unsupported depot transport kind '$($target.kind)'."
+        }
+        elseif ([string]::IsNullOrWhiteSpace([string]$target.basePath)) {
+            $targetSetupError = 'Filesystem depot does not define a base path.'
+        }
+        else {
+            try {
+                $destinationDirectory = Resolve-PackageArtifactChildPath -RootPath ([string]$target.basePath) -RelativePath ([string]$PackageResult.PackageDepotRelativeDirectory)
             }
-            $targetPackageDirectory = Resolve-PackageArtifactChildPath -RootPath ([string]$target.basePath) -RelativePath ([string]$PackageResult.PackageDepotRelativeDirectory) -ArtifactFileId ([string]$artifactFile.Id)
-            $targetPath = Resolve-PackageArtifactChildPath -RootPath $targetPackageDirectory -RelativePath ([string]$artifactFile.RelativePath) -ArtifactFileId ([string]$artifactFile.Id)
-            $comparison = Test-PackageDepotDistributionFileMatches -SourcePath ([string]$artifactFile.StagingPath) -TargetPath $targetPath
-            $actions.Add([pscustomobject]@{
-                    ArtifactFileId = [string]$artifactFile.Id; DepotId = [string]$target.id
-                    SourcePath = [string]$artifactFile.StagingPath; TargetPath = $targetPath
-                    Action = if ($comparison.Matches) { 'Skip' } else { 'Copy' }
-                    Status = if ($comparison.Matches) { 'Skipped' } else { 'Pending' }
-                    Reason = [string]$comparison.Reason; EnsureExists = [bool]$target.ensureExists; ErrorMessage = $null
-                }) | Out-Null
+            catch {
+                $targetSetupError = $_.Exception.Message
+            }
         }
+
+        $targetActions = New-Object System.Collections.Generic.List[object]
+        foreach ($file in @($Files)) {
+            $sourcePath = [System.IO.Path]::GetFullPath([string]$file.SourcePath)
+            if (-not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) {
+                throw "Verified staging file for '$($file.FileId)' is missing at '$sourcePath'."
+            }
+
+            $targetPath = $null
+            $status = 'Pending'
+            $reason = 'NotCompared'
+            $errorMessage = $targetSetupError
+            $initiallyCurrent = $false
+            if (-not [string]::IsNullOrWhiteSpace($targetSetupError)) {
+                $status = 'Failed'
+                $reason = 'TransportUnavailable'
+            }
+            else {
+                $targetPath = Resolve-PackageArtifactChildPath -RootPath $destinationDirectory -RelativePath ([string]$file.RelativePath) -ArtifactFileId ([string]$file.FileId)
+                if ([string]::Equals($sourcePath, $targetPath, [System.StringComparison]::OrdinalIgnoreCase)) {
+                    $status = 'Skipped'
+                    $reason = 'SourceIsTarget'
+                    $initiallyCurrent = $true
+                }
+                else {
+                    try {
+                        $comparison = Test-PackageDepotDistributionFileMatches -SourcePath $sourcePath -TargetPath $targetPath
+                        $reason = [string]$comparison.Reason
+                        if ($comparison.Matches) {
+                            $status = 'Skipped'
+                            $initiallyCurrent = $true
+                        }
+                        elseif ([string]::Equals($mode, 'disabled', [System.StringComparison]::OrdinalIgnoreCase)) {
+                            $status = 'Failed'
+                            $errorMessage = 'Depot distribution is disabled by policy and the mirror file is not current.'
+                        }
+                    }
+                    catch {
+                        $reason = 'ComparisonDeferred'
+                    }
+                }
+            }
+
+            $action = [pscustomobject]@{
+                FileId          = [string]$file.FileId
+                ArtifactFileId  = if ($file.PSObject.Properties['ArtifactFileId']) { [string]$file.ArtifactFileId } else { $null }
+                FileName        = if ($file.PSObject.Properties['FileName']) { [string]$file.FileName } else { Split-Path -Leaf ([string]$file.RelativePath) }
+                RelativePath    = [string]$file.RelativePath
+                DepotId         = [string]$target.id
+                TransportKind   = $transportKind
+                SourcePath      = $sourcePath
+                TargetPath      = $targetPath
+                Action          = if ($status -eq 'Skipped') { 'Skip' } else { 'Publish' }
+                Status          = $status
+                Reason          = $reason
+                InitiallyCurrent = $initiallyCurrent
+                EnsureExists    = [bool]$target.ensureExists
+                ErrorMessage    = $errorMessage
+            }
+            $actions.Add($action) | Out-Null
+            $targetActions.Add($action) | Out-Null
+        }
+
+        $targetPlans.Add([pscustomobject]@{
+                DepotId              = [string]$target.id
+                Kind                 = [string]$target.kind
+                TransportKind        = $transportKind
+                BasePath             = [string]$target.basePath
+                DestinationDirectory = $destinationDirectory
+                EnsureExists         = [bool]$target.ensureExists
+                Status               = 'Pending'
+                RequiredFileCount    = @($Files).Count
+                CompleteFileCount    = 0
+                FailedCount          = 0
+                ErrorMessage         = $targetSetupError
+                TransportSummary     = $null
+                Actions              = @($targetActions.ToArray())
+            }) | Out-Null
     }
 
     $result.Status = 'Planned'
     $result.Actions = @($actions.ToArray())
+    $result.Targets = @($targetPlans.ToArray())
+    $result.TargetCount = $targetPlans.Count
     return $result
+}
+
+function Invoke-PackageDepotDistributionTransport {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$Target,
+
+        [Parameter(Mandatory = $true)]
+        [string]$SourceDirectory,
+
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [string[]]$SourceIgnorePatterns
+    )
+
+    if (-not [string]::Equals([string]$Target.TransportKind, 'filesystem', [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Package depot '$($Target.DepotId)' uses unsupported transport kind '$($Target.Kind)'."
+    }
+    if ([string]::IsNullOrWhiteSpace([string]$Target.BasePath) -or [string]::IsNullOrWhiteSpace([string]$Target.DestinationDirectory)) {
+        throw "Filesystem package depot '$($Target.DepotId)' does not define a usable destination path."
+    }
+    if (Test-Path -LiteralPath ([string]$Target.BasePath) -PathType Leaf) {
+        throw "Filesystem package depot '$($Target.DepotId)' base path '$($Target.BasePath)' is a file."
+    }
+    if (-not (Test-Path -LiteralPath ([string]$Target.BasePath) -PathType Container) -and -not [bool]$Target.EnsureExists) {
+        throw "Filesystem package depot '$($Target.DepotId)' base path '$($Target.BasePath)' does not exist and EnsureExists is false."
+    }
+
+    $transportOutput = @(Copy-ResilientDirectoryTree `
+        -SourceDirectory $SourceDirectory `
+        -DestinationDirectory ([string]$Target.DestinationDirectory) `
+        -SourceIgnorePatterns @($SourceIgnorePatterns) `
+        -ComparisonMode LengthAndLastWriteTime `
+        -PartialIdentityMode FullHash `
+        -FlushPolicy EndOfCopy `
+        -RetryCount 6 `
+        -WaitSeconds 1 `
+        -RetryBackoffPolicy Fixed `
+        -ProgressIntervalMilliseconds 1000 `
+        -OutputMode Both)
+    $summary = @($transportOutput | Where-Object {
+            $_ -isnot [string] -and $_.PSObject.Properties['OperationSummary'] -and [bool]$_.OperationSummary
+        }) | Select-Object -Last 1
+    if (-not $summary) {
+        throw "Filesystem package depot '$($Target.DepotId)' transport did not return an operation summary."
+    }
+
+    return [pscustomobject]@{
+        Succeeded   = [bool]$summary.Succeeded
+        Summary     = $summary
+        FileResults = @($transportOutput | Where-Object {
+                $_ -isnot [string] -and -not $_.PSObject.Properties['OperationSummary'] -and $_.PSObject.Properties['DestinationPath']
+            })
+    }
+}
+
+function Invoke-PackageDepotFileSetDistribution {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$PackageResult,
+
+        [Parameter(Mandatory = $true)]
+        [object[]]$Files,
+
+        [Parameter(Mandatory = $true)]
+        [string]$SourceDirectory,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Scope
+    )
+
+    $plan = New-PackageDepotFileSetDistributionPlan -PackageResult $PackageResult -Files @($Files) -SourceDirectory $SourceDirectory -Scope $Scope
+    if ($plan.TargetCount -eq 0 -or @($Files).Count -eq 0) {
+        return $plan
+    }
+
+    $ignorePatterns = @(Get-PackageDepotDistributionIgnorePatterns -SourceDirectory $SourceDirectory -Files @($Files))
+    foreach ($target in @($plan.Targets)) {
+        $transportResult = $null
+        $transportError = $null
+        $pendingActions = @($target.Actions | Where-Object Status -eq 'Pending')
+        if ($pendingActions.Count -gt 0 -and -not [string]::Equals([string]$plan.Mode, 'disabled', [System.StringComparison]::OrdinalIgnoreCase)) {
+            try {
+                $transportResult = Invoke-PackageDepotDistributionTransport -Target $target -SourceDirectory $SourceDirectory -SourceIgnorePatterns $ignorePatterns
+                $target.TransportSummary = $transportResult.Summary
+            }
+            catch {
+                $transportError = $_.Exception.Message
+                $target.ErrorMessage = $transportError
+            }
+        }
+
+        foreach ($action in @($target.Actions)) {
+            if ([string]::IsNullOrWhiteSpace([string]$action.TargetPath)) {
+                $action.Status = 'Failed'
+                if ([string]::IsNullOrWhiteSpace([string]$action.ErrorMessage)) {
+                    $action.ErrorMessage = if ($transportError) { $transportError } else { 'Depot target path could not be resolved.' }
+                }
+                continue
+            }
+
+            try {
+                $comparison = Test-PackageDepotDistributionFileMatches -SourcePath ([string]$action.SourcePath) -TargetPath ([string]$action.TargetPath)
+                if (-not $comparison.Matches) {
+                    $action.Status = 'Failed'
+                    $action.Reason = [string]$comparison.Reason
+                    if ([string]::IsNullOrWhiteSpace([string]$action.ErrorMessage)) {
+                        $action.ErrorMessage = if ($transportError) {
+                            $transportError
+                        }
+                        elseif ([string]::Equals([string]$plan.Mode, 'disabled', [System.StringComparison]::OrdinalIgnoreCase)) {
+                            'Depot distribution is disabled by policy and the mirror file is not current.'
+                        }
+                        else {
+                            "Mirror verification failed with '$($comparison.Reason)'."
+                        }
+                    }
+                    continue
+                }
+
+                $fileResult = if ($transportResult) {
+                    @($transportResult.FileResults | Where-Object {
+                            [string]::Equals([string]$_.DestinationPath, [string]$action.TargetPath, [System.StringComparison]::OrdinalIgnoreCase)
+                        }) | Select-Object -Last 1
+                }
+                else { $null }
+                if ($action.InitiallyCurrent) {
+                    $action.Status = 'Skipped'
+                    if ([string]::IsNullOrWhiteSpace([string]$action.Reason)) { $action.Reason = 'AlreadyCurrent' }
+                }
+                elseif ($fileResult -and $fileResult.PSObject.Properties['Outcome'] -and [string]::Equals([string]$fileResult.Outcome, 'Copied', [System.StringComparison]::OrdinalIgnoreCase)) {
+                    $action.Status = 'Copied'
+                    $action.Reason = 'Copied'
+                }
+                else {
+                    $action.Status = 'Skipped'
+                    $action.Reason = if ($fileResult -and $fileResult.PSObject.Properties['Outcome']) { [string]$fileResult.Outcome } else { 'AlreadyCurrentAfterTransport' }
+                }
+                $action.ErrorMessage = $null
+            }
+            catch {
+                $action.Status = 'Failed'
+                $action.Reason = 'VerificationFailed'
+                $action.ErrorMessage = $_.Exception.Message
+            }
+        }
+
+        $target.FailedCount = @($target.Actions | Where-Object Status -eq 'Failed').Count
+        $target.CompleteFileCount = @($target.Actions).Count - $target.FailedCount
+        $target.Status = if ($target.FailedCount -eq 0) { 'Complete' } else { 'Incomplete' }
+        if ($target.Status -eq 'Incomplete') {
+            $failedPaths = @($target.Actions | Where-Object Status -eq 'Failed' | ForEach-Object { "'$($_.FileId)' at '$($_.TargetPath)'" }) -join ', '
+            $failureDetails = @($target.Actions | Where-Object Status -eq 'Failed' | ForEach-Object { [string]$_.ErrorMessage } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique) -join ' '
+            $detailSuffix = if ([string]::IsNullOrWhiteSpace($failureDetails)) { '' } else { " $failureDetails" }
+            Write-PackageExecutionMessage -Level 'WRN' -Message ("[WARN] Package depot mirror '{0}' is incomplete: {1}.{2}" -f $target.DepotId, $failedPaths, $detailSuffix)
+        }
+    }
+
+    $plan.CopiedCount = @($plan.Actions | Where-Object Status -eq 'Copied').Count
+    $plan.FailedCount = @($plan.Actions | Where-Object Status -eq 'Failed').Count
+    $plan.SkippedCount = @($plan.Actions | Where-Object Status -eq 'Skipped').Count
+    $plan.AllMirrorsComplete = @($plan.Targets | Where-Object Status -ne 'Complete').Count -eq 0
+    $plan.Status = if ($plan.AllMirrorsComplete) { 'Completed' } else { 'Incomplete' }
+    $plan.Reason = if ($plan.AllMirrorsComplete) { $null } else { 'OneOrMoreMirrorsIncomplete' }
+    return $plan
+}
+
+function Resolve-PackageDepotDistributionPlan {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [psobject]$PackageResult
+    )
+
+    if (@($PackageResult.ArtifactFiles).Count -eq 0) {
+        return [pscustomobject]@{
+            Scope = 'artifactFiles'; Mode = Get-PackageDepotDistributionMode -PackageResult $PackageResult
+            Status = 'Skipped'; Reason = 'NoArtifactFiles'; Actions = @(); Targets = @(); TargetCount = 0
+            AllMirrorsComplete = $true; CopiedCount = 0; FailedCount = 0; SkippedCount = 0
+        }
+    }
+    if (-not $PackageResult.ArtifactPreparation -or -not [bool]$PackageResult.ArtifactPreparation.Success) {
+        throw 'Depot distribution requires the complete verified artifact file set.'
+    }
+
+    $files = @($PackageResult.ArtifactFiles | ForEach-Object {
+            [pscustomobject]@{
+                FileId         = [string]$_.Id
+                ArtifactFileId = [string]$_.Id
+                FileName       = Split-Path -Leaf ([string]$_.RelativePath)
+                RelativePath   = [string]$_.RelativePath
+                SourcePath     = [string]$_.StagingPath
+            }
+        })
+    return New-PackageDepotFileSetDistributionPlan -PackageResult $PackageResult -Files $files -SourceDirectory ([string]$PackageResult.ArtifactStagingDirectory) -Scope 'artifactFiles'
 }
 
 function Invoke-PackageDepotDistribution {
@@ -1176,26 +1516,30 @@ function Invoke-PackageDepotDistribution {
         [psobject]$PackageResult
     )
 
-    $plan = Resolve-PackageDepotDistributionPlan -PackageResult $PackageResult
+    if (@($PackageResult.ArtifactFiles).Count -eq 0) {
+        $PackageResult.DepotDistribution = Resolve-PackageDepotDistributionPlan -PackageResult $PackageResult
+        return $PackageResult
+    }
+    if (-not $PackageResult.ArtifactPreparation -or -not [bool]$PackageResult.ArtifactPreparation.Success) {
+        throw 'Depot distribution requires the complete verified artifact file set.'
+    }
+
+    $files = @($PackageResult.ArtifactFiles | ForEach-Object {
+            [pscustomobject]@{
+                FileId         = [string]$_.Id
+                ArtifactFileId = [string]$_.Id
+                FileName       = Split-Path -Leaf ([string]$_.RelativePath)
+                RelativePath   = [string]$_.RelativePath
+                SourcePath     = [string]$_.StagingPath
+            }
+        })
+    $plan = Invoke-PackageDepotFileSetDistribution -PackageResult $PackageResult -Files $files -SourceDirectory ([string]$PackageResult.ArtifactStagingDirectory) -Scope 'artifactFiles'
     foreach ($action in @($plan.Actions)) {
-        if ($action.Action -ne 'Copy') { continue }
-        try {
-            $targetDirectory = Split-Path -Parent ([string]$action.TargetPath)
-            $null = New-Item -ItemType Directory -Path $targetDirectory -Force
-            $null = Copy-FileToPath -SourcePath ([string]$action.SourcePath) -TargetPath ([string]$action.TargetPath) -Overwrite
-            $action.Status = 'Copied'
+        if ($action.Status -eq 'Copied') {
             Write-PackageExecutionMessage -Message ("[ACTION] Mirrored artifact file '{0}' to depot '{1}'." -f $action.ArtifactFileId, $action.DepotId)
-        }
-        catch {
-            $action.Status = 'Failed'
-            $action.ErrorMessage = $_.Exception.Message
-            Write-PackageExecutionMessage -Level 'WRN' -Message ("[WARN] Failed to mirror artifact file '{0}' to depot '{1}': {2}" -f $action.ArtifactFileId, $action.DepotId, $_.Exception.Message)
         }
     }
 
-    $plan | Add-Member -MemberType NoteProperty -Name CopiedCount -Value @($plan.Actions | Where-Object Status -eq 'Copied').Count -Force
-    $plan | Add-Member -MemberType NoteProperty -Name FailedCount -Value @($plan.Actions | Where-Object Status -eq 'Failed').Count -Force
-    $plan | Add-Member -MemberType NoteProperty -Name SkippedCount -Value @($plan.Actions | Where-Object Status -eq 'Skipped').Count -Force
     $PackageResult.DepotDistribution = $plan
     return $PackageResult
 }

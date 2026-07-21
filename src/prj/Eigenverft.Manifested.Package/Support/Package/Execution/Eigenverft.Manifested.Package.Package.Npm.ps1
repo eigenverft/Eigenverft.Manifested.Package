@@ -971,86 +971,26 @@ function Invoke-PackageNpmMaterializationDepotDistribution {
         [psobject]$Materialization
     )
 
-    $mode = if ($PackageResult.PackageConfig.PSObject.Properties['DepotDistributionMode'] -and
-        -not [string]::IsNullOrWhiteSpace([string]$PackageResult.PackageConfig.DepotDistributionMode)) {
-        [string]$PackageResult.PackageConfig.DepotDistributionMode
-    }
-    else {
-        'packageFocused'
-    }
-
     $files = New-Object System.Collections.Generic.List[object]
     foreach ($tarballPath in @($Materialization.TarballPaths)) {
         if ([string]::IsNullOrWhiteSpace([string]$tarballPath) -or -not (Test-Path -LiteralPath ([string]$tarballPath) -PathType Leaf)) {
             continue
         }
+        $fileName = Split-Path -Leaf ([string]$tarballPath)
         $files.Add([pscustomobject]@{
-            FileName   = Split-Path -Leaf ([string]$tarballPath)
-            SourcePath = [System.IO.Path]::GetFullPath([string]$tarballPath)
+            FileId       = $fileName
+            FileName     = $fileName
+            RelativePath = $fileName
+            SourcePath   = [System.IO.Path]::GetFullPath([string]$tarballPath)
         }) | Out-Null
     }
 
-    $actions = New-Object System.Collections.Generic.List[object]
-    if ([string]::Equals($mode, 'disabled', [System.StringComparison]::OrdinalIgnoreCase)) {
-        return [pscustomobject]@{ Mode = $mode; Status = 'Skipped'; Reason = 'DisabledByPolicy'; Actions = @(); CopiedCount = 0; FailedCount = 0; SkippedCount = 0 }
-    }
-
-    foreach ($mirrorSource in @(Get-PackageDepotDistributionTargets -PackageConfig $PackageResult.PackageConfig)) {
-        foreach ($file in @($files.ToArray())) {
-            if (-not [string]::Equals([string]$mirrorSource.kind, 'filesystem', [System.StringComparison]::OrdinalIgnoreCase)) {
-                $actions.Add([pscustomobject]@{ DepotId = [string]$mirrorSource.id; FileName = [string]$file.FileName; Action = 'Skip'; Status = 'Skipped'; Reason = 'UnsupportedDepotKind'; SourcePath = [string]$file.SourcePath; TargetPath = $null; EnsureExists = [bool]$mirrorSource.ensureExists; ErrorMessage = $null }) | Out-Null
-                continue
-            }
-            if ([string]::IsNullOrWhiteSpace([string]$mirrorSource.basePath)) {
-                $actions.Add([pscustomobject]@{ DepotId = [string]$mirrorSource.id; FileName = [string]$file.FileName; Action = 'Skip'; Status = 'Skipped'; Reason = 'MissingBasePath'; SourcePath = [string]$file.SourcePath; TargetPath = $null; EnsureExists = [bool]$mirrorSource.ensureExists; ErrorMessage = $null }) | Out-Null
-                continue
-            }
-
-            $targetDirectory = [System.IO.Path]::GetFullPath((Join-Path ([string]$mirrorSource.basePath) ([string]$PackageResult.PackageDepotRelativeDirectory)))
-            $targetPath = [System.IO.Path]::GetFullPath((Join-Path $targetDirectory ([string]$file.FileName)))
-            $sourceFullPath = [System.IO.Path]::GetFullPath([string]$file.SourcePath)
-            if ([string]::Equals($sourceFullPath, $targetPath, [System.StringComparison]::OrdinalIgnoreCase)) {
-                $actions.Add([pscustomobject]@{ DepotId = [string]$mirrorSource.id; FileName = [string]$file.FileName; Action = 'Skip'; Status = 'Skipped'; Reason = 'SourceIsTarget'; SourcePath = $sourceFullPath; TargetPath = $targetPath; EnsureExists = [bool]$mirrorSource.ensureExists; ErrorMessage = $null }) | Out-Null
-                continue
-            }
-
-            $match = Test-PackageDepotDistributionFileMatches -SourcePath $sourceFullPath -TargetPath $targetPath
-            if ($match.Matches) {
-                $actions.Add([pscustomobject]@{ DepotId = [string]$mirrorSource.id; FileName = [string]$file.FileName; Action = 'Skip'; Status = 'Skipped'; Reason = [string]$match.Reason; SourcePath = $sourceFullPath; TargetPath = $targetPath; EnsureExists = [bool]$mirrorSource.ensureExists; ErrorMessage = $null }) | Out-Null
-                continue
-            }
-            if ([string]::Equals($mode, 'packageFocused', [System.StringComparison]::OrdinalIgnoreCase) -and
-                -not [string]::Equals([string]$match.Reason, 'Missing', [System.StringComparison]::OrdinalIgnoreCase)) {
-                $actions.Add([pscustomobject]@{ DepotId = [string]$mirrorSource.id; FileName = [string]$file.FileName; Action = 'Skip'; Status = 'Skipped'; Reason = 'DifferentTargetPreservedByPackageFocusedPolicy'; SourcePath = $sourceFullPath; TargetPath = $targetPath; EnsureExists = [bool]$mirrorSource.ensureExists; ErrorMessage = [string]$match.Reason }) | Out-Null
-                continue
-            }
-
-            try {
-                if ($mirrorSource.ensureExists) {
-                    $null = New-Item -ItemType Directory -Path $targetDirectory -Force
-                }
-                $null = Copy-FileToPath -SourcePath $sourceFullPath -TargetPath $targetPath -Overwrite
-                $actions.Add([pscustomobject]@{ DepotId = [string]$mirrorSource.id; FileName = [string]$file.FileName; Action = 'Copy'; Status = 'Copied'; Reason = [string]$match.Reason; SourcePath = $sourceFullPath; TargetPath = $targetPath; EnsureExists = [bool]$mirrorSource.ensureExists; ErrorMessage = $null }) | Out-Null
-            }
-            catch {
-                $actions.Add([pscustomobject]@{ DepotId = [string]$mirrorSource.id; FileName = [string]$file.FileName; Action = 'Copy'; Status = 'Failed'; Reason = [string]$match.Reason; SourcePath = $sourceFullPath; TargetPath = $targetPath; EnsureExists = [bool]$mirrorSource.ensureExists; ErrorMessage = $_.Exception.Message }) | Out-Null
-            }
-        }
-    }
-
-    $copiedCount = @($actions.ToArray() | Where-Object { [string]::Equals([string]$_.Status, 'Copied', [System.StringComparison]::OrdinalIgnoreCase) }).Count
-    $failedCount = @($actions.ToArray() | Where-Object { [string]::Equals([string]$_.Status, 'Failed', [System.StringComparison]::OrdinalIgnoreCase) }).Count
-    $skippedCount = @($actions.ToArray() | Where-Object { [string]::Equals([string]$_.Status, 'Skipped', [System.StringComparison]::OrdinalIgnoreCase) }).Count
-
-    return [pscustomobject]@{
-        Mode         = $mode
-        Status       = if ($actions.Count -eq 0) { 'Skipped' } else { 'Planned' }
-        Reason       = if ($actions.Count -eq 0) { 'NoDepotTargets' } else { $null }
-        Actions      = @($actions.ToArray())
-        CopiedCount  = $copiedCount
-        FailedCount  = $failedCount
-        SkippedCount = $skippedCount
-    }
+    $sourceDirectory = Get-PackageNpmMaterializationDirectory -PackageResult $PackageResult
+    return Invoke-PackageDepotFileSetDistribution `
+        -PackageResult $PackageResult `
+        -Files @($files.ToArray()) `
+        -SourceDirectory $sourceDirectory `
+        -Scope 'npmTarballs'
 }
 
 function Invoke-PackageNpmMaterialization {

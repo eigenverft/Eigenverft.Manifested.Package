@@ -312,7 +312,10 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - resour
         $historyDocument.Document.records[0].failedStep | Should -Be 'CheckAssignedReadiness'
         $historyDocument.Document.records[0].artifactPreparation.status | Should -Be 'Prepared'
         $historyDocument.Document.records[0].artifactPreparation.files[0].stagingPath | Should -Be $result.ArtifactFiles[0].StagingPath
-        $historyDocument.Document.records[0].depotDistribution.status | Should -Be 'Planned'
+        $historyDocument.Document.records[0].depotDistribution.status | Should -Be 'Completed'
+        $historyDocument.Document.records[0].depotDistribution.targetCount | Should -Be 1
+        $historyDocument.Document.records[0].depotDistribution.allMirrorsComplete | Should -BeTrue
+        $historyDocument.Document.records[0].depotDistribution.targets[0].status | Should -Be 'Complete'
         $historyDocument.Document.records[0].depotDistribution.skipped | Should -Be 1
     }
 

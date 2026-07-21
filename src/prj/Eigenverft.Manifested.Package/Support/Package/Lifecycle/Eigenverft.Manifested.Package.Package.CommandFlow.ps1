@@ -332,30 +332,66 @@ function Find-PackageDurableArtifactFilesInDepot {
         [psobject]$PackageResult
     )
 
+    $depotSources = @(Get-PackagePackageDepotSources -PackageConfig $PackageResult.PackageConfig)
     $durableFiles = New-Object System.Collections.Generic.List[object]
     $missingFiles = New-Object System.Collections.Generic.List[object]
     foreach ($artifactFile in @($PackageResult.ArtifactFiles)) {
-        $preferredVerification = Get-PackagePreferredVerification -AcquisitionCandidates @($artifactFile.AcquisitionPlan.Candidates)
         $found = $null
-        foreach ($depotSource in @(Get-PackagePackageDepotSources -PackageConfig $PackageResult.PackageConfig)) {
-            if ([string]::IsNullOrWhiteSpace([string]$depotSource.basePath)) { continue }
-            $packageDirectory = Resolve-PackageArtifactChildPath -RootPath ([string]$depotSource.basePath) -RelativePath ([string]$PackageResult.PackageDepotRelativeDirectory)
-            $candidatePath = Resolve-PackageArtifactChildPath -RootPath $packageDirectory -RelativePath ([string]$artifactFile.RelativePath)
-            if (-not (Test-Path -LiteralPath $candidatePath -PathType Leaf)) { continue }
-            $verification = Test-PackageSavedFile -Path $candidatePath -Verification $preferredVerification
-            if ($verification.Accepted) {
+        $selectedSource = if ($artifactFile.Preparation -and $artifactFile.Preparation.PSObject.Properties['SelectedSource']) {
+            $artifactFile.Preparation.SelectedSource
+        }
+        else { $null }
+        $preparedFromDepot = $artifactFile.Preparation -and
+            [string]$artifactFile.Preparation.Status -in @('HydratedFromPackageDepot', 'HydratedFromDefaultPackageDepot')
+        if ($preparedFromDepot -and $selectedSource -and
+            [string]::Equals([string]$selectedSource.SourceScope, 'environment', [System.StringComparison]::OrdinalIgnoreCase) -and
+            -not [string]::IsNullOrWhiteSpace([string]$selectedSource.ResolvedSource)) {
+            $depotSource = @($depotSources | Where-Object {
+                    [string]::Equals([string]$_.id, [string]$selectedSource.SourceId, [System.StringComparison]::OrdinalIgnoreCase)
+                }) | Select-Object -First 1
+            if ($depotSource -and (Test-Path -LiteralPath ([string]$selectedSource.ResolvedSource) -PathType Leaf)) {
+                $sourceItem = Get-Item -LiteralPath ([string]$selectedSource.ResolvedSource) -ErrorAction Stop
+                $stagingItem = Get-Item -LiteralPath ([string]$artifactFile.StagingPath) -ErrorAction Stop
+                if ($sourceItem.Length -eq $stagingItem.Length) {
+                    $found = [pscustomobject]@{
+                        Id = [string]$artifactFile.Id; RelativePath = [string]$artifactFile.RelativePath
+                        SourceId = [string]$depotSource.id; Path = [string]$selectedSource.ResolvedSource
+                        Verification = $artifactFile.Verification; Evidence = 'VerifiedAcquisitionSource'
+                    }
+                }
+            }
+        }
+
+        if (-not $found -and $PackageResult.DepotDistribution -and $PackageResult.DepotDistribution.PSObject.Properties['Actions']) {
+            foreach ($action in @($PackageResult.DepotDistribution.Actions | Where-Object {
+                        [string]$_.Status -in @('Copied', 'Skipped') -and
+                        ([string]::Equals([string]$_.ArtifactFileId, [string]$artifactFile.Id, [System.StringComparison]::OrdinalIgnoreCase) -or
+                            [string]::Equals([string]$_.FileId, [string]$artifactFile.Id, [System.StringComparison]::OrdinalIgnoreCase))
+                    })) {
+                if ([string]::IsNullOrWhiteSpace([string]$action.TargetPath) -or
+                    -not (Test-Path -LiteralPath ([string]$action.TargetPath) -PathType Leaf)) { continue }
+                $comparison = Test-PackageDepotDistributionFileMatches -SourcePath ([string]$artifactFile.StagingPath) -TargetPath ([string]$action.TargetPath)
+                if (-not $comparison.Matches) { continue }
                 $found = [pscustomobject]@{
                     Id = [string]$artifactFile.Id; RelativePath = [string]$artifactFile.RelativePath
-                    SourceId = [string]$depotSource.id; Path = $candidatePath; Verification = $verification
+                    SourceId = [string]$action.DepotId; Path = [string]$action.TargetPath
+                    Verification = $artifactFile.Verification
+                    Evidence = if ([string]::Equals([string]$action.Status, 'Copied', [System.StringComparison]::OrdinalIgnoreCase)) { 'VerifiedPublish' } else { 'CurrentMirror' }
                 }
                 break
             }
         }
+
         if ($found) { $durableFiles.Add($found) | Out-Null }
         else {
+            $expectedDepotPaths = @($depotSources | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_.basePath) } | ForEach-Object {
+                    $packageDirectory = Resolve-PackageArtifactChildPath -RootPath ([string]$_.basePath) -RelativePath ([string]$PackageResult.PackageDepotRelativeDirectory)
+                    Resolve-PackageArtifactChildPath -RootPath $packageDirectory -RelativePath ([string]$artifactFile.RelativePath)
+                })
             $missingFiles.Add([pscustomobject]@{
                     Id = [string]$artifactFile.Id; RelativePath = [string]$artifactFile.RelativePath
-                    ExpectedDepotPath = [string]$artifactFile.DefaultDepotPath
+                    ExpectedDepotPath = if ($expectedDepotPaths.Count -gt 0) { [string]$expectedDepotPaths[0] } else { $null }
+                    ExpectedDepotPaths = @($expectedDepotPaths)
                 }) | Out-Null
         }
     }
@@ -378,11 +414,58 @@ function Assert-PackageMaterializationDurable {
     $npmMaterialized = Test-PackageNpmMaterializedInstallKind -Package $PackageResult.Package
     $durableArtifactFiles = $null
     $durableNpmMaterialization = $null
+    $mirrorDistributions = New-Object System.Collections.Generic.List[object]
+    $materializationWarnings = New-Object System.Collections.Generic.List[string]
+
+    $distributionChecks = New-Object System.Collections.Generic.List[object]
+    if ($requiresArtifactFiles) {
+        $distributionChecks.Add([pscustomobject]@{ Scope = 'artifactFiles'; Distribution = $PackageResult.DepotDistribution }) | Out-Null
+    }
+    if ($npmMaterialized) {
+        $npmDistribution = if ($PackageResult.NpmMaterialization -and $PackageResult.NpmMaterialization.PSObject.Properties['DepotDistribution']) {
+            $PackageResult.NpmMaterialization.DepotDistribution
+        }
+        else { $null }
+        $distributionChecks.Add([pscustomobject]@{ Scope = 'npmTarballs'; Distribution = $npmDistribution }) | Out-Null
+    }
+
+    foreach ($check in @($distributionChecks.ToArray())) {
+        $distribution = $check.Distribution
+        if (-not $distribution) {
+            throw "MaterializeOnly for '$($PackageResult.PackageId)' did not return depot distribution results for '$($check.Scope)'. Staging is retained for retry."
+        }
+
+        $targetCount = if ($distribution.PSObject.Properties['TargetCount']) { [int]$distribution.TargetCount } else { 0 }
+        $failedCount = if ($distribution.PSObject.Properties['FailedCount']) { [int]$distribution.FailedCount } else { 0 }
+        $allComplete = if ($distribution.PSObject.Properties['AllMirrorsComplete']) { [bool]$distribution.AllMirrorsComplete } else { $failedCount -eq 0 }
+        $mirrorDistributions.Add([pscustomobject]@{
+                Scope              = [string]$check.Scope
+                TargetCount        = $targetCount
+                AllMirrorsComplete = $allComplete
+                Targets            = if ($distribution.PSObject.Properties['Targets']) { @($distribution.Targets) } else { @() }
+            }) | Out-Null
+
+        if ($targetCount -gt 0 -and -not $allComplete) {
+            $incompleteTargets = @($distribution.Targets | Where-Object { -not [string]::Equals([string]$_.Status, 'Complete', [System.StringComparison]::OrdinalIgnoreCase) })
+            $details = @($incompleteTargets | ForEach-Object {
+                    $failedFiles = @($_.Actions | Where-Object Status -eq 'Failed' | ForEach-Object {
+                            if ([string]::IsNullOrWhiteSpace([string]$_.TargetPath)) { [string]$_.FileId } else { "{0} at {1}" -f [string]$_.FileId, [string]$_.TargetPath }
+                        }) -join ', '
+                    if ([string]::IsNullOrWhiteSpace($failedFiles)) { "'$($_.DepotId)'" } else { "'$($_.DepotId)': $failedFiles" }
+                }) -join '; '
+            $warning = "Configured mirror depot content is incomplete for '$($PackageResult.PackageId)' in '$($check.Scope)': $details."
+            $materializationWarnings.Add($warning) | Out-Null
+            Write-PackageExecutionMessage -Level 'WRN' -Message ("[WARN] {0}" -f $warning)
+        }
+    }
 
     if ($requiresArtifactFiles) {
         $durableArtifactFiles = Find-PackageDurableArtifactFilesInDepot -PackageResult $PackageResult
         if (-not $durableArtifactFiles.Complete) {
-            $details = @($durableArtifactFiles.MissingFiles | ForEach-Object { "'$($_.Id)' at '$($_.ExpectedDepotPath)'" }) -join ', '
+            $details = @($durableArtifactFiles.MissingFiles | ForEach-Object {
+                    $expected = if (@($_.ExpectedDepotPaths).Count -gt 0) { @($_.ExpectedDepotPaths | ForEach-Object { "'$_'" }) -join ' or ' } else { '<no readable depot configured>' }
+                    "'$($_.Id)' at $expected"
+                }) -join ', '
             throw "MaterializeOnly for '$($PackageResult.PackageId)' did not produce the complete verified artifact file set in depot layout: $details. Staging files alone are not durable materialization."
         }
     }
@@ -402,6 +485,8 @@ function Assert-PackageMaterializationDurable {
         NpmMaterialization     = $durableNpmMaterialization
         ArtifactFilesRequired = $requiresArtifactFiles
         NpmMaterializedPackage = $npmMaterialized
+        MirrorDistributions    = @($mirrorDistributions.ToArray())
+        Warnings               = @($materializationWarnings.ToArray())
     }) -Force
 
     Write-PackageExecutionMessage -Message ("[STATE] Materialization durability accepted for package '{0}' with status '{1}'." -f $PackageResult.PackageId, [string]$PackageResult.Materialization.Status)

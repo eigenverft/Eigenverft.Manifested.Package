@@ -79,6 +79,49 @@ function Select-PackageOperationDependencySummary {
     }
 }
 
+function Select-PackageOperationDepotDistributionSummary {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [psobject]$Distribution
+    )
+
+    return [pscustomobject]@{
+        mode               = if ($Distribution -and $Distribution.PSObject.Properties['Mode']) { [string]$Distribution.Mode } else { $null }
+        status             = if ($Distribution -and $Distribution.PSObject.Properties['Status']) { [string]$Distribution.Status } else { $null }
+        reason             = if ($Distribution -and $Distribution.PSObject.Properties['Reason']) { [string]$Distribution.Reason } else { $null }
+        targetCount        = if ($Distribution -and $Distribution.PSObject.Properties['TargetCount']) { [int]$Distribution.TargetCount } else { 0 }
+        allMirrorsComplete = if ($Distribution -and $Distribution.PSObject.Properties['AllMirrorsComplete']) { [bool]$Distribution.AllMirrorsComplete } else { $null }
+        copied             = if ($Distribution -and $Distribution.PSObject.Properties['CopiedCount']) { [int]$Distribution.CopiedCount } else { 0 }
+        skipped            = if ($Distribution -and $Distribution.PSObject.Properties['SkippedCount']) { [int]$Distribution.SkippedCount } else { 0 }
+        failed             = if ($Distribution -and $Distribution.PSObject.Properties['FailedCount']) { [int]$Distribution.FailedCount } else { 0 }
+        targets            = if ($Distribution -and $Distribution.PSObject.Properties['Targets']) {
+            @($Distribution.Targets | ForEach-Object {
+                    [pscustomobject]@{
+                        depotId           = [string]$_.DepotId
+                        transportKind     = [string]$_.TransportKind
+                        status            = [string]$_.Status
+                        requiredFileCount = [int]$_.RequiredFileCount
+                        completeFileCount = [int]$_.CompleteFileCount
+                        failedCount       = [int]$_.FailedCount
+                        errorMessage      = [string]$_.ErrorMessage
+                        files             = @($_.Actions | ForEach-Object {
+                                [pscustomobject]@{
+                                    id           = [string]$_.FileId
+                                    relativePath = [string]$_.RelativePath
+                                    targetPath   = [string]$_.TargetPath
+                                    status       = [string]$_.Status
+                                    reason       = [string]$_.Reason
+                                    errorMessage = [string]$_.ErrorMessage
+                                }
+                            })
+                    }
+                })
+        }
+        else { @() }
+    }
+}
+
 function New-PackageOperationHistoryRecord {
 <#
 .SYNOPSIS
@@ -98,6 +141,7 @@ Creates one operation-history record from a finalized Package result.
 
     $artifactPreparation = $PackageResult.ArtifactPreparation
     $depotDistribution = if ($PackageResult.PSObject.Properties['DepotDistribution']) { $PackageResult.DepotDistribution } else { $null }
+    $npmDepotDistribution = if ($PackageResult.PSObject.Properties['NpmMaterialization'] -and $PackageResult.NpmMaterialization -and $PackageResult.NpmMaterialization.PSObject.Properties['DepotDistribution']) { $PackageResult.NpmMaterialization.DepotDistribution } else { $null }
     $installStatus = if ($PackageResult.Assigned -and $PackageResult.Assigned.PSObject.Properties['Status']) { [string]$PackageResult.Assigned.Status } else { $null }
     $operationId = if ($PackageResult.PSObject.Properties['OperationId'] -and -not [string]::IsNullOrWhiteSpace([string]$PackageResult.OperationId)) {
         [string]$PackageResult.OperationId
@@ -153,16 +197,8 @@ Creates one operation-history record from a finalized Package result.
                     }
                 })
         }
-        depotDistribution             = [pscustomobject]@{
-            mode        = if ($depotDistribution -and $depotDistribution.PSObject.Properties['Mode']) { [string]$depotDistribution.Mode } else { $null }
-            status      = if ($depotDistribution -and $depotDistribution.PSObject.Properties['Status']) { [string]$depotDistribution.Status } else { $null }
-            reason      = if ($depotDistribution -and $depotDistribution.PSObject.Properties['Reason']) { [string]$depotDistribution.Reason } else { $null }
-            sourceScope = if ($depotDistribution -and $depotDistribution.PSObject.Properties['SourceScope']) { [string]$depotDistribution.SourceScope } else { $null }
-            sourceId    = if ($depotDistribution -and $depotDistribution.PSObject.Properties['SourceId']) { [string]$depotDistribution.SourceId } else { $null }
-            copied      = if ($depotDistribution -and $depotDistribution.PSObject.Properties['CopiedCount']) { [int]$depotDistribution.CopiedCount } else { 0 }
-            skipped     = if ($depotDistribution -and $depotDistribution.PSObject.Properties['SkippedCount']) { [int]$depotDistribution.SkippedCount } else { 0 }
-            failed      = if ($depotDistribution -and $depotDistribution.PSObject.Properties['FailedCount']) { [int]$depotDistribution.FailedCount } else { 0 }
-        }
+        depotDistribution             = Select-PackageOperationDepotDistributionSummary -Distribution $depotDistribution
+        npmDepotDistribution          = Select-PackageOperationDepotDistributionSummary -Distribution $npmDepotDistribution
         dependencies                  = @($PackageResult.Dependencies | ForEach-Object { Select-PackageOperationDependencySummary -Dependency $_ })
     }
 }
