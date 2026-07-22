@@ -21,6 +21,65 @@ function Get-ResilientCopyRemainingBytes {
     return [long]$remainingBytes
 }
 
+function Format-ResilientCopyByteSize {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [double] $Bytes
+    )
+
+    if ($Bytes -lt 0) {
+        $Bytes = 0
+    }
+
+    $kib = 1024.0
+    $mib = 1024.0 * 1024.0
+    $gib = 1024.0 * 1024.0 * 1024.0
+    $culture = [System.Globalization.CultureInfo]::InvariantCulture
+
+    if ($Bytes -lt $kib) {
+        return ($Bytes.ToString('0', $culture) + ' B')
+    }
+    if ($Bytes -lt $mib) {
+        return (($Bytes / $kib).ToString('0.00', $culture) + ' KiB')
+    }
+    if ($Bytes -lt $gib) {
+        return (($Bytes / $mib).ToString('0.00', $culture) + ' MiB')
+    }
+
+    return (($Bytes / $gib).ToString('0.00', $culture) + ' GiB')
+}
+
+function Format-ResilientCopyByteRate {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [double] $BytesPerSecond
+    )
+
+    return ('{0}/s' -f (Format-ResilientCopyByteSize -Bytes $BytesPerSecond))
+}
+
+function Format-ResilientCopyOperationProgressStatus {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)] [AllowEmptyString()] [string] $Phase,
+        [Parameter(Mandatory)] [long] $FilesDiscovered,
+        [Parameter(Mandatory)] [long] $FilesSelected,
+        [Parameter(Mandatory)] [long] $FilesCopied,
+        [Parameter(Mandatory)] [long] $FilesFailed,
+        [Parameter(Mandatory)] [long] $DirectoriesPreflighted,
+        [Parameter(Mandatory)] [long] $RemovedCount,
+        [Parameter(Mandatory)] [long] $PendingCount,
+        [Parameter(Mandatory)] [long] $PendingBytes
+    )
+
+    return ('Phase: {0} | files discovered {1}; selected {2}; copied {3}; failed {4}; preflighted {5}; removed {6}; pending {7} ({8})' -f `
+        $Phase, $FilesDiscovered, $FilesSelected, $FilesCopied, $FilesFailed,
+        $DirectoriesPreflighted, $RemovedCount, $PendingCount,
+        (Format-ResilientCopyByteSize -Bytes $PendingBytes))
+}
+
 function Copy-ResilientDirectoryTree {
     <#
     .SYNOPSIS
@@ -744,8 +803,10 @@ function Copy-ResilientDirectoryTree {
                     Write-Progress `
                         -Id $ProgressId `
                         -Activity "Copying $($sourceInfo.Name)" `
-                        -Status ("{0:N0}/{1:N0} bytes | {2:N0} B/s | elapsed {3} | ETA {4}" -f `
-                            $processedBytes, $sourceInfo.Length, $averageBytesPerSecond,
+                        -Status ("{0}/{1} | {2} | elapsed {3} | ETA {4}" -f `
+                            (Format-ResilientCopyByteSize -Bytes $processedBytes),
+                            (Format-ResilientCopyByteSize -Bytes $sourceInfo.Length),
+                            (Format-ResilientCopyByteRate -BytesPerSecond $averageBytesPerSecond),
                             $stopwatch.Elapsed.ToString(), $eta.ToString()) `
                         -PercentComplete $percentComplete
                     $lastProgressReportTicks = $stopwatch.Elapsed.Ticks
@@ -1071,11 +1132,16 @@ function Copy-ResilientDirectoryTree {
  
         $state.LastProgressUpdateTicks = $elapsedTicks
         $state.LastProgressPhase = $Phase
-        $status = 'Phase: {0} | files discovered {1:N0}; selected {2:N0}; copied {3:N0}; failed {4:N0}; ' +
-            'preflighted {5:N0}; removed {6:N0}; queued {7:N0} ({8:N0} B)' -f `
-            $Phase, $state.FilesDiscovered, $state.FilesSelected, $state.FilesCopied, $state.FilesFailed,
-            $state.DirectoriesPreflighted, ($state.FilesRemoved + $state.DirectoriesRemoved),
-            $workQueueState.Items.Count, $workQueueState.Bytes
+        $status = Format-ResilientCopyOperationProgressStatus `
+            -Phase $Phase `
+            -FilesDiscovered $state.FilesDiscovered `
+            -FilesSelected $state.FilesSelected `
+            -FilesCopied $state.FilesCopied `
+            -FilesFailed $state.FilesFailed `
+            -DirectoriesPreflighted $state.DirectoriesPreflighted `
+            -RemovedCount ($state.FilesRemoved + $state.DirectoriesRemoved) `
+            -PendingCount $workQueueState.Items.Count `
+            -PendingBytes $workQueueState.Bytes
         if ($ProgressCallback -and $state.ProgressCallbackEnabled) {
             try {
                 & $ProgressCallback ([pscustomobject]@{
@@ -1663,9 +1729,10 @@ function Copy-ResilientDirectoryTree {
                     $state.InvalidPartialRestarts++
                 }
                 if ($OutputMode -ne 'Summary') {
-                    Write-Output ("{0}: {1} -> {2} (attempt {3}; {4:N0} B/s; elapsed {5})" -f `
+                    Write-Output ("{0}: {1} -> {2} (attempt {3}; {4}; elapsed {5})" -f `
                         $copyResult.Outcome, $SourceFile.FullName, $DestinationPath, $attempt,
-                        $copyResult.AverageBytesPerSecond, $copyResult.Elapsed)
+                        (Format-ResilientCopyByteRate -BytesPerSecond $copyResult.AverageBytesPerSecond),
+                        $copyResult.Elapsed)
                     Write-Output $copyResult
                 }
                 & $writeOperationProgress 'Copy' ("Completed {0}" -f $SourceFile.FullName) $false $SourceFile.FullName
