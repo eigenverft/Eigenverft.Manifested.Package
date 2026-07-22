@@ -5,6 +5,7 @@
 Describe 'Eigenverft.Manifested.Package module static content' {
     BeforeAll {
         $script:ModuleProjectRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\Eigenverft.Manifested.Package') -ErrorAction Stop).Path
+        $script:RepositoryRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..\..') -ErrorAction Stop).Path
     }
 
     It 'ships JSON documents parseable by Windows PowerShell 5.1' {
@@ -100,7 +101,7 @@ exit 0
         $bootstrapContent | Should -Match 'function Get-BootstrapNupkgMetadata'
         $bootstrapContent | Should -Match 'function Find-LatestInstalledBootstrapModule'
         $bootstrapContent | Should -Match 'function Install-BootstrapPackageManagementSeed'
-        $bootstrapContent | Should -Match 'Import-Module -Name \$packageCheck\.Path -Force -ErrorAction Stop'
+        $bootstrapContent | Should -Match 'Import-Module -Name \$packageCheck\.Path -Force -DisableNameChecking -ErrorAction Stop'
         $bootstrapContent | Should -Match 'Write-Host \(Get-PackageVersion\)'
         foreach ($packageArtifactId in @('package', 'packageManagementPackage', 'powerShellGetPackage')) {
             $packageFile = ([string]$target.artifactFiles.$packageArtifactId.relativePathTemplate).Replace('{version}', [string]$definition.artifacts.releases[0].version)
@@ -108,6 +109,16 @@ exit 0
             $bootstrapContent | Should -Not -Match ([regex]::Escape($packageFile))
             $bootstrapContent | Should -Not -Match ([regex]::Escape($packageHash))
         }
+    }
+
+    It 'disables name checking only on repository-owned explicit imports of this module' {
+        $bootstrapContent = Get-Content -LiteralPath (Join-Path $script:ModuleProjectRoot 'Bootstrap\Eigenverft.Manifested.Package.Bootstrap.ps1') -Raw
+        $proxyBootstrapContent = Get-Content -LiteralPath (Join-Path $script:ModuleProjectRoot 'Support\ExecutionCore\Eigenverft.Manifested.Package.ExecutionCore.InitializeProxyAccessProfile.ps1') -Raw
+        $iwrBootstrapContent = Get-Content -LiteralPath (Join-Path $script:RepositoryRoot 'iwr\bootstrapper.ps1') -Raw
+
+        $bootstrapContent | Should -Match 'Import-Module -Name \$packageCheck\.Path -Force -DisableNameChecking -ErrorAction Stop'
+        $proxyBootstrapContent | Should -Match 'Import-Module \$_\.Name -MinimumVersion \$_\.Version -Force -DisableNameChecking'
+        $iwrBootstrapContent | Should -Match 'Import-Module \$_\.Name -MinimumVersion \$_\.Version -Force -DisableNameChecking'
     }
 
     It 'reports every missing package when the offline bootstrap bundle is incomplete' {

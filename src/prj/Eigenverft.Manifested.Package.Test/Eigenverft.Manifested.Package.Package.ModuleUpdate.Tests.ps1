@@ -6,7 +6,7 @@
 
 Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module update' -Body {
     BeforeEach {
-        $null = Import-Module -Name $script:ModuleManifestPath -Force -PassThru -WarningAction SilentlyContinue
+        $null = Import-Module -Name $script:ModuleManifestPath -Force -PassThru -DisableNameChecking
         $Global:ProxyParamsPrepareSession = $null
         $Global:ProxyParamsInstallModule = @{}
     }

@@ -26,7 +26,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
     }
 
     It 'exports depot management commands' {
-        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
+        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru -DisableNameChecking
 
         foreach ($commandName in @('Get-PackageDepot', 'Add-PackageDepot', 'Add-TeamPackageDepot', 'Set-PackageDepot', 'Remove-PackageDepot', 'Invoke-PackageDepotMaterialize')) {
             $module.ExportedCommands.Keys | Should -Contain $commandName

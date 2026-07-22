@@ -6,7 +6,7 @@
 
 Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - exports and state' -Body {
     It 'exports Invoke-Package with generic package parameters' {
-        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
+        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru -DisableNameChecking
         $command = Get-Command -Name 'Invoke-Package'
 
         $command | Should -Not -BeNullOrEmpty
@@ -24,7 +24,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
     }
 
     It 'Get-PackageVersion lists Invoke-Package examples for shipped definitions' {
-        $null = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
+        $null = Import-Module -Name $script:ModuleManifestPath -Force -PassThru -DisableNameChecking
         $text = Get-PackageVersion
 
         $text | Should -Match 'Invoke-Package -DefinitionId ''GitRuntime'''
@@ -39,7 +39,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
     }
 
     It 'exports Search-Package with endpoint, trust, and platform filters' {
-        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
+        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru -DisableNameChecking
         $command = $module.ExportedCommands['Search-Package']
 
         $command | Should -Not -BeNullOrEmpty
@@ -54,7 +54,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
     }
 
     It 'exports Get-PackageState with only the Raw view switch' {
-        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
+        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru -DisableNameChecking
         $command = Get-Command -Name 'Get-PackageState'
 
         $command | Should -Not -BeNullOrEmpty
@@ -66,7 +66,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
     }
 
     It 'exports the read-only package assignment-plan interface' {
-        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
+        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru -DisableNameChecking
         $command = $module.ExportedCommands['Get-PackageAssignmentPlan']
 
         $command | Should -Not -BeNullOrEmpty
@@ -78,7 +78,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
     }
 
     It 'exports only the intended public command surface' {
-        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
+        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru -DisableNameChecking
 
         @($module.ExportedCommands.Keys | Sort-Object) | Should -Be @(
             'Add-PackageDepot',
@@ -148,7 +148,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
     }
 
     It 'Get-PackageDefinitionAuthoringGuide includes task preface and authoring skill header' {
-        $null = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
+        $null = Import-Module -Name $script:ModuleManifestPath -Force -PassThru -DisableNameChecking
         $text = Get-PackageDefinitionAuthoringGuide -For 'TestDef' -WarningAction SilentlyContinue
 
         $text | Should -Match "Task: create or update package definition 'TestDef'."
@@ -169,7 +169,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
     }
 
     It 'Get-PackageDefinitionAuthoringGuide -DraftOnly prepends draft-only authoring mode' {
-        $null = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
+        $null = Import-Module -Name $script:ModuleManifestPath -Force -PassThru -DisableNameChecking
         $text = Get-PackageDefinitionAuthoringGuide -For 'TestDef' -DraftOnly -WarningAction SilentlyContinue
 
         $text | Should -Match '## Authoring mode'
@@ -475,7 +475,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - export
     }
 
     It 'does not export migrated legacy runtime commands' {
-        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
+        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru -DisableNameChecking
 
         # Resolve commands against this import only: another copy of the module on PSModulePath
         # (e.g. Documents\WindowsPowerShell\Modules) can otherwise satisfy Get-Command by name alone.

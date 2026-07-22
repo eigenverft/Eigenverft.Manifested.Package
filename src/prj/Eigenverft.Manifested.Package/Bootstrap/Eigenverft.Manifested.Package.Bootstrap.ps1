@@ -418,7 +418,7 @@ try {
     }
 
     Write-Host "Eigenverft.Manifested.Package $($packageCheck.Version) offline bootstrap completed successfully."
-    Import-Module -Name $packageCheck.Path -Force -ErrorAction Stop
+    Import-Module -Name $packageCheck.Path -Force -DisableNameChecking -ErrorAction Stop
     Write-Host ''
     Write-Host 'The package console is ready:'
     Write-Host (Get-PackageVersion)

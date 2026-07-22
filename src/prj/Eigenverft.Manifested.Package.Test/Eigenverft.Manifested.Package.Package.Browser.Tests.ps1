@@ -197,7 +197,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - browse
     }
 
     It 'exports the browser command with the intended public interface' {
-        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
+        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru -DisableNameChecking
         $command = $module.ExportedCommands['Open-UrlInBrowser']
 
         $command | Should -Not -BeNullOrEmpty
@@ -209,7 +209,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - browse
     }
 
     It 'exports the package documentation helper with browser selection only' {
-        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
+        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru -DisableNameChecking
         $command = $module.ExportedCommands['Open-PackageDocumentation']
 
         $command | Should -Not -BeNullOrEmpty
@@ -221,7 +221,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - browse
     }
 
     It 'resolves documentation from the exact active module version and delegates browser launch' {
-        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru
+        $module = Import-Module -Name $script:ModuleManifestPath -Force -PassThru -DisableNameChecking
         $command = $module.ExportedCommands['Open-PackageDocumentation']
         $script:ExpectedDocumentationPath = Join-Path (Join-Path $module.ModuleBase 'Documentation') 'index.html'
         $script:ExpectedBrowserPath = Join-Path $TestDrive 'documentation-browser.exe'
