@@ -73,7 +73,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module
         }
     }
 
-    It 'installs the exact newer version and reports it active only after activation verification' {
+    It 'installs the exact newer version and reports the expected same-session transition' {
         InModuleScope 'Eigenverft.Manifested.Package' {
             $script:versionStateCallCount = 0
             Mock Initialize-ProxyAccessProfile { }
@@ -108,14 +108,19 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module
                 [pscustomobject]@{ Known = $true; Matches = $true; ScopeRoot = 'C:\modules' }
             }
             Mock Enable-PackageUpdatedModuleVersion {
-                [pscustomobject]@{ Active = $true; Reason = $null }
+                [pscustomobject]@{
+                    Active = $true
+                    Reason = $null
+                    CommandVersion = [version]'2.0.0'
+                    PreviousModuleStateLoaded = $true
+                }
             }
 
             $result = Update-PackageVersion -Scope CurrentUser -Confirm:$false
 
             $result | Should -BeNullOrEmpty
             Assert-MockCalled Write-StandardMessage -Times 1 -Exactly -ParameterFilter {
-                $Message -eq 'Eigenverft.Manifested.Package was updated from 1.0.0 to 2.0.0. The new version is active for subsequent commands in this session.' -and
+                $Message -eq 'Eigenverft.Manifested.Package was updated from 1.0.0 to 2.0.0. Subsequent commands use the new version. The previous module version remains loaded; open a new PowerShell session to clear it.' -and
                 $Level -eq 'INF'
             }
             Assert-MockCalled Install-Module -Times 1 -Exactly -ParameterFilter {
@@ -308,7 +313,21 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module
 
             Mock Test-Path { $true }
             Mock Import-Module { }
-            Mock Get-Module { @($loadedModule) }
+            $previousModule = [pscustomobject]@{
+                Name = 'Eigenverft.Manifested.Package'
+                Version = [version]'1.0.0'
+                Path = 'C:\modules\Eigenverft.Manifested.Package\1.0.0\Eigenverft.Manifested.Package.psm1'
+                ModuleBase = 'C:\modules\Eigenverft.Manifested.Package\1.0.0'
+            }
+            $script:getLoadedModuleCallCount = 0
+            Mock Get-Module {
+                $script:getLoadedModuleCallCount++
+                if ($script:getLoadedModuleCallCount -eq 1) {
+                    return @($previousModule)
+                }
+
+                return @($loadedModule)
+            }
             Mock Get-Command {
                 [pscustomobject]@{ Module = $loadedModule }
             }
@@ -320,9 +339,59 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module
 
             $result.Active | Should -BeTrue
             $result.CommandVersion | Should -Be ([version]'2.0.0')
+            $result.PreviousModuleStateLoaded | Should -BeFalse
             Assert-MockCalled Import-Module -Times 1 -Exactly -ParameterFilter {
                 $Name -eq $manifestPath -and $Force -and $Global -and $DisableNameChecking
             }
+        }
+    }
+
+    It 'recognizes global activation while the executing module still resolves its private old command' {
+        InModuleScope 'Eigenverft.Manifested.Package' {
+            $oldModuleBase = 'C:\modules\Eigenverft.Manifested.Package\1.0.0'
+            $newModuleBase = 'C:\modules\Eigenverft.Manifested.Package\2.0.0'
+            $oldModule = [pscustomobject]@{
+                Name = 'Eigenverft.Manifested.Package'
+                Version = [version]'1.0.0'
+                Path = Join-Path $oldModuleBase 'Eigenverft.Manifested.Package.psm1'
+                ModuleBase = $oldModuleBase
+            }
+            $newModule = [pscustomobject]@{
+                Name = 'Eigenverft.Manifested.Package'
+                Version = [version]'2.0.0'
+                Path = Join-Path $newModuleBase 'Eigenverft.Manifested.Package.psm1'
+                ModuleBase = $newModuleBase
+            }
+            $installedModule = [pscustomobject]@{
+                Name = 'Eigenverft.Manifested.Package'
+                Version = [version]'2.0.0'
+                Path = Join-Path $newModuleBase 'Eigenverft.Manifested.Package.psd1'
+                ModuleBase = $newModuleBase
+            }
+
+            $script:getLoadedModuleCallCount = 0
+            Mock Test-Path { $true }
+            Mock Import-Module { }
+            Mock Get-Module {
+                $script:getLoadedModuleCallCount++
+                if ($script:getLoadedModuleCallCount -eq 1) {
+                    return @($oldModule)
+                }
+
+                return @($oldModule, $newModule)
+            }
+            Mock Get-Command {
+                [pscustomobject]@{ Module = $oldModule }
+            }
+
+            $result = Enable-PackageUpdatedModuleVersion `
+                -ModuleName 'Eigenverft.Manifested.Package' `
+                -Version ([version]'2.0.0') `
+                -InstalledModule $installedModule
+
+            $result.Active | Should -BeTrue
+            $result.CommandVersion | Should -Be ([version]'2.0.0')
+            $result.PreviousModuleStateLoaded | Should -BeTrue
         }
     }
 

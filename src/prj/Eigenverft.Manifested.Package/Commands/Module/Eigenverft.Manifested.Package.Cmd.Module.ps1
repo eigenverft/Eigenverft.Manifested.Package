@@ -567,6 +567,7 @@ function Enable-PackageUpdatedModuleVersion {
             Active = $false
             Reason = 'The exact installed module manifest could not be resolved.'
             CommandVersion = $null
+            PreviousModuleStateLoaded = $false
         }
     }
 
@@ -584,6 +585,7 @@ function Enable-PackageUpdatedModuleVersion {
                 Active = $false
                 Reason = 'Multiple module instances were already loaded, so same-session replacement was not attempted.'
                 CommandVersion = if ($currentCommand -and $currentCommand.Module) { [version]$currentCommand.Module.Version } else { $null }
+                PreviousModuleStateLoaded = $true
             }
         }
 
@@ -617,13 +619,64 @@ function Enable-PackageUpdatedModuleVersion {
                 )
             }
         )
-        $loadedStateMatches = $loadedAfter.Count -eq 1 -and $matchingLoadedModules.Count -eq 1
+        $otherLoadedModules = @(
+            $loadedAfter | Where-Object {
+                $null -eq $_.Version -or
+                [version]$_.Version -ne $Version -or
+                [string]::IsNullOrWhiteSpace([string]$_.ModuleBase) -or
+                -not [string]::Equals(
+                    [System.IO.Path]::GetFullPath($_.ModuleBase),
+                    $installedModuleBase,
+                    [System.StringComparison]::OrdinalIgnoreCase
+                )
+            }
+        )
+        $previousModuleStateLoaded = $false
+        $otherLoadedStateMatches = $otherLoadedModules.Count -eq 0
+        $activeCommandMatchesPreviousModule = $false
 
-        if ($activeModuleBaseMatches -and $loadedStateMatches) {
+        if ($loadedBefore.Count -eq 1 -and $otherLoadedModules.Count -eq 1) {
+            $previousModule = $loadedBefore[0]
+            $otherModule = $otherLoadedModules[0]
+            $previousModuleBase = if (-not [string]::IsNullOrWhiteSpace([string]$previousModule.ModuleBase)) {
+                [System.IO.Path]::GetFullPath([string]$previousModule.ModuleBase)
+            }
+            else {
+                $null
+            }
+            $previousModuleStateLoaded =
+                $null -ne $previousModule.Version -and
+                $null -ne $otherModule.Version -and
+                [version]$otherModule.Version -eq [version]$previousModule.Version -and
+                -not [string]::IsNullOrWhiteSpace($previousModuleBase) -and
+                -not [string]::IsNullOrWhiteSpace([string]$otherModule.ModuleBase) -and
+                [string]::Equals(
+                    [System.IO.Path]::GetFullPath([string]$otherModule.ModuleBase),
+                    $previousModuleBase,
+                    [System.StringComparison]::OrdinalIgnoreCase
+                )
+            $otherLoadedStateMatches = $previousModuleStateLoaded
+            $activeCommandMatchesPreviousModule =
+                $previousModuleStateLoaded -and
+                $null -ne $activeModule -and
+                $null -ne $activeModule.Version -and
+                [version]$activeModule.Version -eq [version]$previousModule.Version -and
+                -not [string]::IsNullOrWhiteSpace([string]$activeModule.ModuleBase) -and
+                [string]::Equals(
+                    [System.IO.Path]::GetFullPath([string]$activeModule.ModuleBase),
+                    $previousModuleBase,
+                    [System.StringComparison]::OrdinalIgnoreCase
+                )
+        }
+
+        $loadedStateMatches = $matchingLoadedModules.Count -eq 1 -and $otherLoadedStateMatches
+
+        if ($loadedStateMatches -and ($activeModuleBaseMatches -or $activeCommandMatchesPreviousModule)) {
             return [pscustomobject]@{
                 Active = $true
                 Reason = $null
                 CommandVersion = $Version
+                PreviousModuleStateLoaded = $previousModuleStateLoaded
             }
         }
 
@@ -636,6 +689,7 @@ function Enable-PackageUpdatedModuleVersion {
                 'The new command resolved correctly, but duplicate or mismatched loaded module state remained.'
             }
             CommandVersion = if ($null -ne $activeModule -and $null -ne $activeModule.Version) { [version]$activeModule.Version } else { $null }
+            PreviousModuleStateLoaded = $previousModuleStateLoaded
         }
     }
     catch {
@@ -644,6 +698,7 @@ function Enable-PackageUpdatedModuleVersion {
             Active = $false
             Reason = $_.Exception.Message
             CommandVersion = $null
+            PreviousModuleStateLoaded = $false
         }
     }
 }
@@ -664,10 +719,11 @@ settings. Find-Module and Install-Module then run as separate PowerShellGet oper
 parameters are filtered independently against the commands available in the current session so old
 PowerShellGet versions do not receive unsupported optional parameters such as AllowClobber.
 
-After installation, the command attempts to activate the exact installed module globally and verifies
-that Update-PackageVersion resolves to it. If that cannot be proven, the installed update is retained
-and the command tells the user to open a new PowerShell session. Every final outcome uses the standard
-timestamped status format and includes the decoded UTC build time for encoded Eigenverft versions.
+After installation, the command imports the exact installed module globally. Subsequent commands can
+therefore use the new version while the currently executing older module instance remains loaded. The
+command reports that transition separately from a failed activation and recommends a new PowerShell
+session only to clear retained module state. Every final outcome uses the standard timestamped status
+format and includes the decoded UTC build time for encoded Eigenverft versions.
 
 .PARAMETER Scope
 CurrentUser (default) or AllUsers (elevation normally required). Scope controls where a newer version
@@ -898,6 +954,13 @@ without changing the installed module.
     $installedVersionDisplay = Format-PackageVersionWithBuildDate -Version $installedVersion
 
     if ($activation.Active) {
+        if ($activation.PreviousModuleStateLoaded) {
+            Write-StandardMessage `
+                -Message "$moduleName was updated from $relevantVersionDisplay to $installedVersionDisplay. Subsequent commands use the new version. The previous module version remains loaded; open a new PowerShell session to clear it." `
+                -Level INF
+            return
+        }
+
         Write-StandardMessage `
             -Message "$moduleName was updated from $relevantVersionDisplay to $installedVersionDisplay. The new version is active for subsequent commands in this session." `
             -Level INF
