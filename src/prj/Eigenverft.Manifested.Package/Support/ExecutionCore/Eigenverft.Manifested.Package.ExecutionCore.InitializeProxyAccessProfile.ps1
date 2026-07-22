@@ -29,6 +29,10 @@ Behavior:
 
 This helper is primarily intended for Windows PowerShell 5.1 and PowerShell
 7+ on Windows in corporate environments where direct access is not guaranteed.
+
+.PARAMETER SuppressStatus
+Suppresses only routine [STATUS] messages. Diagnostics, warnings, errors, prompts,
+and credential-related notices retain their normal behavior.
 #>
     [CmdletBinding()]
     param(
@@ -50,6 +54,8 @@ This helper is primarily intended for Windows PowerShell 5.1 and PowerShell
         [switch]$SkipCertificateCheck,
 
         [switch]$EnforceCertificateCheck,
+
+        [switch]$SuppressStatus,
 
         [switch]$ForceRefresh
     )
@@ -152,10 +158,12 @@ This helper is primarily intended for Windows PowerShell 5.1 and PowerShell
 
     $initialized = Get-Variable -Scope Global -Name ($GlobalPrefix + 'Initialized') -ErrorAction SilentlyContinue
     if (-not $ForceRefresh -and $initialized -and $initialized.Value) {
-        _Write-StandardMessage -Message (
-            "[STATUS] Proxy globals already initialized for prefix '{0}'. Skipping refresh." -f
-            $GlobalPrefix
-        ) -Level DBG
+        if (-not $SuppressStatus) {
+            _Write-StandardMessage -Message (
+                "[STATUS] Proxy globals already initialized for prefix '{0}'. Skipping refresh." -f
+                $GlobalPrefix
+            ) -Level DBG
+        }
         return
     }
 
@@ -258,10 +266,12 @@ This helper is primarily intended for Windows PowerShell 5.1 and PowerShell
             [bool]$SessionPrepared = $false
         )
 
-        _Write-StandardMessage -Message (
-            "[STATUS] Proxy profile mode '{0}' from '{1}'. SessionPrepared={2}." -f
-            $Mode, $ProfileSource, $SessionPrepared
-        ) -Level INF
+        if (-not $SuppressStatus) {
+            _Write-StandardMessage -Message (
+                "[STATUS] Proxy profile mode '{0}' from '{1}'. SessionPrepared={2}." -f
+                $Mode, $ProfileSource, $SessionPrepared
+            ) -Level INF
+        }
 
         foreach ($message in @($Diagnostics)) {
             $diagnosticText = [string]$message

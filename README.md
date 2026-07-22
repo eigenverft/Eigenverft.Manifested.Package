@@ -46,17 +46,22 @@ Get-PackageVersion
 
 `Get-PackageVersion` shows the resolved module version, example `Invoke-Package` lines for each shipped definition, and the other exported commands.
 
-Update the module itself from PSGallery (proxy-aware on Windows):
+Check PSGallery and install the latest stable module only when it is newer (proxy-aware on Windows):
 
 ```powershell
 Update-PackageVersion -Scope CurrentUser
 Get-PackageVersion
 ```
 
+The command compares PSGallery with every visible running, loaded, and installed copy, so changing
+`-Scope` never causes a downgrade or a redundant reinstall. After an update it reports whether the
+new command version is already active; when safe same-session activation cannot be verified, open a
+new PowerShell session as instructed.
+
 | Command | Role |
 | --- | --- |
 | `Get-PackageVersion` | What module version is installed; example lines per shipped definition; list of other commands |
-| `Update-PackageVersion` | Install or upgrade this module from PSGallery (`-Scope CurrentUser` or `AllUsers`) |
+| `Update-PackageVersion` | Check PSGallery and install only a newer stable module (`-Scope CurrentUser` or `AllUsers`) |
 | `Search-Package` | Find a package when you know a name or command but not the `DefinitionId` |
 | `Get-PackageState` | What is assigned on this machine; recent run outcomes; key local paths |
 
