@@ -390,7 +390,12 @@ function New-PackageAssignmentPlanCore {
                 RecommendedCommand = "Import-PackageTrust -Path '<public-signing-cert.cer>'"
             }
             $trustActions.Add($trustAction) | Out-Null
-            $nodeBlockers.Add((New-PackageAssignmentPlanIssue -Severity Blocker -Code 'DefinitionTrustRequired' -Message "Definition '$($node.DefinitionId)' has a valid signature from an unknown signing key and requires an explicit trust action." -NodeKey ([string]$node.NodeKey) -DefinitionId ([string]$node.DefinitionId))) | Out-Null
+            if ($AcceptUnknownSigningKey.IsPresent) {
+                $nodeWarnings.Add((New-PackageAssignmentPlanIssue -Severity Warning -Code 'DefinitionTrustWillBeAccepted' -Message "Definition '$($node.DefinitionId)' has a valid signature from an unknown signing key that this invocation explicitly accepts." -NodeKey ([string]$node.NodeKey) -DefinitionId ([string]$node.DefinitionId))) | Out-Null
+            }
+            else {
+                $nodeBlockers.Add((New-PackageAssignmentPlanIssue -Severity Blocker -Code 'DefinitionTrustRequired' -Message "Definition '$($node.DefinitionId)' has a valid signature from an unknown signing key and requires an explicit trust action." -NodeKey ([string]$node.NodeKey) -DefinitionId ([string]$node.DefinitionId))) | Out-Null
+            }
         }
         elseif ([string]::Equals($trustStatus, 'unsignedConfigTrust', [System.StringComparison]::OrdinalIgnoreCase)) {
             $nodeWarnings.Add((New-PackageAssignmentPlanIssue -Severity Warning -Code 'UnsignedDefinitionAllowed' -Message "Definition '$($node.DefinitionId)' is unsigned and allowed by configured catalog policy." -NodeKey ([string]$node.NodeKey) -DefinitionId ([string]$node.DefinitionId))) | Out-Null

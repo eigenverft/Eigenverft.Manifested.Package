@@ -33,11 +33,17 @@ function Invoke-PackageDepotMaterialize {
         when its complete file set is durable in at least one readable depot. Incomplete
         secondary mirrors remain visible in the result without discarding that success. A
         failed package is reported and the next package is attempted unless FailFast is selected.
-        The command never prompts for new catalog trust, imports signing keys, accepts
-        unsigned definitions, installs packages, changes depot configuration, or removes files.
+        By default, the command never prompts for new catalog trust, imports signing keys,
+        accepts unsigned definitions, installs packages, changes depot configuration, or removes
+        files. AcceptUnknownSigningKey is an explicit opt-in for signed root definitions whose signing
+        key is not yet trusted; unsigned and blocked root definitions remain excluded, while dependency trust follows the existing package policy.
 
     .PARAMETER AllTrusted
-        Confirms that the complete already-trusted current-platform catalog is the materialize scope.
+        Legacy compatibility switch. The already-trusted current-platform catalog is now the default scope.
+
+    .PARAMETER AcceptUnknownSigningKey
+        Also includes signed root definitions whose signing key is not yet trusted and explicitly accepts that key
+        through the existing package trust workflow. Unsigned and blocked root definitions remain excluded; dependency trust follows the existing package policy.
 
     .PARAMETER ExcludeDefinitionId
         Omits matching definition ids from this run.
@@ -45,10 +51,12 @@ function Invoke-PackageDepotMaterialize {
     .PARAMETER FailFast
         Stops after the first package that does not materialize successfully.
     #>
-    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(DontShow = $true)]
         [switch]$AllTrusted,
+
+        [switch]$AcceptUnknownSigningKey,
 
         [AllowNull()]
         [string]$PublisherId = $null,
@@ -62,8 +70,8 @@ function Invoke-PackageDepotMaterialize {
         [switch]$FailFast
     )
 
-    if (-not $AllTrusted.IsPresent) {
-        throw 'Invoke-PackageDepotMaterialize currently requires -AllTrusted.'
+    if ($AllTrusted.IsPresent) {
+        Write-Verbose '-AllTrusted is retained for compatibility; trusted current-platform definitions are now selected by default.'
     }
 
     $searchParameters = @{
@@ -86,10 +94,17 @@ function Invoke-PackageDepotMaterialize {
         }
     }
 
+    $acceptedTrustStatuses = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+    $acceptedTrustStatuses.Add('signedTrusted') | Out-Null
+    if ($AcceptUnknownSigningKey.IsPresent) {
+        $acceptedTrustStatuses.Add('signedUnknownKeyPrompt') | Out-Null
+        $acceptedTrustStatuses.Add('signedUnknownKeyAutoTrust') | Out-Null
+    }
+
     $trustedCandidates = @(
         Search-Package @searchParameters |
             Where-Object {
-                [string]::Equals([string]$_.CatalogTrustStatus, 'signedTrusted', [System.StringComparison]::OrdinalIgnoreCase) -and
+                $acceptedTrustStatuses.Contains([string]$_.CatalogTrustStatus) -and
                 -not $excluded.Contains([string]$_.DefinitionId)
             }
     )
@@ -103,24 +118,37 @@ function Invoke-PackageDepotMaterialize {
     )
 
     if ($selected.Count -eq 0) {
-        Write-Verbose 'No already signed-and-trusted package definitions are available for the requested current-platform scope.'
+        Write-Verbose 'No package definitions are available for the requested current-platform trust scope.'
         return
     }
 
-    $target = '{0} already trusted current-platform package definition(s)' -f $selected.Count
+    $trustParameters = if ($AcceptUnknownSigningKey.IsPresent) {
+        @{ AcceptUnknownSigningKey = $true }
+    }
+    else {
+        @{ RequireAlreadyTrusted = $true }
+    }
+
+    $targetScope = if ($AcceptUnknownSigningKey.IsPresent) {
+        'trusted or explicitly accepted unknown-key current-platform package definition(s)'
+    }
+    else {
+        'already trusted current-platform package definition(s)'
+    }
+    $target = '{0} {1}' -f $selected.Count, $targetScope
     if (-not $PSCmdlet.ShouldProcess($target, 'Materialize complete artifact sets into configured package depots')) {
         foreach ($package in $selected) {
-            $assignmentPlan = New-PackageAssignmentPlanCore -PublisherId ([string]$package.PublisherId) -DefinitionId ([string]$package.DefinitionId) -Purpose Inspection -MaterializeOnly -RequireAlreadyTrusted
+            $assignmentPlan = New-PackageAssignmentPlanCore -PublisherId ([string]$package.PublisherId) -DefinitionId ([string]$package.DefinitionId) -Purpose Inspection -MaterializeOnly @trustParameters
             [pscustomobject]@{
-                PSTypeName    = 'Eigenverft.Manifested.Package.DepotMaterializeResult'
-                PublisherId   = [string]$package.PublisherId
-                DefinitionId  = [string]$package.DefinitionId
-                Version       = [string]$package.Version
-                Status        = if ($assignmentPlan.Accepted) { 'Planned' } else { 'Blocked' }
+                PSTypeName     = 'Eigenverft.Manifested.Package.DepotMaterializeResult'
+                PublisherId    = [string]$package.PublisherId
+                DefinitionId   = [string]$package.DefinitionId
+                Version        = [string]$package.Version
+                Status         = if ($assignmentPlan.Accepted) { 'Planned' } else { 'Blocked' }
                 AssignmentPlan = $assignmentPlan
                 BlockerSummary = @($assignmentPlan.Blockers)
-                PackageResult = @()
-                ErrorMessage  = $null
+                PackageResult  = @()
+                ErrorMessage   = $null
             }
         }
         return
@@ -130,7 +158,7 @@ function Invoke-PackageDepotMaterialize {
         $packageResults = @()
         $errorMessage = $null
         try {
-            $packageResults = @(Invoke-Package -PublisherId ([string]$package.PublisherId) -DefinitionId ([string]$package.DefinitionId) -MaterializeOnly -RequireAlreadyTrusted)
+            $packageResults = @(Invoke-Package -PublisherId ([string]$package.PublisherId) -DefinitionId ([string]$package.DefinitionId) -MaterializeOnly @trustParameters)
         }
         catch {
             $errorMessage = $_.Exception.Message
@@ -147,15 +175,15 @@ function Invoke-PackageDepotMaterialize {
         }
 
         $materializeResult = [pscustomobject]@{
-            PSTypeName    = 'Eigenverft.Manifested.Package.DepotMaterializeResult'
-            PublisherId   = [string]$package.PublisherId
-            DefinitionId  = [string]$package.DefinitionId
-            Version       = [string]$package.Version
-            Status        = $status
+            PSTypeName     = 'Eigenverft.Manifested.Package.DepotMaterializeResult'
+            PublisherId    = [string]$package.PublisherId
+            DefinitionId   = [string]$package.DefinitionId
+            Version        = [string]$package.Version
+            Status         = $status
             AssignmentPlan = $null
             BlockerSummary = @()
-            PackageResult = @($packageResults)
-            ErrorMessage  = $errorMessage
+            PackageResult  = @($packageResults)
+            ErrorMessage   = $errorMessage
         }
         $materializeResult
 

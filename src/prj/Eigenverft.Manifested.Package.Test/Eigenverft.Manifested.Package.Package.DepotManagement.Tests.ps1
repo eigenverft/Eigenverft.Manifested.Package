@@ -34,6 +34,15 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
         $module.ExportedAliases.Count | Should -Be 0
     }
 
+    It 'uses trusted current-platform materialization as the non-confirming default scope' {
+        $command = Get-Command Invoke-PackageDepotMaterialize -ErrorAction Stop
+        $allTrustedParameterAttribute = @($command.Parameters['AllTrusted'].Attributes | Where-Object { $_ -is [System.Management.Automation.ParameterAttribute] }) | Select-Object -First 1
+        $cmdletBindingAttribute = @($command.ScriptBlock.Attributes | Where-Object { $_ -is [System.Management.Automation.CmdletBindingAttribute] }) | Select-Object -First 1
+
+        $allTrustedParameterAttribute.Mandatory | Should -BeFalse
+        $cmdletBindingAttribute.ConfirmImpact | Should -Be ([System.Management.Automation.ConfirmImpact]::Medium)
+    }
+
     It 'materializes only deduplicated already trusted current-platform definitions' {
         Mock Search-Package {
             @(
@@ -47,7 +56,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
             [pscustomobject]@{ Status = 'Materialized' }
         }
 
-        $result = @(Invoke-PackageDepotMaterialize -AllTrusted -Confirm:$false)
+        $result = @(Invoke-PackageDepotMaterialize)
 
         $result.Count | Should -Be 1
         $result[0].PSTypeNames[0] | Should -Be 'Eigenverft.Manifested.Package.DepotMaterializeResult'
@@ -56,6 +65,29 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
         Assert-MockCalled Search-Package -Times 1 -Exactly -ParameterFilter { $CurrentPlatformOnly -and $IncludeIneligible }
         Assert-MockCalled Invoke-Package -Times 1 -Exactly -ParameterFilter {
             $PublisherId -eq 'Eigenverft' -and $DefinitionId -eq 'Alpha' -and $MaterializeOnly -and $RequireAlreadyTrusted
+        }
+    }
+
+    It 'includes signed unknown-key definitions only with explicit acceptance' {
+        Mock Search-Package {
+            @(
+                [pscustomobject]@{ PublisherId = 'Eigenverft'; DefinitionId = 'Alpha'; Version = '1.0'; CatalogTrustStatus = 'signedTrusted'; EndpointSearchOrder = 100; DefinitionRevision = 1 },
+                [pscustomobject]@{ PublisherId = 'Eigenverft'; DefinitionId = 'Beta'; Version = '2.0'; CatalogTrustStatus = 'signedUnknownKeyPrompt'; EndpointSearchOrder = 100; DefinitionRevision = 1 },
+                [pscustomobject]@{ PublisherId = 'Eigenverft'; DefinitionId = 'Gamma'; Version = '3.0'; CatalogTrustStatus = 'unsignedConfigTrust'; EndpointSearchOrder = 100; DefinitionRevision = 1 }
+            )
+        }
+        Mock Invoke-Package {
+            [pscustomobject]@{ Status = 'Materialized' }
+        }
+
+        $result = @(Invoke-PackageDepotMaterialize -AcceptUnknownSigningKey)
+
+        $result.Count | Should -Be 2
+        @($result.DefinitionId) | Should -Contain 'Alpha'
+        @($result.DefinitionId) | Should -Contain 'Beta'
+        @($result.DefinitionId) | Should -Not -Contain 'Gamma'
+        Assert-MockCalled Invoke-Package -Times 2 -Exactly -ParameterFilter {
+            $PublisherId -eq 'Eigenverft' -and $MaterializeOnly -and $AcceptUnknownSigningKey -and -not $RequireAlreadyTrusted
         }
     }
 
@@ -74,7 +106,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
         }
         Mock New-PackageAssignmentPlanCore { $trustedPlan }
 
-        $result = @(Invoke-PackageDepotMaterialize -AllTrusted -PublisherId 'Eigenverft' -Tag 'bootstrap' -ExcludeDefinitionId 'SkipMe' -WhatIf)
+        $result = @(Invoke-PackageDepotMaterialize -PublisherId 'Eigenverft' -Tag 'bootstrap' -ExcludeDefinitionId 'SkipMe' -WhatIf)
 
         $result.Count | Should -Be 1
         $result[0].DefinitionId | Should -Be 'Alpha'
@@ -102,7 +134,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
             [pscustomobject]@{ Status = 'Materialized' }
         }
 
-        $result = @(Invoke-PackageDepotMaterialize -AllTrusted -Confirm:$false)
+        $result = @(Invoke-PackageDepotMaterialize)
 
         $result.Count | Should -Be 2
         ($result | Where-Object DefinitionId -eq Alpha).Status | Should -Be 'Failed'
@@ -120,7 +152,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
         }
         Mock Invoke-Package { throw 'simulated mirror failure' }
 
-        $result = @(Invoke-PackageDepotMaterialize -AllTrusted -FailFast -Confirm:$false)
+        $result = @(Invoke-PackageDepotMaterialize -FailFast)
 
         $result.Count | Should -Be 1
         $result[0].DefinitionId | Should -Be 'Alpha'

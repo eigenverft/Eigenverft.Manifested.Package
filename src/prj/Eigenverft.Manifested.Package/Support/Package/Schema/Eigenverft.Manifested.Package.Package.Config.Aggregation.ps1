@@ -372,7 +372,7 @@ Get-PackageConfig -DefinitionId VSCodeRuntime
 
     if ($RequireAlreadyTrusted.IsPresent -and
         -not [string]::Equals([string]$definitionReference.CatalogTrustStatus, 'signedTrusted', [System.StringComparison]::OrdinalIgnoreCase)) {
-        throw "Package definition '$DefinitionId' is not already signed and trusted. Invoke-PackageDepotMaterialize -AllTrusted does not prompt for trust, import keys, or accept unsigned definitions."
+        throw "Package definition '$DefinitionId' is not already signed and trusted. Invoke-PackageDepotMaterialize uses already trusted definitions by default and never accepts unsigned definitions; use -AcceptUnknownSigningKey only for an explicitly accepted signed unknown key."
     }
 
     $definitionDocumentInfo = Read-PackageJsonDocument -Path $definitionReference.DefinitionPath

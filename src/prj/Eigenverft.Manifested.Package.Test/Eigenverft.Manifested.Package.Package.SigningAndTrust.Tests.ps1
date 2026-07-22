@@ -366,7 +366,17 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - signin
         $plan.TrustActions[0].RecommendedCommand | Should -Be "Import-PackageTrust -Path '<public-signing-cert.cer>'"
         Assert-MockCalled Confirm-PackageUnknownSigningKeyTrust -Times 0 -Exactly
         Test-Path -LiteralPath $localTrustPath | Should -BeFalse
-        Test-Path -LiteralPath (Join-Path $rootPath 'AppRoot\PkgEndpoint') | Should -BeFalse
+
+        $acceptedPlan = New-PackageAssignmentPlanCore -PublisherId 'My Team' -DefinitionId 'MyPackage' -Purpose Inspection -AcceptUnknownSigningKey
+
+        $acceptedPlan.Status | Should -Be 'ReadyWithWarnings'
+        $acceptedPlan.Accepted | Should -BeTrue
+        @($acceptedPlan.Blockers.Code) | Should -Not -Contain 'DefinitionTrustRequired'
+        @($acceptedPlan.Warnings.Code) | Should -Contain 'DefinitionTrustWillBeAccepted'
+        $acceptedPlan.TrustActions.Count | Should -Be 1
+        $acceptedPlan.TrustActions[0].KeyThumbprint | Should -Be $certificate.Thumbprint
+        Assert-MockCalled Confirm-PackageUnknownSigningKeyTrust -Times 0 -Exactly
+        Test-Path -LiteralPath $localTrustPath | Should -BeFalse
 
         $tamperedDefinition = Get-Content -LiteralPath $documents.DefinitionPath -Raw | ConvertFrom-Json
         $tamperedDefinition.display.default.summary = 'Tampered after signing'

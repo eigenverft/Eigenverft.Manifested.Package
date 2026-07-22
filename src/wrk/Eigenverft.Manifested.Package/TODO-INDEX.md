@@ -9,6 +9,8 @@ Only genuine remaining work is listed here. Shipped behavior is summarized in [D
 | Priority | Topic | Remaining outcome |
 |---|---|---|
 | 5/7 | [Release-age policy](TODO-SUPPLY-CHAIN.md) | Filter automatic selection using authored upstream release dates and explain skipped versions. |
+| 4/7 | [Unapproved verb warning](ISSUE-UNAPPROVED-VERB-WARNING.md) | Replace or compatibly map exported unapproved verbs so normal module import is warning-free without hiding unrelated warnings. |
+| 4/7 | [Copy progress readability](ISSUE-RESILIENT-COPY-PROGRESS-READABILITY.md) | Use adaptive IEC throughput units, fix composite status formatting, and clarify pending-versus-active queue semantics. |
 | 3/7 | [Ownership guide](TODO-OWNERSHIP.md) | Explain adoption/removal policy and add focused author guidance. |
 | 3/7 | [Onboarding profiles](ISSUE-ONBOARDING-PROFILES.md) | Define reviewable named `DefinitionId` bundles and examples. |
 | 3/7 | [Agent operability](ISSUE-AGENT-OPERABILITY.md) | Persist execution-step logs and expose a read/guide surface. |
