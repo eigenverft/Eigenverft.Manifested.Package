@@ -344,7 +344,16 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - signin
         $password = ConvertTo-SecureString 'CatalogTrust-Test-Password-123!' -AsPlainText -Force
         $globalDocument = New-TestPackageGlobalDocument -ApplicationRootDirectory (Join-Path $rootPath 'AppRoot') -CatalogTrustPolicy strict -CatalogTrustUnknownSignedKeyPolicy fail
         $definition = New-TestVSCodeDefinitionDocument -DefinitionId 'MyPackage' -PublisherId 'My Team' -PublisherName 'My Team' -Releases @(
-            New-TestPackageRelease -Id 'my-package-win-x64-stable' -Version '2.0.0' -Architecture 'x64' -ArtifactDistributionVariant 'win32-x64'
+            New-TestPackageRelease `
+                -Id 'my-package-win-x64-stable' `
+                -Version '2.0.0' `
+                -Architecture 'x64' `
+                -ArtifactDistributionVariant 'win32-x64' `
+                -FileName 'package-2.0.0.zip' `
+                -PackageFileSha256 ('0' * 64) `
+                -AcquisitionCandidates @(
+                    @{ kind = 'vendorDownload'; url = 'https://example.invalid/package-2.0.0.zip'; searchOrder = 100; verification = @{ mode = 'required' } }
+                )
         )
         $documents = Write-TestPackageDocuments -RootPath $rootPath -GlobalDocument $globalDocument -DefinitionDocument $definition
 
@@ -369,7 +378,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - signin
 
         $acceptedPlan = New-PackageAssignmentPlanCore -PublisherId 'My Team' -DefinitionId 'MyPackage' -Purpose Inspection -AcceptUnknownSigningKey
 
-        $acceptedPlan.Status | Should -Be 'ReadyWithWarnings'
+        $acceptedPlan.Status | Should -Be 'ReadyWithWarnings' -Because (($acceptedPlan.Blockers | ConvertTo-Json -Depth 10 -Compress))
         $acceptedPlan.Accepted | Should -BeTrue
         @($acceptedPlan.Blockers.Code) | Should -Not -Contain 'DefinitionTrustRequired'
         @($acceptedPlan.Warnings.Code) | Should -Contain 'DefinitionTrustWillBeAccepted'
