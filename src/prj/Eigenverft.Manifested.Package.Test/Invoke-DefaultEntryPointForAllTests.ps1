@@ -3,6 +3,7 @@
 
     Use -Detailed only when the compact summary points to a failure that needs
     live Pester output. Full logs are always written by Invoke-ModuleTests.ps1.
+    Use -PerFile for the slower independence proof in clean child processes.
 #>
 
 [CmdletBinding()]
@@ -13,6 +14,8 @@ param(
 
     [switch]$Detailed,
 
+    [switch]$PerFile,
+
     [string]$LogPath
 )
 
@@ -21,7 +24,8 @@ $ErrorActionPreference = 'Stop'
 
 $runnerPath = Join-Path $PSScriptRoot 'Invoke-ModuleTests.ps1'
 $parameters = @{
-    Mode = if ($Detailed.IsPresent) { 'Detailed' } else { 'Quiet' }
+    Mode          = if ($Detailed.IsPresent) { 'Detailed' } else { 'Quiet' }
+    IsolationMode = if ($PerFile.IsPresent) { 'PerFile' } else { 'Suite' }
 }
 
 if ($Detailed.IsPresent) {

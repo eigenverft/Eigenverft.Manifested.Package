@@ -19,6 +19,14 @@ function global:Invoke-TestPackageDescribe {
         }
 
         BeforeEach {
+            # A test may change process environment state directly or through the
+            # code under test. Snapshot the complete environment so later tests do
+            # not depend on execution order or inherit undeclared prerequisites.
+            $script:OriginalProcessEnvironment = @{}
+            foreach ($entry in @(Get-ChildItem Env:)) {
+                $script:OriginalProcessEnvironment[[string]$entry.Name] = [string]$entry.Value
+            }
+
             $script:OriginalSiteCode = [Environment]::GetEnvironmentVariable($script:SiteCodeEnvVarName, 'Process')
             $script:OriginalLocalAppData = [Environment]::GetEnvironmentVariable('LOCALAPPDATA', 'Process')
             [Environment]::SetEnvironmentVariable('LOCALAPPDATA', (Join-Path $TestDrive ('LocalAppData-' + [guid]::NewGuid().ToString('N'))), 'Process')
@@ -27,6 +35,25 @@ function global:Invoke-TestPackageDescribe {
         AfterEach {
             [Environment]::SetEnvironmentVariable($script:SiteCodeEnvVarName, $script:OriginalSiteCode, 'Process')
             [Environment]::SetEnvironmentVariable('LOCALAPPDATA', $script:OriginalLocalAppData, 'Process')
+
+            foreach ($entry in @(Get-ChildItem Env:)) {
+                if (-not $script:OriginalProcessEnvironment.ContainsKey([string]$entry.Name)) {
+                    [Environment]::SetEnvironmentVariable([string]$entry.Name, $null, 'Process')
+                }
+            }
+            foreach ($name in @($script:OriginalProcessEnvironment.Keys)) {
+                [Environment]::SetEnvironmentVariable(
+                    [string]$name,
+                    [string]$script:OriginalProcessEnvironment[$name],
+                    'Process'
+                )
+            }
+
+            # Import-Module changes process-wide command resolution. Always remove
+            # the product module so another It/container cannot pass only because a
+            # previous test loaded it. Per-file runner isolation supplies the hard
+            # process boundary; this cleanup also protects the normal suite run.
+            Remove-Module -Name Eigenverft.Manifested.Package -Force -ErrorAction SilentlyContinue
         }
 
         & $Body
