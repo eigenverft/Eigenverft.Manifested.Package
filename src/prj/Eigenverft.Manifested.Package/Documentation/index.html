@@ -68,7 +68,8 @@ Get-PackageVersion
 The command compares PSGallery with every visible running, loaded, and installed copy, so changing
 `-Scope` never causes a downgrade or a redundant reinstall. After an update it reports whether the
 new command version is already active; when safe same-session activation cannot be verified, open a
-new PowerShell session as instructed.
+new PowerShell session as instructed. Its final result uses the standard timestamped status format;
+encoded Eigenverft versions also show their build time in UTC without requiring `-Verbose`.
 
 | Command | Role |
 | --- | --- |

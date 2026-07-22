@@ -382,6 +382,33 @@ function Convert-64SecPowershellVersionToDateTime {
     }
 }
 
+function Format-PackageVersionWithBuildDate {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [version]$Version
+    )
+
+    try {
+        $dateResult = Convert-64SecPowershellVersionToDateTime `
+            -VersionBuild $Version.Major `
+            -VersionMajor $Version.Minor `
+            -VersionMinor $Version.Build
+        $buildTimeUtc = $dateResult.ComputedDateTime.ToUniversalTime().ToString(
+            'yyyy-MM-dd HH:mm:ss',
+            [System.Globalization.CultureInfo]::InvariantCulture
+        )
+
+        return ('{0} (built {1} UTC)' -f $Version, $buildTimeUtc)
+    }
+    catch {
+        Write-Verbose ("The optional build-date conversion for version '{0}' was skipped: {1}" -f
+            $Version,
+            $_.Exception.Message)
+        return [string]$Version
+    }
+}
+
 function Select-PackageCommandParameters {
     [CmdletBinding()]
     param(
@@ -639,7 +666,8 @@ PowerShellGet versions do not receive unsupported optional parameters such as Al
 
 After installation, the command attempts to activate the exact installed module globally and verifies
 that Update-PackageVersion resolves to it. If that cannot be proven, the installed update is retained
-and the command tells the user to open a new PowerShell session.
+and the command tells the user to open a new PowerShell session. Every final outcome uses the standard
+timestamped status format and includes the decoded UTC build time for encoded Eigenverft versions.
 
 .PARAMETER Scope
 CurrentUser (default) or AllUsers (elevation normally required). Scope controls where a newer version
@@ -768,27 +796,23 @@ without changing the installed module.
     }
 
     $latestRepositoryVersion = [version]$latestRepositoryModule[0].Version
-    try {
-        $dateResult = Convert-64SecPowershellVersionToDateTime `
-            -VersionBuild $latestRepositoryVersion.Major `
-            -VersionMajor $latestRepositoryVersion.Minor `
-            -VersionMinor $latestRepositoryVersion.Build
-        Write-Verbose ("Decoded repository build date: {0:o} ({1})." -f
-            $dateResult.ComputedDateTime,
-            $dateResult.ComputedDateTime.Kind)
-    }
-    catch {
-        Write-Verbose ("The optional repository build-date conversion was skipped: {0}" -f $_.Exception.Message)
-    }
+    $latestRepositoryVersionDisplay = Format-PackageVersionWithBuildDate -Version $latestRepositoryVersion
+    $relevantVersionDisplay = Format-PackageVersionWithBuildDate -Version $relevantVersion
     Write-Verbose ("Highest relevant local version: {0}; latest stable PSGallery version: {1}." -f
         $relevantVersion, $latestRepositoryVersion)
 
     if ($latestRepositoryVersion -le $relevantVersion) {
-        return "No newer version was found. Installed version: $relevantVersion."
+        Write-StandardMessage `
+            -Message "No newer version was found. Installed version: $relevantVersionDisplay." `
+            -Level INF
+        return
     }
 
     if (-not $PSCmdlet.ShouldProcess($moduleName, "Install version $latestRepositoryVersion for scope $Scope from $repository")) {
-        return "A newer version was found. Installed version: $relevantVersion. Available version: $latestRepositoryVersion. No installation was performed."
+        Write-StandardMessage `
+            -Message "A newer version was found. Installed version: $relevantVersionDisplay. Available version: $latestRepositoryVersionDisplay. No installation was performed." `
+            -Level INF
+        return
     }
 
     $installCommand = Get-Command -Name 'Install-Module' -ErrorAction Stop
@@ -871,15 +895,24 @@ without changing the installed module.
         -ModuleName $moduleName `
         -Version $installedVersion `
         -InstalledModule $installedModule
+    $installedVersionDisplay = Format-PackageVersionWithBuildDate -Version $installedVersion
 
     if ($activation.Active) {
-        return "$moduleName was updated from $relevantVersion to $installedVersion. The new version is active for subsequent commands in this session."
+        Write-StandardMessage `
+            -Message "$moduleName was updated from $relevantVersionDisplay to $installedVersionDisplay. The new version is active for subsequent commands in this session." `
+            -Level INF
+        return
     }
 
     Write-Verbose ("Restart required after update: {0}" -f $activation.Reason)
     if ($null -ne $activation.CommandVersion -and [version]$activation.CommandVersion -eq $installedVersion) {
-        return "$moduleName was updated from $relevantVersion to $installedVersion. Subsequent commands resolve to the new version, but older module state is still loaded. Open a new PowerShell session to clear it."
+        Write-StandardMessage `
+            -Message "$moduleName was updated from $relevantVersionDisplay to $installedVersionDisplay. Subsequent commands resolve to the new version, but older module state is still loaded. Open a new PowerShell session to clear it." `
+            -Level INF
+        return
     }
 
-    return "$moduleName was updated from $relevantVersion to $installedVersion. This session is still using $executingVersion. Open a new PowerShell session to activate the update."
+    Write-StandardMessage `
+        -Message "$moduleName was updated from $relevantVersionDisplay to $installedVersionDisplay. This session is still using $executingVersion. Open a new PowerShell session to activate the update." `
+        -Level INF
 }

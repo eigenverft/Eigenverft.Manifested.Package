@@ -30,26 +30,38 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module
         }
     }
 
+    It 'formats an encoded package version with its stable UTC build time' {
+        InModuleScope 'Eigenverft.Manifested.Package' {
+            Format-PackageVersionWithBuildDate -Version ([version]'1.20264.10744') |
+                Should -Be '1.20264.10744 (built 2026-07-22 03:20:32 UTC)'
+        }
+    }
+
     It 'does not install when PSGallery is not newer than the highest relevant local version' {
         InModuleScope 'Eigenverft.Manifested.Package' {
             Mock Initialize-ProxyAccessProfile { }
+            Mock Write-StandardMessage { }
             Mock Get-PackageModuleVersionState {
                 [pscustomobject]@{
-                    ExecutingVersion       = [version]'2.0.0'
-                    LoadedModules          = @([pscustomobject]@{ Version = [version]'2.0.0' })
-                    InstalledModules       = @([pscustomobject]@{ Version = [version]'1.9.0' })
-                    HighestRelevantVersion = [version]'2.0.0'
+                    ExecutingVersion       = [version]'1.20264.10744'
+                    LoadedModules          = @([pscustomobject]@{ Version = [version]'1.20264.10744' })
+                    InstalledModules       = @([pscustomobject]@{ Version = [version]'1.20264.10435' })
+                    HighestRelevantVersion = [version]'1.20264.10744'
                 }
             }
             Mock Find-Module {
-                [pscustomobject]@{ Name = 'Eigenverft.Manifested.Package'; Version = [version]'2.0.0' }
+                [pscustomobject]@{ Name = 'Eigenverft.Manifested.Package'; Version = [version]'1.20264.10744' }
             }
             Mock Install-Module { throw 'Install-Module must not run.' }
             Mock Enable-PackageUpdatedModuleVersion { throw 'Activation must not run.' }
 
             $result = Update-PackageVersion
 
-            $result | Should -Be 'No newer version was found. Installed version: 2.0.0.'
+            $result | Should -BeNullOrEmpty
+            Assert-MockCalled Write-StandardMessage -Times 1 -Exactly -ParameterFilter {
+                $Message -eq 'No newer version was found. Installed version: 1.20264.10744 (built 2026-07-22 03:20:32 UTC).' -and
+                $Level -eq 'INF'
+            }
             Assert-MockCalled Initialize-ProxyAccessProfile -Times 1 -Exactly -ParameterFilter {
                 $TestUri.AbsoluteUri -eq 'https://www.powershellgallery.com/api/v2/' -and $SuppressStatus
             }
@@ -65,6 +77,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module
         InModuleScope 'Eigenverft.Manifested.Package' {
             $script:versionStateCallCount = 0
             Mock Initialize-ProxyAccessProfile { }
+            Mock Write-StandardMessage { }
             Mock Get-PackageModuleVersionState {
                 $script:versionStateCallCount++
                 if ($script:versionStateCallCount -eq 1) {
@@ -100,7 +113,11 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module
 
             $result = Update-PackageVersion -Scope CurrentUser -Confirm:$false
 
-            $result | Should -Be 'Eigenverft.Manifested.Package was updated from 1.0.0 to 2.0.0. The new version is active for subsequent commands in this session.'
+            $result | Should -BeNullOrEmpty
+            Assert-MockCalled Write-StandardMessage -Times 1 -Exactly -ParameterFilter {
+                $Message -eq 'Eigenverft.Manifested.Package was updated from 1.0.0 to 2.0.0. The new version is active for subsequent commands in this session.' -and
+                $Level -eq 'INF'
+            }
             Assert-MockCalled Install-Module -Times 1 -Exactly -ParameterFilter {
                 $Name -eq 'Eigenverft.Manifested.Package' -and
                 $Repository -eq 'PSGallery' -and
@@ -121,6 +138,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module
         InModuleScope 'Eigenverft.Manifested.Package' {
             $script:versionStateCallCount = 0
             Mock Initialize-ProxyAccessProfile { }
+            Mock Write-StandardMessage { }
             Mock Get-PackageModuleVersionState {
                 $script:versionStateCallCount++
                 if ($script:versionStateCallCount -eq 1) {
@@ -152,7 +170,11 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module
 
             $result = Update-PackageVersion -Confirm:$false
 
-            $result | Should -Be 'Eigenverft.Manifested.Package was updated from 1.5.0 to 2.0.0. This session is still using 1.0.0. Open a new PowerShell session to activate the update.'
+            $result | Should -BeNullOrEmpty
+            Assert-MockCalled Write-StandardMessage -Times 1 -Exactly -ParameterFilter {
+                $Message -eq 'Eigenverft.Manifested.Package was updated from 1.5.0 to 2.0.0. This session is still using 1.0.0. Open a new PowerShell session to activate the update.' -and
+                $Level -eq 'INF'
+            }
         }
     }
 
@@ -160,6 +182,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module
         InModuleScope 'Eigenverft.Manifested.Package' {
             $script:proxySawWhatIf = $null
             Mock Initialize-ProxyAccessProfile { $script:proxySawWhatIf = [bool]$WhatIfPreference }
+            Mock Write-StandardMessage { }
             Mock Get-PackageModuleVersionState {
                 [pscustomobject]@{
                     ExecutingVersion       = [version]'1.0.0'
@@ -176,7 +199,11 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module
 
             $result = Update-PackageVersion -WhatIf
 
-            $result | Should -Be 'A newer version was found. Installed version: 1.0.0. Available version: 2.0.0. No installation was performed.'
+            $result | Should -BeNullOrEmpty
+            Assert-MockCalled Write-StandardMessage -Times 1 -Exactly -ParameterFilter {
+                $Message -eq 'A newer version was found. Installed version: 1.0.0. Available version: 2.0.0. No installation was performed.' -and
+                $Level -eq 'INF'
+            }
             $script:proxySawWhatIf | Should -BeFalse
             Assert-MockCalled Find-Module -Times 1 -Exactly
             Assert-MockCalled Install-Module -Times 0 -Exactly
