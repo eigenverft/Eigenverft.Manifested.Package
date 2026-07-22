@@ -6,6 +6,21 @@
     Source: src/wrk/Eigenverft.Manifested.Package/Copy-ResilientDirectoryTree .ps1
 #>
 
+function Get-ResilientCopyRemainingBytes {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)] [long] $TotalBytes,
+        [Parameter(Mandatory)] [long] $ProcessedBytes
+    )
+
+    $remainingBytes = $TotalBytes - $ProcessedBytes
+    if ($remainingBytes -lt 0L) {
+        return 0L
+    }
+
+    return [long]$remainingBytes
+}
+
 function Copy-ResilientDirectoryTree {
     <#
     .SYNOPSIS
@@ -716,7 +731,7 @@ function Copy-ResilientDirectoryTree {
                 else {
                     0
                 }
-                $remainingBytes = [Math]::Max(0, $sourceInfo.Length - $processedBytes)
+                $remainingBytes = Get-ResilientCopyRemainingBytes -TotalBytes $sourceInfo.Length -ProcessedBytes $processedBytes
                 $eta = if ($averageBytesPerSecond -gt 0) {
                     [TimeSpan]::FromSeconds($remainingBytes / $averageBytesPerSecond)
                 }
