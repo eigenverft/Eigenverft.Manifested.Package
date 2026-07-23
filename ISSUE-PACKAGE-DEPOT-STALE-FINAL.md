@@ -318,6 +318,100 @@ For `QuarantineAndReplace`:
 
 A same-directory move is important because it avoids copying invalid bytes and provides post-incident evidence. Automatic deletion should be a separate retention policy.
 
+### Why direct delete-and-copy is not a safe default
+
+It is technically possible to handle every mismatch as:
+
+```text
+remove final
+move verified partial to final
+```
+
+For the reported incident this would probably have made materialization complete, but it would also have hidden the catalog defect: the older final was valid for an earlier signed definition revision, while the newer signed revision assigned different bytes to the same `release.version`. Automatically replacing it would silently mutate an allegedly immutable release instead of exposing the authoring error.
+
+A direct delete also has concrete transport side effects:
+
+1. **Time-of-check/time-of-use race:** the final can change after its hash was checked but before it is deleted. A matching peer may publish the correct file during that interval, and an unconditional delete would remove the peer winner.
+2. **Non-atomic missing-file window:** between delete and promotion, readers see no final. A clean-machine Bootstrap, another materialization, or an external synchronization product can observe and propagate that temporary deletion.
+3. **Crash exposure:** process loss after deletion but before promotion leaves no final even though the previous bytes, however invalid for the current definition, were still available for diagnosis or rollback.
+4. **Different-content writer race:** two writers with different verified sources could repeatedly remove and replace each other's final. The current no-clobber rule deliberately guarantees that one complete winner remains stable.
+5. **SMB permissions and leases:** a share may allow file creation and writing but deny delete or rename. Open readers, antivirus, indexing, sync clients, or SMB leases may block replacement even though partial creation succeeded.
+6. **Evidence loss:** deleting the old final discards its hash, timestamp, attributes, and exact bytes, which are precisely what distinguish corruption from a catalog mutation.
+7. **Generic-path risk:** `Copy-ResilientDirectoryTree` is a reusable filesystem transport. It cannot assume that every destination is a package-owned immutable artifact path and must not gain a broad implicit delete-on-mismatch behavior.
+8. **Metadata changes:** the replacement file normally inherits current directory ACLs and loses destination-specific metadata such as custom ACLs, alternate streams, or attributes unless these are intentionally preserved.
+
+Therefore the generic transport default should remain `Fail`/no-clobber.
+
+### Recommended package-depot policy matrix
+
+The package layer can make a more informed decision because it knows the trusted definition, computed immutable target path, authored hash, and verified staging source.
+
+```text
+Final state                         Default package action
+----------------------------------  --------------------------------------------
+Missing                             Normal no-overwrite promotion
+Exact authored hash                 Accept as AlreadyPresent and clean partials
+Unreadable or transiently locked    Retry/recheck; do not mutate
+Different length                    QuarantineAndReplaceCorrupt may auto-repair
+Equal length, different SHA-256     ContentConflict; fail unless explicitly enabled
+Hash matches another known release  AuthoredContentConflict; fail hard by default
+```
+
+A useful policy surface would be more precise than a single boolean:
+
+```text
+InvalidFinalPolicy = Fail | RepairCorrupt | QuarantineAndReplaceAny
+```
+
+- `Fail` preserves the current behavior.
+- `RepairCorrupt` automatically handles clearly damaged/truncated files, initially limited to length mismatch or another strongly classified corruption state.
+- `QuarantineAndReplaceAny` also repairs equal-length hash conflicts, but should require an explicit operator/configuration choice because those conflicts can represent a same-version catalog mutation or wrong-version file, not random corruption.
+
+If the observed final hash is authored elsewhere in the currently loaded trusted catalog, classify it as `AuthoredContentConflict` and do not automatically replace it. This is a strong signal that valid bytes were placed under the wrong release identity. Historical definitions may contain further authored hashes that are no longer present in the current catalog, so absence of such a match is not proof of random corruption.
+
+### Safe replacement algorithm
+
+The repair operation should be implemented by a package-specific helper such as `Publish-VerifiedPackageDepotFile`, while continuing to use the resilient transport's writer-owned partial and exact SHA verification.
+
+1. Assert that the target is below a configured writable depot root and equals the path computed for the selected definition, release, target, and artifact file.
+2. Assert that the staging source SHA-256 equals the authored hash from the trusted signed definition. Do not authorize replacement from an unverified source merely because its own hash is internally consistent.
+3. Create or acquire a cooperative same-directory repair lock for this final/content identity. Other Package writers must honor it; external tools may not, so exact rechecks remain necessary.
+4. Re-read and hash the final after the repair lock is acquired.
+5. If it now matches, accept the peer result and stop.
+6. Classify the mismatch as corruption, content conflict, known authored conflict, or transient I/O state and apply the configured policy.
+7. Prefer an already complete, exclusively claimable same-content partial after checking its full SHA-256. Otherwise create and verify a new writer-owned partial.
+8. Move the differing final to a unique quarantine name in the same directory. Include at least old hash or `unknown`, UTC timestamp, and a random token in the name or structured result.
+9. Hash the quarantined file after the move. If it unexpectedly matches the desired source, a peer repaired the path during the race; restore or accept it rather than discarding it.
+10. Promote the verified partial with the existing no-overwrite move. If another writer publishes a matching final first, accept the peer winner.
+11. If promotion fails while no final exists, best-effort restore the quarantined file so the operation does not leave a longer outage than necessary.
+12. Verify the resulting final against the authored SHA-256.
+13. Return structured repair facts: classification, old/new hashes and lengths, quarantine path, repair-lock outcome, peer-winner state, restore attempt, and cleanup results.
+14. Delete quarantined files only through a separate retention/garbage-collection policy, never as part of the immediate repair transaction.
+
+### Atomic replacement options
+
+On Windows, `[System.IO.File]::Replace(partial, final, backup)` is an attractive implementation candidate because it replaces an existing destination and can create a backup in one filesystem operation. It must not be assumed to work uniformly on every UNC, NAS, or SMB backend; behavior, permissions, and filesystem support require local Windows, Windows file-server, and non-Windows SMB-server tests.
+
+The portable fallback is two same-directory renames:
+
+```text
+final -> unique quarantine
+verified partial -> final
+```
+
+Each rename is individually atomic on a normal same-filesystem path, but the pair is not one transaction. The implementation therefore needs peer rechecks and a rollback attempt. Plain `Remove-Item` followed by `Move` is inferior because it creates the same gap without preserving rollback evidence.
+
+### Self-reference implication
+
+For `EigenverftManifestedPackage`, repair logic is useful for genuine depot corruption, but it must not become the mechanism that makes same-version self-reference mutations appear valid. The stable sequence remains:
+
+1. publish a new module version and immutable Bootstrap reference;
+2. add that exact existing version as a new definition release;
+3. sign the new definition revision;
+4. materialize into a new versioned depot path.
+
+Automatic replacement is a recovery feature for invalid storage state. It is not a substitute for release-version immutability or catalog validation.
+
 ### Phase 2: complete orphan-partial adoption
 
 Before copying source bytes again, scan:
