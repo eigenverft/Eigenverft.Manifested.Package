@@ -367,7 +367,9 @@ FodyWeavers.xsd
 *[Kk][Ee][Yy]*
 /artifacts/**/*
 /reports/**/*
-AGENTS.md
-.agents/**/*
 .gemini/**/*
-AGENTS/**/*
+# Agent template overlay (source of truth: Eigenverft.Template.Agents)
+AGENTS.md
+AGENTS/
+.agents/**/*
+
