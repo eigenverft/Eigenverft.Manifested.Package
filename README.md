@@ -139,6 +139,8 @@ Invoke-Package -DefinitionId SevenZip -DesiredState Removed
 
 `Invoke-PackageDepotMaterialize` materializes every already signed-and-trusted definition available for the current platform, including its dependencies and complete artifact file set. Trusted scope is the default and normal execution does not prompt for confirmation; use `-WhatIf` to preview because a trusted catalog can include multi-gigabyte runtimes or models. The explicit `-AcceptUnknownSigningKey` switch additionally accepts signed root definitions whose key is not yet trusted; unsigned and blocked root definitions remain excluded, while dependency trust follows the existing package policy. The command never prunes depot files. Use `-PublisherId`, `-Tag`, or `-ExcludeDefinitionId` to narrow the run.
 
+> **Maintainer note — self-referential bootstrap:** `EigenverftManifestedPackage` intentionally materializes an already published `Eigenverft.Manifested.Package` module so a clean or offline machine can bootstrap the package engine itself. Publish the module version first, then add that exact existing version to the package definition and sign the new definition revision. A versioned release entry and its depot paths are immutable: never change artifact hashes or URLs under an existing `release.version`, and never use `refs/heads/main` for versioned Bootstrap artifacts; use an immutable tag or commit whose bytes match the authored hashes.
+
 ### 🤝 Team member — share or NAS
 
 Team onboarding is small: add a depot for package payloads, add an endpoint for signed package-definition JSON, then invoke the package.

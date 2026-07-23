@@ -6,6 +6,17 @@ This repository branch contains the package-depot diagnostics and a prepared rep
 
 The remaining operation must be performed on a machine that can use the `Eigenverft Package Catalog Signing` certificate/private key.
 
+### Self-reference constraint
+
+`EigenverftManifestedPackage` is intentionally self-referential: it packages the already published `Eigenverft.Manifested.Package` module together with its Bootstrap files and dependencies so a clean or disconnected machine can install the package engine itself. This is stable only when the catalog follows a strict two-phase order:
+
+1. publish the module and immutable Bootstrap tag first;
+2. verify that the published NUPKG and tagged Bootstrap bytes exist;
+3. add that exact version as a new definition release;
+4. sign the updated definition.
+
+The prepared repair therefore targets the already published stable version `1.20264.12503`. It does not reference an unbuilt workspace package and does not require the definition to bootstrap its own not-yet-existing release. Historical release entries remain immutable and are pinned to content-addressable Git references.
+
 ## Confirmed root cause
 
 Commit `eba7268` changed the Bootstrap PowerShell payload by adding `-DisableNameChecking` to an owned `Import-Module` call. The definition was updated from revision 12 to revision 13 and signed again, but the package release version remained `1.20264.5748`.
