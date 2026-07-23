@@ -390,6 +390,25 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - artifa
         Assert-MockCalled Get-FileHash -Times 0 -Exactly
     }
 
+    It 'reports source and target lengths for a depot size mismatch' {
+        $rootPath = Join-Path $TestDrive 'metadata-size-mismatch'
+        $sourcePath = Join-Path $rootPath 'source\payload.bin'
+        $targetPath = Join-Path $rootPath 'target\payload.bin'
+        Write-TestTextFile -Path $sourcePath -Content 'expected payload content'
+        Write-TestTextFile -Path $targetPath -Content 'stale'
+
+        $sourceItem = Get-Item -LiteralPath $sourcePath
+        $targetItem = Get-Item -LiteralPath $targetPath
+        $comparison = Test-PackageDepotDistributionFileMatches -SourcePath $sourcePath -TargetPath $targetPath
+
+        $comparison.Matches | Should -BeFalse
+        $comparison.Reason | Should -Be 'SizeMismatch'
+        $comparison.SourceLength | Should -Be $sourceItem.Length
+        $comparison.TargetLength | Should -Be $targetItem.Length
+        $comparison.SourceLastWriteTimeUtc | Should -Be $sourceItem.LastWriteTimeUtc
+        $comparison.TargetLastWriteTimeUtc | Should -Be $targetItem.LastWriteTimeUtc
+    }
+
     It 'reports one incomplete mirror while preserving a complete peer mirror' {
         $rootPath = Join-Path $TestDrive 'soft-mirror-fail-distribute'
         $setupSource = Join-Path $rootPath 'sources\setup.exe'

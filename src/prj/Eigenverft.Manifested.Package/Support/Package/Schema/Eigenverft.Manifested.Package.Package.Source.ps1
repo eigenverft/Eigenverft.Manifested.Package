@@ -706,9 +706,14 @@ function Test-PackageDepotDistributionFileMatches {
     )
 
     if (-not (Test-Path -LiteralPath $TargetPath -PathType Leaf)) {
+        $sourceItem = Get-Item -LiteralPath $SourcePath -ErrorAction Stop
         return [pscustomobject]@{
-            Matches = $false
-            Reason  = 'Missing'
+            Matches                = $false
+            Reason                 = 'Missing'
+            SourceLength           = [long]$sourceItem.Length
+            TargetLength           = $null
+            SourceLastWriteTimeUtc = $sourceItem.LastWriteTimeUtc
+            TargetLastWriteTimeUtc = $null
         }
     }
 
@@ -716,21 +721,33 @@ function Test-PackageDepotDistributionFileMatches {
     $targetItem = Get-Item -LiteralPath $TargetPath -ErrorAction Stop
     if ($sourceItem.Length -ne $targetItem.Length) {
         return [pscustomobject]@{
-            Matches = $false
-            Reason  = 'SizeMismatch'
+            Matches                = $false
+            Reason                 = 'SizeMismatch'
+            SourceLength           = [long]$sourceItem.Length
+            TargetLength           = [long]$targetItem.Length
+            SourceLastWriteTimeUtc = $sourceItem.LastWriteTimeUtc
+            TargetLastWriteTimeUtc = $targetItem.LastWriteTimeUtc
         }
     }
 
     if ($sourceItem.LastWriteTimeUtc -ne $targetItem.LastWriteTimeUtc) {
         return [pscustomobject]@{
-            Matches = $false
-            Reason  = 'LastWriteTimeMismatch'
+            Matches                = $false
+            Reason                 = 'LastWriteTimeMismatch'
+            SourceLength           = [long]$sourceItem.Length
+            TargetLength           = [long]$targetItem.Length
+            SourceLastWriteTimeUtc = $sourceItem.LastWriteTimeUtc
+            TargetLastWriteTimeUtc = $targetItem.LastWriteTimeUtc
         }
     }
 
     return [pscustomobject]@{
-        Matches = $true
-        Reason  = 'AlreadyCurrent'
+        Matches                = $true
+        Reason                 = 'AlreadyCurrent'
+        SourceLength           = [long]$sourceItem.Length
+        TargetLength           = [long]$targetItem.Length
+        SourceLastWriteTimeUtc = $sourceItem.LastWriteTimeUtc
+        TargetLastWriteTimeUtc = $targetItem.LastWriteTimeUtc
     }
 }
 
@@ -1238,6 +1255,8 @@ function New-PackageDepotFileSetDistributionPlan {
             $reason = 'NotCompared'
             $errorMessage = $targetSetupError
             $initiallyCurrent = $false
+            $comparison = $null
+            $comparisonError = $null
             if (-not [string]::IsNullOrWhiteSpace($targetSetupError)) {
                 $status = 'Failed'
                 $reason = 'TransportUnavailable'
@@ -1264,25 +1283,36 @@ function New-PackageDepotFileSetDistributionPlan {
                     }
                     catch {
                         $reason = 'ComparisonDeferred'
+                        $comparisonError = [pscustomobject]@{
+                            ErrorType = $_.Exception.GetType().FullName
+                            HResult   = $_.Exception.HResult
+                            Message   = $_.Exception.Message
+                        }
                     }
                 }
             }
 
             $action = [pscustomobject]@{
-                FileId          = [string]$file.FileId
-                ArtifactFileId  = if ($file.PSObject.Properties['ArtifactFileId']) { [string]$file.ArtifactFileId } else { $null }
-                FileName        = if ($file.PSObject.Properties['FileName']) { [string]$file.FileName } else { Split-Path -Leaf ([string]$file.RelativePath) }
-                RelativePath    = [string]$file.RelativePath
-                DepotId         = [string]$target.id
-                TransportKind   = $transportKind
-                SourcePath      = $sourcePath
-                TargetPath      = $targetPath
-                Action          = if ($status -eq 'Skipped') { 'Skip' } else { 'Publish' }
-                Status          = $status
-                Reason          = $reason
-                InitiallyCurrent = $initiallyCurrent
-                EnsureExists    = [bool]$target.ensureExists
-                ErrorMessage    = $errorMessage
+                FileId                      = [string]$file.FileId
+                ArtifactFileId              = if ($file.PSObject.Properties['ArtifactFileId']) { [string]$file.ArtifactFileId } else { $null }
+                FileName                    = if ($file.PSObject.Properties['FileName']) { [string]$file.FileName } else { Split-Path -Leaf ([string]$file.RelativePath) }
+                RelativePath                = [string]$file.RelativePath
+                DepotId                     = [string]$target.id
+                TransportKind               = $transportKind
+                SourcePath                  = $sourcePath
+                TargetPath                  = $targetPath
+                Action                      = if ($status -eq 'Skipped') { 'Skip' } else { 'Publish' }
+                Status                      = $status
+                Reason                      = $reason
+                InitiallyCurrent            = $initiallyCurrent
+                EnsureExists                = [bool]$target.ensureExists
+                InitialComparisonMode       = 'LengthAndLastWriteTime'
+                InitialComparisonHashStatus = 'NotComputedMetadataPrecheck'
+                InitialComparison           = $comparison
+                InitialComparisonError      = $comparisonError
+                FinalComparison             = $null
+                TransportResult             = $null
+                ErrorMessage                = $errorMessage
             }
             $actions.Add($action) | Out-Null
             $targetActions.Add($action) | Out-Null
@@ -1415,6 +1445,7 @@ function Invoke-PackageDepotFileSetDistribution {
 
             try {
                 $comparison = Test-PackageDepotDistributionFileMatches -SourcePath ([string]$action.SourcePath) -TargetPath ([string]$action.TargetPath)
+                $action.FinalComparison = $comparison
                 if (-not $comparison.Matches) {
                     $action.Status = 'Failed'
                     $action.Reason = [string]$comparison.Reason
@@ -1426,7 +1457,17 @@ function Invoke-PackageDepotFileSetDistribution {
                             'Depot distribution is disabled by policy and the mirror file is not current.'
                         }
                         else {
-                            "Mirror verification failed with '$($comparison.Reason)'."
+                            switch ([string]$comparison.Reason) {
+                                'SizeMismatch' {
+                                    "Mirror verification failed with 'SizeMismatch': source length '$($comparison.SourceLength)' bytes, target length '$($comparison.TargetLength)' bytes."
+                                }
+                                'LastWriteTimeMismatch' {
+                                    "Mirror verification failed with 'LastWriteTimeMismatch': source UTC '$($comparison.SourceLastWriteTimeUtc.ToString('o'))', target UTC '$($comparison.TargetLastWriteTimeUtc.ToString('o'))'."
+                                }
+                                default {
+                                    "Mirror verification failed with '$($comparison.Reason)'."
+                                }
+                            }
                         }
                     }
                     continue
@@ -1438,6 +1479,7 @@ function Invoke-PackageDepotFileSetDistribution {
                         }) | Select-Object -Last 1
                 }
                 else { $null }
+                $action.TransportResult = $fileResult
                 if ($action.InitiallyCurrent) {
                     $action.Status = 'Skipped'
                     if ([string]::IsNullOrWhiteSpace([string]$action.Reason)) { $action.Reason = 'AlreadyCurrent' }
