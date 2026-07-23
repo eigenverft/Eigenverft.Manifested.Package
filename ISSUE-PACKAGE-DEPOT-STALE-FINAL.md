@@ -2,14 +2,11 @@
 
 ## Status
 
-The signed JSON definition is valid, and its authored SHA-256 `da40bff7...` correctly identifies the LF byte form of the Bootstrap script. However, byte canonicalization is now directly implicated: the repository index stores LF while a Windows checkout with `core.autocrlf=true` produces CRLF bytes with SHA-256 `5e15297b...`.
+The strongest current cause is not a failed or empty SHA comparison. Commit `eba7268` changed the Bootstrap PowerShell payload and re-signed the definition from revision 12 to revision 13, but kept release version `1.20264.5748`. The authored Bootstrap SHA-256 for that same release path changed from `f89ecd624ee437b37dbb9b99d9a8e23ab9e830d3c6473bc1f52d95a2327b04e3` to `da40bff7b27a56a74ac7ddc340b21032604399cfbcde12119cec02cfbe6e1b3e`.
 
-The transport behavior remains narrowed to two distinguishable states:
+The release also references the mutable URL `refs/heads/main`. Therefore the versioned depot path `stable/1.20264.5748/.../Eigenverft.Manifested.Package.Bootstrap.ps1` has represented more than one valid signed byte sequence over time. That violates the immutable-path assumption used by the no-clobber transport and directly explains a new verified partial beside an older final under the same version.
 
-1. the team-share final differed from the verified LF source during the run, including the newly identified possibility that the final contains the CRLF checkout form, so no-clobber promotion retained a verified partial; or
-2. the team-share final was already byte-identical and an older peer partial could not be cleaned on SMB.
-
-A read-only root diagnostic is available to prove which state exists on the affected machine and now reports whether a mismatch disappears after CR/LF normalization. Logging improvements for exact final-file mismatches and peer-partial cleanup are implemented locally.
+LF/CRLF canonicalization remains a separate hardening concern, but the Notepad++ comparison shows LF on both inspected files and makes it less likely to be the primary cause of this incident. A read-only root diagnostic remains available to compare exact hashes and cleanup state.
 
 ## Corrected observed sequence
 
@@ -29,11 +26,13 @@ da40bff7b27a56a74ac7ddc340b21032604399cfbcde12119cec02cfbe6e1b3e
 
 The content-identity component visible in the partial filename is derived from that source hash. It therefore identifies a writer attempt for exactly this Bootstrap artifact, not an unrelated file.
 
-### Signed definition versus checkout byte canonicalization
+### Same release version, changed signed auxiliary payload
 
-The definition is accepted as signed and trusted, and its `da40bff7...` hash matches the LF form committed to Git and served by the raw source. No JSON edit or catalog re-signing is required. What is not ruled out is a Windows checkout publishing the CRLF form (`5e15297b...`) to a depot path that is later compared against the verified LF artifact.
+The definition itself is accepted as signed and trusted. The problem is that definition revision and release version are currently independent. Revision 12 and revision 13 both contain release `1.20264.5748`, while the `bootstrapPowerShell` hash changed. The package `.nupkg` hash remained the same, but the complete authored artifact set for that release did not.
 
-The definition is accepted as signed and trusted, and materialization reaches a verified staged source. No JSON edit or catalog re-signing is required for this incident.
+Because `bootstrapPowerShell.url` points to `refs/heads/main`, the source location is mutable as well. A versioned depot must not depend on a mutable branch URL unless the release version or depot identity changes whenever the referenced bytes change.
+
+LF/CRLF canonicalization remains worthwhile hardening for signed text payloads, but it is now secondary to the proven same-version mutation. No signing secret is needed to diagnose this incident; the signed revision history already proves it.
 
 ### Failure to write the local depot
 
