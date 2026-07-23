@@ -2,6 +2,7 @@
 
 ## Status
 
+**Resolved (2026-07-23):** Catalog repaired to definitionRevision 14 with new immutable release `1.20264.12503` and historical releases pinned to original Bootstrap hash `f89ecd…`. Root cause was same-version mutation under `1.20264.5748`. Local materialize of `1.20264.12503` succeeded.
 The strongest current cause is not a failed or empty SHA comparison. Commit `eba7268` changed the Bootstrap PowerShell payload and re-signed the definition from revision 12 to revision 13, but kept release version `1.20264.5748`. The authored Bootstrap SHA-256 for that same release path changed from `f89ecd624ee437b37dbb9b99d9a8e23ab9e830d3c6473bc1f52d95a2327b04e3` to `da40bff7b27a56a74ac7ddc340b21032604399cfbcde12119cec02cfbe6e1b3e`.
 
 The release also references the mutable URL `refs/heads/main`. Therefore the versioned depot path `stable/1.20264.5748/.../Eigenverft.Manifested.Package.Bootstrap.ps1` has represented more than one valid signed byte sequence over time. That violates the immutable-path assumption used by the no-clobber transport and directly explains a new verified partial beside an older final under the same version.
