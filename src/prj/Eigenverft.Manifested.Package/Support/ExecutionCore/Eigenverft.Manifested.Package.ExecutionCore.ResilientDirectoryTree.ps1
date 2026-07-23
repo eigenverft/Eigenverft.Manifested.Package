@@ -553,6 +553,9 @@ function Copy-ResilientDirectoryTree {
         # Promotion and peer reconciliation always use exact content identity. PartialIdentityMode only controls
         # how the resumable partial name is derived; it must not weaken the final publish decision.
         $sourceHash = GetCopySourceHash -SourcePath $sourceInfo.FullName -ChunkSizeBytes $ChunkSizeBytes
+        if ([string]::IsNullOrWhiteSpace($sourceHash) -or $sourceHash -notmatch '^[0-9a-f]{64}$') {
+            throw "Unable to calculate a valid SHA-256 for source '$($sourceInfo.FullName)'. Observed value: '$sourceHash'."
+        }
  
         $writerToken = if ([string]::IsNullOrWhiteSpace($WriterToken)) {
             [guid]::NewGuid().ToString('N')
@@ -563,6 +566,8 @@ function Copy-ResilientDirectoryTree {
         $peerAlreadyPresent = $false
         $partialVerified = $false
         $redundantPartialsRemoved = 0
+        $redundantPartialsSkipped = 0
+        $redundantPartialCleanupErrors = @()
 
         $partialPath = GetCopyPartialPath `
             -SourcePath $sourceInfo.FullName `
@@ -587,16 +592,19 @@ function Copy-ResilientDirectoryTree {
         }
 
         $removeRedundantPeerPartials = {
-            $removedCount = 0
+            $cleanupResult = [ordered]@{
+                Attempted = 0
+                Removed   = 0
+                Skipped   = 0
+                Errors    = @()
+            }
             $peerPartials = @(Get-ChildItem -LiteralPath $destinationDirectory -File -Filter ($partialLeafPrefix + '*') -ErrorAction SilentlyContinue)
             foreach ($peerPartial in $peerPartials) {
                 if ([string]::Equals($peerPartial.FullName, $partialPath, [System.StringComparison]::OrdinalIgnoreCase)) {
                     continue
                 }
 
-                # DeleteOnClose while holding an exclusive handle makes cleanup conditional on the partial not
-                # being used by another cooperative writer. Sharing/access failures mean "active or unavailable"
-                # and are deliberately ignored. Only this destination leaf and content identity are considered.
+                $cleanupResult.Attempted++
                 $cleanupStream = $null
                 try {
                     $cleanupStream = [System.IO.FileStream]::new(
@@ -610,14 +618,38 @@ function Copy-ResilientDirectoryTree {
                     $cleanupStream.Dispose()
                     $cleanupStream = $null
                     if (-not [System.IO.File]::Exists($peerPartial.FullName)) {
-                        $removedCount++
+                        $cleanupResult.Removed++
+                    }
+                    else {
+                        $cleanupResult.Skipped++
+                        $cleanupResult.Errors += [pscustomobject]@{
+                            Path      = $peerPartial.FullName
+                            ErrorType = 'DeleteOnCloseDidNotRemove'
+                            HResult   = $null
+                            Message   = 'The exclusive DeleteOnClose handle closed, but the partial still exists.'
+                        }
+                        Write-Warning "Redundant partial cleanup did not remove '$($peerPartial.FullName)' although an exclusive DeleteOnClose handle was acquired."
                     }
                 }
                 catch [System.IO.IOException] {
-                    # A live peer normally holds the partial without delete sharing. It owns that partial.
+                    $cleanupResult.Skipped++
+                    $cleanupResult.Errors += [pscustomobject]@{
+                        Path      = $peerPartial.FullName
+                        ErrorType = $_.Exception.GetType().FullName
+                        HResult   = $_.Exception.HResult
+                        Message   = $_.Exception.Message
+                    }
+                    Write-Warning "Redundant partial cleanup skipped '$($peerPartial.FullName)' because an exclusive claim failed with '$($_.Exception.GetType().FullName)' (HResult $($_.Exception.HResult)): '$($_.Exception.Message)'. The partial may be owned by another writer or blocked by the filesystem/share."
                 }
                 catch [System.UnauthorizedAccessException] {
-                    # Read-only or share policy prevented a safe exclusive claim; leave the partial untouched.
+                    $cleanupResult.Skipped++
+                    $cleanupResult.Errors += [pscustomobject]@{
+                        Path      = $peerPartial.FullName
+                        ErrorType = $_.Exception.GetType().FullName
+                        HResult   = $_.Exception.HResult
+                        Message   = $_.Exception.Message
+                    }
+                    Write-Warning "Redundant partial cleanup skipped '$($peerPartial.FullName)' because access was denied with HResult $($_.Exception.HResult): '$($_.Exception.Message)'."
                 }
                 finally {
                     if ($cleanupStream) {
@@ -625,30 +657,64 @@ function Copy-ResilientDirectoryTree {
                     }
                 }
             }
-            return $removedCount
+            return [pscustomobject]$cleanupResult
         }
 
         $testFinalDestination = {
             if (-not [System.IO.File]::Exists($destinationFullPath)) {
-                return [pscustomobject]@{ Exists = $false; Matches = $false; Hash = $null }
+                return [pscustomobject]@{
+                    Exists           = $false
+                    Matches          = $false
+                    Hash             = $null
+                    HashStatus       = 'NotApplicable'
+                    Length           = $null
+                    ExpectedLength   = [long]$sourceInfo.Length
+                    LastWriteTimeUtc = $null
+                    Attributes       = $null
+                }
             }
 
             $existingDestination = Get-Item -LiteralPath $destinationFullPath -ErrorAction Stop
             $existingHash = $null
+            $hashStatus = 'NotComputedLengthMismatch'
             $destinationMatches = $false
             if ($existingDestination.Length -eq $sourceInfo.Length) {
                 $existingHash = GetCopySourceHash -SourcePath $destinationFullPath -ChunkSizeBytes $ChunkSizeBytes
+                if ([string]::IsNullOrWhiteSpace($existingHash) -or $existingHash -notmatch '^[0-9a-f]{64}$') {
+                    throw "Unable to calculate a valid SHA-256 for existing destination '$destinationFullPath'. Observed value: '$existingHash'."
+                }
+                $hashStatus = 'Computed'
                 $destinationMatches = ($existingHash -eq $sourceHash)
             }
 
             return [pscustomobject]@{
-                Exists  = $true
-                Matches = $destinationMatches
-                Hash    = $existingHash
+                Exists           = $true
+                Matches          = $destinationMatches
+                Hash             = $existingHash
+                HashStatus       = $hashStatus
+                Length           = [long]$existingDestination.Length
+                ExpectedLength   = [long]$sourceInfo.Length
+                LastWriteTimeUtc = $existingDestination.LastWriteTimeUtc
+                Attributes       = [string]$existingDestination.Attributes
             }
         }
 
         $initialDestination = & $testFinalDestination
+        if ($initialDestination.Exists -and -not $initialDestination.Matches) {
+            $initialHashDisplay = if ($initialDestination.HashStatus -eq 'Computed') { $initialDestination.Hash } else { '<not computed>' }
+            Write-Warning ("Exact destination verification selected a copy for '{0}'. Source SHA-256 '{1}', source length '{2}', source UTC '{3:o}'; final hash status '{4}', final SHA-256 '{5}', final length '{6}', final UTC '{7}', attributes '{8}'. Writer token '{9}', partial path '{10}'." -f
+                $destinationFullPath,
+                $sourceHash,
+                $sourceInfo.Length,
+                $sourceInfo.LastWriteTimeUtc,
+                $initialDestination.HashStatus,
+                $initialHashDisplay,
+                $initialDestination.Length,
+                $initialDestination.LastWriteTimeUtc,
+                $initialDestination.Attributes,
+                $writerToken,
+                $partialPath)
+        }
         if ($initialDestination.Matches) {
             $verifiedSourceInfo = Get-Item -LiteralPath $sourceInfo.FullName -ErrorAction Stop
             $verifiedSourceHash = GetCopySourceHash -SourcePath $sourceInfo.FullName -ChunkSizeBytes $ChunkSizeBytes
@@ -658,7 +724,10 @@ function Copy-ResilientDirectoryTree {
                 throw "Source changed while verifying the existing final destination: $($sourceInfo.FullName)"
             }
             & $removeOwnedPartial
-            $redundantPartialsRemoved = & $removeRedundantPeerPartials
+            $cleanupResult = & $removeRedundantPeerPartials
+            $redundantPartialsRemoved = [int]$cleanupResult.Removed
+            $redundantPartialsSkipped = [int]$cleanupResult.Skipped
+            $redundantPartialCleanupErrors = @($cleanupResult.Errors)
             return [pscustomobject]@{
                 SourcePath               = $sourceInfo.FullName
                 DestinationPath          = $destinationFullPath
@@ -679,6 +748,10 @@ function Copy-ResilientDirectoryTree {
                 Outcome                  = 'AlreadyPresent'
                 PartialVerified          = $false
                 RedundantPartialsRemoved = $redundantPartialsRemoved
+                RedundantPartialsSkipped = $redundantPartialsSkipped
+                RedundantPartialCleanupErrors = @($redundantPartialCleanupErrors)
+                SourceHash               = $sourceHash
+                InitialDestination       = $initialDestination
                 WriterToken              = $writerToken
             }
         }
@@ -868,13 +941,21 @@ function Copy-ResilientDirectoryTree {
                 $destinationAfterPromote = & $testFinalDestination
                 if (-not $destinationAfterPromote.Matches) {
                     $observedState = if ($destinationAfterPromote.Exists) {
-                        "existing final SHA-256 '$($destinationAfterPromote.Hash)' does not match source '$sourceHash'"
+                        if ($destinationAfterPromote.HashStatus -eq 'NotComputedLengthMismatch') {
+                            "existing final length '$($destinationAfterPromote.Length)' bytes differs from source length '$($destinationAfterPromote.ExpectedLength)' bytes; SHA-256 was not computed"
+                        }
+                        else {
+                            "existing final SHA-256 '$($destinationAfterPromote.Hash)' does not match source '$sourceHash' at equal length '$($destinationAfterPromote.Length)' bytes"
+                        }
                     }
                     else {
                         'no final destination exists'
                     }
+                    $promoteErrorType = $promoteError.GetType().FullName
+                    $promoteErrorMessage = $promoteError.Message
+                    $promoteErrorHResult = $promoteError.HResult
                     throw [System.IO.IOException]::new(
-                        "Writer-owned partial promotion failed and $observedState. Partial retained: '$partialPath'.",
+                        "Writer-owned partial promotion failed: $observedState. File.Move error '$promoteErrorType' (HResult $promoteErrorHResult): '$promoteErrorMessage'. Destination: '$destinationFullPath'. Partial retained: '$partialPath'.",
                         $promoteError
                     )
                 }
@@ -891,32 +972,39 @@ function Copy-ResilientDirectoryTree {
             if (-not $verifiedDestination.Matches) {
                 throw "Final destination failed SHA-256 verification after promotion: $destinationFullPath"
             }
-            $redundantPartialsRemoved = & $removeRedundantPeerPartials
+            $cleanupResult = & $removeRedundantPeerPartials
+            $redundantPartialsRemoved = [int]$cleanupResult.Removed
+            $redundantPartialsSkipped = [int]$cleanupResult.Skipped
+            $redundantPartialCleanupErrors = @($cleanupResult.Errors)
             Write-Progress -Id $ProgressId -Activity "Copying $($sourceInfo.Name)" -Completed
         }
    
         $elapsedSeconds = $stopwatch.Elapsed.TotalSeconds
         [pscustomobject]@{
-            SourcePath              = $sourceInfo.FullName
-            DestinationPath         = $destinationFullPath
-            PartialPath             = $partialPath
-            TotalBytes               = $sourceInfo.Length
-            ResumedBytes             = $resumedBytes
-            BytesTransferred         = $transferredBytes
-            Elapsed                  = $stopwatch.Elapsed
-            ElapsedSeconds           = $elapsedSeconds
-            AverageBytesPerSecond    = if ($elapsedSeconds -gt 0) { $transferredBytes / $elapsedSeconds } else { 0 }
-            TargetBytesPerSecond     = $TargetBytesPerSecond
-            PartialIdentityMode      = $PartialIdentityMode
-            FlushPolicy              = $FlushPolicy
-            ResumeValidation         = $resumeValidation
-            WasResumed                = $resumedBytes -gt 0
-            Completed                 = $copyCompleted
-            PeerAlreadyPresent        = $peerAlreadyPresent
-            Outcome                   = if ($peerAlreadyPresent) { 'PeerWon' } else { 'Copied' }
-            PartialVerified           = $partialVerified
-            RedundantPartialsRemoved  = $redundantPartialsRemoved
-            WriterToken               = $writerToken
+            SourcePath                   = $sourceInfo.FullName
+            DestinationPath              = $destinationFullPath
+            PartialPath                  = $partialPath
+            TotalBytes                   = $sourceInfo.Length
+            ResumedBytes                 = $resumedBytes
+            BytesTransferred             = $transferredBytes
+            Elapsed                      = $stopwatch.Elapsed
+            ElapsedSeconds               = $elapsedSeconds
+            AverageBytesPerSecond        = if ($elapsedSeconds -gt 0) { $transferredBytes / $elapsedSeconds } else { 0 }
+            TargetBytesPerSecond         = $TargetBytesPerSecond
+            PartialIdentityMode          = $PartialIdentityMode
+            FlushPolicy                  = $FlushPolicy
+            ResumeValidation             = $resumeValidation
+            WasResumed                   = $resumedBytes -gt 0
+            Completed                    = $copyCompleted
+            PeerAlreadyPresent           = $peerAlreadyPresent
+            Outcome                      = if ($peerAlreadyPresent) { 'PeerWon' } else { 'Copied' }
+            PartialVerified              = $partialVerified
+            RedundantPartialsRemoved     = $redundantPartialsRemoved
+            RedundantPartialsSkipped     = $redundantPartialsSkipped
+            RedundantPartialCleanupErrors = @($redundantPartialCleanupErrors)
+            SourceHash                   = $sourceHash
+            InitialDestination           = $initialDestination
+            WriterToken                  = $writerToken
         }
     }
    

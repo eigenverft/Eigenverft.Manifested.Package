@@ -1,0 +1,3 @@
+# Canonical package payload bytes: signed catalog hashes are computed from the LF forms.
+src/prj/Eigenverft.Manifested.Package/Bootstrap/Eigenverft.Manifested.Package.Bootstrap.ps1 text eol=lf
+src/prj/Eigenverft.Manifested.Package/Bootstrap/Eigenverft.Manifested.Package.Bootstrap.cmd text eol=lf

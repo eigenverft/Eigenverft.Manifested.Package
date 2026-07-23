@@ -240,7 +240,12 @@ Invoke-TestPackageDescribe -Name 'Copy-ResilientDirectoryTree concurrent writers
                 -PartialIdentityMode FullHash `
                 -OutputMode Both)
             $lockedSummary = @($lockedOutputs | Where-Object { $_.PSObject.Properties['OperationSummary'] -and $_.OperationSummary }) | Select-Object -Last 1
+            $lockedFileResult = @($lockedOutputs | Where-Object { $_.PSObject.Properties['Outcome'] }) | Select-Object -Last 1
             $lockedSummary.Succeeded | Should -BeTrue
+            $lockedFileResult.Outcome | Should -Be 'AlreadyPresent'
+            $lockedFileResult.RedundantPartialsSkipped | Should -Be 1
+            @($lockedFileResult.RedundantPartialCleanupErrors).Count | Should -Be 1
+            $lockedFileResult.RedundantPartialCleanupErrors[0].Path | Should -Be $stalePartialPath
             Test-Path -LiteralPath $stalePartialPath -PathType Leaf | Should -BeTrue -Because 'an active peer still owns its partial'
         }
         finally {
@@ -258,6 +263,8 @@ Invoke-TestPackageDescribe -Name 'Copy-ResilientDirectoryTree concurrent writers
         $cleanupSummary.Succeeded | Should -BeTrue
         $cleanupFileResult.Outcome | Should -Be 'AlreadyPresent'
         $cleanupSummary.RedundantPartialsRemoved | Should -Be 1
+        $cleanupFileResult.RedundantPartialsSkipped | Should -Be 0
+        @($cleanupFileResult.RedundantPartialCleanupErrors).Count | Should -Be 0
         Test-Path -LiteralPath $stalePartialPath | Should -BeFalse
     }
 
@@ -352,5 +359,40 @@ Invoke-TestPackageDescribe -Name 'Copy-ResilientDirectoryTree concurrent writers
         $result.FilesComparisonDeferred | Should -Be 1
         $result.Retries | Should -BeGreaterThan 0
         (Get-FileHash -LiteralPath $destinationFile -Algorithm SHA256).Hash | Should -Be (Get-FileHash -LiteralPath $sourceFile -Algorithm SHA256).Hash
+    }
+
+    It 'reports actual and expected lengths when a stale final blocks promotion' {
+        $workRoot = Join-Path $TestDrive ('resilient-stale-final-' + [guid]::NewGuid().ToString('N'))
+        $sourceRoot = Join-Path $workRoot 'source'
+        $destinationRoot = Join-Path $workRoot 'destination'
+        $null = New-Item -ItemType Directory -Path $sourceRoot, $destinationRoot -Force
+
+        $sourceFile = Join-Path $sourceRoot 'payload.bin'
+        $destinationFile = Join-Path $destinationRoot 'payload.bin'
+        New-ResilientCopyTestPayload -Path $sourceFile -SizeBytes (1024 * 1024)
+        [System.IO.File]::WriteAllBytes($destinationFile, (New-Object byte[] 64))
+
+        {
+            Copy-ResilientDirectoryTree -SourceDirectory $sourceRoot -DestinationDirectory $destinationRoot -ComparisonMode Length -RetryCount 1 -WaitSeconds 0 -FailFast
+        } | Should -Throw "*existing final length '64' bytes differs from source length '1048576' bytes; SHA-256 was not computed*File.Move error*Destination: '$destinationFile'*"
+    }
+
+    It 'reports computed non-empty SHA values when an equal-length final differs' {
+        $workRoot = Join-Path $TestDrive ('resilient-equal-length-final-' + [guid]::NewGuid().ToString('N'))
+        $sourceRoot = Join-Path $workRoot 'source'
+        $destinationRoot = Join-Path $workRoot 'destination'
+        $null = New-Item -ItemType Directory -Path $sourceRoot, $destinationRoot -Force
+
+        $sourceFile = Join-Path $sourceRoot 'payload.bin'
+        $destinationFile = Join-Path $destinationRoot 'payload.bin'
+        [System.IO.File]::WriteAllBytes($sourceFile, [byte[]](1..64))
+        [System.IO.File]::WriteAllBytes($destinationFile, [byte[]](65..128))
+        $sourceHash = (Get-FileHash -LiteralPath $sourceFile -Algorithm SHA256).Hash.ToLowerInvariant()
+        $destinationHash = (Get-FileHash -LiteralPath $destinationFile -Algorithm SHA256).Hash.ToLowerInvariant()
+        $sourceHash | Should -Not -Be $destinationHash
+
+        {
+            Copy-ResilientDirectoryTree -SourceDirectory $sourceRoot -DestinationDirectory $destinationRoot -SkipIfUnchanged:$false -RetryCount 1 -WaitSeconds 0 -FailFast
+        } | Should -Throw "*existing final SHA-256 '$destinationHash' does not match source '$sourceHash' at equal length '64' bytes*"
     }
 }
