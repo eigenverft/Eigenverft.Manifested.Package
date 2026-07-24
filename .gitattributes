@@ -1,3 +1,12 @@
-# Canonical package payload bytes: signed catalog hashes are computed from the LF forms.
-src/prj/Eigenverft.Manifested.Package/Bootstrap/Eigenverft.Manifested.Package.Bootstrap.ps1 text eol=lf
-src/prj/Eigenverft.Manifested.Package/Bootstrap/Eigenverft.Manifested.Package.Bootstrap.cmd text eol=lf
+# Normalize text files while preserving automatic binary detection.
+* text=auto
+
+# Keep C# language detection explicit.
+*.cs linguist-language=C#
+
+# Shared automation and agent support do not represent application code.
+.github/** linguist-vendored
+workflows/** linguist-vendored
+AGENTS.md linguist-vendored
+AGENTS/** linguist-vendored
+.agents/** linguist-vendored
