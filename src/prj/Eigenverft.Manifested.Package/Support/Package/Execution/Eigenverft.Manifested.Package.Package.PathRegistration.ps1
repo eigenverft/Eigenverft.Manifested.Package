@@ -258,8 +258,9 @@ Applies Package PATH registration for a validated install.
 .DESCRIPTION
 Updates process and persisted PATH scopes according to assigned.pathRegistration.
 User mode updates Process and User PATH. Machine mode updates Process and
-Machine PATH. None skips registration. Package only writes PATH entries
-for Package-owned outcomes and only cleans stale Package-owned paths
+Machine PATH. Writing User/Machine Path always resynchronizes Process Path via
+Sync-ProcessPathEnvironment. None skips registration. Package only writes PATH
+entries for Package-owned outcomes and only cleans stale Package-owned paths
 for the same install slot.
 #>
     [CmdletBinding()]
