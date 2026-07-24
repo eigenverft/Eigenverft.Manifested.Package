@@ -30,13 +30,13 @@ A depot stores **package payloads**. Package-definition JSON is discovered throu
 The default per-user depot is:
 
 ```text
-%LOCALAPPDATA%\Programs\Evf.Package\PkgDepot
+%LOCALAPPDATA%\Programs\Evf.Package\Depot
 ```
 
 Files are grouped by their definition-owned namespace, package, release track, version, and target. A typical path looks like:
 
 ```text
-PkgDepot\evf\GitRuntime\stable\2.55.0.3\64-bit\MinGit-2.55.0.3-64-bit.zip
+Depot\evf\GitRuntime\stable\2.55.0.3\64-bit\MinGit-2.55.0.3-64-bit.zip
 ```
 
 You normally do not create or rearrange these subfolders yourself. Package definitions provide the layout, and the engine verifies files before reuse.
@@ -64,7 +64,7 @@ Do nothing. The installed module already has a local depot. Package downloads a 
 Add a team depot on each Windows user profile that should use the share:
 
 ```powershell
-Add-TeamPackageDepot -BasePath '\\fileserver\packages\PkgDepot'
+Add-TeamPackageDepot -BasePath '\\fileserver\packages\Depot'
 ```
 
 This shortcut configures the share as both a readable source and a writable mirror target. Later materialization can fill it, and other configured machines can reuse it.
@@ -74,7 +74,7 @@ This shortcut configures the share as both a readable source and a writable mirr
 Use a normal depot entry without the writable switches:
 
 ```powershell
-Add-PackageDepot -DepotId preparedMedia -BasePath 'D:\PkgDepot'
+Add-PackageDepot -DepotId preparedMedia -BasePath 'D:\Depot'
 ```
 
 Package may read matching files from it but will not try to change it.

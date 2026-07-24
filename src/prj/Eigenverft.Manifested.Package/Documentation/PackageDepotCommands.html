@@ -57,7 +57,7 @@ These `Get` commands do not repair, download, copy, or delete anything.
 For the common writable team-share case, use the shortcut:
 
 ```powershell
-Add-TeamPackageDepot -BasePath '\\fileserver\packages\PkgDepot'
+Add-TeamPackageDepot -BasePath '\\fileserver\packages\Depot'
 ```
 
 It creates `teamPackageDepot` as a readable, writable mirror target and creates the root folder when needed. Give it another ID when one profile uses several shares:
@@ -65,7 +65,7 @@ It creates `teamPackageDepot` as a readable, writable mirror target and creates 
 ```powershell
 Add-TeamPackageDepot `
   -DepotId engineeringDepot `
-  -BasePath '\\fileserver\engineering\PkgDepot'
+  -BasePath '\\fileserver\engineering\Depot'
 ```
 
 Use `-WhatIf` first if you only want to see the configuration change.
@@ -77,7 +77,7 @@ Use `-WhatIf` first if you only want to see the configuration change.
 ```powershell
 Add-PackageDepot `
   -DepotId releaseMedia `
-  -BasePath 'E:\PkgDepot' `
+  -BasePath 'E:\Depot' `
   -SearchOrder 50
 ```
 
@@ -97,7 +97,7 @@ Move it or change when it is searched:
 ```powershell
 Set-PackageDepot `
   -DepotId engineeringDepot `
-  -BasePath '\\new-server\engineering\PkgDepot' `
+  -BasePath '\\new-server\engineering\Depot' `
   -SearchOrder 80
 ```
 

@@ -350,7 +350,7 @@ function global:New-TestDepotInventoryDocument {
         kind         = 'filesystem'
         enabled      = $true
         searchOrder  = 300
-        basePath     = if ($PSBoundParameters.ContainsKey('DefaultPackageDepotDirectory')) { $DefaultPackageDepotDirectory } else { '{applicationRootDirectory}/PkgDepot' }
+        basePath     = if ($PSBoundParameters.ContainsKey('DefaultPackageDepotDirectory')) { $DefaultPackageDepotDirectory } else { '{applicationRootDirectory}/Depot' }
     } -Writable $true -MirrorTarget $true -EnsureExists $true
     foreach ($key in @($EnvironmentSources.Keys)) {
         $sources[$key] = if ([string]::Equals([string]$EnvironmentSources[$key].kind, 'filesystem', [System.StringComparison]::OrdinalIgnoreCase)) {
@@ -1009,7 +1009,7 @@ function global:Write-TestPackageDocuments {
     $definitionPath = Join-Path (Join-Path $endpointDefinitionsRoot $definitionPublisherId) "$definitionWireId.json"
     Write-TestJsonDocument -Path $globalConfigPath -Document $GlobalDocument
     if (-not $PSBoundParameters.ContainsKey('DepotInventoryDocument') -or $null -eq $DepotInventoryDocument) {
-        $DepotInventoryDocument = New-TestDepotInventoryDocument -DefaultPackageDepotDirectory (Join-Path $RootPath 'PkgDepot')
+        $DepotInventoryDocument = New-TestDepotInventoryDocument -DefaultPackageDepotDirectory (Join-Path $RootPath 'Depot')
     }
     if (-not $PSBoundParameters.ContainsKey('EndpointInventoryDocument') -or $null -eq $EndpointInventoryDocument) {
         $EndpointInventoryDocument = @{

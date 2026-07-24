@@ -82,7 +82,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - artifa
         $result.ArtifactFiles[0].RelativePath | Should -Be 'installer\setup-2.0.0.exe'
         $result.ArtifactFiles[0].StagingPath | Should -Not -Be $result.ArtifactFiles[0].DefaultDepotPath
         $result.ArtifactFiles[0].StagingPath | Should -Match '[\\]FileStage[\\]ArtifactSet-[0-9a-f]{8}[\\]installer[\\]setup-2\.0\.0\.exe$'
-        $result.ArtifactFiles[0].DefaultDepotPath | Should -Match '[\\]PkgDepot[\\]default[\\]ArtifactSet[\\]stable[\\]2\.0\.0[\\]win32-x64[\\]installer[\\]setup-2\.0\.0\.exe$'
+        $result.ArtifactFiles[0].DefaultDepotPath | Should -Match '[\\]Depot[\\]default[\\]ArtifactSet[\\]stable[\\]2\.0\.0[\\]win32-x64[\\]installer[\\]setup-2\.0\.0\.exe$'
         $result.OperationArtifactFile.Id | Should -Be 'setup'
         $result.OperationArtifactFilePath | Should -Be $result.ArtifactFiles[0].StagingPath
         @($result.PSObject.Properties.Name) | Should -Contain 'ArtifactStagingDirectory'

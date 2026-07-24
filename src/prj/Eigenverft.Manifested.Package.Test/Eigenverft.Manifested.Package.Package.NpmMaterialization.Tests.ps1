@@ -241,7 +241,7 @@ exit 0
     It 'hydrates npm materialization from depot without invoking npm' {
         $rootPath = Join-Path $TestDrive 'npm-materialized-depot-hydration'
         $stageDirectory = Join-Path $rootPath 'FileStage\OpenCodeCli\npm-materialized'
-        $defaultDepotRoot = Join-Path $rootPath 'PkgDepot'
+        $defaultDepotRoot = Join-Path $rootPath 'Depot'
         $depotDirectory = Join-Path $defaultDepotRoot 'default\OpenCodeCli\stable\1.14.46\win32-x64'
         $rootTarball = Join-Path $depotDirectory 'opencode-ai-1.14.46.tgz'
         $platformTarball = Join-Path $depotDirectory 'opencode-windows-x64-1.14.46.tgz'
@@ -310,7 +310,7 @@ exit 0
                 EnvironmentSources = [pscustomobject]@{
                     defaultPackageDepot = [pscustomobject]@{
                         kind = 'filesystem'
-                        basePath = (Join-Path $rootPath 'PkgDepot')
+                        basePath = (Join-Path $rootPath 'Depot')
                         readable = $true
                         writable = $false
                         mirrorTarget = $false

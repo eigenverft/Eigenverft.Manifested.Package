@@ -198,7 +198,7 @@ Invoke-TestPackageDescribe -Name 'Copy-ResilientDirectoryTree concurrent writers
         @($writerResults.WriterToken | Select-Object -Unique).Count | Should -Be $writerCount
         $observedPartialNames.Count | Should -BeGreaterThan 1 -Because 'overlapping writers must own distinct partial paths'
         foreach ($partialName in $observedPartialNames) {
-            $partialName | Should -Match ('^' + [regex]::Escape($payloadName) + '\.partial\.[0-9a-f]{64}\.[0-9a-f]{32}$')
+            $partialName | Should -Match ('^' + [regex]::Escape($payloadName) + '\.partial\.[0-9a-f]{16}\.[0-9a-f]{8}$')
         }
 
         $partials = @(Get-ChildItem -LiteralPath $destinationRoot -File -ErrorAction SilentlyContinue |
@@ -224,7 +224,7 @@ Invoke-TestPackageDescribe -Name 'Copy-ResilientDirectoryTree concurrent writers
         $firstFileResult = @($firstOutputs | Where-Object { $_.PSObject.Properties['Outcome'] }) | Select-Object -Last 1
         $firstFileResult.Outcome | Should -Be 'Copied'
 
-        $stalePartialPath = $firstFileResult.PartialPath.Substring(0, $firstFileResult.PartialPath.Length - 32) + [guid]::NewGuid().ToString('N')
+        $stalePartialPath = $firstFileResult.PartialPath.Substring(0, $firstFileResult.PartialPath.Length - 8) + [guid]::NewGuid().ToString('N').Substring(0, 8)
         [System.IO.File]::Copy($sourceFile, $stalePartialPath)
         $activeStream = [System.IO.FileStream]::new(
             $stalePartialPath,

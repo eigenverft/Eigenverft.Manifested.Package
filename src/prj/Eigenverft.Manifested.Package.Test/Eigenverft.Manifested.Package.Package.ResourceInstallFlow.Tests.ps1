@@ -269,7 +269,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - resour
         $archiveInfo = New-TestPackageArchiveInfo -RootPath $rootPath -Version '2.0.0' -ArchiveFileName 'VSCode-win32-x64-2.0.0.zip'
         $packageFileStagingDirectory = Join-Path $rootPath 'FileStage'
         $packageInstallStageDirectory = Join-Path $rootPath 'InstStage'
-        $defaultPackageDepotDirectory = Join-Path $rootPath 'PkgDepot'
+        $defaultPackageDepotDirectory = Join-Path $rootPath 'Depot'
         $packageStateIndexFilePath = Join-Path $rootPath 'State\PackageAssignmentInventory.json'
         $operationHistoryFilePath = Join-Path $rootPath 'State\PackageOperationHistory.json'
         $badReadiness = New-TestReadiness -Version '2.0.0'
@@ -371,7 +371,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - resour
 
     It 'stages PowerShell module dependency nupkg files into the local repository' {
         $rootPath = Join-Path $TestDrive 'psmodule-dependency-local-repo'
-        $dependencyDepotFile = Join-Path $rootPath 'PkgDepot\PackageManagement.1.4.8.1.nupkg'
+        $dependencyDepotFile = Join-Path $rootPath 'Depot\PackageManagement.1.4.8.1.nupkg'
         $nugetDirectory = Join-Path $rootPath 'InstStage\PowerShellGet\Nuget'
         Write-TestTextFile -Path $dependencyDepotFile -Content 'dependency package'
 

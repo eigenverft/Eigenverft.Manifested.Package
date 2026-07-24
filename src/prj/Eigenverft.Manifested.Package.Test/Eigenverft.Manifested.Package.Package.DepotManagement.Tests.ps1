@@ -163,7 +163,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
     It 'adds a filesystem depot with safe read-only defaults' {
         $root = Join-Path $TestDrive 'depot-add'
         $inventoryPath = Join-Path $root 'Configuration\Internal\PackageDepotInventory.json'
-        Write-TestJsonDocument -Path $inventoryPath -Document (New-TestDepotInventoryDocument -DefaultPackageDepotDirectory '{applicationRootDirectory}/PkgDepot')
+        Write-TestJsonDocument -Path $inventoryPath -Document (New-TestDepotInventoryDocument -DefaultPackageDepotDirectory '{applicationRootDirectory}/Depot')
 
         Mock Get-PackageDepotInventoryPath { $inventoryPath }
         Mock Get-PackageStateConfig {
@@ -172,7 +172,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
                         id       = 'defaultPackageDepot'
                         kind     = 'filesystem'
                         enabled  = $true
-                        basePath = (Join-Path $root 'PkgDepot')
+                        basePath = (Join-Path $root 'Depot')
                     }
                 })
         }
@@ -196,7 +196,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
     It 'adds a team package depot as a writable mirror at searchOrder 150 by default' {
         $root = Join-Path $TestDrive 'depot-add-team'
         $inventoryPath = Join-Path $root 'Configuration\Internal\PackageDepotInventory.json'
-        Write-TestJsonDocument -Path $inventoryPath -Document (New-TestDepotInventoryDocument -DefaultPackageDepotDirectory '{applicationRootDirectory}/PkgDepot')
+        Write-TestJsonDocument -Path $inventoryPath -Document (New-TestDepotInventoryDocument -DefaultPackageDepotDirectory '{applicationRootDirectory}/Depot')
 
         Mock Get-PackageDepotInventoryPath { $inventoryPath }
         Mock Get-PackageStateConfig {
@@ -219,7 +219,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
     It 'places a package depot after an existing depot when requested' {
         $root = Join-Path $TestDrive 'depot-add-after'
         $inventoryPath = Join-Path $root 'Configuration\Internal\PackageDepotInventory.json'
-        $inventory = New-TestDepotInventoryDocument -DefaultPackageDepotDirectory '{applicationRootDirectory}/PkgDepot' -EnvironmentSources @{
+        $inventory = New-TestDepotInventoryDocument -DefaultPackageDepotDirectory '{applicationRootDirectory}/Depot' -EnvironmentSources @{
             sitePackageDepot = @{
                 kind         = 'filesystem'
                 enabled      = $true
@@ -248,7 +248,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
     It 'sets a disabled depot path and reports that it remains inactive' {
         $root = Join-Path $TestDrive 'depot-set'
         $inventoryPath = Join-Path $root 'Configuration\Internal\PackageDepotInventory.json'
-        $inventory = New-TestDepotInventoryDocument -DefaultPackageDepotDirectory '{applicationRootDirectory}/PkgDepot' -EnvironmentSources @{
+        $inventory = New-TestDepotInventoryDocument -DefaultPackageDepotDirectory '{applicationRootDirectory}/Depot' -EnvironmentSources @{
             corpPackageDepot = @{
                 kind         = 'filesystem'
                 enabled      = $false
@@ -283,7 +283,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
         $depotRoot = Join-Path $root 'team-depot'
         $markerPath = Join-Path $depotRoot 'keep.txt'
         Write-TestTextFile -Path $markerPath -Content 'keep'
-        $inventory = New-TestDepotInventoryDocument -DefaultPackageDepotDirectory '{applicationRootDirectory}/PkgDepot' -EnvironmentSources @{
+        $inventory = New-TestDepotInventoryDocument -DefaultPackageDepotDirectory '{applicationRootDirectory}/Depot' -EnvironmentSources @{
             teamPackageDepot = @{
                 kind         = 'filesystem'
                 enabled      = $true
@@ -321,7 +321,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depot 
     It 'requires force before removing defaultPackageDepot' {
         $root = Join-Path $TestDrive 'depot-remove-default'
         $inventoryPath = Join-Path $root 'Configuration\Internal\PackageDepotInventory.json'
-        Write-TestJsonDocument -Path $inventoryPath -Document (New-TestDepotInventoryDocument -DefaultPackageDepotDirectory '{applicationRootDirectory}/PkgDepot')
+        Write-TestJsonDocument -Path $inventoryPath -Document (New-TestDepotInventoryDocument -DefaultPackageDepotDirectory '{applicationRootDirectory}/Depot')
 
         Mock Get-PackageDepotInventoryPath { $inventoryPath }
 

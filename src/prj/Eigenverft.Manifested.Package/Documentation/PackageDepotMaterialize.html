@@ -153,7 +153,7 @@ Get-PackageAssignmentPlan `
 On the connected host:
 
 ```powershell
-Add-TeamPackageDepot -BasePath '\\fileserver\offline\PkgDepot'
+Add-TeamPackageDepot -BasePath '\\fileserver\offline\Depot'
 Invoke-PackageDepotMaterialize -WhatIf
 Invoke-PackageDepotMaterialize
 ```
@@ -161,7 +161,7 @@ Invoke-PackageDepotMaterialize
 On a machine that already has the module and can read that share:
 
 ```powershell
-Add-PackageDepot -DepotId offlineDepot -BasePath '\\fileserver\offline\PkgDepot'
+Add-PackageDepot -DepotId offlineDepot -BasePath '\\fileserver\offline\Depot'
 Invoke-Package -DefinitionId SevenZip,GitRuntime,NodeRuntime -Offline
 ```
 

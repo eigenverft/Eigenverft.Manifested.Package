@@ -47,7 +47,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - bootst
         $depotInfo.Document.acquisitionEnvironment.environmentSources.defaultPackageDepot.writable | Should -BeTrue
         $depotInfo.Document.acquisitionEnvironment.environmentSources.defaultPackageDepot.mirrorTarget | Should -BeTrue
         $depotInfo.Document.acquisitionEnvironment.environmentSources.defaultPackageDepot.ensureExists | Should -BeTrue
-        $depotInfo.Document.acquisitionEnvironment.environmentSources.defaultPackageDepot.basePath | Should -Be '{applicationRootDirectory}/PkgDepot'
+        $depotInfo.Document.acquisitionEnvironment.environmentSources.defaultPackageDepot.basePath | Should -Be '{applicationRootDirectory}/Depot'
         $globalInfo.Document.package.acquisitionEnvironment.PSObject.Properties.Name | Should -Not -Contain 'tracking'
         $globalInfo.Document.package.acquisitionEnvironment.PSObject.Properties['environmentSources'] | Should -BeNullOrEmpty
     }
@@ -165,7 +165,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - bootst
         $config.PreferredTargetInstallRootDirectory | Should -Be ([System.IO.Path]::GetFullPath((Join-Path $applicationRootPath 'Inst')))
         $config.PackageFileStagingRootDirectory | Should -Be ([System.IO.Path]::GetFullPath((Join-Path $applicationRootPath 'FileStage')))
         $config.PackageInstallStageRootDirectory | Should -Be ([System.IO.Path]::GetFullPath((Join-Path $applicationRootPath 'InstStage')))
-        $config.DefaultPackageDepotDirectory | Should -Be ([System.IO.Path]::GetFullPath((Join-Path $applicationRootPath 'PkgDepot')))
+        $config.DefaultPackageDepotDirectory | Should -Be ([System.IO.Path]::GetFullPath((Join-Path $applicationRootPath 'Depot')))
         $config.LocalEndpointRoot | Should -Be ([System.IO.Path]::GetFullPath((Join-Path $applicationRootPath 'PkgEndpoint')))
         $config.ShimDirectory | Should -Be ([System.IO.Path]::GetFullPath((Join-Path $applicationRootPath 'Shims')))
 
@@ -227,7 +227,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - bootst
     It 'initializes the local package environment once and creates only eligible depot roots' {
         $rootPath = Join-Path $TestDrive 'local-environment-init'
         $applicationRootPath = Join-Path $rootPath 'AppRoot'
-        $defaultDepotPath = Join-Path $rootPath 'PkgDepot'
+        $defaultDepotPath = Join-Path $rootPath 'Depot'
         $readOnlyDepotPath = Join-Path $rootPath 'ReadOnlyPackageDepot'
         $disabledDepotPath = Join-Path $rootPath 'DisabledPackageDepot'
         $globalDocument = New-TestPackageGlobalDocument -ApplicationRootDirectory $applicationRootPath

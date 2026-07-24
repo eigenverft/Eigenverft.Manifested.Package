@@ -50,7 +50,7 @@ Get-PackageDepot
 The default per-user depot is:
 
 ```text
-%LOCALAPPDATA%\Programs\Evf.Package\PkgDepot
+%LOCALAPPDATA%\Programs\Evf.Package\Depot
 ```
 
 ## 2. 📦 Give the offline machine that folder
@@ -73,8 +73,8 @@ Replace `HOST_USER` with the Windows profile name on the preparation host:
   <Networking>Disable</Networking>
   <MappedFolders>
     <MappedFolder>
-      <HostFolder>C:\Users\HOST_USER\AppData\Local\Programs\Evf.Package\PkgDepot</HostFolder>
-      <SandboxFolder>C:\Users\WDAGUtilityAccount\AppData\Local\Programs\Evf.Package\PkgDepot</SandboxFolder>
+      <HostFolder>C:\Users\HOST_USER\AppData\Local\Programs\Evf.Package\Depot</HostFolder>
+      <SandboxFolder>C:\Users\WDAGUtilityAccount\AppData\Local\Programs\Evf.Package\Depot</SandboxFolder>
       <ReadOnly>true</ReadOnly>
     </MappedFolder>
   </MappedFolders>

@@ -275,6 +275,44 @@ function Copy-ResilientDirectoryTree {
         [ValidateRange(1, 1099511627776)]
         [long]                          $WorkQueueMaxBytes         = 10737418240
     )
+
+    function local:GetWindowsExtendedPath {
+        param ([Parameter(Mandatory)] [string] $Path)
+
+        if ([string]::IsNullOrWhiteSpace($Path)) {
+            return $Path
+        }
+
+        if ($Path.StartsWith('\\?\', [StringComparison]::Ordinal)) {
+            return $Path
+        }
+
+        if ($Path.StartsWith('\\', [StringComparison]::Ordinal)) {
+            return '\\?\UNC\' + $Path.Substring(2)
+        }
+
+        return '\\?\' + $Path
+    }
+
+    function local:OpenCopyFileStream {
+        param (
+            [Parameter(Mandatory)] [string] $Path,
+            [Parameter(Mandatory)] [System.IO.FileMode] $Mode,
+            [Parameter(Mandatory)] [System.IO.FileAccess] $Access,
+            [Parameter(Mandatory)] [System.IO.FileShare] $Share,
+            [Parameter(Mandatory)] [int] $BufferSize,
+            [Parameter(Mandatory)] [System.IO.FileOptions] $Options
+        )
+
+        return [System.IO.FileStream]::new(
+            (GetWindowsExtendedPath -Path $Path),
+            $Mode,
+            $Access,
+            $Share,
+            $BufferSize,
+            $Options
+        )
+    }
  
     function local:GetCopySourceHash {
         <#
@@ -306,14 +344,13 @@ function Copy-ResilientDirectoryTree {
         $stream = $null
         $sha256 = $null
         try {
-            $stream = [System.IO.FileStream]::new(
-                $SourcePath,
-                [System.IO.FileMode]::Open,
-                [System.IO.FileAccess]::Read,
-                [System.IO.FileShare]::ReadWrite,
-                $ChunkSizeBytes,
-                [System.IO.FileOptions]::SequentialScan
-            )
+            $stream = OpenCopyFileStream `
+                -Path $SourcePath `
+                -Mode ([System.IO.FileMode]::Open) `
+                -Access ([System.IO.FileAccess]::Read) `
+                -Share ([System.IO.FileShare]::ReadWrite) `
+                -BufferSize $ChunkSizeBytes `
+                -Options ([System.IO.FileOptions]::SequentialScan)
             $sha256 = [System.Security.Cryptography.SHA256]::Create()
             $hashBytes = $sha256.ComputeHash($stream)
             return [System.BitConverter]::ToString($hashBytes).Replace('-', '').ToLowerInvariant()
@@ -360,14 +397,13 @@ function Copy-ResilientDirectoryTree {
         $stream = $null
         $sha256 = $null
         try {
-            $stream = [System.IO.FileStream]::new(
-                $Path,
-                [System.IO.FileMode]::Open,
-                [System.IO.FileAccess]::Read,
-                [System.IO.FileShare]::ReadWrite,
-                $ChunkSizeBytes,
-                [System.IO.FileOptions]::SequentialScan
-            )
+            $stream = OpenCopyFileStream `
+                -Path $Path `
+                -Mode ([System.IO.FileMode]::Open) `
+                -Access ([System.IO.FileAccess]::Read) `
+                -Share ([System.IO.FileShare]::ReadWrite) `
+                -BufferSize $ChunkSizeBytes `
+                -Options ([System.IO.FileOptions]::SequentialScan)
             $sha256 = [System.Security.Cryptography.SHA256]::Create()
             $buffer = New-Object byte[] $ChunkSizeBytes
             $remainingBytes = $ByteCount
@@ -402,8 +438,10 @@ function Copy-ResilientDirectoryTree {
             Builds the resumable partial-file path for a source and destination pair.
  
         .DESCRIPTION
-            Creates a deterministic SHA-256 identity from the source metadata or full source hash and appends it to
-            the destination path. This function only calculates the path; it does not create or modify a partial file.
+            Creates a deterministic SHA-256 identity from the source metadata or full source hash and appends a
+            shortened identity/writer suffix to the destination path. Short suffixes keep partial paths under classic
+            MAX_PATH when possible; identity collision risk remains negligible for concurrent writers. This function
+            only calculates the path; it does not create or modify a partial file.
             Metadata identity is faster, while FullHash identity distinguishes files replaced with identical metadata.
  
         .PARAMETER SourcePath
@@ -469,8 +507,12 @@ function Copy-ResilientDirectoryTree {
         if ([string]::IsNullOrWhiteSpace($WriterToken)) {
             $WriterToken = [guid]::NewGuid().ToString('N')
         }
- 
-        return "$DestinationPath.partial.$identityHash.$WriterToken"
+
+        # Keep partial leaf short: full 64+32 hex suffix adds +106 chars and overflows classic MAX_PATH on deep depot paths.
+        $identityHashShort = if ($identityHash.Length -gt 16) { $identityHash.Substring(0, 16) } else { $identityHash }
+        $writerTokenShort = if ($WriterToken.Length -gt 8) { $WriterToken.Substring(0, 8) } else { $WriterToken }
+
+        return "$DestinationPath.partial.$identityHashShort.$writerTokenShort"
     }
    
     function local:CopyFileRaw {
@@ -557,12 +599,14 @@ function Copy-ResilientDirectoryTree {
             throw "Unable to calculate a valid SHA-256 for source '$($sourceInfo.FullName)'. Observed value: '$sourceHash'."
         }
  
-        $writerToken = if ([string]::IsNullOrWhiteSpace($WriterToken)) {
+        $writerTokenFull = if ([string]::IsNullOrWhiteSpace($WriterToken)) {
             [guid]::NewGuid().ToString('N')
         }
         else {
             $WriterToken
         }
+        # On-disk partial names use a short writer token; truncation is deterministic for resume across retries.
+        $writerToken = if ($writerTokenFull.Length -gt 8) { $writerTokenFull.Substring(0, 8) } else { $writerTokenFull }
         $peerAlreadyPresent = $false
         $partialVerified = $false
         $redundantPartialsRemoved = 0
@@ -575,18 +619,19 @@ function Copy-ResilientDirectoryTree {
             -PartialIdentityMode $PartialIdentityMode `
             -ChunkSizeBytes $ChunkSizeBytes `
             -SourceHash $sourceHash `
-            -WriterToken $writerToken
+            -WriterToken $writerTokenFull
 
         $partialLeafName = [System.IO.Path]::GetFileName($partialPath)
         $partialLeafPrefix = $partialLeafName.Substring(0, $partialLeafName.Length - $writerToken.Length)
 
         $removeOwnedPartial = {
-            if (-not [System.IO.File]::Exists($partialPath)) {
+            $extendedPartialPath = GetWindowsExtendedPath -Path $partialPath
+            if (-not [System.IO.File]::Exists($extendedPartialPath)) {
                 return
             }
 
-            [System.IO.File]::Delete($partialPath)
-            if ([System.IO.File]::Exists($partialPath)) {
+            [System.IO.File]::Delete($extendedPartialPath)
+            if ([System.IO.File]::Exists($extendedPartialPath)) {
                 throw "Unable to remove writer-owned partial file '$partialPath'."
             }
         }
@@ -607,17 +652,16 @@ function Copy-ResilientDirectoryTree {
                 $cleanupResult.Attempted++
                 $cleanupStream = $null
                 try {
-                    $cleanupStream = [System.IO.FileStream]::new(
-                        $peerPartial.FullName,
-                        [System.IO.FileMode]::Open,
-                        [System.IO.FileAccess]::ReadWrite,
-                        [System.IO.FileShare]::None,
-                        1,
-                        [System.IO.FileOptions]::DeleteOnClose
-                    )
+                    $cleanupStream = OpenCopyFileStream `
+                        -Path $peerPartial.FullName `
+                        -Mode ([System.IO.FileMode]::Open) `
+                        -Access ([System.IO.FileAccess]::ReadWrite) `
+                        -Share ([System.IO.FileShare]::None) `
+                        -BufferSize 1 `
+                        -Options ([System.IO.FileOptions]::DeleteOnClose)
                     $cleanupStream.Dispose()
                     $cleanupStream = $null
-                    if (-not [System.IO.File]::Exists($peerPartial.FullName)) {
+                    if (-not [System.IO.File]::Exists((GetWindowsExtendedPath -Path $peerPartial.FullName))) {
                         $cleanupResult.Removed++
                     }
                     else {
@@ -661,7 +705,7 @@ function Copy-ResilientDirectoryTree {
         }
 
         $testFinalDestination = {
-            if (-not [System.IO.File]::Exists($destinationFullPath)) {
+            if (-not [System.IO.File]::Exists((GetWindowsExtendedPath -Path $destinationFullPath))) {
                 return [pscustomobject]@{
                     Exists           = $false
                     Matches          = $false
@@ -808,22 +852,20 @@ function Copy-ResilientDirectoryTree {
         $copyCompleted = $false
    
         try {
-            $sourceStream = [System.IO.FileStream]::new(
-                $sourceInfo.FullName,
-                [System.IO.FileMode]::Open,
-                [System.IO.FileAccess]::Read,
-                [System.IO.FileShare]::ReadWrite,
-                $ChunkSizeBytes,
-                [System.IO.FileOptions]::SequentialScan
-            )
-            $partialStream = [System.IO.FileStream]::new(
-                $partialPath,
-                [System.IO.FileMode]::OpenOrCreate,
-                [System.IO.FileAccess]::Write,
-                [System.IO.FileShare]::Read,
-                $ChunkSizeBytes,
-                [System.IO.FileOptions]::SequentialScan
-            )
+            $sourceStream = OpenCopyFileStream `
+                -Path $sourceInfo.FullName `
+                -Mode ([System.IO.FileMode]::Open) `
+                -Access ([System.IO.FileAccess]::Read) `
+                -Share ([System.IO.FileShare]::ReadWrite) `
+                -BufferSize $ChunkSizeBytes `
+                -Options ([System.IO.FileOptions]::SequentialScan)
+            $partialStream = OpenCopyFileStream `
+                -Path $partialPath `
+                -Mode ([System.IO.FileMode]::OpenOrCreate) `
+                -Access ([System.IO.FileAccess]::Write) `
+                -Share ([System.IO.FileShare]::Read) `
+                -BufferSize $ChunkSizeBytes `
+                -Options ([System.IO.FileOptions]::SequentialScan)
             $sourceStream.Seek($resumedBytes, [System.IO.SeekOrigin]::Begin) | Out-Null
             $partialStream.Seek($resumedBytes, [System.IO.SeekOrigin]::Begin) | Out-Null
             $partialStream.SetLength($resumedBytes)
@@ -922,7 +964,7 @@ function Copy-ResilientDirectoryTree {
 
             # Apply metadata before the atomic promotion so a process loss immediately after File.Move cannot leave
             # a content-valid final with a transient partial timestamp.
-            [System.IO.File]::SetLastWriteTimeUtc($partialPath, $finalSourceInfo.LastWriteTimeUtc)
+            [System.IO.File]::SetLastWriteTimeUtc((GetWindowsExtendedPath -Path $partialPath), $finalSourceInfo.LastWriteTimeUtc)
             $verifiedPartialInfo = Get-Item -LiteralPath $partialPath -ErrorAction Stop
             if ($verifiedPartialInfo.LastWriteTimeUtc -ne $finalSourceInfo.LastWriteTimeUtc) {
                 throw "Unable to preserve the source timestamp on writer-owned partial: $partialPath"
@@ -933,7 +975,10 @@ function Copy-ResilientDirectoryTree {
             try {
                 # The two-argument File.Move is atomic within the destination directory and does not overwrite.
                 # A peer that already promoted therefore wins without its verified file being replaced.
-                [System.IO.File]::Move($partialPath, $destinationFullPath)
+                [System.IO.File]::Move(
+                    (GetWindowsExtendedPath -Path $partialPath),
+                    (GetWindowsExtendedPath -Path $destinationFullPath)
+                )
                 $promoteSucceeded = $true
             }
             catch {
@@ -1045,14 +1090,13 @@ function Copy-ResilientDirectoryTree {
             }
    
             $probePath = Join-Path $fullPath ('.copy-preflight.' + [guid]::NewGuid().ToString('N') + '.tmp')
-            $probeStream = [System.IO.FileStream]::new(
-                $probePath,
-                [System.IO.FileMode]::CreateNew,
-                [System.IO.FileAccess]::Write,
-                [System.IO.FileShare]::None,
-                1,
-                [System.IO.FileOptions]::SequentialScan
-            )
+            $probeStream = OpenCopyFileStream `
+                -Path $probePath `
+                -Mode ([System.IO.FileMode]::CreateNew) `
+                -Access ([System.IO.FileAccess]::Write) `
+                -Share ([System.IO.FileShare]::None) `
+                -BufferSize 1 `
+                -Options ([System.IO.FileOptions]::SequentialScan)
             $probeStream.WriteByte(0)
             $probeStream.Flush()
    
@@ -1484,7 +1528,7 @@ function Copy-ResilientDirectoryTree {
     $isCopyPartialFile = {
         param ([string] $Name)
  
-        return $Name -match '\.partial\.[0-9a-fA-F]{64}(\.[0-9a-fA-F]{32})?$'
+        return $Name -match '\.partial\.[0-9a-fA-F]{8,64}(\.[0-9a-fA-F]{8,32})?$'
     }
  
     $disposeFrame = {
@@ -1780,7 +1824,7 @@ function Copy-ResilientDirectoryTree {
                     $sourceTimestamp = $sourceInfo.LastWriteTimeUtc
                     $destinationInfo = Get-Item -LiteralPath $DestinationPath -ErrorAction Stop
                     if ($destinationInfo.LastWriteTimeUtc -ne $sourceTimestamp) {
-                        [System.IO.File]::SetLastWriteTimeUtc($DestinationPath, $sourceTimestamp)
+                        [System.IO.File]::SetLastWriteTimeUtc((GetWindowsExtendedPath -Path $DestinationPath), $sourceTimestamp)
                     }
                     $verifiedDestinationInfo = Get-Item -LiteralPath $DestinationPath -ErrorAction Stop
                     if ($verifiedDestinationInfo.LastWriteTimeUtc -ne $sourceTimestamp) {

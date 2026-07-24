@@ -99,7 +99,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - browse
         $pagesJavaScript | Should -Match "path:\s*'OfflineBootstrap\.html'.*label:\s*'Offline setup'.*title:\s*'Offline Windows setup"
         $packageDepotsContent | Should -Match '# 📦 Package depots'
         $packageDepotsContent | Should -Match 'Add-TeamPackageDepot'
-        $packageDepotsContent | Should -Match '%LOCALAPPDATA%\\Programs\\Evf\.Package\\PkgDepot'
+        $packageDepotsContent | Should -Match '%LOCALAPPDATA%\\Programs\\Evf\.Package\\Depot'
         $packageDepotCommandsContent | Should -Match '# 🛠️ Package depot commands'
         $packageDepotCommandsContent | Should -Match 'Add-PackageDepot'
         $packageDepotCommandsContent | Should -Match 'Set-PackageDepot'

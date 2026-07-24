@@ -99,7 +99,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - depend
             Dependencies    = @()
         }
 
-        { Resolve-PackageDependencyCommandPath -PackageResult $result -CommandName 'evf-missing-materializer-command' } | Should -Throw '*already be ready*MaterializeOnly*'
+        { Resolve-PackageDependencyCommandPath -PackageResult $result -CommandName 'evf-missing-materializer-command' } | Should -Throw '*already be ready*MaterializeOnly*Please assign a package that provides*'
+        # npm-specific wording is covered when npm is absent from PATH; do not assert it here because developer hosts often already have npm.
     }
 
     It 'fails clearly when direct package dependencies contain a cycle' {

@@ -349,7 +349,14 @@ function Resolve-PackageDependencyCommandPath {
             }
         }
 
-        throw "Package materialization for '$($PackageResult.PackageId)' requires command '$CommandName' to already be ready on PATH. MaterializeOnly does not install dependency tools."
+        $assignHint = if ([string]::Equals($CommandName, 'npm', [System.StringComparison]::OrdinalIgnoreCase)) {
+            "Please assign npm first (for example: Invoke-Package -DefinitionId NodeRuntime), then materialize the package."
+        }
+        else {
+            "Please assign a package that provides '$CommandName' on PATH first, then materialize the package."
+        }
+
+        throw "Package materialization for '$($PackageResult.PackageId)' requires command '$CommandName' to already be ready on PATH. MaterializeOnly does not install dependency tools. $assignHint"
     }
 
     throw "Package install for '$($PackageResult.PackageId)' requires installer command '$CommandName', but no ready dependency exposes that command."

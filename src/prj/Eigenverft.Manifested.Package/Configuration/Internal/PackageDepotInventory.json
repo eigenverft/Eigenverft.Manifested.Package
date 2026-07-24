@@ -6,7 +6,7 @@
         "kind": "filesystem",
         "enabled": true,
         "searchOrder": 100,
-        "basePath": "{applicationRootDirectory}/PkgDepot",
+        "basePath": "{applicationRootDirectory}/Depot",
         "readable": true,
         "writable": true,
         "mirrorTarget": true,
