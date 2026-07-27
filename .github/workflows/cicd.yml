@@ -9,14 +9,12 @@ on:
     paths:
       - 'src/prj/Eigenverft.Manifested.Package/**'
     branches:
-      - 'master'
       - 'main'
       - 'hotfix'
       - 'release'
       - 'develop'
       - 'bugfix'
       - 'feature'
-      - 'master/**'
       - 'main/**'
       - 'hotfix/**'
       - 'release/**'
