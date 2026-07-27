@@ -122,16 +122,16 @@ AI defs bypassing validation, live upstream metadata at selection time.
 6. Convenience and performance (search latency, doc access)
 ```
 
-## Active Delivery Tracks (link only — detail in wrk/)
+## Active Delivery Tracks (link only — detail in PROJECTNOTES/)
 
 | P | Track | Product why | wrk |
 |---|-------|-------------|-----|
-| 5 | Release-age cooling | PR-06, SC-01/04/05 — governed auto-selection | TODO-SUPPLY-CHAIN.md |
-| 4 | Assignment preflight | PR-02/07/11/13, SC-01/04/07/09 — plan before mutation | ISSUE-ASSIGNMENT-PREFLIGHT.md |
-| 3 | Ownership guide | PR-02/04, SC-02 — adoption rules opaque today | TODO-OWNERSHIP.md |
-| 3 | Onboarding profiles | PR-11, SC-07 — role bundles without fleet invoke | ISSUE-ONBOARDING-PROFILES.md |
-| 3 | Agent operability | PR-12, SC-08 — execution log + guide cmd; agent diagnoses failures | ISSUE-AGENT-OPERABILITY.md |
-| 2 | Manifest → httpsCatalog → HTTP depots → depot hygiene | PR-09/10, SC-06 — scale without bloat | TODO-ENDPOINTS-*, TODO-DEPOTS-* |
+| 5 | Release-age cooling | PR-06, SC-01/04/05 — governed auto-selection | PROJECTNOTES/TODO-SUPPLY-CHAIN.md |
+| 4 | Assignment preflight | PR-02/07/11/13, SC-01/04/07/09 — plan before mutation | PROJECTNOTES/ISSUE-ASSIGNMENT-PREFLIGHT.md |
+| 3 | Ownership guide | PR-02/04, SC-02 — adoption rules opaque today | PROJECTNOTES/TODO-OWNERSHIP.md |
+| 3 | Onboarding profiles | PR-11, SC-07 — role bundles without fleet invoke | PROJECTNOTES/ISSUE-ONBOARDING-PROFILES.md |
+| 3 | Agent operability | PR-12, SC-08 — execution log + guide cmd; agent diagnoses failures | PROJECTNOTES/ISSUE-AGENT-OPERABILITY.md |
+| 2 | Manifest → httpsCatalog → HTTP depots → depot hygiene | PR-09/10, SC-06 — scale without bloat | PROJECTNOTES/TODO-ENDPOINTS-*, PROJECTNOTES/TODO-DEPOTS-* |
 
 ## Success Signals (product-level)
 
@@ -161,5 +161,5 @@ any Manager-boundary crossing.
 ## Frame Status
 
 ```text
-Stable as product compass. Delivery detail and open implementation choices remain in wrk/.
+Stable as product compass. Delivery detail and open implementation choices remain in PROJECTNOTES/.
 ```

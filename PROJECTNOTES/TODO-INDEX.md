@@ -1,8 +1,8 @@
 # Work index — Eigenverft.Manifested.Package
 
-Only genuine remaining work is listed here. Shipped behavior is summarized in [DECISIONS.md](DECISIONS.md); Git and tests retain implementation history. General framework files are reference-only.
+Only genuine remaining work is listed here. Shipped behavior is summarized in [DECISIONS.md](../src/wrk/Eigenverft.Manifested.Package/DECISIONS.md); Git and tests retain implementation history. General framework files are reference-only.
 
-**Scope:** `src/prj/Eigenverft.Manifested.Package` and [PRODUCT-BOUNDARY.md](PRODUCT-BOUNDARY.md).
+**Scope:** `src/prj/Eigenverft.Manifested.Package` and [PRODUCT-BOUNDARY.md](../src/wrk/Eigenverft.Manifested.Package/PRODUCT-BOUNDARY.md).
 
 ## Open backlog
 
@@ -19,9 +19,9 @@ Only genuine remaining work is listed here. Shipped behavior is summarized in [D
 
 ## Decisions and boundaries
 
-- [Endpoint discovery](DECISION-ENDPOINT-DISCOVERY-V1.md)
-- [Artifact vocabulary](DECISION-SCHEMA-ARTIFACTS-VOCABULARY.md)
-- [Product boundary](PRODUCT-BOUNDARY.md)
+- [Endpoint discovery](../src/wrk/Eigenverft.Manifested.Package/DECISION-ENDPOINT-DISCOVERY-V1.md)
+- [Artifact vocabulary](../src/wrk/Eigenverft.Manifested.Package/DECISION-SCHEMA-ARTIFACTS-VOCABULARY.md)
+- [Product boundary](../src/wrk/Eigenverft.Manifested.Package/PRODUCT-BOUNDARY.md)
 
 ## Reconciliation facts
 

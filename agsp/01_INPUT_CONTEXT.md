@@ -18,7 +18,7 @@ Revision Mode — stakeholder pass changed product frame and backlog
 
 ```text
 Canonical product scope: src/wrk/.../PRODUCT-BOUNDARY.md
-Issue detail & delivery: src/wrk/.../TODO-*.md, PROJECT-ISSUE-FRAMEWORK V1.8
+Issue detail & delivery: PROJECTNOTES/TODO-*.md and PROJECTNOTES/ISSUE-*.md; issue framework: src/wrk/.../PROJECT-ISSUE-FRAMEWORK V1.8
 Shipped runtime: src/prj/... (schema 1.9, 18 defs, Search-Package, trust, depots, state)
 Agent model: PRODUCT-BOUNDARY — agents/LLMs maintain package JSON; deterministic validation and review before trusted install
 New issue: ISSUE-ASSIGNMENT-PREFLIGHT — plan before mutation

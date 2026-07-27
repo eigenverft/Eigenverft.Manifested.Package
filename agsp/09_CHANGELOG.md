@@ -26,7 +26,7 @@
 | 005 | 06_DECISIONS.md | Changed | C-19, C-20 operability log + propose-first repair | wrk feature sync |
 | 005 | 08_REVIEW.md | Changed | SC-08, PR-12, failure mode, review note | wrk feature sync |
 | 005 | 09_CHANGELOG.md | Changed | Iteration 005 | This pass |
-| 005b | wrk | Changed | FEATURE → ISSUE-AGENT-OPERABILITY.md (V1.8 full issue) | User: file features as issues |
+| 005b | PROJECTNOTES | Changed | FEATURE → ISSUE-AGENT-OPERABILITY.md (V1.8 full issue) | User: file features as issues |
 | 005b | 01_INPUT_CONTEXT.md | Changed | ISSUE slug + Option A | wrk issue sync |
 | 005b | 06_DECISIONS.md | Changed | C-19/C-20 link to issue Option A | wrk issue sync |
 | 006 | 01_INPUT_CONTEXT.md | Changed | Trigger: agent-scale compass round-out | User: authoring dogfood |
@@ -38,7 +38,7 @@
 | 006 | 07_TENSIONS.md | Changed | T-11 unattended vs governed (resolved) | not open backlog item |
 | 006 | 08_REVIEW.md | Changed | SC-05, PR-08, PR-12 issue slug, agent note | compass round-out |
 | 006 | 09_CHANGELOG.md | Changed | Iteration 006 | This pass |
-| 007 | wrk | Added | ISSUE-ASSIGNMENT-PREFLIGHT.md | stakeholder-lens blindspot: plan before mutation |
+| 007 | PROJECTNOTES | Added | ISSUE-ASSIGNMENT-PREFLIGHT.md | stakeholder-lens blindspot: plan before mutation |
 | 007 | TODO-INDEX.md | Changed | Added P4 assignment preflight track | backlog sync |
 | 007 | 01_INPUT_CONTEXT.md | Changed | Trigger: stakeholder-lens pass and preflight blindspot | AGS-P revision |
 | 007 | 02_FRAME.md | Changed | Added SC-09, PR-13, P4 track, success signal | product compass |

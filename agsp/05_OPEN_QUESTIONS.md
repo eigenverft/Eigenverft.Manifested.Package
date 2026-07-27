@@ -1,6 +1,6 @@
 # 05_OPEN_QUESTIONS
 
-Product-strategic only. Implementation syntax, phases, and code paths → wrk/ issues.
+Product-strategic only. Implementation syntax, phases, and code paths → PROJECTNOTES/ issues.
 
 | ID | Question | Blocking? | Affects | Proposed default |
 |----|----------|-----------|---------|------------------|
