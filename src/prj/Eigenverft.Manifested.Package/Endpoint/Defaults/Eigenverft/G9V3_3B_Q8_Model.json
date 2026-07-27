@@ -4,9 +4,9 @@
   "definitionPublication": {
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
-    "definitionId": "OpenCodeCli",
-    "definitionRevision": 13,
-    "publishedAtUtc": "2026-07-27T16:23:32.1777145Z",
+    "definitionId": "G9V3_3B_Q8_Model",
+    "definitionRevision": 1,
+    "publishedAtUtc": "2026-07-27T16:08:29.5530287Z",
     "depotNamespace": "evf",
     "definitionSignature": {
       "kind": "signed",
@@ -16,39 +16,39 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-27T16:25:19.1934461Z",
-      "signatureValue": "MfSF11E8wuyY2bO1yFv+5aLnZQLKh8Zx/wVr84KPIp5whZypKMIRGnxO3WfqPZzZgFSTQhh5UgFwxQ5es2yS2GSRlxVbv3yvdpp4hHmXmr9JHvae8+QB3WFGsqrcNrQFHlHSHg/313xzM9ZW+/zSyL+Pp09rlmhNOnHVbuJ9ClO6KhSO8D3SeXOu2yIMSvaOXjEdEhmDk0GRej1t66o8Udt2bXwAElcf9BJ5RLn+7ocDfjZ5uuPv5tPcE2rAs2QFzLTvvoW6NAQm6ACLtrkNhz/7Dtj67ubJ5SkU8WaI/IAEW/V4sLZEEpuNEBoTl7FqCiD5fly2MyF50aUNacVdAvakFnajUk2iXVeBxXVlpKGKB0lrhU7MbUk6KLCMrYLwp4CrCZ+OSLJkW1Ex8f183CxrWEz1nLBtj0YjD9+BnZ14QvjMJ9YGVlzY1ozaT5cO1UayzbvuhH+9cs8/FSpauHaab32DvVlXHMhUEMI3EJ5EbMD60cdVr5XgY7a48lB7"
+      "signedAtUtc": "2026-07-27T16:10:41.9436118Z",
+      "signatureValue": "VQ7vnQjh520JlbInOlw32bUtK7a5dZJbcWg76jfX5WouX7EqQ49Ms7kg8O+501Kz9VB7e38/xA5hDjWi16iM1kq5Rq1I/8LGwSbfpzUEhWXVRzX56w+fcejUXOVRC0SiZFfDKKEhJzAJQuleHpZgOY/RKOSdjn8Z+tLKEMn9FzG2DyEQ9gaR+bLBWDtVpivk5C+MjHlmtNDwbj89xExktLtXPsgWSn59Ab492CSScMkD3sf6dL8Gy/9k74Gf9wzHEPqkMUeCtHgbSgkv+OO1Jve99lrh0IsMjhCmkZj8dJub4RWE8qzlnJBLP+B3bnzrIJIXLH11UZH3oQnx8ioRI4Dp3EKI5HS3rj0ubhEXZXSfFG3D8P6FW2tl6FPs2+/b1NLPDl7GqsnSdRQFskz7nd6JHM/RPL8Lso6fsXxJzERdiq2URwKnrrEJowib5AIiwjeBUYDdzqry+EVwTYGbYzoGk+sRITbhkFGMvfIJaYIu4lfx5GdKUGWGf4WQ3d7H"
     }
   },
   "display": {
     "default": {
-      "name": "OpenCode CLI",
-      "publisher": "SST",
-      "corporation": "SST",
-      "summary": "Pinned OpenCode CLI npm runtime"
+      "name": "G9v3 3B Q8_0",
+      "publisher": "Bartowski",
+      "corporation": "AI9Stars",
+      "summary": "Quantized GGUF model resource for llama.cpp-compatible runtimes"
     }
   },
   "classification": {
     "tags": [
       "ai",
-      "cli",
-      "opencode"
+      "g9v3",
+      "model"
     ]
   },
   "dependency": {
     "requires": [
       {
-        "definitionId": "NodeRuntime",
-        "versionRange": ">=24.0.0"
+        "definitionId": "LlamaCppRuntime",
+        "versionRange": ">=10068"
       }
     ]
   },
   "artifacts": {
     "targets": [
       {
-        "id": "OpenCodeCli-win32-x64-stable",
+        "id": "G9V3_3B_Q8_Model-q8-0-stable",
         "releaseTrack": "stable",
-        "artifactDistributionVariant": "win32-x64",
+        "artifactDistributionVariant": "q8-0",
         "constraints": {
           "os": [
             "windows"
@@ -60,153 +60,67 @@
         "versionSelection": {
           "strategy": "latestByVersion",
           "allowPrerelease": false
-        }
-      },
-      {
-        "id": "OpenCodeCli-win32-arm64-stable",
-        "releaseTrack": "stable",
-        "artifactDistributionVariant": "win32-arm64",
-        "constraints": {
-          "os": [
-            "windows"
-          ],
-          "cpu": [
-            "arm64"
-          ]
         },
-        "versionSelection": {
-          "strategy": "latestByVersion",
-          "allowPrerelease": false
+        "artifactFiles": {
+          "package": {
+            "relativePathTemplate": "ai9stars_G9v3-3B-Q8_0.gguf",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "required"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "sourceId": "huggingFaceDownload",
+                "searchOrder": 900,
+                "sourcePath": "ai9stars_G9v3-3B-Q8_0.gguf",
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
+          }
         }
       }
     ],
     "releases": [
       {
-        "version": "1.18.7",
+        "version": "3.0.0",
         "releaseTracks": [
           "stable"
         ],
         "targetArtifacts": {
-          "OpenCodeCli-win32-x64-stable": {
-            "artifactId": "opencode-cli-win32-x64-stable"
-          },
-          "OpenCodeCli-win32-arm64-stable": {
-            "artifactId": "opencode-cli-win32-arm64-stable"
-          }
-        }
-      },
-      {
-        "version": "1.18.3",
-        "releaseTracks": [
-          "stable"
-        ],
-        "targetArtifacts": {
-          "OpenCodeCli-win32-x64-stable": {
-            "artifactId": "opencode-cli-win32-x64-stable"
-          },
-          "OpenCodeCli-win32-arm64-stable": {
-            "artifactId": "opencode-cli-win32-arm64-stable"
-          }
-        }
-      },
-      {
-        "version": "1.17.15",
-        "releaseTracks": [
-          "stable"
-        ],
-        "targetArtifacts": {
-          "OpenCodeCli-win32-x64-stable": {
-            "artifactId": "opencode-cli-win32-x64-stable"
-          },
-          "OpenCodeCli-win32-arm64-stable": {
-            "artifactId": "opencode-cli-win32-arm64-stable"
-          }
-        }
-      },
-      {
-        "version": "1.17.9",
-        "releaseTracks": [
-          "stable"
-        ],
-        "targetArtifacts": {
-          "OpenCodeCli-win32-x64-stable": {
-            "artifactId": "opencode-runtime-win32-x64-stable"
-          },
-          "OpenCodeCli-win32-arm64-stable": {
-            "artifactId": "opencode-runtime-win32-arm64-stable"
-          }
-        }
-      },
-      {
-        "version": "1.17.4",
-        "releaseTracks": [
-          "stable"
-        ],
-        "targetArtifacts": {
-          "OpenCodeCli-win32-x64-stable": {
-            "artifactId": "opencode-runtime-win32-x64-stable"
-          },
-          "OpenCodeCli-win32-arm64-stable": {
-            "artifactId": "opencode-runtime-win32-arm64-stable"
-          }
-        }
-      },
-      {
-        "version": "1.15.7",
-        "releaseTracks": [
-          "stable"
-        ],
-        "targetArtifacts": {
-          "OpenCodeCli-win32-x64-stable": {
-            "artifactId": "opencode-runtime-win32-x64-stable"
-          },
-          "OpenCodeCli-win32-arm64-stable": {
-            "artifactId": "opencode-runtime-win32-arm64-stable"
-          }
-        }
-      },
-      {
-        "version": "1.14.46",
-        "releaseTracks": [
-          "stable"
-        ],
-        "targetArtifacts": {
-          "OpenCodeCli-win32-x64-stable": {
-            "artifactId": "opencode-runtime-win32-x64-stable"
-          },
-          "OpenCodeCli-win32-arm64-stable": {
-            "artifactId": "opencode-runtime-win32-arm64-stable"
+          "G9V3_3B_Q8_Model-q8-0-stable": {
+            "artifactId": "g9v3-3b-q8-0-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "39a98c602941f4a4a8397626692c7ee07bc213b10c0a9812323279a5f175396f"
+                }
+              }
+            }
           }
         }
       }
     ],
-    "sources": {}
+    "sources": {
+      "huggingFaceDownload": {
+        "kind": "download",
+        "baseUri": "https://huggingface.co/bartowski/ai9stars_G9v3-3B-GGUF/resolve/11fe5d21c70f1c6f5e66ca433d1a533738998225/"
+      }
+    }
   },
   "discovery": {
     "presence": {
       "files": [
-        "opencode.cmd",
-        "node_modules/opencode-ai/package.json"
+        "ai9stars_G9v3-3B-Q8_0.gguf"
       ],
-      "directories": [
-        "node_modules"
-      ],
-      "commands": [
-        {
-          "name": "opencode",
-          "relativePath": "opencode.cmd",
-          "requiredForState": true,
-          "exposeCommand": true,
-          "stateChecks": [
-            {
-              "arguments": [
-                "--version"
-              ],
-              "outputPattern": "(?m)^(?<value>.+\\S.*)$"
-            }
-          ]
-        }
-      ],
+      "directories": [],
+      "commands": [],
       "apps": [],
       "metadataFiles": [],
       "signatures": [],
@@ -225,32 +139,33 @@
       "ownershipPolicy": {
         "allowAdoptExternal": false,
         "upgradeAdoptedInstall": false,
-        "requirePackageOwnership": true
+        "requirePackageOwnership": false
       },
       "compatibility": {
         "checks": [
           {
-            "kind": "osVersion",
+            "kind": "physicalOrVideoMemoryGiB",
             "operator": ">=",
-            "value": "10.0"
+            "value": 8,
+            "onFail": "warn"
           }
         ]
       }
     },
     "assigned": {
       "install": {
-        "kind": "npmMaterializedInstallGlobalPackage",
-        "installerCommand": "npm",
-        "packageSpec": "opencode-ai@{version}",
-        "installDirectory": "opencode-runtime/{releaseTrack}/{version}/{artifactDistributionVariant}"
+        "kind": "placePackageFile",
+        "installDirectory": "g9v3-3b/{releaseTrack}/{version}/{artifactDistributionVariant}",
+        "targetRelativePath": "ai9stars_G9v3-3B-Q8_0.gguf",
+        "artifactFileId": "package"
       },
       "readyStateCheck": {
         "use": "discovery.presence",
         "expectedVersion": "{version}",
         "require": {
           "files": true,
-          "directories": true,
-          "commands": true,
+          "directories": false,
+          "commands": false,
           "apps": false,
           "metadataFiles": false,
           "signatures": false,
@@ -260,11 +175,7 @@
         }
       },
       "pathRegistration": {
-        "mode": "user",
-        "source": {
-          "kind": "shim",
-          "use": "discovery.presence.commands"
-        }
+        "mode": "none"
       },
       "versionUpdatePolicy": {
         "whenAssigned": "trackSelectedVersion",
@@ -290,7 +201,7 @@
         "require": {
           "files": true,
           "directories": false,
-          "commands": true,
+          "commands": false,
           "apps": false,
           "metadataFiles": false,
           "signatures": false,

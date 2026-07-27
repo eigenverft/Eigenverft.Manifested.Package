@@ -125,9 +125,9 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $sourceDefinition.GitHubOwner | Should -Be 'ggml-org'
         $sourceDefinition.GitHubRepository | Should -Be 'llama.cpp'
         $result.PackageId | Should -Be 'llama-cpp-win-cpu-x64-stable'
-        $result.Package.version | Should -Be '10068'
-        $result.Package.releaseTag | Should -Be 'b10068'
-        $result.Package.artifactFiles[0].relativePath | Should -Be 'llama-b10068-bin-win-cpu-x64.zip'
+        $result.Package.version | Should -Be '10153'
+        $result.Package.releaseTag | Should -Be 'b10153'
+        $result.Package.artifactFiles[0].relativePath | Should -Be 'llama-b10153-bin-win-cpu-x64.zip'
         $result.Package.assigned.pathRegistration.source.kind | Should -Be 'shim'
         $result.Package.assigned.pathRegistration.source.use | Should -Be 'discovery.presence.commands'
         @($config.Definition.discovery.presence.commands.name) | Should -Be @('llama-cli', 'llama-server', 'llama-quantize', 'llama-bench', 'llama-tokenize')
@@ -357,22 +357,22 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $config -SourceRef ([pscustomobject]@{ scope = 'definition'; id = 'cursorAgentCliLab' })
 
         $expectedFileName = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            'agent-cli-package-2026.07.16-899851b-win32-arm64.zip'
+            'agent-cli-package-2026.07.23-e383d2b-win32-arm64.zip'
         }
         else {
-            'agent-cli-package-2026.07.16-899851b-win32-x64.zip'
+            'agent-cli-package-2026.07.23-e383d2b-win32-x64.zip'
         }
         $expectedSha256 = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            '4918351f7df24c98bedfe83de9e16a46d153e1d09d6e4383f561af3c3a50bb2f'
+            '1d94e23b6901c3ab3092ed4094d77843d7a4978df24a873cc8c6421026f5efdc'
         }
         else {
-            '8c31b4420ea1cbc994b5c5e6535897e3c85818dd5f975e252aac69470e589ecf'
+            '96c7b739eaf2fc68869341f2e0781ccbefd631a7493d373728bf14141749035f'
         }
 
         $config.DefinitionId | Should -Be 'CursorCli'
         $sourceDefinition.Kind | Should -Be 'download'
         $sourceDefinition.BaseUri | Should -Be 'https://downloads.cursor.com/lab/'
-        $result.Package.version | Should -Be '2026.07.16-899851b'
+        $result.Package.version | Should -Be '2026.07.23-e383d2b'
         $result.Package.assigned.install.kind | Should -Be 'expandArchive'
         $result.Package.assigned.install.expandedRoot | Should -Be 'dist-package'
         $result.Package.artifactFiles[0].relativePath | Should -Be $expectedFileName
@@ -386,8 +386,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
     It 'loads the shipped materialized npm definitions without authored package-file acquisition' {
 
         $cases = @(
-            [pscustomobject]@{ DefinitionId = 'CodexCli'; PackageSpec = '@openai/codex@{version}'; Version = '0.144.6'; Command = 'codex'; RelativePath = 'codex.cmd'; Dependencies = @('VisualCppRedistributable', 'NodeRuntime') }
-            [pscustomobject]@{ DefinitionId = 'OpenCodeCli'; PackageSpec = 'opencode-ai@{version}'; Version = '1.18.3'; Command = 'opencode'; RelativePath = 'opencode.cmd'; Dependencies = @('NodeRuntime') }
+            [pscustomobject]@{ DefinitionId = 'CodexCli'; PackageSpec = '@openai/codex@{version}'; Version = '0.145.0'; Command = 'codex'; RelativePath = 'codex.cmd'; Dependencies = @('VisualCppRedistributable', 'NodeRuntime') }
+            [pscustomobject]@{ DefinitionId = 'OpenCodeCli'; PackageSpec = 'opencode-ai@{version}'; Version = '1.18.7'; Command = 'opencode'; RelativePath = 'opencode.cmd'; Dependencies = @('NodeRuntime') }
         )
 
         foreach ($case in $cases) {
@@ -428,19 +428,19 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $latest.PackageVersionSelectionSource | Should -Be 'definition'
         $latest.PackageVersionSelector | Should -Be 'latestByVersion'
         $latest.PackageVersionOrderingKind | Should -Be 'normalVersion'
-        $latest.Package.version | Should -Be '1.18.3'
+        $latest.Package.version | Should -Be '1.18.7'
 
         $explicitLatest = New-PackageResult -PackageConfig $config -PackageVersionSelector 'latestByVersion'
         $explicitLatest = Resolve-PackagePackage -PackageResult $explicitLatest
         $explicitLatest.PackageVersionSelectionSource | Should -Be 'command'
         $explicitLatest.PackageVersionSelector | Should -Be 'latestByVersion'
-        $explicitLatest.Package.version | Should -Be '1.18.3'
+        $explicitLatest.Package.version | Should -Be '1.18.7'
 
         $previous = New-PackageResult -PackageConfig $config -PackageVersionSelector 'previousByVersion'
         $previous = Resolve-PackagePackage -PackageResult $previous
         $previous.PackageVersionSelectionSource | Should -Be 'command'
         $previous.PackageVersionSelector | Should -Be 'previousByVersion'
-        $previous.Package.version | Should -Be '1.17.15'
+        $previous.Package.version | Should -Be '1.18.3'
 
         $pinned = New-PackageResult -PackageConfig $config -PackageVersionSelector '1.14.46'
         $pinned = Resolve-PackagePackage -PackageResult $pinned
