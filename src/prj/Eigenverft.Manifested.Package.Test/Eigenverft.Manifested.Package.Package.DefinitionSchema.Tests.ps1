@@ -140,6 +140,32 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - defini
         $result.Compatibility[0].Accepted | Should -BeTrue
     }
 
+    It 'loads the shipped Granite41_3B_Q8_Model definition and selects the pinned official IBM GGUF release' {
+        Mock Get-PhysicalMemoryGiB { 8.0 }
+        Mock Get-VideoMemoryGiB { 2.0 }
+
+        $config = Get-PackageConfig -DefinitionId 'Granite41_3B_Q8_Model'
+        $result = New-PackageResult -PackageConfig $config
+        $result = Resolve-PackagePackage -PackageResult $result
+        $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $config -SourceRef ([pscustomobject]@{ scope = 'definition'; id = 'huggingFaceDownload' })
+
+        $config.DefinitionId | Should -Be 'Granite41_3B_Q8_Model'
+        $config.Definition.dependency.requires[0].definitionId | Should -Be 'LlamaCppRuntime'
+        $config.Definition.dependency.requires[0].versionRange | Should -Be '>=10153'
+        $sourceDefinition.Kind | Should -Be 'download'
+        $sourceDefinition.BaseUri | Should -Be 'https://huggingface.co/ibm-granite/granite-4.1-3b-GGUF/resolve/ab4701481089b58a082ef63cc1cee738887293ff/'
+        $result.PackageId | Should -Be 'granite41-3b-q8-0-stable'
+        $result.Package.version | Should -Be '4.1.0'
+        $result.Package.artifactFiles[0].relativePath | Should -Be 'granite-4.1-3b-Q8_0.gguf'
+        $result.Package.artifactFiles[0].contentHash.algorithm | Should -Be 'sha256'
+        $result.Package.artifactFiles[0].contentHash.value | Should -Be 'c31f09b9fd19bc51440f100f54fe5ac3d5deb26ef79ec93c38e4a14873c42a80'
+        $result.Package.assigned.install.kind | Should -Be 'placePackageFile'
+        $result.Compatibility.Count | Should -Be 1
+        $result.Compatibility[0].Kind | Should -Be 'physicalOrVideoMemoryGiB'
+        $result.Compatibility[0].OnFail | Should -Be 'warn'
+        $result.Compatibility[0].Accepted | Should -BeTrue
+    }
+
     It 'fails clearly when the shipped global config still defines vsCodeUpdateService as an environment source' {
         $globalConfigPath = Join-Path $TestDrive 'PackageConfig.json'
         $badGlobal = New-TestPackageGlobalDocument -EnvironmentSources @{

@@ -1,0 +1,221 @@
+{
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-2.0.schema.json",
+  "schemaVersion": "2.0",
+  "definitionPublication": {
+    "publisherId": "Eigenverft",
+    "publisherName": "Eigenverft",
+    "definitionId": "Granite41_3B_Q8_Model",
+    "definitionRevision": 1,
+    "publishedAtUtc": "2026-07-29T04:59:10.9119279Z",
+    "depotNamespace": "evf",
+    "definitionSignature": {
+      "kind": "signed",
+      "format": "embedded-json-rsa-sha256-v1",
+      "signedContent": "canonicalDefinitionExcludingSignatureValue",
+      "keyThumbprint": "F51EBE1F899A693128330CCAFE9E1329CA4510CC",
+      "signerDisplayName": "Eigenverft Package Catalog Signing",
+      "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
+      "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
+      "signedAtUtc": "2026-07-29T05:00:39.3780634Z",
+      "signatureValue": "UGnokVkldItEyDYn5NDJQtgw82iAL6SiwfHnkoRLnEEKJC/GR/+QWP4SyquQcxHEfSfXRALV2CZsH6hgrEBdrqny6aNigXjxidmz5zrleV5LUpQf5qSQTLtwtd1IzYVSLh+jzj6TpdVxExi+0IYN4zetNfgYiCdZhAceSoQ1XUkdpVDdnmnnxiOTFkU+UlJv/zC3cjtHEGkdC3+quoi4u1UfOzScSA/5LtOVkZPzWvtoL4cBJH/xfcuAw2eV+A5AKD5MY+Mk5GRkYtQEaAgkBhuRqPK3Wph+TZWQ9uhveO/PpKk5hbSu1Pa0YRY6b2CLWxdwKbsXxX1H3pYa51KstwLay/oiNCZP1UpF13MwCdU8GCBtKR1MP9lJ4MHihX9zX/SQDduNBqGuDXXtixCeXbHvuhf+BRBEUQj0WuEiBdkSSlw5DU0DCYo9hMuVtAuYoycKugUBuWZpwSVgGIcI5I3chjGreHqoH3DVbZ77aYT8ngedoVG/gFlGR/3XuCaV"
+    }
+  },
+  "display": {
+    "default": {
+      "name": "Granite 4.1 3B Q8_0",
+      "publisher": "IBM Granite",
+      "corporation": "IBM",
+      "summary": "Quantized GGUF model resource for llama.cpp-compatible runtimes"
+    }
+  },
+  "classification": {
+    "tags": [
+      "ai",
+      "granite",
+      "model"
+    ]
+  },
+  "dependency": {
+    "requires": [
+      {
+        "definitionId": "LlamaCppRuntime",
+        "versionRange": ">=10153"
+      }
+    ]
+  },
+  "artifacts": {
+    "targets": [
+      {
+        "id": "Granite41_3B_Q8_Model-q8-0-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "q8-0",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "x64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        },
+        "artifactFiles": {
+          "package": {
+            "relativePathTemplate": "granite-4.1-3b-Q8_0.gguf",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "required"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "sourceId": "huggingFaceDownload",
+                "searchOrder": 900,
+                "sourcePath": "granite-4.1-3b-Q8_0.gguf",
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "releases": [
+      {
+        "version": "4.1.0",
+        "releaseTracks": [
+          "stable"
+        ],
+        "targetArtifacts": {
+          "Granite41_3B_Q8_Model-q8-0-stable": {
+            "artifactId": "granite41-3b-q8-0-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "c31f09b9fd19bc51440f100f54fe5ac3d5deb26ef79ec93c38e4a14873c42a80"
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+    "sources": {
+      "huggingFaceDownload": {
+        "kind": "download",
+        "baseUri": "https://huggingface.co/ibm-granite/granite-4.1-3b-GGUF/resolve/ab4701481089b58a082ef63cc1cee738887293ff/"
+      }
+    }
+  },
+  "discovery": {
+    "presence": {
+      "files": [
+        "granite-4.1-3b-Q8_0.gguf"
+      ],
+      "directories": [],
+      "commands": [],
+      "apps": [],
+      "metadataFiles": [],
+      "signatures": [],
+      "fileDetails": [],
+      "registry": [],
+      "powerShellModules": []
+    },
+    "existingInstall": {
+      "enabled": false,
+      "searchLocations": [],
+      "installRootRules": []
+    }
+  },
+  "packageOperations": {
+    "policy": {
+      "ownershipPolicy": {
+        "allowAdoptExternal": false,
+        "upgradeAdoptedInstall": false,
+        "requirePackageOwnership": false
+      },
+      "compatibility": {
+        "checks": [
+          {
+            "kind": "physicalOrVideoMemoryGiB",
+            "operator": ">=",
+            "value": 8,
+            "onFail": "warn"
+          }
+        ]
+      }
+    },
+    "assigned": {
+      "install": {
+        "kind": "placePackageFile",
+        "installDirectory": "granite41-3b/{releaseTrack}/{version}/{artifactDistributionVariant}",
+        "targetRelativePath": "granite-4.1-3b-Q8_0.gguf",
+        "artifactFileId": "package"
+      },
+      "readyStateCheck": {
+        "use": "discovery.presence",
+        "expectedVersion": "{version}",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": false,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "pathRegistration": {
+        "mode": "none"
+      },
+      "versionUpdatePolicy": {
+        "whenAssigned": "trackSelectedVersion",
+        "onSameSelectedVersion": "reuseOrRepair",
+        "onNewSelectedVersion": "replacePackageOwnedInstall"
+      }
+    },
+    "removed": {
+      "policy": {
+        "whenNotInInventory": "succeed",
+        "allowedInventoryOwnershipKinds": [
+          "PackageInstalled"
+        ],
+        "allowUntrackedExternalRemoval": false,
+        "removeDependencies": false
+      },
+      "operation": {
+        "kind": "deleteInstallDirectory",
+        "pathSource": "inventory.installDirectory"
+      },
+      "absenceVerification": {
+        "use": "discovery.presence",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": false,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "postRemoveCleanup": {
+        "packageInventoryRecord": true,
+        "generatedShims": true,
+        "pathEntries": true,
+        "workDirectories": true
+      }
+    }
+  }
+}
