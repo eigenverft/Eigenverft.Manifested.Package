@@ -703,6 +703,176 @@ function Enable-PackageUpdatedModuleVersion {
     }
 }
 
+function Reset-PackageInternalConfiguration {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [object]$InstalledModule
+    )
+
+    $moduleBase = if (-not [string]::IsNullOrWhiteSpace([string]$InstalledModule.ModuleBase)) {
+        [System.IO.Path]::GetFullPath([string]$InstalledModule.ModuleBase)
+    }
+    elseif (-not [string]::IsNullOrWhiteSpace([string]$InstalledModule.Path)) {
+        [System.IO.Path]::GetFullPath((Split-Path -Parent ([string]$InstalledModule.Path)))
+    }
+    else {
+        throw 'FullReset could not resolve the newly installed module directory.'
+    }
+
+    $configurationFileNames = @(
+        'PackageConfig.json'
+        'PackageDepotInventory.json'
+        'PackageEndpointInventory.json'
+        'PackageTrustInventory.json'
+    )
+    $sourceDirectory = Join-Path (Join-Path $moduleBase 'Configuration') 'Internal'
+    $sourceFiles = @()
+    $sourcePackageConfig = $null
+
+    foreach ($fileName in $configurationFileNames) {
+        $sourcePath = Join-Path $sourceDirectory $fileName
+        if (-not (Test-Path -LiteralPath $sourcePath -PathType Leaf)) {
+            throw "FullReset source file '$sourcePath' does not exist. No local configuration was changed."
+        }
+
+        $sourceDocumentInfo = Read-PackageJsonDocument -Path $sourcePath
+        if ([string]::Equals($fileName, 'PackageConfig.json', [System.StringComparison]::OrdinalIgnoreCase)) {
+            $sourcePackageConfig = $sourceDocumentInfo.Document
+        }
+        $sourceFiles += [pscustomobject]@{
+            Name       = $fileName
+            SourcePath = [string]$sourceDocumentInfo.Path
+        }
+    }
+
+    if ($null -eq $sourcePackageConfig -or
+        -not $sourcePackageConfig.PSObject.Properties['package'] -or
+        -not $sourcePackageConfig.package.PSObject.Properties['applicationRootDirectory'] -or
+        [string]::IsNullOrWhiteSpace([string]$sourcePackageConfig.package.applicationRootDirectory)) {
+        throw "FullReset source file '$(Join-Path $sourceDirectory 'PackageConfig.json')' does not define package.applicationRootDirectory. No local configuration was changed."
+    }
+
+    $applicationRootDirectory = Resolve-ConfiguredPath `
+        -PathValue ([string]$sourcePackageConfig.package.applicationRootDirectory) `
+        -BaseDirectory $null `
+        -Tokens @{}
+    $targetDirectory = [System.IO.Path]::GetFullPath(
+        (Join-Path (Join-Path $applicationRootDirectory 'Configuration') 'Internal')
+    )
+    $markerPath = [System.IO.Path]::GetFullPath(
+        (Join-Path (Join-Path $applicationRootDirectory 'State') 'PackageLocalEnvironment.json')
+    )
+    $resetId = [guid]::NewGuid().ToString('N')
+    $backupName = 'FullReset-{0}-{1}' -f
+        ([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssZ', [Globalization.CultureInfo]::InvariantCulture)),
+        $resetId.Substring(0, 8)
+    $backupDirectory = [System.IO.Path]::GetFullPath(
+        (Join-Path (Join-Path (Join-Path $applicationRootDirectory 'Configuration') 'Backup') $backupName)
+    )
+
+    $null = New-Item -ItemType Directory -Path $targetDirectory -Force
+    $null = New-Item -ItemType Directory -Path $backupDirectory -Force
+
+    $resetEntries = @()
+    $stagedPaths = New-Object System.Collections.Generic.List[string]
+    $replacedEntries = New-Object System.Collections.Generic.List[object]
+    $markerExisted = Test-Path -LiteralPath $markerPath -PathType Leaf
+    $markerBackupPath = Join-Path $backupDirectory 'PackageLocalEnvironment.json'
+    $markerRemoved = $false
+
+    try {
+        foreach ($sourceFile in $sourceFiles) {
+            $targetPath = Join-Path $targetDirectory $sourceFile.Name
+            $targetExisted = Test-Path -LiteralPath $targetPath -PathType Leaf
+            $backupPath = Join-Path $backupDirectory $sourceFile.Name
+            if ($targetExisted) {
+                [System.IO.File]::Copy($targetPath, $backupPath, $true)
+            }
+
+            $stagedPath = '{0}.{1}.fullreset.tmp' -f $targetPath, $resetId
+            [System.IO.File]::Copy($sourceFile.SourcePath, $stagedPath, $true)
+            $stagedPaths.Add($stagedPath) | Out-Null
+            $null = Read-PackageJsonDocument -Path $stagedPath
+            $resetEntries += [pscustomobject]@{
+                Name          = $sourceFile.Name
+                TargetPath    = $targetPath
+                TargetExisted = $targetExisted
+                BackupPath    = $backupPath
+                StagedPath    = $stagedPath
+            }
+        }
+
+        if ($markerExisted) {
+            $markerDirectory = Split-Path -Parent $markerBackupPath
+            $null = New-Item -ItemType Directory -Path $markerDirectory -Force
+            [System.IO.File]::Copy($markerPath, $markerBackupPath, $true)
+        }
+
+        foreach ($entry in $resetEntries) {
+            Move-Item -LiteralPath $entry.StagedPath -Destination $entry.TargetPath -Force -ErrorAction Stop
+            $replacedEntries.Add($entry) | Out-Null
+        }
+
+        if ($markerExisted) {
+            Remove-Item -LiteralPath $markerPath -Force -ErrorAction Stop
+            $markerRemoved = $true
+        }
+    }
+    catch {
+        $resetErrorMessage = $_.Exception.Message
+        $rollbackErrors = New-Object System.Collections.Generic.List[string]
+
+        for ($entryIndex = $replacedEntries.Count - 1; $entryIndex -ge 0; $entryIndex--) {
+            $entry = $replacedEntries[$entryIndex]
+            try {
+                if ($entry.TargetExisted) {
+                    [System.IO.File]::Copy($entry.BackupPath, $entry.TargetPath, $true)
+                }
+                elseif (Test-Path -LiteralPath $entry.TargetPath -PathType Leaf) {
+                    Remove-Item -LiteralPath $entry.TargetPath -Force -ErrorAction Stop
+                }
+            }
+            catch {
+                $rollbackErrors.Add("$($entry.Name): $($_.Exception.Message)") | Out-Null
+            }
+        }
+
+        if ($markerExisted -and $markerRemoved) {
+            try {
+                $markerDirectory = Split-Path -Parent $markerPath
+                $null = New-Item -ItemType Directory -Path $markerDirectory -Force
+                [System.IO.File]::Copy($markerBackupPath, $markerPath, $true)
+            }
+            catch {
+                $rollbackErrors.Add("PackageLocalEnvironment.json: $($_.Exception.Message)") | Out-Null
+            }
+        }
+
+        if ($rollbackErrors.Count -gt 0) {
+            throw "FullReset failed after the module update: $resetErrorMessage Rollback was incomplete: $($rollbackErrors -join '; '). Backup: '$backupDirectory'."
+        }
+
+        throw "FullReset failed after the module update: $resetErrorMessage The previous local configuration was restored. Backup: '$backupDirectory'."
+    }
+    finally {
+        foreach ($stagedPath in @($stagedPaths)) {
+            if (Test-Path -LiteralPath $stagedPath -PathType Leaf) {
+                Remove-Item -LiteralPath $stagedPath -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
+
+    return [pscustomobject]@{
+        ApplicationRootDirectory = $applicationRootDirectory
+        BackupDirectory          = $backupDirectory
+        ConfigurationFiles       = @($configurationFileNames)
+        MarkerPath               = $markerPath
+        MarkerRemoved            = $markerRemoved
+        SourceModuleBase         = $moduleBase
+    }
+}
+
 function Update-PackageVersion {
 <#
 .SYNOPSIS
@@ -730,6 +900,12 @@ CurrentUser (default) or AllUsers (elevation normally required). Scope controls 
 is installed; version comparison still considers every visible copy so the command never downgrades or
 needlessly reinstalls the module into another scope.
 
+.PARAMETER FullReset
+After a newer version is installed, replaces the four local internal Package configuration files with
+the shipped defaults from that exact newly installed module version. Existing files and the local
+environment marker are backed up first. Depot contents, installed packages, assignment inventory, and
+operation history are preserved. If no update is installed, no reset is performed.
+
 .EXAMPLE
 Update-PackageVersion -Scope CurrentUser
 
@@ -740,11 +916,19 @@ Update-PackageVersion -Scope AllUsers -WhatIf
 
 Performs proxy preparation, gallery discovery, and version comparison, then previews the installation
 without changing the installed module.
+
+.EXAMPLE
+Update-PackageVersion -FullReset -Confirm:$false
+
+Installs a newer current-user version, replaces all four local internal configuration files with that
+version's defaults, and preserves package payloads, installations, assignment inventory, and history.
 #>
     [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         [ValidateSet('CurrentUser', 'AllUsers')]
-        [string]$Scope = 'CurrentUser'
+        [string]$Scope = 'CurrentUser',
+
+        [switch]$FullReset
     )
 
     $moduleName = 'Eigenverft.Manifested.Package'
@@ -858,15 +1042,33 @@ without changing the installed module.
         $relevantVersion, $latestRepositoryVersion)
 
     if ($latestRepositoryVersion -le $relevantVersion) {
+        $noUpdateSuffix = if ($FullReset.IsPresent) {
+            ' FullReset was not performed because no update was installed.'
+        }
+        else {
+            ''
+        }
         Write-StandardMessage `
-            -Message "No newer version was found. Installed version: $relevantVersionDisplay." `
+            -Message "No newer version was found. Installed version: $relevantVersionDisplay.$noUpdateSuffix" `
             -Level INF
         return
     }
 
-    if (-not $PSCmdlet.ShouldProcess($moduleName, "Install version $latestRepositoryVersion for scope $Scope from $repository")) {
+    $updateAction = if ($FullReset.IsPresent) {
+        "Install version $latestRepositoryVersion for scope $Scope from $repository and reset the four local internal configuration files"
+    }
+    else {
+        "Install version $latestRepositoryVersion for scope $Scope from $repository"
+    }
+    if (-not $PSCmdlet.ShouldProcess($moduleName, $updateAction)) {
+        $whatIfSuffix = if ($FullReset.IsPresent) {
+            ' No configuration reset was performed.'
+        }
+        else {
+            ''
+        }
         Write-StandardMessage `
-            -Message "A newer version was found. Installed version: $relevantVersionDisplay. Available version: $latestRepositoryVersionDisplay. No installation was performed." `
+            -Message "A newer version was found. Installed version: $relevantVersionDisplay. Available version: $latestRepositoryVersionDisplay. No installation was performed.$whatIfSuffix" `
             -Level INF
         return
     }
@@ -952,6 +1154,28 @@ without changing the installed module.
         -Version $installedVersion `
         -InstalledModule $installedModule
     $installedVersionDisplay = Format-PackageVersionWithBuildDate -Version $installedVersion
+
+    if ($FullReset.IsPresent) {
+        $configurationFileDisplay = @(
+            'PackageConfig.json'
+            'PackageDepotInventory.json'
+            'PackageEndpointInventory.json'
+            'PackageTrustInventory.json'
+        ) -join ', '
+        Write-StandardMessage `
+            -Message "FullReset is replacing $configurationFileDisplay with defaults from $moduleName $installedVersionDisplay. Local customizations in these files will be replaced; depot contents, installed packages, assignment inventory, and operation history are preserved." `
+            -Level INF
+        $resetResult = Reset-PackageInternalConfiguration -InstalledModule $installedModule
+        $markerMessage = if ($resetResult.MarkerRemoved) {
+            'The local environment marker was removed and will be recreated on the next package operation.'
+        }
+        else {
+            'No local environment marker existed; it will be created on the next package operation.'
+        }
+        Write-StandardMessage `
+            -Message "FullReset completed for $($resetResult.ConfigurationFiles.Count) configuration files. Backup: '$($resetResult.BackupDirectory)'. $markerMessage" `
+            -Level INF
+    }
 
     if ($activation.Active) {
         if ($activation.PreviousModuleStateLoaded) {

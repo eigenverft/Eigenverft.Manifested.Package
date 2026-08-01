@@ -37,6 +37,136 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module
         }
     }
 
+    It 'full-resets exactly the four internal configuration files and preserves package state and depot contents' {
+        InModuleScope 'Eigenverft.Manifested.Package' {
+            $previousLocalAppData = $env:LOCALAPPDATA
+            try {
+                $env:LOCALAPPDATA = Join-Path $TestDrive 'LocalAppData'
+                $moduleBase = Join-Path $TestDrive 'Modules\Eigenverft.Manifested.Package\2.0.0'
+                $sourceDirectory = Join-Path $moduleBase 'Configuration\Internal'
+                $applicationRoot = Join-Path $env:LOCALAPPDATA 'Programs\Evf.Package'
+                $targetDirectory = Join-Path $applicationRoot 'Configuration\Internal'
+                $stateDirectory = Join-Path $applicationRoot 'State'
+                $depotDirectory = Join-Path $applicationRoot 'Depot\evf\PowerShell7'
+                $null = New-Item -ItemType Directory -Path $sourceDirectory -Force
+                $null = New-Item -ItemType Directory -Path $targetDirectory -Force
+                $null = New-Item -ItemType Directory -Path $stateDirectory -Force
+                $null = New-Item -ItemType Directory -Path $depotDirectory -Force
+
+                $configurationFileNames = @(
+                    'PackageConfig.json'
+                    'PackageDepotInventory.json'
+                    'PackageEndpointInventory.json'
+                    'PackageTrustInventory.json'
+                )
+                foreach ($fileName in $configurationFileNames) {
+                    $sourceDocument = if ($fileName -eq 'PackageConfig.json') {
+                        '{"package":{"applicationRootDirectory":"%LOCALAPPDATA%/Programs/Evf.Package"},"generation":"new"}'
+                    }
+                    else {
+                        '{"generation":"new"}'
+                    }
+                    Set-Content -LiteralPath (Join-Path $sourceDirectory $fileName) -Value $sourceDocument -Encoding UTF8
+                    Set-Content -LiteralPath (Join-Path $targetDirectory $fileName) -Value '{"generation":"old"}' -Encoding UTF8
+                }
+
+                $markerPath = Join-Path $stateDirectory 'PackageLocalEnvironment.json'
+                $assignmentPath = Join-Path $stateDirectory 'PackageAssignmentInventory.json'
+                $historyPath = Join-Path $stateDirectory 'PackageOperationHistory.json'
+                $depotPayloadPath = Join-Path $depotDirectory 'PowerShell-7.6.4-win-x64.zip'
+                Set-Content -LiteralPath $markerPath -Value '{"marker":"old"}' -Encoding UTF8
+                Set-Content -LiteralPath $assignmentPath -Value 'assignment-preserved' -Encoding UTF8
+                Set-Content -LiteralPath $historyPath -Value 'history-preserved' -Encoding UTF8
+                Set-Content -LiteralPath $depotPayloadPath -Value 'depot-preserved' -Encoding UTF8
+
+                $result = Reset-PackageInternalConfiguration -InstalledModule ([pscustomobject]@{
+                    ModuleBase = $moduleBase
+                    Path = Join-Path $moduleBase 'Eigenverft.Manifested.Package.psd1'
+                })
+
+                $result.ConfigurationFiles | Should -Be $configurationFileNames
+                $result.MarkerRemoved | Should -BeTrue
+                $result.SourceModuleBase | Should -Be ([System.IO.Path]::GetFullPath($moduleBase))
+                Test-Path -LiteralPath $markerPath | Should -BeFalse
+                foreach ($fileName in $configurationFileNames) {
+                    ((Get-Content -LiteralPath (Join-Path $targetDirectory $fileName) -Raw | ConvertFrom-Json).generation) |
+                        Should -Be 'new'
+                    ((Get-Content -LiteralPath (Join-Path $result.BackupDirectory $fileName) -Raw | ConvertFrom-Json).generation) |
+                        Should -Be 'old'
+                }
+                ((Get-Content -LiteralPath (Join-Path $result.BackupDirectory 'PackageLocalEnvironment.json') -Raw | ConvertFrom-Json).marker) |
+                    Should -Be 'old'
+                Get-Content -LiteralPath $assignmentPath -Raw | Should -Match '^assignment-preserved'
+                Get-Content -LiteralPath $historyPath -Raw | Should -Match '^history-preserved'
+                Get-Content -LiteralPath $depotPayloadPath -Raw | Should -Match '^depot-preserved'
+            }
+            finally {
+                $env:LOCALAPPDATA = $previousLocalAppData
+            }
+        }
+    }
+
+    It 'restores every changed configuration file when a full-reset replacement fails' {
+        InModuleScope 'Eigenverft.Manifested.Package' {
+            $previousLocalAppData = $env:LOCALAPPDATA
+            try {
+                $env:LOCALAPPDATA = Join-Path $TestDrive 'RollbackLocalAppData'
+                $moduleBase = Join-Path $TestDrive 'RollbackModule'
+                $sourceDirectory = Join-Path $moduleBase 'Configuration\Internal'
+                $applicationRoot = Join-Path $env:LOCALAPPDATA 'Programs\Evf.Package'
+                $targetDirectory = Join-Path $applicationRoot 'Configuration\Internal'
+                $null = New-Item -ItemType Directory -Path $sourceDirectory -Force
+                $null = New-Item -ItemType Directory -Path $targetDirectory -Force
+
+                $configurationFileNames = @(
+                    'PackageConfig.json'
+                    'PackageDepotInventory.json'
+                    'PackageEndpointInventory.json'
+                    'PackageTrustInventory.json'
+                )
+                foreach ($fileName in $configurationFileNames) {
+                    $sourceDocument = if ($fileName -eq 'PackageConfig.json') {
+                        '{"package":{"applicationRootDirectory":"%LOCALAPPDATA%/Programs/Evf.Package"},"generation":"new"}'
+                    }
+                    else {
+                        '{"generation":"new"}'
+                    }
+                    Set-Content -LiteralPath (Join-Path $sourceDirectory $fileName) -Value $sourceDocument -Encoding UTF8
+                    Set-Content -LiteralPath (Join-Path $targetDirectory $fileName) -Value '{"generation":"old"}' -Encoding UTF8
+                }
+
+                $script:fullResetMoveCount = 0
+                Mock Move-Item {
+                    $script:fullResetMoveCount++
+                    if ($script:fullResetMoveCount -eq 2) {
+                        throw 'synthetic replacement failure'
+                    }
+
+                    Microsoft.PowerShell.Management\Move-Item `
+                        -LiteralPath $LiteralPath `
+                        -Destination $Destination `
+                        -Force `
+                        -ErrorAction Stop
+                }
+
+                {
+                    Reset-PackageInternalConfiguration -InstalledModule ([pscustomobject]@{
+                        ModuleBase = $moduleBase
+                        Path = Join-Path $moduleBase 'Eigenverft.Manifested.Package.psd1'
+                    })
+                } | Should -Throw '*previous local configuration was restored*'
+
+                foreach ($fileName in $configurationFileNames) {
+                    ((Get-Content -LiteralPath (Join-Path $targetDirectory $fileName) -Raw | ConvertFrom-Json).generation) |
+                        Should -Be 'old'
+                }
+            }
+            finally {
+                $env:LOCALAPPDATA = $previousLocalAppData
+            }
+        }
+    }
+
     It 'does not install when PSGallery is not newer than the highest relevant local version' {
         InModuleScope 'Eigenverft.Manifested.Package' {
             Mock Initialize-ProxyAccessProfile { }
@@ -70,6 +200,38 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module
             }
             Assert-MockCalled Install-Module -Times 0 -Exactly
             Assert-MockCalled Enable-PackageUpdatedModuleVersion -Times 0 -Exactly
+        }
+    }
+
+    It 'does not full-reset when no newer version is available' {
+        InModuleScope 'Eigenverft.Manifested.Package' {
+            Mock Initialize-ProxyAccessProfile { }
+            Mock Write-StandardMessage { }
+            Mock Get-PackageModuleVersionState {
+                [pscustomobject]@{
+                    ExecutingVersion       = [version]'2.0.0'
+                    LoadedModules          = @([pscustomobject]@{ Version = [version]'2.0.0' })
+                    InstalledModules       = @([pscustomobject]@{ Version = [version]'2.0.0' })
+                    HighestRelevantVersion = [version]'2.0.0'
+                }
+            }
+            Mock Find-Module {
+                [pscustomobject]@{ Name = 'Eigenverft.Manifested.Package'; Version = [version]'2.0.0' }
+            }
+            Mock Install-Module { throw 'Install-Module must not run.' }
+            Mock Enable-PackageUpdatedModuleVersion { throw 'Activation must not run.' }
+            Mock Reset-PackageInternalConfiguration { throw 'FullReset must not run.' }
+
+            $result = Update-PackageVersion -FullReset
+
+            $result | Should -BeNullOrEmpty
+            Assert-MockCalled Write-StandardMessage -Times 1 -Exactly -ParameterFilter {
+                $Message -eq 'No newer version was found. Installed version: 2.0.0. FullReset was not performed because no update was installed.' -and
+                $Level -eq 'INF'
+            }
+            Assert-MockCalled Install-Module -Times 0 -Exactly
+            Assert-MockCalled Enable-PackageUpdatedModuleVersion -Times 0 -Exactly
+            Assert-MockCalled Reset-PackageInternalConfiguration -Times 0 -Exactly
         }
     }
 
@@ -135,6 +297,79 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module
             Assert-MockCalled Test-PackageModuleInstallationScope -Times 1 -Exactly -ParameterFilter { $Scope -eq 'CurrentUser' }
             Assert-MockCalled Enable-PackageUpdatedModuleVersion -Times 1 -Exactly -ParameterFilter {
                 $ModuleName -eq 'Eigenverft.Manifested.Package' -and $Version -eq [version]'2.0.0'
+            }
+        }
+    }
+
+    It 'reports the full reset source, preservation boundary, backup, and marker behavior after an update' {
+        InModuleScope 'Eigenverft.Manifested.Package' {
+            $script:versionStateCallCount = 0
+            Mock Initialize-ProxyAccessProfile { }
+            Mock Write-StandardMessage { }
+            Mock Get-PackageModuleVersionState {
+                $script:versionStateCallCount++
+                if ($script:versionStateCallCount -eq 1) {
+                    return [pscustomobject]@{
+                        ExecutingVersion       = [version]'1.0.0'
+                        LoadedModules          = @([pscustomobject]@{ Version = [version]'1.0.0' })
+                        InstalledModules       = @([pscustomobject]@{ Version = [version]'1.0.0' })
+                        HighestRelevantVersion = [version]'1.0.0'
+                    }
+                }
+
+                return [pscustomobject]@{
+                    ExecutingVersion       = [version]'1.0.0'
+                    LoadedModules          = @([pscustomobject]@{ Version = [version]'1.0.0' })
+                    InstalledModules       = @([pscustomobject]@{
+                        Name = 'Eigenverft.Manifested.Package'
+                        Version = [version]'2.0.0'
+                        Path = 'C:\modules\Eigenverft.Manifested.Package\2.0.0\Eigenverft.Manifested.Package.psd1'
+                        ModuleBase = 'C:\modules\Eigenverft.Manifested.Package\2.0.0'
+                    })
+                    HighestRelevantVersion = [version]'2.0.0'
+                }
+            }
+            Mock Find-Module {
+                [pscustomobject]@{ Name = 'Eigenverft.Manifested.Package'; Version = [version]'2.0.0' }
+            }
+            Mock Install-Module { }
+            Mock Test-PackageModuleInstallationScope {
+                [pscustomobject]@{ Known = $true; Matches = $true; ScopeRoot = 'C:\modules' }
+            }
+            Mock Enable-PackageUpdatedModuleVersion {
+                [pscustomobject]@{
+                    Active = $true
+                    Reason = $null
+                    CommandVersion = [version]'2.0.0'
+                    PreviousModuleStateLoaded = $false
+                }
+            }
+            Mock Reset-PackageInternalConfiguration {
+                [pscustomobject]@{
+                    BackupDirectory = 'C:\local\Configuration\Backup\FullReset-test'
+                    ConfigurationFiles = @('PackageConfig.json', 'PackageDepotInventory.json', 'PackageEndpointInventory.json', 'PackageTrustInventory.json')
+                    MarkerRemoved = $true
+                }
+            }
+
+            $result = Update-PackageVersion -Scope CurrentUser -FullReset -Confirm:$false
+
+            $result | Should -BeNullOrEmpty
+            Assert-MockCalled Reset-PackageInternalConfiguration -Times 1 -Exactly -ParameterFilter {
+                $InstalledModule.Version -eq [version]'2.0.0' -and
+                $InstalledModule.ModuleBase -eq 'C:\modules\Eigenverft.Manifested.Package\2.0.0'
+            }
+            Assert-MockCalled Write-StandardMessage -Times 1 -Exactly -ParameterFilter {
+                $Message -eq 'FullReset is replacing PackageConfig.json, PackageDepotInventory.json, PackageEndpointInventory.json, PackageTrustInventory.json with defaults from Eigenverft.Manifested.Package 2.0.0. Local customizations in these files will be replaced; depot contents, installed packages, assignment inventory, and operation history are preserved.' -and
+                $Level -eq 'INF'
+            }
+            Assert-MockCalled Write-StandardMessage -Times 1 -Exactly -ParameterFilter {
+                $Message -eq "FullReset completed for 4 configuration files. Backup: 'C:\local\Configuration\Backup\FullReset-test'. The local environment marker was removed and will be recreated on the next package operation." -and
+                $Level -eq 'INF'
+            }
+            Assert-MockCalled Write-StandardMessage -Times 1 -Exactly -ParameterFilter {
+                $Message -eq 'Eigenverft.Manifested.Package was updated from 1.0.0 to 2.0.0. The new version is active for subsequent commands in this session.' -and
+                $Level -eq 'INF'
             }
         }
     }
@@ -213,6 +448,38 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module
             Assert-MockCalled Find-Module -Times 1 -Exactly
             Assert-MockCalled Install-Module -Times 0 -Exactly
             Assert-MockCalled Enable-PackageUpdatedModuleVersion -Times 0 -Exactly
+        }
+    }
+
+    It 'previews both installation and full reset without changing either under WhatIf' {
+        InModuleScope 'Eigenverft.Manifested.Package' {
+            Mock Initialize-ProxyAccessProfile { }
+            Mock Write-StandardMessage { }
+            Mock Get-PackageModuleVersionState {
+                [pscustomobject]@{
+                    ExecutingVersion       = [version]'1.0.0'
+                    LoadedModules          = @([pscustomobject]@{ Version = [version]'1.0.0' })
+                    InstalledModules       = @([pscustomobject]@{ Version = [version]'1.0.0' })
+                    HighestRelevantVersion = [version]'1.0.0'
+                }
+            }
+            Mock Find-Module {
+                [pscustomobject]@{ Name = 'Eigenverft.Manifested.Package'; Version = [version]'2.0.0' }
+            }
+            Mock Install-Module { throw 'Install-Module must not run.' }
+            Mock Enable-PackageUpdatedModuleVersion { throw 'Activation must not run.' }
+            Mock Reset-PackageInternalConfiguration { throw 'FullReset must not run.' }
+
+            $result = Update-PackageVersion -FullReset -WhatIf
+
+            $result | Should -BeNullOrEmpty
+            Assert-MockCalled Write-StandardMessage -Times 1 -Exactly -ParameterFilter {
+                $Message -eq 'A newer version was found. Installed version: 1.0.0. Available version: 2.0.0. No installation was performed. No configuration reset was performed.' -and
+                $Level -eq 'INF'
+            }
+            Assert-MockCalled Install-Module -Times 0 -Exactly
+            Assert-MockCalled Enable-PackageUpdatedModuleVersion -Times 0 -Exactly
+            Assert-MockCalled Reset-PackageInternalConfiguration -Times 0 -Exactly
         }
     }
 
