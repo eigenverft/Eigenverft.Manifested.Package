@@ -79,7 +79,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module
                 Set-Content -LiteralPath $historyPath -Value 'history-preserved' -Encoding UTF8
                 Set-Content -LiteralPath $depotPayloadPath -Value 'depot-preserved' -Encoding UTF8
 
-                $result = Reset-PackageInternalConfiguration -InstalledModule ([pscustomobject]@{
+                $result = Reset-PackageInternalConfiguration -SourceModule ([pscustomobject]@{
                     ModuleBase = $moduleBase
                     Path = Join-Path $moduleBase 'Eigenverft.Manifested.Package.psd1'
                 })
@@ -150,7 +150,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module
                 }
 
                 {
-                    Reset-PackageInternalConfiguration -InstalledModule ([pscustomobject]@{
+                    Reset-PackageInternalConfiguration -SourceModule ([pscustomobject]@{
                         ModuleBase = $moduleBase
                         Path = Join-Path $moduleBase 'Eigenverft.Manifested.Package.psd1'
                     })
@@ -203,7 +203,56 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module
         }
     }
 
-    It 'does not full-reset when no newer version is available' {
+    It 'full-resets from the executing module when no newer version is available' {
+        InModuleScope 'Eigenverft.Manifested.Package' {
+            Mock Initialize-ProxyAccessProfile { }
+            Mock Write-StandardMessage { }
+            Mock Get-PackageModuleVersionState {
+                [pscustomobject]@{
+                    ExecutingVersion       = [version]'2.0.0'
+                    LoadedModules          = @([pscustomobject]@{ Version = [version]'2.0.0' })
+                    InstalledModules       = @([pscustomobject]@{ Version = [version]'2.0.0' })
+                    HighestRelevantVersion = [version]'2.0.0'
+                }
+            }
+            Mock Find-Module {
+                [pscustomobject]@{ Name = 'Eigenverft.Manifested.Package'; Version = [version]'2.0.0' }
+            }
+            Mock Install-Module { throw 'Install-Module must not run.' }
+            Mock Enable-PackageUpdatedModuleVersion { throw 'Activation must not run.' }
+            Mock Reset-PackageInternalConfiguration {
+                [pscustomobject]@{
+                    BackupDirectory = 'C:\local\Configuration\Backup\FullReset-current'
+                    ConfigurationFiles = @('PackageConfig.json', 'PackageDepotInventory.json', 'PackageEndpointInventory.json', 'PackageTrustInventory.json')
+                    MarkerRemoved = $false
+                }
+            }
+
+            $result = Update-PackageVersion -FullReset
+
+            $result | Should -BeNullOrEmpty
+            Assert-MockCalled Write-StandardMessage -Times 1 -Exactly -ParameterFilter {
+                $Message -eq 'No newer version was found. Installed version: 2.0.0. FullReset will continue with defaults from the currently executing module.' -and
+                $Level -eq 'INF'
+            }
+            Assert-MockCalled Install-Module -Times 0 -Exactly
+            Assert-MockCalled Enable-PackageUpdatedModuleVersion -Times 0 -Exactly
+            Assert-MockCalled Reset-PackageInternalConfiguration -Times 1 -Exactly -ParameterFilter {
+                $null -ne $SourceModule -and
+                $SourceModule.Name -eq 'Eigenverft.Manifested.Package'
+            }
+            Assert-MockCalled Write-StandardMessage -Times 1 -Exactly -ParameterFilter {
+                $Message -like 'FullReset is replacing PackageConfig.json, PackageDepotInventory.json, PackageEndpointInventory.json, PackageTrustInventory.json with defaults from Eigenverft.Manifested.Package *' -and
+                $Level -eq 'INF'
+            }
+            Assert-MockCalled Write-StandardMessage -Times 1 -Exactly -ParameterFilter {
+                $Message -eq "FullReset completed for 4 configuration files. Backup: 'C:\local\Configuration\Backup\FullReset-current'. No local environment marker existed; it will be created on the next package operation." -and
+                $Level -eq 'INF'
+            }
+        }
+    }
+
+    It 'previews a current-version full reset without changing configuration under WhatIf' {
         InModuleScope 'Eigenverft.Manifested.Package' {
             Mock Initialize-ProxyAccessProfile { }
             Mock Write-StandardMessage { }
@@ -222,11 +271,11 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module
             Mock Enable-PackageUpdatedModuleVersion { throw 'Activation must not run.' }
             Mock Reset-PackageInternalConfiguration { throw 'FullReset must not run.' }
 
-            $result = Update-PackageVersion -FullReset
+            $result = Update-PackageVersion -FullReset -WhatIf
 
             $result | Should -BeNullOrEmpty
             Assert-MockCalled Write-StandardMessage -Times 1 -Exactly -ParameterFilter {
-                $Message -eq 'No newer version was found. Installed version: 2.0.0. FullReset was not performed because no update was installed.' -and
+                $Message -eq 'No newer version was found. Installed version: 2.0.0. FullReset was requested, but no configuration reset was performed.' -and
                 $Level -eq 'INF'
             }
             Assert-MockCalled Install-Module -Times 0 -Exactly
@@ -356,8 +405,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - module
 
             $result | Should -BeNullOrEmpty
             Assert-MockCalled Reset-PackageInternalConfiguration -Times 1 -Exactly -ParameterFilter {
-                $InstalledModule.Version -eq [version]'2.0.0' -and
-                $InstalledModule.ModuleBase -eq 'C:\modules\Eigenverft.Manifested.Package\2.0.0'
+                $SourceModule.Version -eq [version]'2.0.0' -and
+                $SourceModule.ModuleBase -eq 'C:\modules\Eigenverft.Manifested.Package\2.0.0'
             }
             Assert-MockCalled Write-StandardMessage -Times 1 -Exactly -ParameterFilter {
                 $Message -eq 'FullReset is replacing PackageConfig.json, PackageDepotInventory.json, PackageEndpointInventory.json, PackageTrustInventory.json with defaults from Eigenverft.Manifested.Package 2.0.0. Local customizations in these files will be replaced; depot contents, installed packages, assignment inventory, and operation history are preserved.' -and

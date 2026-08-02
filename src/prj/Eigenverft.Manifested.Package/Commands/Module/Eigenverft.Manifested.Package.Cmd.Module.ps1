@@ -707,17 +707,17 @@ function Reset-PackageInternalConfiguration {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
-        [object]$InstalledModule
+        [object]$SourceModule
     )
 
-    $moduleBase = if (-not [string]::IsNullOrWhiteSpace([string]$InstalledModule.ModuleBase)) {
-        [System.IO.Path]::GetFullPath([string]$InstalledModule.ModuleBase)
+    $moduleBase = if (-not [string]::IsNullOrWhiteSpace([string]$SourceModule.ModuleBase)) {
+        [System.IO.Path]::GetFullPath([string]$SourceModule.ModuleBase)
     }
-    elseif (-not [string]::IsNullOrWhiteSpace([string]$InstalledModule.Path)) {
-        [System.IO.Path]::GetFullPath((Split-Path -Parent ([string]$InstalledModule.Path)))
+    elseif (-not [string]::IsNullOrWhiteSpace([string]$SourceModule.Path)) {
+        [System.IO.Path]::GetFullPath((Split-Path -Parent ([string]$SourceModule.Path)))
     }
     else {
-        throw 'FullReset could not resolve the newly installed module directory.'
+        throw 'FullReset could not resolve the source module directory.'
     }
 
     $configurationFileNames = @(
@@ -850,10 +850,10 @@ function Reset-PackageInternalConfiguration {
         }
 
         if ($rollbackErrors.Count -gt 0) {
-            throw "FullReset failed after the module update: $resetErrorMessage Rollback was incomplete: $($rollbackErrors -join '; '). Backup: '$backupDirectory'."
+            throw "FullReset failed: $resetErrorMessage Rollback was incomplete: $($rollbackErrors -join '; '). Backup: '$backupDirectory'."
         }
 
-        throw "FullReset failed after the module update: $resetErrorMessage The previous local configuration was restored. Backup: '$backupDirectory'."
+        throw "FullReset failed: $resetErrorMessage The previous local configuration was restored. Backup: '$backupDirectory'."
     }
     finally {
         foreach ($stagedPath in @($stagedPaths)) {
@@ -901,10 +901,10 @@ is installed; version comparison still considers every visible copy so the comma
 needlessly reinstalls the module into another scope.
 
 .PARAMETER FullReset
-After a newer version is installed, replaces the four local internal Package configuration files with
-the shipped defaults from that exact newly installed module version. Existing files and the local
-environment marker are backed up first. Depot contents, installed packages, assignment inventory, and
-operation history are preserved. If no update is installed, no reset is performed.
+Replaces the four local internal Package configuration files with shipped defaults. When a newer version
+is installed, its defaults are used; otherwise, defaults from the currently executing module are used.
+Existing files and the local environment marker are backed up first. Depot contents, installed packages,
+assignment inventory, and operation history are preserved.
 
 .EXAMPLE
 Update-PackageVersion -Scope CurrentUser
@@ -920,8 +920,9 @@ without changing the installed module.
 .EXAMPLE
 Update-PackageVersion -FullReset -Confirm:$false
 
-Installs a newer current-user version, replaces all four local internal configuration files with that
-version's defaults, and preserves package payloads, installations, assignment inventory, and history.
+Installs a newer current-user version when available, then replaces all four local internal configuration
+files with its defaults. If no update is available, the currently executing version supplies the defaults.
+Package payloads, installations, assignment inventory, and history are preserved.
 #>
     [CmdletBinding(SupportsShouldProcess = $true)]
     param(
@@ -1042,14 +1043,46 @@ version's defaults, and preserves package payloads, installations, assignment in
         $relevantVersion, $latestRepositoryVersion)
 
     if ($latestRepositoryVersion -le $relevantVersion) {
-        $noUpdateSuffix = if ($FullReset.IsPresent) {
-            ' FullReset was not performed because no update was installed.'
+        if (-not $FullReset.IsPresent) {
+            Write-StandardMessage `
+                -Message "No newer version was found. Installed version: $relevantVersionDisplay." `
+                -Level INF
+            return
+        }
+
+        if ($null -eq $executingModule -or $null -eq $executingVersion) {
+            throw 'FullReset could not resolve the currently executing module version.'
+        }
+
+        if (-not $PSCmdlet.ShouldProcess($moduleName, "Reset the four local internal configuration files from currently executing version $executingVersion")) {
+            Write-StandardMessage `
+                -Message "No newer version was found. Installed version: $relevantVersionDisplay. FullReset was requested, but no configuration reset was performed." `
+                -Level INF
+            return
+        }
+
+        $executingVersionDisplay = Format-PackageVersionWithBuildDate -Version $executingVersion
+        Write-StandardMessage `
+            -Message "No newer version was found. Installed version: $relevantVersionDisplay. FullReset will continue with defaults from the currently executing module." `
+            -Level INF
+        $configurationFileDisplay = @(
+            'PackageConfig.json'
+            'PackageDepotInventory.json'
+            'PackageEndpointInventory.json'
+            'PackageTrustInventory.json'
+        ) -join ', '
+        Write-StandardMessage `
+            -Message "FullReset is replacing $configurationFileDisplay with defaults from $moduleName $executingVersionDisplay. Local customizations in these files will be replaced; depot contents, installed packages, assignment inventory, and operation history are preserved." `
+            -Level INF
+        $resetResult = Reset-PackageInternalConfiguration -SourceModule $executingModule
+        $markerMessage = if ($resetResult.MarkerRemoved) {
+            'The local environment marker was removed and will be recreated on the next package operation.'
         }
         else {
-            ''
+            'No local environment marker existed; it will be created on the next package operation.'
         }
         Write-StandardMessage `
-            -Message "No newer version was found. Installed version: $relevantVersionDisplay.$noUpdateSuffix" `
+            -Message "FullReset completed for $($resetResult.ConfigurationFiles.Count) configuration files. Backup: '$($resetResult.BackupDirectory)'. $markerMessage" `
             -Level INF
         return
     }
@@ -1165,7 +1198,7 @@ version's defaults, and preserves package payloads, installations, assignment in
         Write-StandardMessage `
             -Message "FullReset is replacing $configurationFileDisplay with defaults from $moduleName $installedVersionDisplay. Local customizations in these files will be replaced; depot contents, installed packages, assignment inventory, and operation history are preserved." `
             -Level INF
-        $resetResult = Reset-PackageInternalConfiguration -InstalledModule $installedModule
+        $resetResult = Reset-PackageInternalConfiguration -SourceModule $installedModule
         $markerMessage = if ($resetResult.MarkerRemoved) {
             'The local environment marker was removed and will be recreated on the next package operation.'
         }
