@@ -1,7 +1,9 @@
 param (
-    [string]$PsGalleryApiKey,
-    [string]$NuGetGitHubPush
-) 
+    [string]$IntTestNuGetApiKey,
+    [string]$NuGetApiKey,
+    [string]$PowerShellGalleryApiKey,
+    [string]$GitHubToken
+)
 
 # Fail-fast defaults for reliable CI/local runs:
 # - StrictMode 3: treat uninitialized variables, unknown members, etc. as errors.
@@ -48,10 +50,10 @@ Uninstall-PreviousModuleVersions -ModuleName 'Eigenverft.Manifested.Drydock'
 
 # In the case the secrets are not passed as parameters, try to get them from the secrets file, local development or CI/CD environment
 # TBD https://learn.microsoft.com/de-de/powershell/utility-modules/secretmanagement/overview?view=ps-modules
-$NuGetGitHubPush = Get-ConfigValue -Check $NuGetGitHubPush -FilePath (Join-Path $PSScriptRoot 'cicd.secrets.json') -Property 'NuGetGitHubPush'
-$PsGalleryApiKey = Get-ConfigValue -Check $PsGalleryApiKey -FilePath (Join-Path $PSScriptRoot 'cicd.secrets.json') -Property 'PsGalleryApiKey'
-Test-VariableValue -Variable { $NuGetGitHubPush } -WarnIfNullOrEmpty -HideValue
-Test-VariableValue -Variable { $PsGalleryApiKey } -ExitIfNullOrEmpty -HideValue
+$GitHubToken = Get-ConfigValue -Check $GitHubToken -FilePath (Join-Path $PSScriptRoot 'cicd.secrets.json') -Property 'NuGetGitHubPush'
+$PowerShellGalleryApiKey = Get-ConfigValue -Check $PowerShellGalleryApiKey -FilePath (Join-Path $PSScriptRoot 'cicd.secrets.json') -Property 'PsGalleryApiKey'
+Test-VariableValue -Variable { $GitHubToken } -WarnIfNullOrEmpty -HideValue
+Test-VariableValue -Variable { $PowerShellGalleryApiKey } -ExitIfNullOrEmpty -HideValue
 
 # Verify required commands are available
 $null = Test-CommandAvailable -Command "dotnet" -ExitIfNotFound
@@ -117,7 +119,7 @@ switch ($deploymentResolution.Channel.Value)
         $deploymentDecisions = [pscustomobject][ordered]@{
             UpdateModuleManifestVersion = $true
             PublishLocalSource       = $true
-            PublishGitHubSource      = [bool]($remoteResourcesOk -and -not [string]::IsNullOrWhiteSpace($NuGetGitHubPush))
+            PublishGitHubSource      = [bool]($remoteResourcesOk -and -not [string]::IsNullOrWhiteSpace($GitHubToken))
             PublishPsGallery         = [bool]$remoteResourcesOk
             CommitVersionChange      = [bool]$remoteResourcesOk
             PushVersionCommit        = [bool]$remoteResourcesOk
@@ -125,7 +127,7 @@ switch ($deploymentResolution.Channel.Value)
             CreateGitHubRelease      = [bool](
                 $runEnvironment.IsCI -and
                 $remoteResourcesOk -and
-                -not [string]::IsNullOrWhiteSpace($NuGetGitHubPush) -and
+                -not [string]::IsNullOrWhiteSpace($GitHubToken) -and
                 $deploymentResolution.Branch.FirstSegmentLower -eq 'main'
             )
         }
@@ -185,13 +187,13 @@ if ($deploymentDecisions.PublishLocalSource)
 if ($deploymentDecisions.PublishGitHubSource)
 {
     Write-Host "===> Publishing module to GitHub source 'github'" -ForegroundColor Cyan
-    Publish-PowerShellModuleRelease -Path $manifestFile.DirectoryName -Target 'GitHubPackages' -RepositoryName 'github' -GitHubOwner 'eigenverft' -GitHubToken $NuGetGitHubPush -ErrorAction Stop
+    Publish-PowerShellModuleRelease -Path $manifestFile.DirectoryName -Target 'GitHubPackages' -RepositoryName 'github' -GitHubOwner 'eigenverft' -GitHubToken $GitHubToken -ErrorAction Stop
 }
 
 if ($deploymentDecisions.PublishPsGallery)
 {
     Write-Host "===> Publishing module to PSGallery" -ForegroundColor Cyan
-    Publish-PowerShellModuleRelease -Path $manifestFile.DirectoryName -Target 'PSGallery' -ApiKey $PsGalleryApiKey -ErrorAction Stop
+    Publish-PowerShellModuleRelease -Path $manifestFile.DirectoryName -Target 'PSGallery' -ApiKey $PowerShellGalleryApiKey -ErrorAction Stop
 }
 
 
