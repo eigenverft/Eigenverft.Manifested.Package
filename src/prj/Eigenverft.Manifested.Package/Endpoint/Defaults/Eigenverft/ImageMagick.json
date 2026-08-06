@@ -1,0 +1,296 @@
+{
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-2.0.schema.json",
+  "schemaVersion": "2.0",
+  "definitionPublication": {
+    "publisherId": "Eigenverft",
+    "publisherName": "Eigenverft",
+    "definitionId": "ImageMagick",
+    "definitionRevision": 1,
+    "publishedAtUtc": "2026-08-06T11:43:22.2010942Z",
+    "depotNamespace": "evf",
+    "definitionSignature": {
+      "kind": "unsigned",
+      "format": "embedded-json-rsa-sha256-v1",
+      "signedContent": "canonicalDefinitionExcludingSignatureValue"
+    }
+  },
+  "display": {
+    "default": {
+      "name": "ImageMagick",
+      "publisher": "ImageMagick Studio LLC",
+      "corporation": "ImageMagick Studio LLC",
+      "summary": "ImageMagick 7 Q16-HDRI command-line image processing tools"
+    }
+  },
+  "classification": {
+    "tags": [
+      "image-processing",
+      "graphics",
+      "command-line"
+    ]
+  },
+  "dependency": {
+    "requires": []
+  },
+  "artifacts": {
+    "targets": [
+      {
+        "id": "ImageMagick-win-x64-q16-hdri-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "win-x64-q16-hdri-dll",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "x64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        },
+        "artifactFiles": {
+          "package": {
+            "relativePathTemplate": "ImageMagick-{releaseTag}-Q16-HDRI-x64-dll.exe",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "required"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "sourceId": "imageMagickGitHubRelease",
+                "searchOrder": 900,
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "releases": [
+      {
+        "version": "7.1.2.29",
+        "reportedVersion": "7.1.2-29",
+        "releaseTracks": [
+          "stable"
+        ],
+        "upstreamRelease": {
+          "sourceId": "imageMagickGitHubRelease",
+          "releaseTag": "7.1.2-29"
+        },
+        "targetArtifacts": {
+          "ImageMagick-win-x64-q16-hdri-stable": {
+            "artifactId": "imagemagick-win-x64-q16-hdri-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "94c025d0f572b1f7db03c380002485b49069c6d02796f462ffd7052874ba7467"
+                },
+                "publisherSignature": {
+                  "kind": "authenticode",
+                  "requireValid": true,
+                  "subjectContains": "ImageMagick Studio LLC"
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+    "sources": {
+      "imageMagickGitHubRelease": {
+        "kind": "githubRelease",
+        "githubOwner": "ImageMagick",
+        "githubRepository": "ImageMagick"
+      }
+    }
+  },
+  "discovery": {
+    "presence": {
+      "files": [
+        "magick.exe"
+      ],
+      "directories": [],
+      "commands": [
+        {
+          "name": "magick",
+          "relativePath": "magick.exe",
+          "requiredForState": true,
+          "exposeCommand": true,
+          "stateChecks": [
+            {
+              "arguments": [
+                "-version"
+              ],
+              "outputPattern": "(?m)^Version:\\s+ImageMagick\\s+(?<value>\\d+\\.\\d+\\.\\d+-\\d+)\\s+Q16-HDRI\\b",
+              "expectedValue": "{reportedVersion}"
+            }
+          ]
+        }
+      ],
+      "apps": [],
+      "metadataFiles": [],
+      "signatures": [],
+      "fileDetails": [],
+      "registry": [],
+      "powerShellModules": []
+    },
+    "existingInstall": {
+      "enabled": true,
+      "searchLocations": [
+        {
+          "id": "imageMagickUninstallRegistry",
+          "kind": "windowsUninstallRegistrySearch",
+          "searchOrder": 100,
+          "rootPaths": [
+            "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
+            "HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
+            "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
+          ],
+          "displayNamePatterns": [
+            "ImageMagick*Q16-HDRI*(64-bit)*"
+          ],
+          "publisherPatterns": [
+            "ImageMagick Studio LLC"
+          ],
+          "installDirectorySource": "installLocation"
+        }
+      ],
+      "installRootRules": []
+    }
+  },
+  "packageOperations": {
+    "policy": {
+      "ownershipPolicy": {
+        "allowAdoptExternal": false,
+        "upgradeAdoptedInstall": false,
+        "requirePackageOwnership": true
+      },
+      "compatibility": {
+        "checks": [
+          {
+            "kind": "osVersion",
+            "operator": ">=",
+            "value": "10.0"
+          }
+        ]
+      }
+    },
+    "assigned": {
+      "install": {
+        "kind": "innoSetupInstaller",
+        "installDirectory": "imagemagick/{releaseTrack}/{version}/{artifactDistributionVariant}",
+        "uiMode": "silent",
+        "elevation": "required",
+        "timeoutSec": 1200,
+        "commandArguments": [
+          "/VERYSILENT",
+          "/NORESTART",
+          "/SUPPRESSMSGBOXES",
+          "/SP-",
+          "/NOICONS",
+          "/MERGETASKS=!modifypath"
+        ],
+        "targetDirectoryArgument": {
+          "enabled": true,
+          "prefix": "/DIR=",
+          "quoteValue": true
+        },
+        "successExitCodes": [
+          0
+        ],
+        "restartExitCodes": [],
+        "artifactFileId": "package"
+      },
+      "readyStateCheck": {
+        "use": "discovery.presence",
+        "expectedVersion": "{reportedVersion}",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": true,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "pathRegistration": {
+        "mode": "user",
+        "source": {
+          "kind": "shim",
+          "use": "discovery.presence.commands"
+        }
+      },
+      "versionUpdatePolicy": {
+        "whenAssigned": "trackSelectedVersion",
+        "onSameSelectedVersion": "reuseOrRepair",
+        "onNewSelectedVersion": "replacePackageOwnedInstall"
+      }
+    },
+    "removed": {
+      "policy": {
+        "whenNotInInventory": "succeed",
+        "allowedInventoryOwnershipKinds": [
+          "PackageInstalled"
+        ],
+        "allowUntrackedExternalRemoval": false,
+        "removeDependencies": false
+      },
+      "operation": {
+        "kind": "innoSetupUninstaller",
+        "commandSource": {
+          "use": "discovery.existingInstall",
+          "searchLocationId": "imageMagickUninstallRegistry",
+          "registryValueOrder": [
+            "QuietUninstallString",
+            "UninstallString"
+          ]
+        },
+        "commandArguments": [
+          "/VERYSILENT",
+          "/SUPPRESSMSGBOXES",
+          "/NORESTART"
+        ],
+        "elevation": "required",
+        "timeoutSec": 1200,
+        "successExitCodes": [
+          0
+        ],
+        "restartExitCodes": [],
+        "uiMode": "silent"
+      },
+      "absenceVerification": {
+        "use": "discovery.presence",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": false,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "postRemoveCleanup": {
+        "packageInventoryRecord": true,
+        "generatedShims": true,
+        "pathEntries": true,
+        "workDirectories": true
+      }
+    }
+  },
+  "$comment": "Unsigned review draft for ImageMagick 7.1.2-29 Q16-HDRI x64 DLL. The artifact is the official ImageMagick GitHub release installer. ImageMagick-owned Configure sources identify the installer as Inno Setup and define the modifypath task; the package disables that task and exposes magick.exe through the package shim instead. Artifact SHA-256 and Authenticode signer were verified without executing the installer."
+}
