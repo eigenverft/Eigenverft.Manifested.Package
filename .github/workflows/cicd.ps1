@@ -152,13 +152,13 @@ switch ($deploymentResolution.Channel.Value)
 ##############################################################################
 # Phase 3: Prepare and validate deployment artifacts
 
-$manifestPath = Join-Path $gitTopLevelDirectory 'src\prj\Eigenverft.Manifested.Package\Eigenverft.Manifested.Package.psd1'
-if (-not (Test-Path -LiteralPath $manifestPath))
+$manifestFiles = @(Find-FilesByPattern -Path "$gitTopLevelDirectory" -Pattern "$gitRepositoryName.psd1")
+if ($manifestFiles.Count -ne 1)
 {
-    throw "Expected module manifest was not found at '$manifestPath'."
+    throw "Expected exactly one module manifest named '$gitRepositoryName.psd1' under '$gitTopLevelDirectory', but found $($manifestFiles.Count)."
 }
 
-$manifestFile = Get-Item -LiteralPath $manifestPath -ErrorAction Stop
+$manifestFile = $manifestFiles[0]
 
 if ($deploymentDecisions.UpdateModuleManifestVersion)
 {
