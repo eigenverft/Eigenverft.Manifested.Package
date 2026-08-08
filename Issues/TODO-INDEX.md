@@ -25,6 +25,6 @@ Only genuine remaining work is listed here. Shipped behavior is summarized in [D
 
 ## Reconciliation facts
 
-- Catalog: 21 signed schema-2.0 definitions.
+- Catalog: 24 signed schema-2.0 definitions under `Endpoint/Defaults/Eigenverft` (including ImageMagick).
 - Exported command surface: 42 functions.
 - Search, trust, dependency and assignment planning, artifact file sets, complete depot materialization, authoring guidance, and the offline bootstrap are shipped and are not backlog items.

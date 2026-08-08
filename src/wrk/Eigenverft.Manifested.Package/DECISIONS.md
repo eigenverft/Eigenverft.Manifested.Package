@@ -17,4 +17,4 @@ This is a compact index of completed work that still explains the active backlog
 | State and outcome | `Get-PackageState`, operation-history summaries, and `[OUTCOME]` messages are shipped. |
 | Browser opening | `Open-UrlInBrowser` opens arbitrary local files or HTTP(S) URLs; `Open-PackageDocumentation` resolves the exact active module version's `Documentation/index.html`. Minimal HTML pages differ only in embedded Markdown, use one stylesheet and one sequential local loader, while neutral `documentation.*` assets build an icon-backed page dropdown plus explicit online project links without fetch or CDN dependencies. `DocTemplate.html` visibly carries the complete portable bootstrap contract and source blueprints without prescribing another project's launch mechanism. |
 
-Remaining work is indexed in [TODO-INDEX.md](../../../PROJECTNOTES/TODO-INDEX.md). The accepted local-search design does not imply HTTPS transport or a manifest; those remain separate backlog items.
+Remaining work is indexed in [TODO-INDEX.md](../../../Issues/TODO-INDEX.md). The accepted local-search design does not imply HTTPS transport or a manifest; those remain separate backlog items.

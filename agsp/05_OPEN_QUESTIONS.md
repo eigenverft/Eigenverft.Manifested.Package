@@ -1,6 +1,6 @@
 # 05_OPEN_QUESTIONS
 
-Product-strategic only. Implementation syntax, phases, and code paths → PROJECTNOTES/ issues.
+Product-strategic only. Implementation syntax, phases, and code paths → Issues/ issues.
 
 | ID | Question | Blocking? | Affects | Proposed default |
 |----|----------|-----------|---------|------------------|

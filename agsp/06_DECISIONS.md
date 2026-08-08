@@ -1,7 +1,7 @@
 # 06_DECISIONS
 
 Product constitution — durable rules for what this product is and is not.
-Issue-specific implementation choices → PROJECTNOTES/ (e.g. TODO-SUPPLY-CHAIN Option A).
+Issue-specific implementation choices → Issues/ (e.g. TODO-SUPPLY-CHAIN Option A).
 
 | ID | Decision | Status |
 |----|----------|--------|
@@ -32,5 +32,5 @@ Issue-specific implementation choices → PROJECTNOTES/ (e.g. TODO-SUPPLY-CHAIN 
 
 | ID | Decision | Status |
 |----|----------|--------|
-| P-01 | PROJECTNOTES/ = issue source of truth; /agsp = product compass | Accepted |
+| P-01 | Issues/ = issue source of truth; /agsp = product compass | Accepted |
 | P-02 | Compact /agsp structure (01–09) | Accepted |

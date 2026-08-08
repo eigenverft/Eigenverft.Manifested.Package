@@ -23,4 +23,4 @@
 - A concrete HTTPS catalog is selected, or
 - a filesystem/HTTPS catalog reaches the scale or latency trigger.
 
-Open work: [TODO-ENDPOINTS-HTTPS.md](../../../PROJECTNOTES/TODO-ENDPOINTS-HTTPS.md) and [TODO-ENDPOINTS-MANIFEST.md](../../../PROJECTNOTES/TODO-ENDPOINTS-MANIFEST.md).
+Open work: [TODO-ENDPOINTS-HTTPS.md](../../../Issues/TODO-ENDPOINTS-HTTPS.md) and [TODO-ENDPOINTS-MANIFEST.md](../../../Issues/TODO-ENDPOINTS-MANIFEST.md).
