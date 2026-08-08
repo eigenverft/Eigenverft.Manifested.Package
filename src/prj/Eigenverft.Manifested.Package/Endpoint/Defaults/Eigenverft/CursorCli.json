@@ -5,7 +5,7 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "CursorCli",
-    "definitionRevision": 10,
+    "definitionRevision": 11,
     "publishedAtUtc": "2026-07-27T16:23:32.1777145Z",
     "depotNamespace": "evf",
     "definitionSignature": {
@@ -16,8 +16,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-27T16:25:18.3490936Z",
-      "signatureValue": "pwnTBUDEGVFaCtVzYPhKce7zGzpUPtu8kFCY43Rf7mQYSmfbUx01sc4mi2LU8geMjwFV+tM8gb4r+irV5J0pEA9a3ant7ih0adekfjxuBdxJRv2vYW/HT0Wp/GdYd1bwqIAn7PfE/Whqcu4XEDGmD7XLIx2zjUxpOPN0u5VO1DM0rmzk7e0c/wQG8QymHMCwL3ESJFD9gWyyjyKdDkd98KbFPg4wsR2/eWM4CiMh5+0AAPcr6JDZDiBdvTWR42GgDoZbJSEMw/AEbSxkmc4DWaDjNP6v4bAk5gOaCJJseV2bk5KPz7X/S6QZUZ5/Gz49N/acqOaPoF/HLLYpztpF4ljdzhJDPrnxGJawf62/8gTAAKokaIFWlVO7s7k/nmzE5f8Z7wL5nBwH2ZBCqUj0gdqpejs2PzPZOMOz2pv+OlpGTMpc6fhDaZLEXTdBoI7elUr3oyPMOv0hQpNf4Ot+W9jUhatFGoH5ISQcctnxc8zo/wvHgHDyNDU8DezqJjv/"
+      "signedAtUtc": "2026-08-08T17:56:36.5991065Z",
+      "signatureValue": "Q+qgdKTL8mkNjgWwxM4fjRRqUcYoIbh++0rmFhWPV+yOTPxcveosgQnnn6ftvUiy9pasqU4FonxOECCdiAMUrVHAgezVAsx5rsVEj2EDEZoRI7HMJaTKyHqObzXwc8fF1/zte0gpVyGEcDAFt6zSEjPLtkWMwvTdN+leYZIQCo9wjyDuOngTqgkqafPr4Qz0OOlpmP1GrxpVgsJM0wi2jRrWEHufakN/xlQ7MzTon0M9+zckcBXyOmVByQpyWJ7g3eEfayiYmlc8sDIRHM36WgjCmuW2Wz2PzS4axJUOXUudWvaKpYNDzuqU7Dd1ujAx6FEdJl24tHsMU1jhD33t7GjgYwOJ+urFOJDeJlivsOYLBEXdnZEx8RO5/+aPowB8XN7KVFFmgOVv6xJkBVWcJ/gofzlDBuLIu0aZd2ujsni2755N/vxVn6yNC6PXfGnlCeKXpiQLvuVF9ix6BW6vZNqQMf9wkz8Yo2uMaQxfcJ2FnpkGPmojts8SJurZPdtU"
     }
   },
   "display": {
@@ -122,6 +122,36 @@
       }
     ],
     "releases": [
+      {
+        "version": "2026.08.04-aaa8809",
+        "releaseTracks": [
+          "stable"
+        ],
+        "targetArtifacts": {
+          "CursorCli-win32-x64-stable": {
+            "artifactId": "cursor-cli-runtime-win32-x64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "18b30e9efbbe339ef5b6ab56f6b36ad8ce5247f4f0f8bc8c176da3eda50b7159"
+                }
+              }
+            }
+          },
+          "CursorCli-win32-arm64-stable": {
+            "artifactId": "cursor-cli-runtime-win32-arm64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "e4257c01050202252fe2664042d211a96ccdc293edad40d7070c4aa6b9eb9b04"
+                }
+              }
+            }
+          }
+        }
+      },
       {
         "version": "2026.07.23-e383d2b",
         "releaseTracks": [
