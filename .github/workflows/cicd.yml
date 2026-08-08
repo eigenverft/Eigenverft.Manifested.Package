@@ -54,6 +54,6 @@ jobs:
       run: pwsh --version
 
     - name: Workflow Build/Deploy
-      run: .github/workflows/cicd.ps1 -PsGalleryApiKey "${{ secrets.PsGalleryApiKey }}" -NuGetGitHubPush "${{ github.token }}"
+      run: .github/workflows/cicd.ps1 -IntTestNuGetApiKey "${{ secrets.INTTESTNUGET_APIKEY }}" -NuGetApiKey "${{ secrets.NUGET_APIKEY }}" -PowerShellGalleryApiKey "${{ secrets.POWERSHELLGALLERY_APIKEY }}" -GitHubToken "${{ github.token }}"
       shell: pwsh
       

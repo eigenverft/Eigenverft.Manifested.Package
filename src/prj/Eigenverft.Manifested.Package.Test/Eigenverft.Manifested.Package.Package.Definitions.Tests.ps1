@@ -255,6 +255,43 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $result.Package.removed.policy.allowedInventoryOwnershipKinds | Should -Contain 'AdoptedExternal'
     }
 
+    It 'loads the shipped ImageMagick definition with Inno Setup install, shim PATH, and registry uninstall search' {
+
+        $config = Get-PackageConfig -DefinitionId 'ImageMagick'
+        $result = New-PackageResult -PackageConfig $config
+        $result = Resolve-PackagePackage -PackageResult $result
+        $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $config -SourceRef ([pscustomobject]@{ scope = 'definition'; id = 'imageMagickGitHubRelease' })
+
+        $config.DefinitionId | Should -Be 'ImageMagick'
+        $config.SchemaVersion | Should -Be '2.0'
+        $config.DepotNamespace | Should -Be 'evf'
+        $sourceDefinition.Kind | Should -Be 'githubRelease'
+        $sourceDefinition.GitHubOwner | Should -Be 'ImageMagick'
+        $sourceDefinition.GitHubRepository | Should -Be 'ImageMagick'
+        $result.Package.version | Should -Be '7.1.2.29'
+        $result.Package.reportedVersion | Should -Be '7.1.2-29'
+        $result.Package.artifactFiles[0].relativePath | Should -Be 'ImageMagick-7.1.2-29-Q16-HDRI-x64-dll.exe'
+        $result.Package.artifactFiles[0].contentHash.algorithm | Should -Be 'sha256'
+        $result.Package.artifactFiles[0].contentHash.value | Should -Be '94c025d0f572b1f7db03c380002485b49069c6d02796f462ffd7052874ba7467'
+        $result.Package.artifactFiles[0].publisherSignature.kind | Should -Be 'authenticode'
+        $result.Package.artifactFiles[0].publisherSignature.subjectContains | Should -Be 'ImageMagick Studio LLC'
+        @($result.Package.artifactFiles[0].acquisitionCandidates | ForEach-Object { $_.kind }) | Should -Be @('packageDepot', 'vendorDownload')
+        $result.Package.assigned.install.kind | Should -Be 'innoSetupInstaller'
+        $result.Package.assigned.install.elevation | Should -Be 'required'
+        $result.Package.assigned.install.commandArguments | Should -Contain '/MERGETASKS=!modifypath'
+        $result.Package.assigned.install.targetDirectoryArgument.prefix | Should -Be '/DIR='
+        $result.Package.assigned.pathRegistration.mode | Should -Be 'user'
+        $result.Package.assigned.pathRegistration.source.kind | Should -Be 'shim'
+        $result.Package.assigned.pathRegistration.source.use | Should -Be 'discovery.presence.commands'
+        $result.Package.discovery.presence.commands[0].name | Should -Be 'magick'
+        $result.Package.discovery.presence.commands[0].relativePath | Should -Be 'magick.exe'
+        $result.Package.discovery.existingInstall.searchLocations[0].kind | Should -Be 'windowsUninstallRegistrySearch'
+        $result.Package.discovery.existingInstall.searchLocations[0].installDirectorySource | Should -Be 'installLocation'
+        $result.Package.removed.operation.kind | Should -Be 'innoSetupUninstaller'
+        $result.Package.removed.policy.allowedInventoryOwnershipKinds | Should -Contain 'PackageInstalled'
+        $result.Package.removed.policy.allowedInventoryOwnershipKinds | Should -Not -Contain 'AdoptedExternal'
+    }
+
     It 'loads the shipped SevenZip definition with MSI install and uninstall registry search' {
 
         $config = Get-PackageConfig -DefinitionId 'SevenZip'
