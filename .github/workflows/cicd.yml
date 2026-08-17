@@ -47,7 +47,7 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Diagnostic print enviroment vars
+    - name: Diagnostic print environment vars
       run: printenv
 
     - name: Display powershell core version
