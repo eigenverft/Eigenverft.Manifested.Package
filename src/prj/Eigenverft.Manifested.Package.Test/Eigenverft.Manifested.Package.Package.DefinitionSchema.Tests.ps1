@@ -48,24 +48,24 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - defini
         $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $config -SourceRef ([pscustomobject]@{ scope = 'definition'; id = 'powerShellGitHub' })
 
         $expectedFileName = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            'PowerShell-7.6.4-win-arm64.zip'
+            'PowerShell-7.6.5-win-arm64.zip'
         }
         else {
-            'PowerShell-7.6.4-win-x64.zip'
+            'PowerShell-7.6.5-win-x64.zip'
         }
         $expectedSha256 = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            '774e541334ae2b2b9f14b96a0808e8905f19a103aefc790ec5d5be2a63ae9314'
+            '20514a755d16428dc4355c85e0883c859531e71cc3e122670aa1fccdbf96ba7e'
         }
         else {
-            '80832551c52809301e6071c8bac977beb5a2f1ec953eb4db9f94deb953333793'
+            '32eb8f6cdce08f86e987d625a2733e54ac3e289ae7e1621b14c0b5bcec2434ea'
         }
 
         $config.DefinitionId | Should -Be 'PowerShell7'
         $sourceDefinition.Kind | Should -Be 'githubRelease'
         $sourceDefinition.GitHubOwner | Should -Be 'PowerShell'
         $sourceDefinition.GitHubRepository | Should -Be 'PowerShell'
-        $result.Package.version | Should -Be '7.6.4'
-        $result.Package.releaseTag | Should -Be 'v7.6.4'
+        $result.Package.version | Should -Be '7.6.5'
+        $result.Package.releaseTag | Should -Be 'v7.6.5'
         $result.Package.artifactFiles[0].relativePath | Should -Be $expectedFileName
         $result.Package.artifactFiles[0].contentHash.value | Should -Be $expectedSha256
         $result.Package.assigned.pathRegistration.source.kind | Should -Be 'shim'

@@ -450,7 +450,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - owners
             $result = Set-PackageExistingPackage -PackageResult $result
             $result = Resolve-PackageExistingPackageDecision -PackageResult $result
 
-            $result.Package.version | Should -Be '2.55.0.3'
+            $result.Package.version | Should -Be '2.55.0.4'
             $result.ExistingPackage.Decision | Should -Be 'ReplacePackageOwnedInstall'
             $result.ExistingPackage.InstallDirectory | Should -Be ([System.IO.Path]::GetFullPath($oldInstallRoot))
         }
@@ -464,10 +464,10 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - owners
         $variant = if ([string]::Equals([string]$configProbe.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) { 'arm64' } else { '64-bit' }
         $releaseId = if ([string]::Equals([string]$configProbe.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) { 'git-runtime-win-arm64-stable' } else { 'git-runtime-win-x64-stable' }
         $installSlotId = "GitRuntime:stable:$variant"
-        $installRoot = Join-Path $preferredInstallRoot "git-runtime\stable\2.55.0.3\$variant"
+        $installRoot = Join-Path $preferredInstallRoot "git-runtime\stable\2.55.0.4\$variant"
         $cmdDir = Join-Path $installRoot 'cmd'
         $null = New-Item -ItemType Directory -Path $cmdDir -Force
-        Write-TestTextFile -Path (Join-Path $cmdDir 'git.cmd') -Content "@echo off`r`necho git version 2.55.0.windows.3`r`n"
+        Write-TestTextFile -Path (Join-Path $cmdDir 'git.cmd') -Content "@echo off`r`necho git version 2.55.0.windows.4`r`n"
         Write-TestJsonDocument -Path $packageStateIndexPath -Document @{
             records = @(
                 @{
@@ -476,7 +476,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - owners
                     releaseTrack                = 'stable'
                     artifactDistributionVariant = $variant
                     currentReleaseId            = $releaseId
-                    currentVersion              = '2.55.0.3'
+                    currentVersion              = '2.55.0.4'
                     installDirectory            = $installRoot
                     ownershipKind               = 'PackageInstalled'
                     updatedAtUtc                = [DateTime]::UtcNow.ToString('o')
@@ -497,7 +497,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - owners
         $result = Set-PackageExistingPackage -PackageResult $result
         $result = Resolve-PackageExistingPackageDecision -PackageResult $result
 
-        $result.Package.version | Should -Be '2.55.0.3'
+        $result.Package.version | Should -Be '2.55.0.4'
         $result.ExistingPackage.Decision | Should -Be 'ReusePackageOwned'
         $result.InstallOrigin | Should -Be 'PackageReused'
     }

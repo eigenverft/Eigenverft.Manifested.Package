@@ -5,8 +5,8 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "PowerShell7",
-    "definitionRevision": 9,
-    "publishedAtUtc": "2026-07-27T16:23:32.1777145Z",
+    "definitionRevision": 10,
+    "publishedAtUtc": "2026-08-17T15:28:28.6843820Z",
     "depotNamespace": "evf",
     "definitionSignature": {
       "kind": "signed",
@@ -16,8 +16,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-27T16:25:19.3972527Z",
-      "signatureValue": "VINWQ6B6H6C5k6YMx0P8Sb+GFBA8htEBlpYx/k8ROweIr3nkRxBMXPa+dHMtZDdgtnA58PN8s9HC+K29A6n8pKGkyBPRDif6ODray5payEM2nfuKjklQUjejy2Pf/RfnciiHYcosUJ4mWSWJ3zTU7sAHPHagjKrGTpJZi0FGRJSKPscGnDNg2n2mmsArJBRmiOEIZ/CFv+Sk8SblpzExMopeqG+snrZppcBIdcyB9EsDJ/KgZ6MNFAbeznDtpsbLLUGTRamibettyiqLWlHXeis9ArCOvwD2+LcOcjOfSsZ6MTN7f+dNgnZHmuw7ZhKIeI79l8V79c+UR+lRol7T9Ri3oKAa5iFOn/XwcyaRWA7kReqMWs98EaYV9KJCpsz6DTnV63dWaigwZ+PdJBxeSqVmnYRZaizErIF0/DEVXCQuoKlcjr3d8l7J1aGwKJ/RFYw4A/KXe+v8BFNZAu7B5BxMTKJCeP8wGKW723eCVSvJhv2Jjp2QMkZq2D211xHz"
+      "signedAtUtc": "2026-08-17T15:38:57.5939214Z",
+      "signatureValue": "FU89Y5rVBZDpdVqCq3KGoxumxS+9zcZwbUO8vKgVrZDYeGADbw4apoajim9V4oADvdFT9l+3PFL53MKifHlAsKE5Vi3hWWX78SM+9G7Wv0TK+mCLgSpqglSSrnsVn8LrBqE2KXG/DE1L3YD2REgLNQMaFzwg2kfh5OfpZ9c35WF31N1QiRReqdK9BQu5FQseQvXv9TEufyDWjX28TyDY6uNBm/CUbVGowyoDCAlHg7LwKUWnVQQ90EFucY6cVBCqlGOBe39U2JEs9AWAQDm6pcJzYLdzIC/sdQTFgE9lj5hFj9vMe7RB4EQ1eUM7AX0X7BOhQqoJTj9I+cjytt0Bfs/tsRXkb/4jQCuGs8U/uiHp6cjd6bodrE/JxuHiY41wjNgc/fuAVHDwOabL73g44Qx9+vw/AND03e5z1hkNNlz8OBX9RQT5LF8q12EDEsYRE7rwSxFjB82m5DgBNvgnmkobe/4IkvCkCfmgEiZPzkusZzI2rtQ9f2VgbU7kD6hX"
     }
   },
   "display": {
@@ -120,6 +120,40 @@
       }
     ],
     "releases": [
+      {
+        "version": "7.6.5",
+        "releaseTracks": [
+          "stable"
+        ],
+        "upstreamRelease": {
+          "sourceId": "powerShellGitHub",
+          "releaseTag": "v7.6.5"
+        },
+        "targetArtifacts": {
+          "PowerShell7-win-arm64-stable": {
+            "artifactId": "powershell7-win-arm64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "20514a755d16428dc4355c85e0883c859531e71cc3e122670aa1fccdbf96ba7e"
+                }
+              }
+            }
+          },
+          "PowerShell7-win-x64-stable": {
+            "artifactId": "powershell7-win-x64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "32eb8f6cdce08f86e987d625a2733e54ac3e289ae7e1621b14c0b5bcec2434ea"
+                }
+              }
+            }
+          }
+        }
+      },
       {
         "version": "7.6.4",
         "releaseTracks": [
