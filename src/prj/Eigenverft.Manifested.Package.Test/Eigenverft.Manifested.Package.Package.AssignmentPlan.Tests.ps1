@@ -163,7 +163,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - read-o
         $node = @($plan.Nodes | Where-Object DefinitionId -EQ 'GitRuntime')[0]
 
         $plan.MutationFree | Should -BeTrue
-        $node.Version | Should -Be '2.55.0.4'
+        $node.Version | Should -Be '2.55.0.5'
         $node.PlannedAction | Should -Be 'Replace'
         $node.ExistingInstall.Decision | Should -Be 'ReplacePackageOwnedInstall'
         Assert-MockCalled Invoke-WebRequestEx -Times 0 -Exactly

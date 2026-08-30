@@ -160,7 +160,7 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - discov
         @($codexEdges.DefinitionId) | Should -Be @('VisualCppRedistributable', 'NodeRuntime')
         @($codexEdges.VersionRange) | Should -Be @('>=14.0 <15.0', '>=16.0.0')
         $nodeEdge.VersionRange | Should -Be '>=16.0.0'
-        $nodeRuntime.PackageVersion | Should -Be '26.7.0'
+        $nodeRuntime.PackageVersion | Should -Be '26.8.1'
 
         $qwenPlan = New-PackageDependencyPlan -DefinitionId 'Qwen35_9B_Q6_K_Model'
         $qwenNode = @($qwenPlan.Nodes | Where-Object DefinitionId -EQ 'Qwen35_9B_Q6_K_Model')[0]

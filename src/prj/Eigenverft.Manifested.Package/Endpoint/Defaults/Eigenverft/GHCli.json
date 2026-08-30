@@ -5,7 +5,7 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "GHCli",
-    "definitionRevision": 5,
+    "definitionRevision": 6,
     "publishedAtUtc": "2026-07-20T11:35:41.8666864Z",
     "depotNamespace": "evf",
     "definitionSignature": {
@@ -16,8 +16,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-08-08T17:52:58.6894282Z",
-      "signatureValue": "thU3ICI1MRW47Gd6MAeU1x4NEZFPbA4xFISRp5Nca6piSpzPoPnaM4bGYwtToo7iv2VIZfy3cBfd/aXRi6QZv0ia3gtcDfkKjrpL6NOZqaKpXN5DrP1fP6FjhSEKEBm7n52VwOdYh7natiVtySNzboIg20P+GvIzbLfwdEwjowH8WIQDgSrmUryUXVcPH5g1Qt4tWJgYd64az81yhjP5yl4EPw8/L1Sb4fRjXAymb2NPGDW4jqdjwjj2eEdoumqpKh4zlaPZ4IOCMEcWDYtg1bJ5O723Id+3bj+2DVrDALF6gylCZtiYaJjCnTQRkG5yXqgliPt6JY5R/s5VoIRP3CybbIcgpqijxe6PNKeDQdB2JVLu22/MWyb8hbNBRRM1XC29FVGEcWcX4z8pf9NRSAp6AzN20yIqKbO9KMHAghyJBm0Y/3otAsdRleoI7Rzwj2/SrJpbKmFbgviOtYZjA97PbC7si9mQw45dwUZZGZNlF+urFpViBw21dqvZdiwf"
+      "signedAtUtc": "2026-08-30T19:35:31.8662023Z",
+      "signatureValue": "xk7zl/5OJ3voVYaCF57vMWvt+xlDtvL+ep3UeqgFd5+Bi9/DmTHxkIDzti+iIEjKg+eGqF2lbH3+MMGiKllR6Kp/cAwqsAabCIxybqHTRmwhcTXMTAjlkbepmvYPMIIPEclSwHYeaU4yxkJyLZ3GxbCvCvoa+AoXmO/ODsP5/sA4MXT5HBzhsAZw44/qflvFHlNUl7a3vH9tyEYC78XkIUEM8PuH7L+JwzArGnWXba1fZUHp9gTr45BEJAeZhn5kjzQfWwb0jcFpa2fhQ98hKBJdrSb3/CIwqwJLFHZj4cwUb/3uwDsGM7ysZNFqW0XRO2HkXpOzC8w/9lYXgz38gb4S1EY/Rmo5URPUCjCqclftd9I6stASvxXicSLxoItgTNd/GBj+fmGbOtlEheFQDvSZfQpiefD6shgiXrpRBTU6alaz558fv7aXQF7pmW0kWOYkd8ZDxgihCgTmVe9iKgRlbypEfxZpwrJRiXbu/FwAy66E1PfKtyhmos5vjSkx"
     }
   },
   "display": {
@@ -119,6 +119,40 @@
       }
     ],
     "releases": [
+      {
+        "version": "2.98.0",
+        "releaseTracks": [
+          "stable"
+        ],
+        "upstreamRelease": {
+          "sourceId": "gitHubCliGitHub",
+          "releaseTag": "v2.98.0"
+        },
+        "targetArtifacts": {
+          "GHCli-windows_amd64-stable": {
+            "artifactId": "github-cli-windows-amd64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "c28c7b3b584967a05b74d9eaf7481bff24ddc34930bf2d6e442c148236561eb1"
+                }
+              }
+            }
+          },
+          "GHCli-windows_arm64-stable": {
+            "artifactId": "github-cli-windows-arm64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "79e53db4e50b5c9594890a1c4d9dc941f6d19f7c3ca6d1f50982eda624607b9b"
+                }
+              }
+            }
+          }
+        }
+      },
       {
         "version": "2.97.0",
         "releaseTracks": [
