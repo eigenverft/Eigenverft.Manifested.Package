@@ -130,7 +130,11 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $result.Package.artifactFiles[0].relativePath | Should -Be 'llama-b10701-bin-win-cpu-x64.zip'
         $result.Package.assigned.pathRegistration.source.kind | Should -Be 'shim'
         $result.Package.assigned.pathRegistration.source.use | Should -Be 'discovery.presence.commands'
+        @($config.Definition.discovery.presence.files) | Should -Be @('llama-cli.exe', 'llama-server.exe', 'llama-quantize.exe', 'llama-bench.exe', 'llama-tokenize.exe')
         @($config.Definition.discovery.presence.commands.name) | Should -Be @('llama-cli', 'llama-server', 'llama-quantize', 'llama-bench', 'llama-tokenize')
+        $versionPattern = $config.Definition.discovery.presence.commands[0].stateChecks[0].outputPattern
+        [regex]::Match("version: 0.3.0-dev (build 10701, commit cc231cb0d)", $versionPattern).Groups['value'].Value | Should -Be '10701'
+        [regex]::Match("version: 10330 (687e77892)", $versionPattern).Groups['value'].Value | Should -Be '10330'
     }
 
     It 'loads the shipped GitRuntime definition and selects the fixed GitHub-backed release' {
