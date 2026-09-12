@@ -125,9 +125,9 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $sourceDefinition.GitHubOwner | Should -Be 'ggml-org'
         $sourceDefinition.GitHubRepository | Should -Be 'llama.cpp'
         $result.PackageId | Should -Be 'llama-cpp-win-cpu-x64-stable'
-        $result.Package.version | Should -Be '10701'
-        $result.Package.releaseTag | Should -Be 'b10701'
-        $result.Package.artifactFiles[0].relativePath | Should -Be 'llama-b10701-bin-win-cpu-x64.zip'
+        $result.Package.version | Should -Be '10927'
+        $result.Package.releaseTag | Should -Be 'b10927'
+        $result.Package.artifactFiles[0].relativePath | Should -Be 'llama-b10927-bin-win-cpu-x64.zip'
         $result.Package.assigned.pathRegistration.source.kind | Should -Be 'shim'
         $result.Package.assigned.pathRegistration.source.use | Should -Be 'discovery.presence.commands'
         @($config.Definition.discovery.presence.files) | Should -Be @('llama-cli.exe', 'llama-server.exe', 'llama-quantize.exe', 'llama-bench.exe', 'llama-tokenize.exe')
@@ -181,24 +181,24 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $config -SourceRef ([pscustomobject]@{ scope = 'definition'; id = 'gitHubCliGitHub' })
 
         $expectedFileName = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            'gh_2.98.0_windows_arm64.zip'
+            'gh_2.100.0_windows_arm64.zip'
         }
         else {
-            'gh_2.98.0_windows_amd64.zip'
+            'gh_2.100.0_windows_amd64.zip'
         }
         $expectedSha256 = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            '79e53db4e50b5c9594890a1c4d9dc941f6d19f7c3ca6d1f50982eda624607b9b'
+            '7beaeb4743cf255809a8e574a2724c685b566545e04eabea284fe38a56c15b02'
         }
         else {
-            'c28c7b3b584967a05b74d9eaf7481bff24ddc34930bf2d6e442c148236561eb1'
+            '227e35230b25db3fa1b997bab7cf4d67df0470a3b75b99e4ee66bce1a7cd4e72'
         }
 
         $config.DefinitionId | Should -Be 'GHCli'
         $sourceDefinition.Kind | Should -Be 'githubRelease'
         $sourceDefinition.GitHubOwner | Should -Be 'cli'
         $sourceDefinition.GitHubRepository | Should -Be 'cli'
-        $result.Package.version | Should -Be '2.98.0'
-        $result.Package.releaseTag | Should -Be 'v2.98.0'
+        $result.Package.version | Should -Be '2.100.0'
+        $result.Package.releaseTag | Should -Be 'v2.100.0'
         $result.Package.artifactFiles[0].relativePath | Should -Be $expectedFileName
         $result.Package.artifactFiles[0].contentHash.value | Should -Be $expectedSha256
         $result.Package.assigned.install.kind | Should -Be 'expandArchive'
@@ -272,11 +272,11 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $sourceDefinition.Kind | Should -Be 'githubRelease'
         $sourceDefinition.GitHubOwner | Should -Be 'ImageMagick'
         $sourceDefinition.GitHubRepository | Should -Be 'ImageMagick'
-        $result.Package.version | Should -Be '7.1.2.30'
-        $result.Package.reportedVersion | Should -Be '7.1.2-30'
-        $result.Package.artifactFiles[0].relativePath | Should -Be 'ImageMagick-7.1.2-30-Q16-HDRI-x64-dll.exe'
+        $result.Package.version | Should -Be '7.1.2.31'
+        $result.Package.reportedVersion | Should -Be '7.1.2-31'
+        $result.Package.artifactFiles[0].relativePath | Should -Be 'ImageMagick-7.1.2-31-Q16-HDRI-x64-dll.exe'
         $result.Package.artifactFiles[0].contentHash.algorithm | Should -Be 'sha256'
-        $result.Package.artifactFiles[0].contentHash.value | Should -Be '345b11696bcad86de188ce2fd94dcc1eeeacabc981bbe8752fa029b9b5f4a10d'
+        $result.Package.artifactFiles[0].contentHash.value | Should -Be '8536e5aec5053d6531fc099cf52bebbd71f983a55593fc4eab81c40040b2a629'
         $result.Package.artifactFiles[0].publisherSignature.kind | Should -Be 'authenticode'
         $result.Package.artifactFiles[0].publisherSignature.subjectContains | Should -Be 'ImageMagick Studio LLC'
         @($result.Package.artifactFiles[0].acquisitionCandidates | ForEach-Object { $_.kind }) | Should -Be @('packageDepot', 'vendorDownload')
@@ -308,11 +308,11 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $config.DefinitionId | Should -Be 'SevenZip'
         $sourceDefinition.Kind | Should -Be 'download'
         $sourceDefinition.BaseUri | Should -Be 'https://github.com/ip7z/7zip/releases/download/'
-        $result.Package.version | Should -Be '26.02'
-        $result.Package.releaseTag | Should -Be '2602'
-        $result.Package.artifactFiles[0].relativePath | Should -Be '7z2602-x64.msi'
+        $result.Package.version | Should -Be '26.03'
+        $result.Package.releaseTag | Should -Be '2603'
+        $result.Package.artifactFiles[0].relativePath | Should -Be '7z2603-x64.msi'
         $result.Package.artifactFiles[0].contentHash.algorithm | Should -Be 'sha256'
-        $result.Package.artifactFiles[0].contentHash.value | Should -Be 'db407a4f6d4999e5c7bc00ce8a882be94717b56e7fa68140fe3f12605d91643e'
+        $result.Package.artifactFiles[0].contentHash.value | Should -Be 'c0680064d698a62dd4a5a47f403db356a6531a5473e4c4b1d090ea2590513926'
         $result.Package.assigned.install.kind | Should -Be 'msiInstaller'
         $result.Package.assigned.install.targetDirectoryProperty.name | Should -Be 'INSTALLDIR'
         $result.Package.removed.operation.kind | Should -Be 'msiUninstaller'
@@ -331,23 +331,23 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $config -SourceRef ([pscustomobject]@{ scope = 'definition'; id = 'nodeJsRelease' })
 
         $expectedFileName = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            'node-v26.8.1-win-arm64.zip'
+            'node-v26.8.2-win-arm64.zip'
         }
         else {
-            'node-v26.8.1-win-x64.zip'
+            'node-v26.8.2-win-x64.zip'
         }
         $expectedSha256 = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            '09d62005aa9dca8fcd9bdce8196f5aa783eee3818d5af74089eb7297103c02d4'
+            'a4e8362e268f1fcf1735f046e0adb088b28eeb400fb1c33fe5cc94d1a3d42570'
         }
         else {
-            '57693d8e93d1b04e7b7de46aca53ecd63e97564e73de36a68428d7ff08d83587'
+            'cf02f5d0c06c794b84f277177d5cf3743d0924ca49f6641cd435dd7cb6ee9085'
         }
 
         $config.DefinitionId | Should -Be 'NodeRuntime'
         $sourceDefinition.Kind | Should -Be 'download'
         $sourceDefinition.BaseUri | Should -Be 'https://nodejs.org/dist/'
-        $result.Package.version | Should -Be '26.8.1'
-        $result.Package.releaseTag | Should -Be 'v26.8.1'
+        $result.Package.version | Should -Be '26.8.2'
+        $result.Package.releaseTag | Should -Be 'v26.8.2'
         $result.Package.artifactFiles[0].relativePath | Should -Be $expectedFileName
         $result.Package.artifactFiles[0].contentHash.value | Should -Be $expectedSha256
         $result.Package.assigned.pathRegistration.source.kind | Should -Be 'shim'
@@ -363,23 +363,23 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $config -SourceRef ([pscustomobject]@{ scope = 'definition'; id = 'dotNetBuilds' })
 
         $expectedFileName = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            'dotnet-sdk-10.0.400-win-arm64.zip'
+            'dotnet-sdk-10.0.401-win-arm64.zip'
         }
         else {
-            'dotnet-sdk-10.0.400-win-x64.zip'
+            'dotnet-sdk-10.0.401-win-x64.zip'
         }
         $expectedSha512 = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            '9d4ecd7439f15c7797d6f46d368cb7aa6513755c5fc3d6de7621bc4878a1805f6b8ffb60ffb9d3e72a049cca87edb252f7c8c03023b643e333544c4606509d7f'
+            '8272eaab6f06ad658b1976e19d88beed287a601f968b71d5c26b75d10587cf087665c599d2e136a911002f955c97f59aa8692581bbf6b8e7af5f82604c810256'
         }
         else {
-            '9b8b88590e4da131bfd0da7aa089d0fc04d5418d5f8607ec13d55dc5a17b4399afd54d496c12657fa05c6c6546dc5eab930f26ac6c50f2d3a7712c0fb378c366'
+            '24b670ad3d923bfcf47df6c3b034152398b42f6dbc388e10d783aee1cfb5e5817d399fc0ae2a12cfa822a55e61d34830ccb15c50ef6efee437ab874bb7c79430'
         }
 
         $config.DefinitionId | Should -Be 'DotNetSdk10'
         $sourceDefinition.Kind | Should -Be 'download'
         $sourceDefinition.BaseUri | Should -Be 'https://builds.dotnet.microsoft.com/dotnet/'
-        $result.Package.version | Should -Be '10.0.400'
-        $result.Package.releaseTag | Should -Be '10.0.11'
+        $result.Package.version | Should -Be '10.0.401'
+        $result.Package.releaseTag | Should -Be '10.0.12'
         $result.Package.artifactFiles[0].relativePath | Should -Be $expectedFileName
         $result.Package.artifactFiles[0].contentHash.algorithm | Should -Be 'sha512'
         $result.Package.artifactFiles[0].contentHash.value | Should -Be $expectedSha512
@@ -398,22 +398,22 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $config -SourceRef ([pscustomobject]@{ scope = 'definition'; id = 'cursorAgentCliLab' })
 
         $expectedFileName = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            'agent-cli-package-2026.08.25-3e8eec8-win32-arm64.zip'
+            'agent-cli-package-2026.09.02-c22c1a3-win32-arm64.zip'
         }
         else {
-            'agent-cli-package-2026.08.25-3e8eec8-win32-x64.zip'
+            'agent-cli-package-2026.09.02-c22c1a3-win32-x64.zip'
         }
         $expectedSha256 = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            '5ad327a98759ef2238740777ad3834b3ed3c785691d470a5e74df5e5169b553b'
+            'a503b66a18c175ead4bad2c1dd7abf96161fd03a4fccb7d1372d4a74df1d0b07'
         }
         else {
-            '44559cf096025e9e74144797a4bf43afe4348d6b09a0c6a24e7c78139f2860fb'
+            '2a560a7629828fa00c1d6a67eef5ea9bd3e99609abd45cb02ef2e743e83b9d47'
         }
 
         $config.DefinitionId | Should -Be 'CursorCli'
         $sourceDefinition.Kind | Should -Be 'download'
         $sourceDefinition.BaseUri | Should -Be 'https://downloads.cursor.com/lab/'
-        $result.Package.version | Should -Be '2026.08.25-3e8eec8'
+        $result.Package.version | Should -Be '2026.09.02-c22c1a3'
         $result.Package.assigned.install.kind | Should -Be 'expandArchive'
         $result.Package.assigned.install.expandedRoot | Should -Be 'dist-package'
         $result.Package.artifactFiles[0].relativePath | Should -Be $expectedFileName
@@ -427,8 +427,8 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
     It 'loads the shipped materialized npm definitions without authored package-file acquisition' {
 
         $cases = @(
-            [pscustomobject]@{ DefinitionId = 'CodexCli'; PackageSpec = '@openai/codex@{version}'; Version = '0.151.0'; Command = 'codex'; RelativePath = 'codex.cmd'; Dependencies = @('VisualCppRedistributable', 'NodeRuntime') }
-            [pscustomobject]@{ DefinitionId = 'OpenCodeCli'; PackageSpec = 'opencode-ai@{version}'; Version = '1.18.25'; Command = 'opencode'; RelativePath = 'opencode.cmd'; Dependencies = @('NodeRuntime') }
+            [pscustomobject]@{ DefinitionId = 'CodexCli'; PackageSpec = '@openai/codex@{version}'; Version = '0.154.0'; Command = 'codex'; RelativePath = 'codex.cmd'; Dependencies = @('VisualCppRedistributable', 'NodeRuntime') }
+            [pscustomobject]@{ DefinitionId = 'OpenCodeCli'; PackageSpec = 'opencode-ai@{version}'; Version = '1.18.30'; Command = 'opencode'; RelativePath = 'opencode.cmd'; Dependencies = @('NodeRuntime') }
         )
 
         foreach ($case in $cases) {
@@ -469,19 +469,19 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - shippe
         $latest.PackageVersionSelectionSource | Should -Be 'definition'
         $latest.PackageVersionSelector | Should -Be 'latestByVersion'
         $latest.PackageVersionOrderingKind | Should -Be 'normalVersion'
-        $latest.Package.version | Should -Be '1.18.25'
+        $latest.Package.version | Should -Be '1.18.30'
 
         $explicitLatest = New-PackageResult -PackageConfig $config -PackageVersionSelector 'latestByVersion'
         $explicitLatest = Resolve-PackagePackage -PackageResult $explicitLatest
         $explicitLatest.PackageVersionSelectionSource | Should -Be 'command'
         $explicitLatest.PackageVersionSelector | Should -Be 'latestByVersion'
-        $explicitLatest.Package.version | Should -Be '1.18.25'
+        $explicitLatest.Package.version | Should -Be '1.18.30'
 
         $previous = New-PackageResult -PackageConfig $config -PackageVersionSelector 'previousByVersion'
         $previous = Resolve-PackagePackage -PackageResult $previous
         $previous.PackageVersionSelectionSource | Should -Be 'command'
         $previous.PackageVersionSelector | Should -Be 'previousByVersion'
-        $previous.Package.version | Should -Be '1.18.18'
+        $previous.Package.version | Should -Be '1.18.25'
 
         $pinned = New-PackageResult -PackageConfig $config -PackageVersionSelector '1.14.46'
         $pinned = Resolve-PackagePackage -PackageResult $pinned

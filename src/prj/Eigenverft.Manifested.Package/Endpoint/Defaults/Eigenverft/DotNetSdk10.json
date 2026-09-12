@@ -5,8 +5,8 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "DotNetSdk10",
-    "definitionRevision": 9,
-    "publishedAtUtc": "2026-08-17T15:32:11Z",
+    "definitionRevision": 10,
+    "publishedAtUtc": "2026-09-12T11:30:12.9015120Z",
     "depotNamespace": "evf",
     "definitionSignature": {
       "kind": "signed",
@@ -16,8 +16,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-08-17T15:38:58.8975155Z",
-      "signatureValue": "sDNN1F2BCbRR/nHwRtl/sjjX5XqoSlB7kBwKHvZdsDP5sENpXG2N4HxW7C7vVHW3FHgz4zekjo99HtjHAIUjMLm2iPju85FNljhWBWoQzbpmMQnGuB/WK/bTXh4FSabdjGuSeRpUg5hmhoanjsK9n30pq6IJ7vli0XmRGn5+YCa/Th7xByP3xctOKfx53Pn0be4h89Mvy17kpfg8t0lZcH4EFKBmzXOGnGThdLiRANgtXIhwXHIciiU7d4lVCZo7wieOM2hSC2CeRIbZAbpKZq4YRGRkHAXWB93W5t/ROvSWsuP/2kMRkLJt881hIhQM14JP4x3w1z4lnrJ2peFSvs3jd5+6cSsb2c1xoznNYwNC9QAsNyrFt+j/GdgjCZzajutK3iKjR+GmqX5LtIdhGCGKLAqrvWIaVaMRJPEVGaNI2x9NORLp4U3MKnhnoCSMyID/VP3SR3CnZoU3sRQmxsnEaIY0mMIpi+rxTob/TrwgBjOHNSv/B9s5f2dPbWWW"
+      "signedAtUtc": "2026-09-12T11:30:56.6526459Z",
+      "signatureValue": "OwtQHJH5hk7gHRk7QszePdNm8HF2UULurCe6cQrpDqISjO0EAPbNtDAbzzI0M7KSzmIjaYz83glp09oYpj9tH1bNSVEFwtLKR2xvC6E5HEimy4lAz9g8E0ib0v3jyM194mR+BkDnRa+h2g1OYEY+AZ3zSG2Jhv12DrOof4/IqUzUj4ht0zW7rj9YBk0d/1oZFGVWjSOi8ZNPArog1G5Q2yeH6N/A5rzYYx1y7lpeqDwIK6PRQmS2Xx+U0zLh0DjvTHUHSir5e0bNEitfSe4PipV5Edph3IGrqRR9FeUBnYhrOG6I5kHXUNimEz6oOILtWK7+mx66JTTObsPsTe9lVLbv5FeNy+ip+9x2xym3TdyrjeE7Fh9Br2sJs4vweE1W9iyfUjkFM5gr1vYDQMR2O97q6LVMzRwx0kMaf/1v6QgLd4kV85WyXhIZu4apACGOWvc0NcC3F5lcLEmg9LATUGwtOjiAMYek8NoPxmAblWxeDV3ILAFggN0cMqhoWq6J"
     }
   },
   "display": {
@@ -121,6 +121,40 @@
       }
     ],
     "releases": [
+      {
+        "version": "10.0.401",
+        "releaseTracks": [
+          "stable"
+        ],
+        "upstreamRelease": {
+          "sourceId": "dotNetBuilds",
+          "releaseTag": "10.0.12"
+        },
+        "targetArtifacts": {
+          "DotNetSdk10-win-x64-stable": {
+            "artifactId": "dotnet-sdk10-win-x64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha512",
+                  "value": "24b670ad3d923bfcf47df6c3b034152398b42f6dbc388e10d783aee1cfb5e5817d399fc0ae2a12cfa822a55e61d34830ccb15c50ef6efee437ab874bb7c79430"
+                }
+              }
+            }
+          },
+          "DotNetSdk10-win-arm64-stable": {
+            "artifactId": "dotnet-sdk10-win-arm64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha512",
+                  "value": "8272eaab6f06ad658b1976e19d88beed287a601f968b71d5c26b75d10587cf087665c599d2e136a911002f955c97f59aa8692581bbf6b8e7af5f82604c810256"
+                }
+              }
+            }
+          }
+        }
+      },
       {
         "version": "10.0.400",
         "releaseTracks": [

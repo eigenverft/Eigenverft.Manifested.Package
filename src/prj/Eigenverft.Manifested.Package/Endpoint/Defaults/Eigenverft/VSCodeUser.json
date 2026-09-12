@@ -5,8 +5,8 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "VSCodeUser",
-    "definitionRevision": 17,
-    "publishedAtUtc": "2026-08-17T15:36:07.0319628Z",
+    "definitionRevision": 18,
+    "publishedAtUtc": "2026-09-12T11:28:58.9786874Z",
     "depotNamespace": "evf",
     "definitionSignature": {
       "kind": "signed",
@@ -16,8 +16,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-08-30T19:34:45.7768615Z",
-      "signatureValue": "ra+qnXzPU2iU1sf59k22SCW8TsYQmkZnvldMYsRsLzcTcZbcb2fJF0OLa8s4T7VAWw4Sn+zkAjzMh8w/K54ILXMFTEbgUnpjdmkutPbxZEZGlssmJtMdYS1Lfhf0UegNS4Y9ApG+Igi3RJgSxmhKH14Mjhm+Sjjpk+SmbgGtphdWM9hBuVAjCmKHTlA7el4v5AJGLJ2h8DDA/P2myJ5OR3F3BLL+qh0p+tN5vhq8Pz6qoGJg1Hb+RgaXjrqrmU+Juiug7sYSU24Pdw5UJWmQfOMtCkUhKPqrBnvJrUa66BI/9A0K/2UqisMhzYLO0wekaahl5TR0tX2MmLAVjs3aKbbJjq11OshGgYlDdhw0A6pDnFRTmFPzHRzIKZh3M7qB279EX1azQ4ZElIBwRS9BHG9xaWhhpRrGIniwO2ty6Rdwg7dv8zzubOX7yB8VJZZKtwDF/j3qM+96GhB1FakBbBZpOmdLXs/ZBkJvY9gDnLiy019mVJFYJeeaPvjfQb7R"
+      "signedAtUtc": "2026-09-12T11:30:11.3997946Z",
+      "signatureValue": "PUpRBfjYsF3aQj5wtHMR+qZYv1U7ln3UrjaWsU4a2yAA/ss/rKqc2fol8vPbkMRJ/WZwxDUHTMZtc02njwfylLB+ly1DxMt1bZ9LU02dlmSQAwE5zrKhkLrYb42jW7kM/pn5sSP45zcMvqFc5chLwbIo+7ZTRpZWZiCgLav7jDJgFBGGg4B7k/qPcskXSZjx+E613+xFtw8Q5/qVEYVaX65qbljrt7QaayVvrji7Cwajk8hXblaTb6KG2hfJ3jGplLPj79aCeokfJn/TiYUnDCpoEp+WJPhSAPy6olcDBBKP1XM2DGWv5/4m+F1ouNMjo/jgZ+k1n0Tci+2KjSxw6nI9KRQE3aniNt9OLBpkwBxla0YTApRpW3B/JcPJbsKJ32nwBZYQnkiru2EER30gXtD5AfkH+9Ky+QyL+I9jmF+YvzBS+IOM7lbkp+XSnr7jIbQZLLix3rJr3FIkKWrYmZ6vbhhgNl05/g3EE2C40/KM9tlx8RHrjKydm7hCrcsf"
     }
   },
   "display": {
@@ -89,6 +89,31 @@
       }
     ],
     "releases": [
+      {
+        "version": "1.137.0",
+        "releaseTracks": [
+          "stable"
+        ],
+        "targetArtifacts": {
+          "windows_user_x64": {
+            "artifactId": "vscode-user-x64-1.137.0",
+            "artifactFiles": {
+              "package": {
+                "relativePath": "VSCodeUserSetup-x64-1.137.0.exe",
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "9250de3bcb5e415649f681f7dbf36225e68a813d36dafd76f9d3e5e575c8dfab"
+                },
+                "publisherSignature": {
+                  "kind": "authenticode",
+                  "requireValid": true,
+                  "subjectContains": "Microsoft Corporation"
+                }
+              }
+            }
+          }
+        }
+      },
       {
         "version": "1.135.0",
         "releaseTracks": [
