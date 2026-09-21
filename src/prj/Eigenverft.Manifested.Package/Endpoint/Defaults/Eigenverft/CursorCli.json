@@ -5,8 +5,8 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "CursorCli",
-    "definitionRevision": 14,
-    "publishedAtUtc": "2026-09-12T11:28:58.9786874Z",
+    "definitionRevision": 15,
+    "publishedAtUtc": "2026-09-21T15:54:45.6680926Z",
     "depotNamespace": "evf",
     "definitionSignature": {
       "kind": "signed",
@@ -16,8 +16,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-09-12T11:30:12.0832301Z",
-      "signatureValue": "TinIYHq/gOw86D2MgAnXdqfVw52dmu2OA0GHc1hftcQfYrYAIfj1/YroBD35IHUAssPhBBE6Ukr7iIf2XUVoXCNIR15ESAGEDBOL04rDUERA2OLGVxeZjQiSpqeEkyN34Yix80VIjhvWRCMvBGW7J20AXG7PW8CQwvS364iqqpsBUUP4G9Xam2K7Z+FzIxDtVC7MK/FVZKXUsMscpjMcddzGGgagv/SsDysHOzMqJ7X9Pvw0eKqRAL47CavTttuzA2iMYreDZ/wCOMdC7OuF/47n1hr7louk25cV8kVCqI0D1UzGwRAfiUy2bZjlQx291fjhJ23rOT+5MGqhgp2ONjLHS10SUkBIh8IfohT7pWkXtD27unbKXZubXpzjwMQY5SsMyrpLSpwZ8+J4sMc68/TPHy3QSpF6OLum7kNKbNJFD7DRkYzRfbNWKhy2YUVXpkjA3bd/bnujP/+h1nKmL1YamUCLk6D6jzQHTlbGN5ecPg12C2RPL/Efl8Fkv7jz"
+      "signedAtUtc": "2026-09-21T15:55:35.7104544Z",
+      "signatureValue": "UJcAbHs5SH1dk/E267qiRQhhqrgya2jBjg2a0kCae5zzc6s0BA+iKvfxyAdIuSkVSNtpnX4luJr8sYhY7AfU/kxbQStkHvDG6GlQGOBuSzlLzO5Z5WZCtereN1zpcYJmrYcLECpjJVBWKGXviEiVxMihg5VMTPwFT3HwID06Hr0kH+QvdARBXAr7UnkmS8XIxCd5CeOGAjmOqG09P5U9hzmAe1fOK0CnsooFTLqfDYzhYTFkmjUARPChEyby0unCqYxzZcHWUJeT9IVzehbqF71BeKPtm7Cq6pNDJVueZq657wMxnFbZVi9zUl5+LeAQXyFDcUXxkhsqkmxsgQwlOyN6vjIRlTCN57trXhi+pG7YjAy9ZRu7wiXk8u/lKv6YvU/Lr1GpGKF60rw6B3hcFN1GC+w+w3lxt0kakpCWh/jXlqROw3kg/RXzcK+s3oFlZGzdMsIHY1tPUqGmQuNslzqZ4Lndoi/v04i0GNW1SzvfsQHXj6BGdJw9swgSBN+W"
     }
   },
   "display": {
@@ -122,6 +122,36 @@
       }
     ],
     "releases": [
+      {
+        "version": "2026.09.18-9a7762b",
+        "releaseTracks": [
+          "stable"
+        ],
+        "targetArtifacts": {
+          "CursorCli-win32-x64-stable": {
+            "artifactId": "cursor-cli-runtime-win32-x64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "9c1fbcda9f0a39667689a6a3146b549ffec465caf47723e0a7bb345142d5bde4"
+                }
+              }
+            }
+          },
+          "CursorCli-win32-arm64-stable": {
+            "artifactId": "cursor-cli-runtime-win32-arm64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "69090ef4cf44dc20b93dd9a6f99b0604b20217b22268d97e6a47ca546d7a0d4b"
+                }
+              }
+            }
+          }
+        }
+      },
       {
         "version": "2026.09.02-c22c1a3",
         "releaseTracks": [

@@ -1,0 +1,225 @@
+{
+  "$schema": "../../../Schema/PackageDefinition/eigenverft-module-package-definition-2.0.schema.json",
+  "schemaVersion": "2.0",
+  "definitionPublication": {
+    "publisherId": "Eigenverft",
+    "publisherName": "Eigenverft",
+    "definitionId": "MiniCPM5_2B_Q8_0_Model",
+    "definitionRevision": 1,
+    "publishedAtUtc": "2026-09-21T16:47:58.9973720Z",
+    "depotNamespace": "evf",
+    "definitionSignature": {
+      "kind": "signed",
+      "format": "embedded-json-rsa-sha256-v1",
+      "signedContent": "canonicalDefinitionExcludingSignatureValue",
+      "keyThumbprint": "F51EBE1F899A693128330CCAFE9E1329CA4510CC",
+      "signerDisplayName": "Eigenverft Package Catalog Signing",
+      "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
+      "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
+      "signedAtUtc": "2026-09-21T16:50:04.8979619Z",
+      "signatureValue": "SvIMpAVAlOp+eSGhTzy5sA+MYIr5+jClskFp/ExI25CZfPsdgqAPixfWh1BN2Ms9Cdz69o2TDp/85ndm5jiq1IGwH1d0J2Fa5B3VDcFwyR6VrNkxbkzXIvk7dBbPz6MDMM1teXkHhtuwTbjh5eI67Y6CuVB4RL9mkGYX2/iX5VDo6sW+s2N/yiR7yemrNqp8TYcEuT+2CvYoeGVqGPTTgYCVe6PipiqCUwgYMpzuZltABYkLL53si9j0OFqNGT2zByUe7WgbI8oYbvp+8Yqf39EP+5OgOupzvJ6nbP1agKoskMGPHy4Cer5xguaPuz+CTxJMi69FBKD4D3uR/1IPtV0w2KLVcf8MpQE3QJHUZ9skzKeUC+oCCePoK+/ZsX5XGH8Udb7JIuyYoPAtWhuatWh899dIzKpbz7Tr5DnrK3C+rVvHZ8pVKZ3cOFqiDnWeBKTgCHCIu5vkDdSW9pyIdnNzHiYxHT6/PvHmy7vasL/BS6QRWCHk2CBsGClyXk9z"
+    }
+  },
+  "display": {
+    "default": {
+      "name": "MiniCPM5 2B Q8_0",
+      "publisher": "OpenBMB",
+      "corporation": "OpenBMB",
+      "summary": "Quantized Q8_0 GGUF model resource for llama.cpp-compatible runtimes"
+    }
+  },
+  "classification": {
+    "tags": [
+      "ai",
+      "minicpm",
+      "model"
+    ]
+  },
+  "dependency": {
+    "requires": [
+      {
+        "definitionId": "LlamaCppRuntime",
+        "versionRange": ">=9094"
+      }
+    ]
+  },
+  "artifacts": {
+    "targets": [
+      {
+        "id": "MiniCPM5_2B_Q8_0_Model-q8-0-stable",
+        "releaseTrack": "stable",
+        "artifactDistributionVariant": "q8-0",
+        "constraints": {
+          "os": [
+            "windows"
+          ],
+          "cpu": [
+            "x64"
+          ]
+        },
+        "versionSelection": {
+          "strategy": "latestByVersion",
+          "allowPrerelease": false
+        },
+        "artifactFiles": {
+          "package": {
+            "relativePathTemplate": "MiniCPM5-2B-Q8_0.gguf",
+            "acquisitionCandidates": [
+              {
+                "kind": "packageDepot",
+                "searchOrder": 100,
+                "verification": {
+                  "mode": "required"
+                }
+              },
+              {
+                "kind": "vendorDownload",
+                "sourceId": "huggingFaceDownload",
+                "searchOrder": 900,
+                "sourcePath": "MiniCPM5-2B-Q8_0.gguf",
+                "verification": {
+                  "mode": "required"
+                }
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "releases": [
+      {
+        "version": "5.2.0",
+        "releaseTracks": [
+          "stable"
+        ],
+        "upstreamRelease": {
+          "sourceId": "huggingFaceDownload",
+          "releaseTag": "2079a22f3beaa4e306449978533478fe0522f4b3"
+        },
+        "targetArtifacts": {
+          "MiniCPM5_2B_Q8_0_Model-q8-0-stable": {
+            "artifactId": "minicpm5-2b-q8-0-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "c5415f8989bf88a8288f1b55a3cc371af53c07b0faa220a63bd7a990cfaba078"
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+    "sources": {
+      "huggingFaceDownload": {
+        "kind": "download",
+        "baseUri": "https://huggingface.co/openbmb/MiniCPM5-2B-GGUF/resolve/2079a22f3beaa4e306449978533478fe0522f4b3/"
+      }
+    }
+  },
+  "discovery": {
+    "presence": {
+      "files": [
+        "MiniCPM5-2B-Q8_0.gguf"
+      ],
+      "directories": [],
+      "commands": [],
+      "apps": [],
+      "metadataFiles": [],
+      "signatures": [],
+      "fileDetails": [],
+      "registry": [],
+      "powerShellModules": []
+    },
+    "existingInstall": {
+      "enabled": false,
+      "searchLocations": [],
+      "installRootRules": []
+    }
+  },
+  "packageOperations": {
+    "policy": {
+      "ownershipPolicy": {
+        "allowAdoptExternal": false,
+        "upgradeAdoptedInstall": false,
+        "requirePackageOwnership": false
+      },
+      "compatibility": {
+        "checks": [
+          {
+            "kind": "physicalOrVideoMemoryGiB",
+            "operator": ">=",
+            "value": 8,
+            "onFail": "warn"
+          }
+        ]
+      }
+    },
+    "assigned": {
+      "install": {
+        "kind": "placePackageFile",
+        "installDirectory": "minicpm5-2b/{releaseTrack}/{version}/{artifactDistributionVariant}",
+        "targetRelativePath": "MiniCPM5-2B-Q8_0.gguf",
+        "artifactFileId": "package"
+      },
+      "readyStateCheck": {
+        "use": "discovery.presence",
+        "expectedVersion": "{version}",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": false,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "pathRegistration": {
+        "mode": "none"
+      },
+      "versionUpdatePolicy": {
+        "whenAssigned": "trackSelectedVersion",
+        "onSameSelectedVersion": "reuseOrRepair",
+        "onNewSelectedVersion": "replacePackageOwnedInstall"
+      }
+    },
+    "removed": {
+      "policy": {
+        "whenNotInInventory": "succeed",
+        "allowedInventoryOwnershipKinds": [
+          "PackageInstalled"
+        ],
+        "allowUntrackedExternalRemoval": false,
+        "removeDependencies": false
+      },
+      "operation": {
+        "kind": "deleteInstallDirectory",
+        "pathSource": "inventory.installDirectory"
+      },
+      "absenceVerification": {
+        "use": "discovery.presence",
+        "require": {
+          "files": true,
+          "directories": false,
+          "commands": false,
+          "apps": false,
+          "metadataFiles": false,
+          "signatures": false,
+          "fileDetails": false,
+          "registry": false,
+          "powerShellModules": false
+        }
+      },
+      "postRemoveCleanup": {
+        "packageInventoryRecord": true,
+        "generatedShims": true,
+        "pathEntries": true,
+        "workDirectories": true
+      }
+    }
+  }
+}
