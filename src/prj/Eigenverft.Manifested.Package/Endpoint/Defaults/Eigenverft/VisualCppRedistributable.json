@@ -5,8 +5,8 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "VisualCppRedistributable",
-    "definitionRevision": 7,
-    "publishedAtUtc": "2026-07-20T11:35:41.8666864Z",
+    "definitionRevision": 8,
+    "publishedAtUtc": "2026-09-29T04:14:05Z",
     "depotNamespace": "evf",
     "definitionSignature": {
       "kind": "signed",
@@ -16,8 +16,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-07-20T11:36:13.6900051Z",
-      "signatureValue": "x+/b5gWaXv0XSD4rBuNsZWet80DmRtcjy/CDgfdsD9/Ng/Fkuck5/B6Zthuhki/z47tVTyj7BSDhZWPB3ePRSq9z06eDiGnKz8pMy8/PGObPyiyIQMszKhZQ/8GMEP40GBpUO3omnzgzG6L3R3BTnVKOlUij1Eurvq0QyAi52gpDfbnv6gFfPzuWy+2tnt5844K+QfmLAabNj80Y3v95DTvbVGWGMpxkfXsCu4JNiOvACXPBwQFaxDcdzTIkxi2fbiFALAf4y1QYfr8HiY4RkZRZY+kyxNRzsVtOg4tyD/zfVJnlrymB6ONpWJYfdFttcRiEdU66ZEt7WM0Yrc45y9qGx0z6jqS34OXXwpbml4HjSau/9gJEe6p6+LJlv4GQoyGBcvoACdP5bDeBKDtW9w2W0X3f3IZnBfDgG1pvsQwFRssdiOfRJUa9a1ILueY4u387eLUE1Ylg2q2BFvo47ULeXzgbcHdrPlnzp4VzYBcFOkWJTFkhXgq0gchQPTVy"
+      "signedAtUtc": "2026-09-29T04:18:37.9085025Z",
+      "signatureValue": "KLq54Fl21/U2+W6M+4fuEKiGSp1YUsCwgBxumxERqi1eQskEtFUqAx4NcWzcqOnBHI8pKtFP7p04vQe0YN2aRtIhO6kVQli2YgqN3TMTzEwO1R5aSpWYee4IoFaIU+Ohif7Z9I+ReBUj50t3Ngvakwynj2/A2TX5Z7SrDX8ncck0j5eXzF/gbA1EXa0dwuyrxMCA2k1BahakRPNQedkBeXWV6nZDZfhhl2LheQ1ZjygNqwMbCOvWIi5HNkQFhHmAQV8TmDdDSEH3nLH8qNXZnVirwfG2nZGV53xosVOkR6K1pvcvvfqfzLccUVtUGJeApUSaom7QtZrtBX7ZtD0jwLdBfTiH9a0UN44oW0ab9xmsVdzZdT88w8e3HEqgAKkAWcMZfzq6YSkd36UY7/70so7whMisMwBM6MNzp0d+T+i+1aAlGdETR3yMrQ7SRwIqZXHdnb7AWSJ5kBVthTy6laa/ZTzD4sgz9lwrFRED6O1e66FgPpgdfZVl94/MEqI/"
     }
   },
   "display": {
@@ -83,6 +83,47 @@
     ],
     "releases": [
       {
+        "version": "14.51.36247.0",
+        "releaseTracks": [
+          "stable"
+        ],
+        "targetArtifacts": {
+          "VisualCppRedistributable-x64-stable": {
+            "artifactId": "vc-runtime-x64-stable",
+            "artifactFiles": {
+              "package": {
+                "publisherSignature": {
+                  "kind": "authenticode",
+                  "requireValid": true,
+                  "subjectContains": "Microsoft Corporation"
+                },
+                "acquisitionCandidates": [
+                  {
+                    "kind": "packageDepot",
+                    "searchOrder": 100,
+                    "verification": {
+                      "mode": "optional"
+                    }
+                  },
+                  {
+                    "kind": "vendorDownload",
+                    "searchOrder": 900,
+                    "verification": {
+                      "mode": "required"
+                    },
+                    "url": "https://download.visualstudio.microsoft.com/download/pr/ebdab8e5-1d7b-4d9f-a11b-cbb1720c3b12/843068991DAAA1F73AD9F6239BCE4D0F6A07A51F18C37EA2A867E9BECA71295C/VC_redist.x64.exe"
+                  }
+                ],
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "843068991daaa1f73ad9f6239bce4d0f6a07a51f18c37ea2a867e9beca71295c"
+                }
+              }
+            }
+          }
+        }
+      },
+      {
         "version": "14.0",
         "releaseTracks": [
           "stable"
@@ -135,7 +176,7 @@
           ],
           "valueName": "Version",
           "operator": ">=",
-          "expectedValue": "14.0"
+          "expectedValue": "{version}"
         }
       ],
       "powerShellModules": []

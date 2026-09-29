@@ -5,8 +5,8 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "ImageMagick",
-    "definitionRevision": 3,
-    "publishedAtUtc": "2026-09-12T11:29:08.1270572Z",
+    "definitionRevision": 4,
+    "publishedAtUtc": "2026-09-29T04:14:05Z",
     "depotNamespace": "evf",
     "definitionSignature": {
       "kind": "signed",
@@ -16,8 +16,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-09-12T11:29:42.3640840Z",
-      "signatureValue": "H3pKjJDhaNESCKKyEs3tizJlYztpG4tBV1loHS4udbd5xB3sr4LBLTBVnL7HCrP6Yp34FCtJI8PxQmKF5dzR/6s/+zv9LSK301BmSvxylummQRiyp37ib1GV5SnOTOCvuAaak34S8W5ez9ed7s4eqXTqImVV05WZbusyJ+Oc7Noj6sZnVA7Ct5BMmWiljDyYlxbvZu/PoL92Y4j9YlcE9LJNAoPy5hdjA992dtEUr9tcDniq84qDAn09IwC6YD2DNmuuvOnrOwKge8hxWyffxDQudRN7Nr3de5cfM7Un206/go1rsUwWzehnbCQbiAouT4iRzo9I1hDaDwDvFCBZgpbg9WIc7yQYZYdkQ5aq2LlemrV76wHCVCVZxan3vhlWE8SW0T7WsBFsiFsBGXgfOWpGQ5RVi7TE+Qe6feev1TzKPPHEG+cSwVRnGoxjgmxj3Ua3CpLlJ0fCwWNeTbrHzNcmQMxuL+V7uvmYi9nYs54lurhcN+KnWsGHJCHP4edi"
+      "signedAtUtc": "2026-09-29T04:18:36.1998534Z",
+      "signatureValue": "KQRqfSv3ALcTd0FHZouIKl2anhJppQ9u/ByMvg9VwABUdAY+yUqT4SYMA039Nz7Y54JMBBrlgPHhpmFUngFpTRL2labhgFW8qyTdaWtEP1i2Hdvokvz2tXFcLg2nlTT9mbGQpb6N6wUFW3Pe4SJtKAPBG8yPW2XF1vsIRcTVFepMp1nLEU+OKJGTSsV4aeDq9TLtnnuBeAH+oiDZo+bkK3uTAMBH605TEr3yj1rToqsyvivEemmH+LihFBpD85tMnNKStDOr4kdzdC3SrN/N1K2cE7KUGVgEKzZ85OkIqjblAQDxhfSpBeKNt5uPtsvLEZvwz73S7alhryIJuVZPnIxLizyZO02J9qOr06Mve0pWDNvpy2XIGHJIwn+4y7jQB64TPyCPyoW7WJV4iL05QuV8bhxrkwE4fRYKS5I4B46N/ZM0VOc5XueQ+8Fy0pV2o+21CkVXvZD1WPgkTcH/y4FZphC002PZ+I90+CjheYb9fuN3IvpYwRPnxdxxuN8p"
     }
   },
   "display": {
@@ -81,6 +81,35 @@
       }
     ],
     "releases": [
+      {
+        "version": "7.1.2.32",
+        "reportedVersion": "7.1.2-32",
+        "releaseTracks": [
+          "stable"
+        ],
+        "upstreamRelease": {
+          "sourceId": "imageMagickGitHubRelease",
+          "releaseTag": "7.1.2-32"
+        },
+        "targetArtifacts": {
+          "ImageMagick-win-x64-q16-hdri-stable": {
+            "artifactId": "imagemagick-win-x64-q16-hdri-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "646486fcdfac4eb57a07eb69817a0f63ef505711109775b0c7a573119600ad4e"
+                },
+                "publisherSignature": {
+                  "kind": "authenticode",
+                  "requireValid": true,
+                  "subjectContains": "ImageMagick Studio LLC"
+                }
+              }
+            }
+          }
+        }
+      },
       {
         "version": "7.1.2.31",
         "reportedVersion": "7.1.2-31",
@@ -356,5 +385,5 @@
       }
     }
   },
-  "$comment": "ImageMagick 7.1.2-30 Q16-HDRI x64 DLL from the official ImageMagick GitHub release installer. ImageMagick-owned Configure sources identify the installer as Inno Setup and define the modifypath task; the package disables that task and exposes magick.exe through the package shim instead. Artifact SHA-256 and Authenticode signer were verified without executing the installer."
+  "$comment": "ImageMagick 7.1.2-32 Q16-HDRI x64 DLL from the official ImageMagick GitHub release installer. ImageMagick-owned Configure sources identify the installer as Inno Setup and define the modifypath task; the package disables that task and exposes magick.exe through the package shim instead. Artifact SHA-256 and Authenticode signer were verified without executing the installer."
 }

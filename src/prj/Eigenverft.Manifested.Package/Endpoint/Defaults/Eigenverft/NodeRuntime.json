@@ -5,8 +5,8 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "NodeRuntime",
-    "definitionRevision": 14,
-    "publishedAtUtc": "2026-09-21T15:50:50.6965235Z",
+    "definitionRevision": 15,
+    "publishedAtUtc": "2026-09-29T04:14:05Z",
     "depotNamespace": "evf",
     "definitionSignature": {
       "kind": "signed",
@@ -16,8 +16,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-09-21T15:51:28.5080486Z",
-      "signatureValue": "nIZWdpNsZtK4WsNDEbji+ry6Jn5W2woeahew+KHKrMuv+Aeospqt6oNKbkX7HHAw0npZe4f9PAPyDgxBoEDQcd3kOqKtIRArVRmnPwkbOIP8arQ+dLxfR14Yd1mJfsyZ6CIuW0ll0xv315lw0St7cU1zQ5eLRPBj3gwxz/Ipkdp61BkMbXv5EEyeYfKDmURrYqycrm1gqH3bp8BQcxni0lhMg3nBqo+WdrullWkHrcKGIxPsbFpgtLWhtKAKQUw6Jpf90scY9tOQjmde7j2jbFPpeh77voOb3AepCWaK16wQbw7UYzU3dfiLZSj3hcxqiQ3ZYKHvbCAsmk6KfDnZGAGSepiV3aZqQe56S169U9QmK522xjevl3w6aB8PVFgKfrS0VAyjZk5SZLPwwH6k5x/w+dkhJt8dCWuQ+h6QZlrl+jVBrZkF2WJ4C7mUFJceJzLjx3Ym6l61eX52df7zm+gnPcQVcIZE60LdSwF3N/U43nQpJahYyBrlGxkFf5nI"
+      "signedAtUtc": "2026-09-29T04:18:36.7581781Z",
+      "signatureValue": "QEvcXAbmyB37G5yhnJX5VI6XYKFmMLZjPy3+9jRVaptJmGoOMRIPfeR7r/TqB7DMSW722E0dQTlm9/owrWFm7UN0f1LegEP/xXMZUcFpSfCrsJ+TaPFRGWH7CugXgHuoUeuuoSUsKQph0xLlMMTjSYMhLCgGvYsT3D8i3E+/zTrSQQRUaL7rZWd177lVnAfrUJh5qgvK7dNy2POfccjdf8AjHJDVd/y/tjfnCn2kEHLqt+FUjLk/uZeEymIW3eD7oFBOsMrHSwuxspwrmVRlfwD/grdq5XFmku5PD7zX8Hdc19Qn9DZRJDSXuB+JSTpwSRUDLKRXSJ/5XQdBswe4FRF4bYohNvap985o5zuG2B7BsJxHthoiwVRO3BFoyT+iuSGKJqGAvY4Urc+JPUA5HD45mEs60YKiOflf3YTuoP7pmK9NAAc/r/CDEVo1e+02YtF24B6jdtL351aNOSqf0SwZIv2PlXSSQ4H/m8nGbq/sInJvj3zwARVyPGT/ZY9/"
     }
   },
   "display": {
@@ -121,6 +121,40 @@
       }
     ],
     "releases": [
+      {
+        "version": "26.10.0",
+        "releaseTracks": [
+          "stable"
+        ],
+        "upstreamRelease": {
+          "sourceId": "nodeJsRelease",
+          "releaseTag": "v26.10.0"
+        },
+        "targetArtifacts": {
+          "NodeRuntime-win-x64-stable": {
+            "artifactId": "node-runtime-win-x64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "9fef7eca6743a6b910989cd8e78712376b394fcb9b6e1e9c44a0799a287f90c5"
+                }
+              }
+            }
+          },
+          "NodeRuntime-win-arm64-stable": {
+            "artifactId": "node-runtime-win-arm64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "b778640d7271566bcaa9679912cdf0684c13e824c114e41a8b696fb14af7a7aa"
+                }
+              }
+            }
+          }
+        }
+      },
       {
         "version": "26.9.0",
         "releaseTracks": [
