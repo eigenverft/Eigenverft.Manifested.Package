@@ -5,8 +5,8 @@
     "publisherId": "Eigenverft",
     "publisherName": "Eigenverft",
     "definitionId": "VSCodeRuntime",
-    "definitionRevision": 20,
-    "publishedAtUtc": "2026-09-29T04:14:05Z",
+    "definitionRevision": 21,
+    "publishedAtUtc": "2026-10-06T21:32:16Z",
     "depotNamespace": "evf",
     "definitionSignature": {
       "kind": "signed",
@@ -16,8 +16,8 @@
       "signerDisplayName": "Eigenverft Package Catalog Signing",
       "certificateSubject": "CN=Eigenverft Package Catalog Signing, O=Eigenverft, OU=Package Catalog",
       "certificatePem": "-----BEGIN CERTIFICATE-----\r\nMIIEeTCCAuGgAwIBAgIIKol+V7w5VAwwDQYJKoZIhvcNAQELBQAwXDEYMBYGA1UE\r\nCxMPUGFja2FnZSBDYXRhbG9nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQD\r\nEyJFaWdlbnZlcmZ0IFBhY2thZ2UgQ2F0YWxvZyBTaWduaW5nMB4XDTI2MDUyNjE3\r\nMDYyMFoXDTM2MDUyNzE3MDYyMFowXDEYMBYGA1UECxMPUGFja2FnZSBDYXRhbG9n\r\nMRMwEQYDVQQKEwpFaWdlbnZlcmZ0MSswKQYDVQQDEyJFaWdlbnZlcmZ0IFBhY2th\r\nZ2UgQ2F0YWxvZyBTaWduaW5nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKC\r\nAYEAy74Y0qaGfXBpOhivaSkusxGbSTYxSM3XS63ZndgsJe1GFfbuxfoOgq4Qe9Ll\r\nDw/2lvtToiNeZy08mnVp+NJE9qJUGESZDNoHkR2BniaPW5AlEtTnsclDlbkpuJyG\r\nW4AIUD7Q4ZO+HDy8N/UTmhG0j1p69Q5eXvonkDt62Md7J24C8UXr4nSk13jFo7+Z\r\nBVln3lGes2CK+OYGF/XT3oYEXZRBTW34cobaYbNPGmLm9L+D0UArm0bMrbpRkatP\r\nH1FT6zt4DVQpb1yb3TJKKwuJEdGFPwrRb1SvV7Ni+SJZcGZyHL9KxXlJ5Vg6sfVh\r\nGUu32qmNs8YHfaelPDgWSV4pDX7nyOp1xUud3nBhCHoFcovc21UCTjVUdUfJEBKU\r\ngZkJ76CobCBrNCXImkUe7h2uSxH4MVoyiciEdjuek1l2dI2MxeaqtljKi3dg8QgM\r\nWCOo3I4wQEku4QXAKGZBR3Od40jeBxdOJIIa4OuXcc/MXJZjKOi4OXyncZwf93Vb\r\niNkBAgMBAAGjPzA9MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1Ud\r\nDgQWBBQQy2kfDvCtojoANV2gIE6JLPhm4TANBgkqhkiG9w0BAQsFAAOCAYEAAU35\r\nPuA16j1nKX4ADmZEi77ho+73XhXXT6YRzo+8iVfx5B/VzJCaEsWzjg1qoPWV+QhY\r\nh3Jrd38pZNBiaTeSCu6f0H7jbjBfHlhOD5878OpJSXe35BG54SQyyAIsw6nAr+AT\r\n9YaQppDrAq/psrPaFVl+70s6uMnop+EDd717eifkSORZO303PraoIn1ZHNcAN5iN\r\n+cSCSp3HBpFjau+X0565543Z6O7OgSeHa6rFyxxGfgphZDMdDbKxx46lZGBeUx/B\r\npgSyxnp3Xgtfp0hpvwAM5rx+um2bDm1XsfCLiXjlN/zdgXneMWaK35KqXSs0EfBy\r\nlhDBIcRCjoA1AbKb0FzoE+oNapzf9NwJGXiuzz6WK0YW4ZP0p2o3xdJDuLNm9dtg\r\n9+53GuSu0GX6e2yl+0H0RafglvJgW7iGVl1ILyy2J9vVCrkL/T0UBrIuQNwJqE0H\r\nX6JfdAlppMDBhmJzm9yHWFwob8IygH59Xqmm0dVqzPhlck1Sm4KmZZ18aWMw\r\n-----END CERTIFICATE-----",
-      "signedAtUtc": "2026-09-29T04:18:38.1288867Z",
-      "signatureValue": "cUkur4MmDuZtByJGiC+3/MwrKWR+LpVAPAl0Bcvr1HM1YiwGe355uqnPUrVxiJx31MK2sLTUEtScdXz6+5SOJ46wmB4PTIgl5ozUfr/dHUveK7gdN6NyYQnH/XQjRsaVtJOZjPBnn1RL6jCL0NrOLayFSTRpKIN7dr1DYY/+M3eus+t3szeFRQnJGN9xlQfhT4wqj/IRn2XY8nAgJPL9olwJjfgN6eyEIirdOO1JsXHyn8Z+4FaA9TOuXQ9161pBI+4IjSkWjuUF8+lIA0lVntFDMmNzmDGLhykC4q2H1XhW3GOLo/MrizY6DK7t5oadKNLRsSHEaRWi9x3vaXHt7x4QlQaNq+4MDZ1eAir6GN1TQE2cFEJ14I160lAtMqI0V9l2Lo/ntPEDUiP7EtOhnRQLbzZ6cuGjLLym1lDx9jrL5p0bbPVW3wjCt5npVaOWHBmwjJJbi/0wu0S3rpkLt3KBhVUb20AiWYlvgROIK6GE7lLgM/XupSBg3Nt9ugck"
+      "signedAtUtc": "2026-10-06T21:33:19.5926835Z",
+      "signatureValue": "yrILqE2Fww12yMVGPIbxy8KKJ8DnhDOhDZF4V1VKuAx3jSlrFc1dQ2YpGHkHzRhiQoC4m6XRCcydCVNblpRRa72J3l5vepvkY3v519GK9jtrewNbEgdh7TYHJzvg1/vZ1C8hRTt51dZxP2iwTYydilJ7rY+cZMV5JsMMxcyDqtK9x+oH2uU9xMbyM0nbSU3RmHxG/eXxGZR8O16Tqidp+sCKWlN+TQZrwESD5USOTQZz5lpNPU0Cq+Lyxh4l2xFAs3fq7nLsWMsVzdR9cIP1tUjXVyFy4EOdqQw4te1VqsSXw1AgKHVTaj9qrpvr1KydhPtXJ73fWA+nx39aUycG6Ux953fQxeM1/TDpo8zH47tgaggAqvAa0EMO4VrgIfAFNM2CkOFOjPgz6UtHlI4plobDLFcYNRcydFs42hARA2ESa3UocAkr653LCmGsMjeirYDLNV4EvZWruNRKvwMg3/rIvTbMPuNP6PYSDb8z21KUPBjKydu0AvHP3p46DhqQ"
     }
   },
   "display": {
@@ -129,6 +129,36 @@
       }
     ],
     "releases": [
+      {
+        "version": "1.140.0",
+        "releaseTracks": [
+          "stable"
+        ],
+        "targetArtifacts": {
+          "VSCodeRuntime-win32-x64-stable": {
+            "artifactId": "vsCode-win-x64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "52f47072473375767d63ea5be9ffb96a3092124223fe5ce036834a299715014e"
+                }
+              }
+            }
+          },
+          "VSCodeRuntime-win32-arm64-stable": {
+            "artifactId": "vsCode-win-arm64-stable",
+            "artifactFiles": {
+              "package": {
+                "contentHash": {
+                  "algorithm": "sha256",
+                  "value": "d55904f6048e351890bac7ac70d2380a8daa5e9ca2290a184ad4988c9f4d3432"
+                }
+              }
+            }
+          }
+        }
+      },
       {
         "version": "1.139.1",
         "releaseTracks": [
