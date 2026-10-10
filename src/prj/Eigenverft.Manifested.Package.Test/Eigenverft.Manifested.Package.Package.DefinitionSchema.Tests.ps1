@@ -14,23 +14,23 @@ Invoke-TestPackageDescribe -Name 'Eigenverft.Manifested.Package Package - defini
         $sourceDefinition = Get-PackageSourceDefinition -PackageConfig $config -SourceRef ([pscustomobject]@{ scope = 'definition'; id = 'pythonNuGetPackage' })
 
         $expectedFileName = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            'pythonarm64.3.14.8.nupkg'
+            'pythonarm64.3.15.0.nupkg'
         }
         else {
-            'python.3.14.8.nupkg'
+            'python.3.15.0.nupkg'
         }
         $expectedSha256 = if ([string]::Equals([string]$config.Architecture, 'arm64', [System.StringComparison]::OrdinalIgnoreCase)) {
-            'c6d3090da526fdd9d4ef2f7c27e1f85701033ccc19c1570d5bfc9281bbca4a1f'
+            '2a91e62271164122c228be401841e8193460f66f338029d025bcc566f39972ab'
         }
         else {
-            'ce85f674d9a63029f709cbff7a3da1c6bc5bfcfaefdd9999f98fa0290470c454'
+            '2f59399a704f1b7078606eca622992021fa4521058e25fdd09e55f8533f2a12e'
         }
 
         $config.DefinitionId | Should -Be 'PythonRuntime'
         $sourceDefinition.Kind | Should -Be 'download'
         $sourceDefinition.BaseUri | Should -Be 'https://api.nuget.org/v3-flatcontainer/'
-        $result.Package.version | Should -Be '3.14.8'
-        $result.Package.releaseTag | Should -Be '3.14.8'
+        $result.Package.version | Should -Be '3.15.0'
+        $result.Package.releaseTag | Should -Be '3.15.0'
         $result.Package.artifactFiles[0].relativePath | Should -Be $expectedFileName
         $result.Package.artifactFiles[0].contentHash.value | Should -Be $expectedSha256
         $result.Package.assigned.install.expandedRoot | Should -Be 'tools'
