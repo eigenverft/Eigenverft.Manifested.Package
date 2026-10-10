@@ -362,9 +362,12 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-# Ignore files with any variation of "secret" in the name
-*[Ss][Ee][Cc][Rr][Ee][Tt]*
+# Ignore files with any variation of "key" in the name
 *[Kk][Ee][Yy]*
+
+# Sensitive PowerShell and JSON file name patterns
+*[Ss][Ee][Cc][Rr][Ee][Tt]*.[Pp][Ss]1
+*[Ss][Ee][Cc][Rr][Ee][Tt]*.[Jj][Ss][Oo][Nn]
 /artifacts/**/*
 /reports/**/*
 .gemini/**/*
